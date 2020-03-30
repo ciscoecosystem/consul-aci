@@ -1,0 +1,21 @@
+.custom-tabs .active a{
+    /* background: #00BCEB!important;*/
+    color: white!important; 
+   background-color:  #00BCEB !important;
+   box-shadow: inset 5px 0 #00bceb!important;
+  }
+  .events-tab .tabs--vertical>li:hover>a{
+    box-shadow: inset 5px 0 #00bceb!important;
+  }
+  button.Toastify__close-button.Toastify__close-button--error {
+    color: white;
+  }
+   .sub-table {
+    font-size: 13px;
+    padding: 11px;
+    background: #d5d5d5;
+  }
+  .rt-expander{
+    margin-left: 33px !important;
+  }
+  

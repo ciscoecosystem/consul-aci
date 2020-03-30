@@ -1,0 +1,40 @@
+{
+    "api":{
+        "graphql.json":"GraphQL Json"
+    },
+    "apicversion":"3.2(1l)",
+    "appid":"AppIQ",
+    "author":"Nilay Shah, Devarshi Shah",
+    "category":[
+        "Visibility and Monitoring"
+    ],
+    "contact":{
+        "contact-email":"aciappcenter-support@cisco.com",
+        "contact-phone":"1 800 553 2447",
+        "contact-url":"https://globalcontacts.cloudapps.cisco.com/contacts/contactDetails/en_US/c1o1-c2o2-c3o8"
+    },
+    "helpURL":"/help/content/index.html",
+    "iconfile":"appdynamicsicon.png",
+    "insertionURL":"fv:infoTenant:center",
+    "metaversion":"1.1",
+    "name":"AppIQ",
+    "permissions":[
+        "admin",
+        "tenant-connectivity-mgmt",
+        "tenant-connectivity-util",
+        "tenant-connectivity-l2",
+        "tenant-epg",
+        "tenant-ext-connectivity-util",
+        "tenant-network-profile",
+        "tenant-protocol-l2",
+        "tenant-protocol-ops",
+        "tenant-protocol-util",
+        "vmm-ep",
+        "vmm-connectivity"
+    ],
+    "permissionslevel":"read",
+    "shortdescr":"The AppIQ app can link together ACI and AppDynamics.",
+    "vendor":"Cisco",
+    "vendordomain":"Cisco",
+    "version":"1.3"
+}

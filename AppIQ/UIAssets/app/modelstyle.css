@@ -1,0 +1,79 @@
+.overlay {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    /* background-color: rgb(0,0,0); */
+    background-color: rgba(255,255,255);
+    overflow-x: hidden;
+    transition: 0.5s;
+    box-shadow: 1px 1px 17px 0px;
+  }
+
+ 
+  .after-info>main>div{
+	  position : relative;
+	  top:30%;
+	  
+	  background-color:white !important;
+  }
+  body{
+    overflow: auto !important;
+  }
+  .overlay-content {
+    position: relative;
+    top: 25%;
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+  }
+  .new-modal .alert{
+    margin-top: 4px !important;
+  }
+  .overlay a {
+    padding: 8px;
+    text-decoration: none;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+  }
+  
+  .overlay .closebtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 1em;
+  }
+  
+  @media screen and (max-height: 450px) {
+    .overlay a {font-size: 20px}
+    .overlay .closebtn {
+    font-size: 40px;
+    top: 15px;
+    right: 35px;
+    }
+  }
+.after-info>main{
+	  background-color: white !important;
+  }
+.new-modal{
+  min-width: unset !important;
+  min-height: unset !important;
+  width: 450px !important;
+  text-align: left ;
+  height: 180px !important;
+}
+.submit-btn{
+  margin-left: 41%;
+  margin-top : 3%;
+}
+.new-modal header{
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+.pane-header {
+    height: 3em;
+    line-height: 3em;
+    vertical-align: middle;
+}
