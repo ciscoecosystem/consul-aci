@@ -1,0 +1,301 @@
+
+var treedata = [{
+    "name": "AppProf",
+    "level": "seagreen",
+    "sub_label": "AppDController-AP1",
+    "label": "EComm-NPM-Demo",
+    "attributes": {},
+    "type": "maroon",
+    "children": [{
+        "name": "EPG",
+        "level": "seagreen",
+        "sub_label": "Inventory-Tier,Order-Tier",
+        "label": "AppDControllerEPG1",
+        "attributes": {
+            "bd": "AppD-bd1",
+            "nodes": ["INV-N1_0", "ORD-N1_1", "INV-N1_1"],
+            "vrf": "AppD-VRF"
+        },
+        "type": "#702469",
+        "children": [{
+            "name": "EP",
+            "level": "seagreen",
+            "sub_label": "Inventory-Tier",
+            "label": "AppD-Pay",
+            "attributes": {
+                "IP": "192.168.128.21",
+                "Interfaces": ["topology/pod-1/paths-101/pathep-[eth1/15]"],
+                "ServiceEndpoints": [{ "Total Errors": -1, "type": "SERVLET", "Errors/Min": -1, "Error Percentage": 0.0, "sep": "/order/rest" }],
+            },
+            "type": "#3c4fa0",
+            "children": [{
+                "attributes": {
+                    "prop4": "value4",
+                    "prop1": "value1",
+                    "prop2": "value2",
+                    "prop3": "value3"
+                },
+                "label": "INV-N1_1",
+                "type": "brown",
+                "name": "Node1",
+                "level": "seagreen"
+            }, {
+                "attributes": {
+                    "prop4": "value4",
+                    "prop1": "value1",
+                    "prop2": "value2",
+                    "prop3": "value3"
+                },
+                "label": "INV-N1_0",
+                "type": "brown",
+                "name": "Node2",
+                "level": "seagreen"
+            }
+            ]
+        }, {
+            "name": "EP",
+            "level": "seagreen",
+            "sub_label": "Order-Tier",
+            "label": "AppD-Ord-1_1",
+            "attributes": {
+                "IP": "192.168.128.18",
+                "Interfaces": ["topology/pod-1/paths-101/pathep-[eth1/15]"],
+                "ServiceEndpoints": [{ "Total Errors": -1, "type": "SERVLET", "Errors/Min": -1, "Error Percentage": 0.0, "sep": "/cart/services" }]
+            },
+            "type": "#3c4fa0",
+            "children": [{
+                "attributes": {},
+                "label": "ORD-N1_1",
+                "type": "brown",
+                "name": "Node1",
+                "level": "seagreen"
+            }
+            ]
+        }
+        ]
+    }
+    ]
+}
+]
+
+
+// var treedata = [
+//     {
+//         "name": "AppProf",
+//         "level": "seagreen",
+//         "label": "EComm-NPM-Demo",
+//         "attributes": {
+//             "prop4": "value4",
+//             "prop1": "value1",
+//             "prop2": "value2",
+//             "prop3": "value3"
+//         },
+//         "type": "maroon",
+//         "children": [
+//             {
+//                 "name": "EPG1",
+//                 "level": "seagreen",
+//                 "sub_label": "Ecom-Tier1",
+//                 "label": "AppDynamicsEPG-EComm",
+//                 "attributes": {
+//                     "prop4": "value4",
+//                     "prop1": "value1",
+//                     "prop2": "value2",
+//                     "prop3": "value3"
+//                 },
+//                 "type": "royalblue",
+//                 "children": [
+//                     {
+//                         "name": "EP1",
+//                         "level": "seagreen",
+//                         "sub_label": "Ecom-Tier1",
+//                         "label": "10.10.10.15",
+//                         "attributes": {
+//                             "prop4": "value4",
+//                             "prop1": "value1",
+//                             "prop2": "value2",
+//                             "prop3": "value3"
+//                         },
+//                         "type": "darkgrey",
+//                         "children": [
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "ECOM_T1N1_0",
+//                                 "type": "brown",
+//                                 "name": "Node1",
+//                                 "level": "orange"
+//                             },
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "ECOM_T1N1_1",
+//                                 "type": "brown",
+//                                 "name": "Node2",
+//                                 "level": "seagreen"
+//                             }
+//                         ]
+//                     }
+//                 ]
+//             },
+//             {
+//                 "name": "EPG2",
+//                 "level": "seagreen",
+//                 "sub_label": "Inventory-Tier",
+//                 "label": "AppDynamicsEPG-Inv",
+//                 "attributes": {
+//                     "prop4": "value4",
+//                     "prop1": "value1",
+//                     "prop2": "value2",
+//                     "prop3": "value3"
+//                 },
+//                 "type": "royalblue",
+//                 "children": [
+//                     {
+//                         "name": "EP1",
+//                         "level": "seagreen",
+//                         "sub_label": "Inventory-Tier",
+//                         "label": "10.10.10.16",
+//                         "attributes": {
+//                             "prop4": "value4",
+//                             "prop1": "value1",
+//                             "prop2": "value2",
+//                             "prop3": "value3"
+//                         },
+//                         "type": "darkgrey",
+//                         "children": [
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "INV-N1_1",
+//                                 "type": "brown",
+//                                 "name": "Node1",
+//                                 "level": "seagreen"
+//                             },
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "INV-N1_0",
+//                                 "type": "brown",
+//                                 "name": "Node2",
+//                                 "level": "seagreen"
+//                             }
+//                         ]
+//                     }
+//                 ]
+//             },
+//             {
+//                 "name": "EPG3",
+//                 "level": "seagreen",
+//                 "sub_label": "Payment-Tier",
+//                 "label": "AppDynamicsEPG-Pay",
+//                 "attributes": {
+//                     "prop4": "value4",
+//                     "prop1": "value1",
+//                     "prop2": "value2",
+//                     "prop3": "value3"
+//                 },
+//                 "type": "royalblue",
+//                 "children": [
+//                     {
+//                         "name": "EP1",
+//                         "level": "red",
+//                         "sub_label": "Payment-Tier",
+//                         "label": "10.10.10.21",
+//                         "attributes": {
+//                             "prop4": "value4",
+//                             "prop1": "value1",
+//                             "prop2": "value2",
+//                             "prop3": "value3"
+//                         },
+//                         "type": "darkgrey",
+//                         "children": [
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "PAY-N2_0",
+//                                 "type": "brown",
+//                                 "name": "Node1",
+//                                 "level": "seagreen"
+//                             }
+//                         ]
+//                     }
+//                 ]
+//             },
+//             {
+//                 "name": "EPG4",
+//                 "level": "seagreen",
+//                 "sub_label": "Order-Tier",
+//                 "label": "AppDynamicsEPG-Ord",
+//                 "attributes": {
+//                     "prop4": "value4",
+//                     "prop1": "value1",
+//                     "prop2": "value2",
+//                     "prop3": "value3"
+//                 },
+//                 "type": "royalblue",
+//                 "children": [
+//                     {
+//                         "name": "EP1",
+//                         "level": "orange",
+//                         "sub_label": "Order-Tier",
+//                         "label": "10.10.10.18",
+//                         "attributes": {
+//                             "prop4": "value4",
+//                             "prop1": "value1",
+//                             "prop2": "value2",
+//                             "prop3": "value3"
+//                         },
+//                         "type": "darkgrey",
+//                         "children": [
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "ORD-N1_0",
+//                                 "type": "brown",
+//                                 "name": "Node1",
+//                                 "level": "seagreen"
+//                             },
+//                             {
+//                                 "attributes": {
+//                                     "prop4": "value4",
+//                                     "prop1": "value1",
+//                                     "prop2": "value2",
+//                                     "prop3": "value3"
+//                                 },
+//                                 "label": "ORD-N1_1",
+//                                 "type": "brown",
+//                                 "name": "Node2",
+//                                 "level": "seagreen"
+//                             }
+//                         ]
+//                     }
+//                 ]
+//             }
+//         ]
+//     }
+// ];

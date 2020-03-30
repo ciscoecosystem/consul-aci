@@ -1,0 +1,75 @@
+
+
+.sub-header {
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    font-size: 22px;
+    white-space: pre;
+    padding-top: 7px;
+    /* top: -4px; */
+    position: relative;
+    /* //font-weight: lighter; */
+    margin-bottom : 0.8em;
+}
+
+.app-name {
+    color : #58585b;
+    padding : 0.3em;
+    padding-left : 0.8em;
+    padding-top : 0.6em;
+    padding-bottom : 0.6em;
+    padding-right : 4em;
+}
+
+.dropdown-setting{
+    padding: 3px; 
+    padding-right: 10px;
+}
+
+
+
+
+
+
+
+
+.toolbar {
+    background-color : rgb(223,223,223);
+    padding : 0.5em;
+    text-align : right;
+}
+
+.clearfix {
+    
+    overflow: visible;
+}
+
+.floar {
+    float: right;
+}
+
+.floal {
+    float: left;
+}
+
+.button-logout {
+    border-radius: 20px;
+    margin-top: 0.2em;
+    margin-right: 0.5em;
+    color : #f0f0f0;
+    border: none;
+    padding: 7px 30px;
+    cursor: pointer;
+}
+
+
+
+.instancetext {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    background-color: transparent;
+    /* margin-top: 1em; */
+    margin-right: 0.3em;
+    padding-top: 9px; 
+    display: inline-block
+}
