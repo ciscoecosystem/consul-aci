@@ -22,7 +22,7 @@ def create_cert_session():
     Create user certificate and session.
     """
     start_time = datetime.datetime.now()
-    cert_user = 'Cisco_AppIQ'  # vendor_appname
+    cert_user = 'Cisco_Consul'  # vendor_appname
     plugin_key_file = '/home/app/credentials/plugin.key'  # static generated upon install
     pol_uni = PolUni('')
     aaa_user_ep = AaaUserEp(pol_uni)
@@ -72,7 +72,7 @@ class ACI_Utils(object):
         start_time = datetime.datetime.now()
         global auth_token
         user_cert, plugin_key = create_cert_session()
-        app_token_payload = {"aaaAppToken": {"attributes": {"appName": "Cisco_AppIQ"}}}
+        app_token_payload = {"aaaAppToken": {"attributes": {"appName": "Cisco_Consul"}}}
         data = json.dumps(app_token_payload)
         pay_load = "POST" + urls.LOGIN_URL_SUFFIX + data
         private_key = load_privatekey(FILETYPE_PEM, plugin_key)

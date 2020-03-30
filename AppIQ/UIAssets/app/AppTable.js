@@ -50,11 +50,11 @@ export default class AppTable extends React.Component{
     
     handleViewClick(data) {
      
-        window.location.href = "tree.html?appId=" + encodeURIComponent(data.appId) + "&tn=" + encodeURIComponent(this.state.tenantName);
+        window.location.href = "tree.html?appId=" + encodeURIComponent(data.appId) + "&appProfileName=" + encodeURIComponent(data.appProfileName) + "&tn=" + encodeURIComponent(this.state.tenantName);
     }
     
     handleDetailsClick(data) {
-        window.location.href = "details.html?appId=" + encodeURIComponent(data.appId) + "&tn=" + encodeURIComponent(this.state.tenantName);
+        window.location.href = "details.html?appId=" + encodeURIComponent(data.appId) + "&appProfileName=" + encodeURIComponent(data.appProfileName) + "&tn=" + encodeURIComponent(this.state.tenantName);
     }
     render(){
       return  <Table data={this.props.rows} columns={this.columns}></Table>

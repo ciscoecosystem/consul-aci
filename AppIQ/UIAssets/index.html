@@ -14,8 +14,8 @@
                 var tokenObj = Ext.decode(e.data, true);
                 if (tokenObj) {
                     // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_AppIQ_token', tokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_AppIQ_urlToken', tokenObj.urlToken);
+                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObj.token);
+                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObj.urlToken);
                     console.log('Tokens set')
                 }
             }

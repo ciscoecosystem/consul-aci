@@ -280,7 +280,7 @@ function ServiceEndpoints(props) {
   return NoInformation();
 }
 function ContractDetails(props) {
-  if (props.data && props.attributes.constructor == Array && props.data.length > 0) {
+  if (props.attributes && props.attributes.constructor == Array && props.attributes.length > 0) {
     return (
       <table className="info-table">
         {props.attributes.map(key => {

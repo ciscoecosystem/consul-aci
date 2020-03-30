@@ -57,32 +57,6 @@ export default class TestComponent extends React.Component {
 
                 </div >
 
-                <div className="health-indicators" id="health-indicators">
-                    <h4 style={{marginTop : "50px"}}>Health Legend</h4>
-                    <hr/>
-                    <div className="health-indicators-table" width="100%">
-                        <table width="90%" style={{margin : "5%"}}>
-                            <tr className="health-row">
-                                <td width="80%" className="legend-title" style={{padding : "1em"}}> Normal </td>
-                                <td width="19%">
-                                    <div className="health-normal" style={{height : "2em", width: "2em"}}>&nbsp;</div>
-                                </td>
-                            </tr>
-                            <tr className="health-row">
-                                <td width="80%" className="legend-title" style={{padding : "1em"}}> Warning </td>
-                                <td width="19%">
-                                    <div className="health-warning_" style={{height : "2em", width: "2em"}}>&nbsp;</div>
-                                </td>
-                            </tr>
-                            <tr className="health-row" style={{border : "0px"}}>
-                                <td width="80%" className="legend-title" style={{padding : "1em"}}> Critical </td>
-                                <td width="19%">
-                                    <div className="health-critical_" style={{height : "2em", width: "2em"}}>&nbsp;</div>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
             </div>
         );
     }

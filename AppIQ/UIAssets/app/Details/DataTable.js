@@ -1,107 +1,174 @@
 import React, { Component } from "react"
-import { Table, Button } from "blueprint-react"
+import { Table, Button, Label, Icon } from "blueprint-react"
 import ToolBar from "./ToolBar"
 import tablestyle from "./tablestyle.css"
+
+const successColor = "#6ebe4a";
+const failColor = "#e2231a";
+const warningColor = "#f49141";
+
+
 export default class DataTable extends Component {
   constructor(props) {
     super(props);
     const HEADER_DETAILS = [
       {
-        Header: 'Fabric',
-        headerClassName : "center-class",
-        columns: [
-          {
-            Header: "Node",
-            accessor: "node"
-          },
-          {
-            Header: "Interface",
-            accessor: "interface"
-          }
-        ]
+        Header: "Interface",
+        accessor: "interface"
       },
       {
-        Header: 'APIC',
-        headerClassName : "center-class",
-        columns: [
-          {
-            Header: "IP",
-            accessor: "IP"
-          },
-          {
-            Header: "Mac",
-            accessor: "mac"
-          },
-          {
-            Header: "End Point",
-            accessor: "endPointName"
-          },
-          {
-            Header: "EPG",
-            accessor: "epgName"
-          },
-          {
-            Header: "EPG-DN",
-            accessor: 'dn'
-          },
-          {
-            Header: "Health",
-            accessor: "epgHealth",
-            Cell: row => {
-              let epgcolor = "56b72a";
-              if (row.value < 70) {
-                epgcolor = "#ffcc00";
-              }
-              if (row.value < 40) {
-                epgcolor = "#FF6666";
-              }
-              return <Button style={{ width: "66px", backgroundColor: epgcolor, opacity: "1" }} disabled={true} key="dd" type="btn--success" size="btn--small">{row.value}</Button>
-            }
-          }
-        ]
+        Header: "Endpoint",
+        accessor: "endPointName"
       },
       {
-        Header: 'AppDynamics',
-        headerClassName : "tableborder",
-        columns: [
-          {
-            Header: "Name",
-            accessor: "tierName",
-            headerClassName : "tableborder",
-            className : "tableborder"
-          },
-          {
-            Header: "Health",
-            accessor: "tierHealth",
-            Cell: row => {
-              let tiercolor = "56b72a";
-              if (row.value == "WARNING") {
-                tiercolor = "#ffcc00";
-              }
-              if (row.value == "CRITICAL") {
-                tiercolor = "#FF6666";
-              }
-              return <Button style={{ backgroundColor: tiercolor, opacity: "1" }} disabled={true} key="S" type="btn--success" size="btn--small">{row.value}</Button>
-            }
+        Header: "IP",
+        accessor: "ip"
+      },
+      {
+        Header: "MAC",
+        accessor: "mac"
+      },
+      {
+        Header: "Learning Source",
+        accessor: "learningSource"
+      },
+      {
+        Header: "Hosting Server",
+        accessor: "hostingServer"
+      },
+      {
+        Header: "Reporting Controller",
+        accessor: "reportingController"
+      },
+      {
+        Header: "VRF",
+        accessor: "vrf"
+      },
+      {
+        Header: "BD",
+        accessor: "bd"
+      },
+      {
+        Header: "Application Profile",
+        accessor: "ap"
+      },
+      {
+        Header: "EPG",
+        accessor: "epgName"
+      },
+      {
+        Header: "EPG Health",
+        accessor: "epgHealth",
+        Cell: row => {
+
+          let epgcolor = "56b72a";
+          if (row.value < 70) {
+            epgcolor = "#ffcc00";
           }
-        ]
+          if (row.value < 40) {
+            epgcolor = "#FF6666";
+          }
+          return <Button style={{ width: "66px", backgroundColor: epgcolor, opacity: "1" }} disabled={true} key="dd" type="btn--success" size="btn--small">{row.value}</Button>
+        }
+      },
+      {
+        Header: "Consul Node",
+        accessor: "consulNode"
+      },
+      {
+        Header: "Node checks",
+        accessor: "nodeChecks",
+        width: 150,
+        Cell: row => {
+          return (<span>
+            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
+            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
+            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
+          </span>)
+        }
       }
     ]
+
+    const SERVICE_TABLE_HEADER = [
+      {
+        Header: "Service",
+        accessor: "service"
+      },
+      {
+        Header: "Service Instance",
+        accessor: "serviceInstance"
+      },
+      {
+        Header: "Port",
+        accessor: "port"
+      },
+      {
+        Header: "Service Kind",
+        accessor: "serviceKind"
+      },
+      {
+        Header: "Service Tags",
+        accessor: "serviceTags",
+        Cell: row => {
+          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
+        }
+      },
+      {
+        Header: "Service Checks",
+        accessor: "serviceChecks",
+        Cell: row => {
+          return (<span>
+            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
+            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
+            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
+          </span>)
+        }
+      }
+    ]
+
+
     this.state = {
       row: this.props.data,
       columns: HEADER_DETAILS,
-      loading: this.props.loading
+      loading: this.props.loading,
+      serviceColumn: SERVICE_TABLE_HEADER
     }
   }
   componentWillReceiveProps(newprops) {
     this.setState({ loading: newprops.loading })
     this.setState({ row: newprops.data })
   }
+
+  CONSUL_handleRowExpanded(newExpanded, index, event) {
+    // we override newExpanded, keeping only current selected row expanded
+    this.props.setExpand(index[0])
+  }
+  
   render() {
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
-        <Table loading={this.state.loading} className="-striped -highlight" noDataText="No endpoints found for the given Application in the given Tenant." data={this.state.row} columns={this.state.columns}></Table>
+        <Table loading={this.state.loading}
+          className="-striped -highlight"
+          noDataText="No endpoints found for the given Application in the given Tenant."
+          data={this.state.row}
+          columns={this.state.columns}
+          onPageChange={() => this.props.resetExpanded()}
+          expanded={this.props.expanded}
+          onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
+          SubComponent={row => {
+            return (
+              <Table
+                data={row.original.services}
+                columns={this.state.serviceColumn}
+                noDataText={"No services found"}
+                defaultPageSize={100}
+                minRows={0}
+                showPagination={false} />
+            )
+          }}>
+
+        </Table>
       </div>
     )
 

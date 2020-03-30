@@ -61,10 +61,13 @@ class Container extends Component {
 
         this.state = {
             "data": [],
-            loading: true
+            loading: true,
+            expanded: {}
         };
 
         this.handleBackClick = this.handleBackClick.bind(this);
+        this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
+        this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
 
         let reloader = setInterval(this.reload, 30000);
     }
@@ -149,7 +152,6 @@ class Container extends Component {
     }
 
     fetchData() {
-    
     
         let payload = {
             query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
@@ -238,8 +240,17 @@ class Container extends Component {
         window.location.href = "app.html";
     }
 
+    CONSUL_setExpand(index) {    
+        let { expanded } = this.state;
+        let newExpanded = Object.assign( expanded, { [ index ]: (expanded[index] === true) ? false : true} )
+        this.setState({ expanded: newExpanded })
+    }
+
+    CONSUL_resetExpanded() {
+        this.setState({ expanded: {} })
+    }
+
     reload(loading) {
-      
         if(!this.state.loading){
         if(loading){
             this.setState({loading:true})
@@ -249,9 +260,9 @@ class Container extends Component {
     }
 
     render() {
-        console.log("Container : " + this.reload);
+        console.log("[render] Container"  );
         let title = " | Details";
-        let apptext = " List of Applications";
+        let apptext = " " + result['appProfileName'];
 
         let noEndpointsElement = null;
         if (this.state.data.length) {
@@ -268,7 +279,14 @@ class Container extends Component {
                     {/* <DetailsTable data={this.state.data} appId={params_appid} tn={params_tn} onReload={this.reload} /> */}
                     {/* <button className="button view-button" onClick={this.handleBackClick}> Back </button> */}
                     {/* {noEndpointsElement} */}
-                    <DataTable loading={this.state.loading} data={this.state.data} onReload={this.reload}></DataTable>
+                    <DataTable 
+                        expanded={this.state.expanded} 
+                        setExpand={this.CONSUL_setExpand} 
+                        resetExpanded={this.CONSUL_resetExpanded} 
+                        loading={this.state.loading} 
+                        data={this.state.data} 
+                        onReload={this.reload}>
+                    </DataTable>
                 </div>
             </div>
         )

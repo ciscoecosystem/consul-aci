@@ -32,11 +32,19 @@ var legend = [
     trans: 2
   },
   {
-    name: "Node",
+    name: "Service",
     level: "#C5D054",
-    label: "Node",
+    label: "Service",
     type: "#C5D054",
     trans: 2.9
+  },
+  {
+    name: "EP",
+    level: "grey",
+    label: "Non-Service",
+    sub_label:"End Point",
+    type: "grey",
+    trans: 3.9
   }
 ];
 
