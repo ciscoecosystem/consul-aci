@@ -6,17 +6,12 @@ import './style.css';
 import clone from 'clone';
 import request from 'request';
 
-var dataList;
 var treeNumber = 0
 export default class TestComponent extends React.Component {
 
     constructor(props) {
         super(props);
         this.getInList = this.getInList.bind(this);
-        this.newData = clone(props.data)
-        dataList = this.newData.map(item=>{
-            return [item];
-        })
     }
 
     getInList(item) {
@@ -34,13 +29,14 @@ export default class TestComponent extends React.Component {
             "type": "#27AAE1",
             "trans": 0
         }
-
+        let nodeData = (this.props.data === undefined) ? [] : this.props.data
+        console.log("NodeData ", nodeData);
         return (
             <div>
                 <Legend  reloadController={this.props.reloadController}/>
                 <div id="treeWrapper">
                     <Tree 
-                        data={this.props.data}
+                        data={nodeData}
                         treeNum={treeNumber+1}
                         orientation='vertical'
                         textLayout={{ textAnchor: "middle", y: 0 }}
@@ -56,7 +52,6 @@ export default class TestComponent extends React.Component {
                     />
 
                 </div >
-
             </div>
         );
     }

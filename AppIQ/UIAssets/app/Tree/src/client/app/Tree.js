@@ -592,14 +592,15 @@ export default class Tree extends React.Component {
               openDetailsPage={this.openDetailsPage}
               data={this.state.detailsPane.data}
             />
-          ) : null}
-
-          {this.state.detailsPage.visible ? (
+          ) : null}   
+          {/* {this.state.detailsPage.visible ? (
             <DetailsPage
               data = {this.state.detailsPage.data}
               closeDetailsPage={this.closeDetailsPage}
             />
           ) : null}
+
+        */}
         </div>
       </div>
     );

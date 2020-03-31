@@ -1,4 +1,4 @@
-__author__ = 'nilayshah'
+"""This class returns recomanded EP"""
 
 class generateD3Dict(object):
     # Put it in another file named 'generate_d3.py'
@@ -85,6 +85,8 @@ class generateD3Dict(object):
                         ep_dict['label'] =  ep_node["nodeName"] #",".join(epg_service_list)
 
                         ep_dict['attributes'] = {
+                            "Node" : ep_node["nodeName"],
+                            
                             # 'IP': ep_node['IP'],
                             # 'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
                             # 'VMM-Domain': ep_nodes[0]['VMM-Domain']
@@ -99,7 +101,15 @@ class generateD3Dict(object):
                                 node_dict['label'] = service['serviceInstance'][:11] + '..'
                             else:
                                 node_dict['label'] = service['serviceInstance']
-                            node_dict['attributes'] = {}
+
+                            node_dict['attributes'] = {
+                                "Service" : service['service'],
+                                "Service Instance" : service['serviceInstance'],
+                                "Port" : service['port'],
+                                "Service Kind" : service['serviceKind'],
+                                "Service Tag" : service['serviceTags'],
+                                "Service Checks" : service['serviceChecks']
+                            }
                             ep_dict['children'].append(node_dict)
                         
                         epg_dict['children'].append(ep_dict)

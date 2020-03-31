@@ -13,6 +13,7 @@ from flask import Flask
 from multiprocessing import Process, Value
 from custom_logger import CustomLogger
 import consul_merge # TODO: 
+import requests
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
 app.debug = True
@@ -173,30 +174,59 @@ def set_polling_interval(interval):
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for set_polling_interval: " + str(end_time - start_time))
-    
+
+
+def get_agent_list():
+    agent_list = [
+        {
+            "ip": "10.23.239.14",
+            "port" : "8500",
+            "token": ""
+        }
+    ]
+    return agent_list
+
 
 def apps(tenant):
     start_time = datetime.datetime.now()
     try:
         logger.info("UI Action app.json started")
         
-        appsList = database_object.get_app_list()
-        app_dict = {}
-        app_list = []
-        for each in appsList:
-            temp_dict = {'appProfileName': each.get('appName'), 'isViewEnabled': each.get('isViewEnabled'),
-                         'health': str(each.get('appHealth')), 'appId': each.get('appId')}
-            app_list.append(temp_dict)
-        app_dict['app'] = app_list
+        agent_list = get_agent_list()
+        datacenter_dict = {}
+        datacenter_set = set()
+        datacenter_list = []
+        if agent_list:
+            for agent in agent_list:
+                agent_datacenters = consul_agents_datacenter(agent['ip'], agent['port'], agent['token'])
+                for datacenter in agent_datacenters: datacenter_set.add(datacenter)
+            logger.info("datacenters : {}".format(datacenter_set))
+
+        for datacenter in datacenter_set:
+            datacenter_list.append({"datacenterName" : datacenter, "isViewEnabled" : True})
+        datacenter_dict['datacenters'] = datacenter_list
+
         
         logger.info("UI Action app.json ended")
-        return json.dumps({"instanceName":get_instance_name(),"payload": app_dict, "status_code": "200", "message": "OK"})
+        return json.dumps({"agentIP":"10.23.239.14", "payload": datacenter_dict, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Could not fetch applications from databse. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not fetch applications from databse."})
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for APPS: " + str(end_time - start_time))
+
+
+def consul_agents_datacenter(agent_ip, agent_port, agent_token):
+    """This will return all the datacenters of an agent"""
+    try:
+        agent_resp = requests.get('http://{}:{}/v1/catalog/datacenters'.format(agent_ip, agent_port))
+        datacenter_list = json.loads(agent_resp.content)
+        return datacenter_list
+    except Exception as e:
+        logger.info("Error in loading datacenter list. " + e)
+        return []
+
 
 def get_mapping_dict_target_cluster(mapped_objects):
     """
@@ -928,7 +958,7 @@ def tree(tenant, appId):
         mapping(tenant, appId)
         merged_data = consul_merge.merge_aci_consul(tenant, 'data_centre', aci_util_obj)
         response = json.dumps(d3Object.generate_d3_compatible_dict(merged_data))
-        return json.dumps({"instanceName":get_instance_name(),"payload": response, "status_code": "200", "message": "OK"})
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error while building tree from run.json for app:" + str(appId) + ". Error:" + str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the View."})
@@ -1129,34 +1159,12 @@ def get_details(tenant, appId):
         start_time = datetime.datetime.now()
         logger.info("UI Action details.json started")
         
-        # aci_util_obj = aci_utils.ACI_Utils()
-
-        # details_list = []
-        
-        # mapping(tenant, appId)
-        # merged_data = merge_aci_appd(tenant, appId, aci_util_obj)
-        # #get_to_Epg_traffic("uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-Ord")
-
-        # for each in merged_data:
-        #     epg_health = aci_util_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
-        #     node = get_node_from_interface(each['Interfaces'])
-        #     interfaces = get_all_interfaces(each['Interfaces']) 
-        #     details_list.append({
-        #             'IP': each.get('IP'),
-        #             'epgName': each.get('EPG'),
-        #             'epgHealth': epg_health,
-        #             'endPointName': each.get('VM-Name'),
-        #             'tierName': each.get('tierName'),
-        #             'tierHealth': each.get('tierHealth'),
-        #             'dn': each.get('dn'),
-        #             'mac': each.get('CEP-Mac'),
-        #             'interface': str(interfaces),
-        #             'node': str(node)
-        #         })
+        # consul_details can be merged with this function,
+        # or put in a parsing/ class
         details_list = consul_details(tenant)
         logger.info("UI Action details.json ended: " + str(details_list))
         # details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
-        return json.dumps({"instanceName":get_instance_name(),"payload": details_list, "status_code": "200", "message": "OK"})
+        return json.dumps({"agentIP":"10.23.239.14","payload": details_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Could not load the Details. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the Details."})

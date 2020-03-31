@@ -1,6 +1,11 @@
 import React from "react";
 import "./DetailsPane.css";
-import {Icon} from "blueprint-react";
+import { Icon } from "blueprint-react";
+
+const successColor = "#6ebe4a";
+const failColor = "#e2231a";
+const warningColor = "#f49141";
+
 class DetailsPane extends React.Component {
   constructor(props) {
     super(props);
@@ -13,7 +18,6 @@ class DetailsPane extends React.Component {
         CRITICAL: "red"
       }
     };
-    console.log(this.state.data)
   }
   componentWillReceiveProps(newData) {
     this.setState({ data: newData.data });
@@ -36,42 +40,26 @@ class DetailsPane extends React.Component {
       <div>
         <div id="myNav" className="overlay-pane">
           <div className="pane-header">
-         
-              <span className="health-icon">
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 20 20"
-                  style={{ fontSize: "26px" }}
-                >
-                  <path
-                    fill={this.healthColor()}
-                    d="M18 3C18 3 18 3 18 3 18 6 18 10 16 13 15 15 13 18 10 20 10 20 10 20 10 20 10 20 10 20 10 20 7 18 5 15 4 13 2 10 2 6 2 3 2 3 2 3 2 3L10 0C10 0 10 0 10 0L18 3ZM10 14C10 14 10 14 10 14L14 11C15 10 15 9 15 9 15 8 15 7 14 7 14 7 13 6 12 6 12 6 12 6 12 6 11 6 11 7 11 7 11 7 11 7 11 7 10 7 10 7 10 7 10 7 10 7 10 7 10 7 9 7 9 7 9 7 9 6 8 6 8 6 8 6 8 6 7 6 6 7 6 7 5 7 5 8 5 9 5 9 5 9 5 9 5 10 5 10 5 10 6 10 6 10 6 10 6 11 6 11 6 11 6 11 6 11 6 11L10 14C10 14 10 14 10 14Z"
-                    id="path-1"
-                  />
-                </svg>
-              </span>
-           
-            <span style={{ verticalAlign: "super", fontSize:"1.3em",fontWeight:550 }}>
-               {this.props.data.sub_label || this.props.data.label || this.props.data.name + " Information"}
+
+            <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
+              {this.props.data.name}
             </span>
-              
-              <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
-              
-              {this.state.data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(this.state.data)}>&nbsp;</Icon> : null}
+
+            <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
+
+            {this.state.data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(this.state.data)}>&nbsp;</Icon> : null}
           </div>
           <div className="panel-body">
-		  <AppdData data={this.state.data}></AppdData>
             <div className="info-div">
-			{this.state.data.level == "grey" ? 
-			<div>EP Count : {Object.keys(this.state.data.attributes).length}</div> : null
-			}
+              {this.state.data.level == "grey" ?
+                <div>EP Count : {Object.keys(this.state.data.attributes).length}</div> : null
+              }
               {this.state.data.name} Information
               <CardData
-			   name = {this.state.data.sub_label || false}
-			  level = {this.state.data.level || false}
+                name={this.state.data.sub_label || false}
+                level={this.state.data.level || false}
                 attributes={this.state.data.attributes}
-                
+
               />
             </div>
 
@@ -92,7 +80,7 @@ class DetailsPane extends React.Component {
                 />
               </div>
             ) : null}
-            
+
             {this.state.data.attributes.hasOwnProperty("HealthRuleViolations") ? (
               <div className="info-div">
                 HealthRuleViolations Information
@@ -111,79 +99,98 @@ class DetailsPane extends React.Component {
 function NoInformation() {
   return <div className="no-info" >No Infomation</div>;
 }
-function AppdData(props){
-	if(props.data.level == "grey"){
-	return null;
-	}
-	else if(props.data.name == "Node"){
-	return null;
-	}
-	else{
-		let rows = []
-		
-		if(props.data.name == "AppProf"){
-			 rows = (
-			[<tr>
-		<td width="30%">Name</td><td width="70%">{props.data.label}</td>
-		</tr>,
-		<tr>
-		<td width="30%">App-Health</td><td width="70%">{props.data.attributes["App-Health"]}</td>
-		</tr>,
-		
-		]
-			)
-		}
-		else{
-			 rows = (
-			[<tr>
-		<td width="30%">Tier</td><td width="70%">{props.data.label}</td>
-		</tr>,
-		<tr>
-		<td width="30%">Tier-Health</td><td width="70%">{props.data.attributes["Tier-Health"]}</td>
-		</tr>,
-		
-		]
-			)
-		}
-		return (
-		<div className="info-div">AppDynamics Information
-		<table className="info-table">
-		{
-		rows
-		}
-		</table>
-		</div>
-		)
-	}
-}
-function CardData(props) {
-  console.log("Inside card");
-  let newCard = [];
+
+
+function CONSUL_serviceCard(props) {
+  let attributeOrder = ["Service", "Port", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+
   return (
     <table className="info-table">
-{props.name ?
+      {props.name ?
         <tr>
           <td width="30%">Name</td>
           <td width="70%">{props.name}</td>
         </tr> : null
-      }     
-	 {	props.level == "grey" ? 
-	
-			(
-			
-			
-				<tr>
-				<td width="30%" className="bold-font">MAC</td>
-				<td width="70%" className="bold-font">IP</td>
-				
-				</tr>
-			) : null
-		
-	}
+      }
+
+      {attributeOrder.map(key => {
+
+        // when value is simply string/number
+        if (
+          typeof props.attributes[key] == "string" ||
+          typeof props.attributes[key] == "number"
+        ) {
+          return (
+            <tr>
+              <td width="30%">{key}</td>
+              <td width="70%">{props.attributes[key]}</td>
+            </tr>
+          );
+          // when value is list
+        } else if (
+          Array.isArray(props.attributes[key]) &&
+          typeof props.attributes[key][0] == "string"
+        ) {
+              return (
+                <tr>
+                  <td width="30%"> {key} </td>
+                  <td width="70%">{props.attributes[key].join(", ")}</td>
+                </tr>
+              );
+        }
+        // special case for service checks
+        else if (key === "Service Checks") {
+          let checks = props.attributes[key];
+          return (
+            <tr>
+              <td width="30%">{key}</td>
+              <td width="70%">
+                <span>
+                  {(checks.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{checks.passing}&nbsp;&nbsp;</span>)}
+                  {(checks.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{checks.warning}&nbsp;&nbsp;</span>)}
+                  {(checks.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>)}
+                </span>
+              </td>
+            </tr>)
+        }
+      })}
+    </table>
+  );
+}
+
+
+function CardData(props) {
+  console.log("Inside card");
+
+  if ("Service" in props.attributes) {
+    return CONSUL_serviceCard(props);
+  }
+
+  return (
+    <table className="info-table">
+      {props.name ?
+        <tr>
+          <td width="30%">Name</td>
+          <td width="70%">{props.name}</td>
+        </tr> : null
+      }
+      {props.level == "grey" ?
+
+        (
+
+
+          <tr>
+            <td width="30%" className="bold-font">MAC</td>
+            <td width="70%" className="bold-font">IP</td>
+
+          </tr>
+        ) : null
+
+      }
       {Object.keys(props.attributes).map(key => {
-		  if(key == "App-Health" || key == "Tier-Health"){
-		return null;
-		}
+        if (key == "App-Health" || key == "Tier-Health") {
+          return null;
+        }
         else if (
           typeof props.attributes[key] == "string" ||
           typeof props.attributes[key] == "number"
@@ -222,16 +229,16 @@ function CardData(props) {
   );
 }
 function HealthRuleViolations(props) {
-  if (props.data && props.data.constructor == Array && props.data.length>0) {
-	  let keys = [
-                    "Violation Id",
-					"Status",
-					"Severity",
-                    "Affected Object",
-                    "Start Time",
-                    "End Time",
-                    "Description"
-                  ]
+  if (props.data && props.data.constructor == Array && props.data.length > 0) {
+    let keys = [
+      "Violation Id",
+      "Status",
+      "Severity",
+      "Affected Object",
+      "Start Time",
+      "End Time",
+      "Description"
+    ]
     return props.data.map(endPoint => {
       return (
         <table className="info-table">
