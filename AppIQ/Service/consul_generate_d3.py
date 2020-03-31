@@ -49,11 +49,18 @@ class generateD3Dict(object):
                     # distinct_epg_tiers.add(epg_node['tierName'])
                     distinct_epg_ips.add(epg_node['IP'])
                 epg_service_list = set()
+                epg_service_detalis_list = []
 
                 for epg_node in epg_nodes:
                     service_list = epg_node.get("services", {})
                     for service in service_list:
                         epg_service_list.add(service.get("serviceInstance", ""))
+                        service_dict = {
+                                "Service" : service["serviceInstance"],
+                                "Port" : service["port"],
+                                "Service Checks" : service["serviceChecks"]
+                            }
+                        epg_service_detalis_list.append(service_dict)
 
 
                 epg_dict = {}
@@ -63,10 +70,11 @@ class generateD3Dict(object):
                 epg_dict['sub_label'] = epg_nodes[0]['EPG']
                 epg_dict['label'] = list(epg_service_list)[0] + ", ..." #",".join(epg_service_list)
                 epg_dict['attributes'] = {
-                    # 'VRF': epg_nodes[0]['VRF'],
-                    # 'BD': epg_nodes[0]['BD'],
-                    # 'Contracts': epg_nodes[0]['Contracts'],
-                    # 'Nodes': list(set([x['nodeName'] for x in epg_nodes])),
+                    'VRF': epg_nodes[0]['VRF'],
+                    'BD': epg_nodes[0]['BD'],
+                    'Contracts': epg_nodes[0]['Contracts'],
+                    'Nodes': list(set([x['nodeName'] for x in epg_nodes])),
+                    'Service_List' : epg_service_detalis_list
                 }
 
                 epg_dict['children'] = []
@@ -76,18 +84,28 @@ class generateD3Dict(object):
                     ep_nodes = filter(lambda x: x['IP'] == epg_ip, epg_nodes)
 
                     for ep_node in ep_nodes:
-                        epg_service_list = [ x["serviceInstance"] for x in ep_node["services"]]
+                        ep_service_list = []
+                        for service in ep_node["services"]:
+                            service_dict = {
+                                "Service" : service["serviceInstance"],
+                                "Port" : service["port"],
+                                "Service Checks" : service["serviceChecks"]
+                            }
+                            ep_service_list.append(service_dict)
 
                         ep_dict = {}
                         ep_dict['name'] = "EP"
                         ep_dict['type'] = '#2DBBAD'
-                        ep_dict['sub_label'] = ep_nodes[0]['VM-Name']
+                        ep_dict['sub_label'] = ep_nodes[0]['VM-Name']   # ep_node should be instead of ep_nodes[0]
                         ep_dict['label'] =  ep_node["nodeName"] #",".join(epg_service_list)
 
                         ep_dict['attributes'] = {
-                            # 'IP': ep_node['IP'],
-                            # 'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
-                            # 'VMM-Domain': ep_nodes[0]['VMM-Domain']
+                            "Node" : ep_node["nodeName"],
+                            "Node Checks" : ep_node["nodeCheck"]
+                            "Services_List" : ep_service_list
+                            'IP': ep_node['IP'],
+                            'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
+                            'VMM-Domain': ep_nodes[0]['VMM-Domain'] # ep_node should be instead of ep_nodes[0]
                         }
 
                         ep_dict['children'] = []
@@ -99,7 +117,14 @@ class generateD3Dict(object):
                                 node_dict['label'] = service['serviceInstance'][:11] + '..'
                             else:
                                 node_dict['label'] = service['serviceInstance']
-                            node_dict['attributes'] = {}
+                            node_dict['attributes'] = {
+                                "Service" : service['Service'],
+                                "Service Instance" : service['serviceInstance'],
+                                "Port" : service['port'],
+                                "Service Kind" : service['serviceKind'],
+                                "Service Tag" : service['serviceTags'],
+                                "Service Checks" : service['serviceChecks']
+                            }
                             ep_dict['children'].append(node_dict)
                         
                         epg_dict['children'].append(ep_dict)
