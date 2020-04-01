@@ -79,7 +79,7 @@ display: flex;
 }
 .info-table{
 margin-top: 5px;
-margin-bottom: 7px;
+margin-bottom:10px;
 background: #fafafa;
 table-layout: auto; 
 width: 100%;

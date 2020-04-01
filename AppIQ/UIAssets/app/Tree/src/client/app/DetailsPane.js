@@ -1,6 +1,6 @@
 import React from "react";
-import "./DetailsPane.css";
 import { Icon } from "blueprint-react";
+import "./DetailsPane.css";
 
 const successColor = "#6ebe4a";
 const failColor = "#e2231a";
@@ -8,136 +8,11 @@ const warningColor = "#f49141";
 
 const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
-
-class DetailsPane extends React.Component {
-  constructor(props) {
-    super(props);
-    this.healthColor = this.healthColor.bind(this);
-    this.state = {
-      data: this.props.data,
-      color: {
-        NORMAL: "#2e8b57",
-        WARNING: "orange",
-        CRITICAL: "red"
-      }
-    };
-  }
-  componentWillReceiveProps(newData) {
-    this.setState({ data: newData.data });
-  }
-  healthColor() {
-    const health =
-      this.state.data.attributes["App-Health"] ||
-      this.state.data.attributes["Tier-Health"] ||
-      this.state.data.attributes["Node-Health"] ||
-      false;
-    if (health) {
-      return this.state.color[health];
-    } else {
-      return "gray";
-    }
-  }
-
-  render() {
-    let { data } = this.state;
-
-    const CardRender = () => {
-      switch (data.name) {
-        case NODE_SERVICE_NAME:
-          return (
-            <React.Fragment>
-              {data.name} Information
-              <CONSUL_ServiceCard
-                name={data.sub_label || false}
-                level={data.level || false}
-                attributes={data.attributes}
-              />
-            </React.Fragment>)
-
-        case NODE_EP_NAME:
-          return (
-            <React.Fragment>
-              {data.name} Information
-            <CONSUL_EPCard
-                name={data.sub_label || false}
-                attributes={data.attributes}
-              />
-            </React.Fragment>)
-
-        default:
-          return (
-            <React.Fragment>
-              {data.name} Information
-             <CardData
-                name={data.sub_label || false}
-                level={data.level || false}
-                attributes={data.attributes}
-              />
-            </React.Fragment>)
-
-      }
-    }
-
-    return (
-      <div>
-        <div id="myNav" className="overlay-pane">
-          <div className="pane-header">
-
-            <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
-              {data.sub_label || data.label}
-            </span>
-
-            <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
-
-            {data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(data)}>&nbsp;</Icon> : null}
-          </div>
-
-          <div className="panel-body">
-            <div className="info-div">
-              {/* {data.level == "grey" ?
-                <div>EP Count : {Object.keys(data.attributes).length}</div> : null
-              } */}
-              {CardRender()}
-            </div>
-
-
-            {data.attributes.hasOwnProperty("Contracts") && data.attributes["Contracts"] !== [] ? (
-              <div className="info-div">
-                Contracts Information
-                <ContractDetails
-                  attributes={data.attributes.Contracts}
-                />
-              </div>
-            ) : null}
-
-            {/* {data.attributes.hasOwnProperty("ServiceEndpoints") ? (
-              <div className="info-div">
-                ServiceEndpoints Information
-                <ServiceEndpoints
-                  data={data.attributes["ServiceEndpoints"]}
-                />
-              </div>
-            ) : null}
-
-            {data.attributes.hasOwnProperty("HealthRuleViolations") ? (
-              <div className="info-div">
-                HealthRuleViolations Information
-                <HealthRuleViolations
-                  data={data.attributes["HealthRuleViolations"]}
-                />
-              </div>
-            ) : null} */}
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
+const NODE_EPG_NAME = "EPG"
 
 function NoInformation() {
   return <div className="no-info" >No Infomation</div>;
 }
-
 
 function CONSUL_ServiceCard(props) {
   let attributeOrder = ["Service", "Port", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
@@ -148,6 +23,10 @@ function CONSUL_ServiceCard(props) {
 function CONSUL_EPCard(props) {
   let { attributes } = props;
 
+  if (props.level === "grey") { // leat node of EP when it has no service under it
+    return CardData(props)
+  }
+
   let attributeOrder = ["IP", "Interfaces", "VMM-Domain"];
   let nodeDetailOrder = ["Node", "Node Checks"];
   let serviceOrder = ["Service", "Port", "Service Checks"]
@@ -157,14 +36,57 @@ function CONSUL_EPCard(props) {
 
     {('Node' in attributes) &&
       <span>
-        Consul Service
+        Consul Node
       {CardData(Object.assign(props, { name: undefined }), nodeDetailOrder)}
       </span>}
 
     {('Services_List' in attributes) &&
       <span className="mt-2">
-        All Services
-      {attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))}
+        Consul Services
+     {(attributes.Services_List.length > 0) ? attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))
+          : NoInformation()}
+      </span>}
+
+  </React.Fragment>
+  )
+
+}
+
+function CONSUL_EPGCard(props) {
+  const { attributes } = props;
+
+  const infoOrder = ["VRF", "BD"];
+  const nodeDetailOrder = ["Node", "Node Checks"];
+  const serviceOrder = ["Service", "Port", "Service Checks"]
+
+  return (<React.Fragment>
+    {/* 1. epg information */}
+    {CardData(props, infoOrder)}
+
+    {/* 2. contract information */}
+    {('Contracts' in attributes) &&
+      <span>
+        Contracts Information
+        <ContractDetails
+          attributes={attributes.Contracts}
+        />
+      </span>}
+
+    {/* 3. consul node */}
+    {('Nodes' in attributes) &&
+      <span>
+        Node Services
+        {(attributes.Nodes.length > 0) ?
+          attributes.Nodes.map(nodeData => CardData(Object.assign({}, { attributes: nodeData }), nodeDetailOrder))
+          : NoInformation()}
+      </span>}
+
+    {/* 4. service list  */}
+    {('Services_List' in attributes) &&
+      <span className="mt-2">
+        Consul Services
+      {(attributes.Services_List.length > 0) ? attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))
+          : NoInformation()}
       </span>}
 
   </React.Fragment>
@@ -173,9 +95,8 @@ function CONSUL_EPCard(props) {
 }
 
 function CardData(props, attributeOrder = undefined) {
-  console.log("Inside card", props, attributeOrder);
-
   let { attributes, name } = props;
+
   if (attributeOrder === undefined || Object.keys(attributeOrder).length === 0) {
     attributeOrder = Object.keys(props.attributes);
   }
@@ -237,69 +158,6 @@ function CardData(props, attributeOrder = undefined) {
   );
 }
 
-
-/* // Remove in CONSUL
-function HealthRuleViolations(props) {
-if (props.data && props.data.constructor == Array && props.data.length > 0) {
-    let keys = [
-    "Violation Id",
-    "Status",
-    "Severity",
-    "Affected Object",
-    "Start Time",
-    "End Time",
-    "Description"
-  ]
-return props.data.map(endPoint => {
-return (
-<table className="info-table">
-    {keys.map(key => {
-      if (
-        typeof endPoint[key] == "string" ||
-        typeof endPoint[key] == "number"
-      ) {
-        return (
-          <tr>
-            <td width="30%">{key}</td>
-            <td width="70%">{endPoint[key]}</td>
-          </tr>
-        );
-      }
-    })}
-  </table>
-  );
-});
-}
-return NoInformation();
-}
- 
-function ServiceEndpoints(props) {
-if (props.data && props.data.constructor == Array && props.data.length > 0) {
-return props.data.map(endPoint => {
-return (
-<table className="info-table">
-    {Object.keys(endPoint).map(key => {
-      if (
-        typeof endPoint[key] == "string" ||
-        typeof endPoint[key] == "number"
-      ) {
-        return (
-          <tr>
-            <td width="30%">{key}</td>
-            <td width="70%">{endPoint[key]}</td>
-          </tr>
-        );
-      }
-    })}
-  </table>
-  );
-});
-}
-return NoInformation();
-}
-*/
-
-
 function ContractDetails(props) {
   if (props.attributes && props.attributes.constructor == Array && props.attributes.length > 0) {
     return (
@@ -316,5 +174,118 @@ function ContractDetails(props) {
     );
   }
   return NoInformation();
+}
+
+class DetailsPane extends React.Component {
+  constructor(props) {
+    super(props);
+    this.healthColor = this.healthColor.bind(this);
+    this.state = {
+      data: this.props.data,
+      color: {
+        NORMAL: "#2e8b57",
+        WARNING: "orange",
+        CRITICAL: "red"
+      }
+    };
+  }
+  componentWillReceiveProps(newData) {
+    this.setState({ data: newData.data });
+  }
+  healthColor() {
+    const health =
+      this.state.data.attributes["App-Health"] ||
+      this.state.data.attributes["Tier-Health"] ||
+      this.state.data.attributes["Node-Health"] ||
+      false;
+    if (health) {
+      return this.state.color[health];
+    } else {
+      return "gray";
+    }
+  }
+
+  render() {
+    let { data } = this.state;
+
+    const CardRender = () => {
+      switch (data.name) {
+        case NODE_SERVICE_NAME:
+          return (
+            <React.Fragment>
+              {data.name} Information
+              <CONSUL_ServiceCard
+                name={data.sub_label || false}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+        case NODE_EP_NAME:
+          return (
+            <React.Fragment>
+              {data.name} Information
+            <CONSUL_EPCard
+                name={(data.level === "grey") ? undefined : (data.sub_label || false)}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+        case NODE_EPG_NAME:
+          return (
+            <React.Fragment>
+              {data.name} Information
+              <CONSUL_EPGCard
+                name={data.sub_label || false}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+        default:
+          return (
+            <React.Fragment>
+              {data.name} Information
+             <CardData
+                name={data.sub_label || false}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+      }
+    }
+
+    return (
+      <div>
+        <div id="myNav" className="overlay-pane">
+          <div className="pane-header">
+
+            <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
+              {data.sub_label || data.label}
+            </span>
+
+            <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
+
+            {data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(data)}>&nbsp;</Icon> : null}
+          </div>
+
+          <div className="panel-body">
+            <div className="info-div">
+              {data.level == "grey" ?
+                <React.Fragment>
+                  <div>EP Count : {Object.keys(data.attributes).length}</div>
+
+                </React.Fragment>
+                : null
+              }
+              {CardRender()}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 export default DetailsPane;
