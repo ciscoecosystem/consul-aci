@@ -1,5 +1,6 @@
 import React from 'react'
 import Button from './Button'
+import { PROFILE_NAME } from "../constants.js";
 import './style.css'
 
 class AppInfo extends React.Component {
@@ -11,19 +12,18 @@ class AppInfo extends React.Component {
 
         this.tenantName = props.tenantName;
     }
-    
     handleMapClick(event) {
-        localStorage.setItem("appProfileName", event.target.getAttribute("value"));
-        window.location.href = "mapping.html?appId=" + encodeURIComponent(event.target.getAttribute("value")) + "&appProfileName=" + encodeURIComponent(event.target.getAttribute("appProfileName")) + "&tn=" + encodeURIComponent(this.tenantName);
+        localStorage.setItem(PROFILE_NAME, event.target.getAttribute("value"));
+        window.location.href = `mapping.html?${PROFILE_NAME}=` + encodeURIComponent(event.target.getAttribute(PROFILE_NAME)) + "&tn=" + encodeURIComponent(this.tenantName);
     }
     
     handleViewClick(event) {
-        console.log("View : " + this.props.data.appProfileName );
-        window.location.href = "tree.html?appId=" + encodeURIComponent(event.target.getAttribute("value")) + "&tn=" + encodeURIComponent(this.tenantName);
+        console.log("View : " + this.props.data[PROFILE_NAME] );
+        window.location.href = `tree.html?${PROFILE_NAME}=` + encodeURIComponent(event.target.getAttribute(PROFILE_NAME)) + "&tn=" + encodeURIComponent(this.tenantName);
     }
     
     handleDetailsClick(event) {
-        window.location.href = "details.html?appId=" + encodeURIComponent(event.target.getAttribute("value")) + "&tn=" + encodeURIComponent(this.tenantName);
+        window.location.href = `details.html?${PROFILE_NAME}=` + encodeURIComponent(event.target.getAttribute(PROFILE_NAME)) + "&tn=" + encodeURIComponent(this.tenantName);
     }
 
     render() {
@@ -39,10 +39,13 @@ class AppInfo extends React.Component {
         }
         let highlightClass = highlight==false ? "light" : "dark";
         let classes =  highlightClass + " app-name";
+
+        let CONSUL_btnMoreProps = { [PROFILE_NAME] : this.props.data[PROFILE_NAME] }
+
         return (
                 <tr className={highlightClass}>
                     <td className="app-name" width="55%">
-                        {this.props.data.appProfileName}
+                        {this.props.data[PROFILE_NAME]}
                     </td>
                     <td width="15%">  
                     <center>
@@ -51,17 +54,17 @@ class AppInfo extends React.Component {
                     </td>
                     <td width="10%">  
                         <center>
-                        <Button onClicked={this.handleDetailsClick} type="Details" appProfileName={this.props.data.appProfileName} appId={this.props.data.appId}/> 
+                        <Button onClicked={this.handleDetailsClick} type="Details" {...CONSUL_btnMoreProps}/> 
                         </center>                
                     </td>
                     <td width="10%">
                         <center>
-                            <Button onClicked={this.handleMapClick} type="Map" appProfileName={this.props.data.appProfileName} appId={this.props.data.appId}/> 
+                            <Button onClicked={this.handleMapClick} type="Map" {...CONSUL_btnMoreProps} appId={"123"}/> 
                         </center>               
                     </td>
                     <td width="10%">
                         <center>
-                            <Button onClicked={this.handleViewClick} type="View" enable={this.props.data.isViewEnabled} appProfileName={this.props.data.appProfileName} appId={this.props.data.appId}/>
+                            <Button onClicked={this.handleViewClick} type="View" enable={this.props.data.isViewEnabled} {...CONSUL_btnMoreProps}/>
                         </center>
                     </td>
                 </tr>

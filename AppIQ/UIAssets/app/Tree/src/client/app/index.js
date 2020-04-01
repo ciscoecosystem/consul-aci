@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import TestComponent from './TestComponent.js';
 import Header from './Header.js'
+import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME } from "../../../../../constants.js"
 
 var treedata;
 var key = 0;
@@ -36,90 +37,6 @@ window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
 window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
 var headerInstanceName;
-
-function getData(asyncCall) {
-    var apicHeaders = new Headers();
-
-    var urlToParse = location.search;
-    let urlParams = {};
-    urlToParse.replace(
-        new RegExp("([^?=&]+)(=([^&]*))?", "g"),
-        function ($0, $1, $2, $3) {
-            urlParams[$1] = $3;
-        }
-    );
-    let result = urlParams;
-
-    let payload = { query: 'query{Run(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){response}}' }
-    let xhr = new XMLHttpRequest();
-    let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
-	
-    try {
-      console.log("opening post")
-        xhr.open("POST", url,false);
-
-        xhr.setRequestHeader("Content-type", "application/json");
-        xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-        xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-        console.log("header set")
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4){
-                if(xhr.status == 200) {
-                    let json = JSON.parse(xhr.responseText);
-                    if('errors' in json) {
-                        // Error related to query
-                        localStorage.setItem('message', JSON.stringify(json.errors));
-                        const message_set = true;
-                        window.location.href = "index.html?gqlerror=1";
-                    }
-                    else {
-                        // Response successful
-                        const response = JSON.parse(json.data.Run.response);
-                        if(response.status_code != "200") {
-                            // Problem with backend fetching data
-                            const message = {"errors": [{
-                                "message": response.message
-                            }]}
-                            localStorage.setItem('message', JSON.stringify(message.errors));
-                            const message_set = true;
-                            window.location.href = "index.html?gqlerror=1";
-                        }
-                        else {
-                            // Success
-                            var treedata_raw = JSON.parse(json.data.Run.response).payload;
-                            headerInstanceName = JSON.parse(json.data.Run.response).instanceName;
-                            treedata = JSON.parse(treedata_raw);
-                        }
-                    }
-                }
-                else {
-                    // Status code of XHR request not 200
-                    console.log("Cannot fetch data to fetch Tree data.");
-                    if(typeof message_set !== 'undefined') {
-                        const message = {"errors": [{"message": "Error while fetching data for Tree. Status code" + xhr.status}]}
-                        localStorage.setItem('message', JSON.stringify(message.errors));
-                    }
-                    window.location.href = "index.html?gqlerror=1";
-                }
-            }
-        }
-        console.log("sending post")
-        xhr.send(JSON.stringify(payload));
-    }
-    catch(except) {
-        console.log("Cannot fetch data to fetch Tree data.")
-        if(typeof message_set == 'undefined') {
-            const message = {"errors": [{
-                "message": "Error while fetching data for Tree"
-              }]}
-            localStorage.setItem('message', JSON.stringify(message.errors));
-        }
-
-        window.location.href = "index.html?gqlerror=1";
-    }
-    key = key + 1;
-    return true;
-}
 
 function getStaticData() {
     let rawData = [
@@ -499,52 +416,128 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            reloadCount : 0,
+            result: {}
         }
 
         this.reload = this.reload.bind(this);
-       
+        this.getData = this.getData.bind(this);
+    }
+
+    componentWillMount(){
+      document.body.style.overflow = "scroll"
+    }
+
+    componentDidMount() {
+      this.getData();
     }
 
     reload() {
         // alert("Reloading");
         loadingBoxShow("block");
+        this.getData();
+    }
 
-        setTimeout( ()=>{
-			    this.setState({
-            reloadCount : this.state.reloadCount + 1,
-          })
-        },10);
-        
-    }
-    componentWillMount(){
-      document.body.style.overflow = "scroll"
-    }
+    getData() {  
+      var urlToParse = location.search;
+      let urlParams = {};
+      urlToParse.replace(
+          new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+          function ($0, $1, $2, $3) {
+              urlParams[$1] = $3;
+          }
+      );
+      let result = urlParams;
+
+      try{
+        result && this.setState({ result });
+      } catch(err){
+        console.error("set state error", err);
+      }
+  
+      let payload = TREE_VIEW_QUERY_PAYLOAD(result['tn'])
+      // let payload = { query: 'query{Run(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){response}}' }
+      let xhr = new XMLHttpRequest();
+      let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
+    
+      try {
+        console.log("opening post")
+          xhr.open("POST", url,false);
+  
+          xhr.setRequestHeader("Content-type", "application/json");
+          xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+          xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+          console.log("header set")
+          xhr.onreadystatechange = function () {
+              if (xhr.readyState == 4){
+                  if(xhr.status == 200) {
+                      let json = JSON.parse(xhr.responseText);
+                      if('errors' in json) {
+                          // Error related to query
+                          localStorage.setItem('message', JSON.stringify(json.errors));
+                          const message_set = true;
+                          window.location.href = "index.html?gqlerror=1";
+                      }
+                      else {
+                          // Response successful
+                          const response = JSON.parse(json.data.Run.response);
+                          if(response.status_code != "200") {
+                              // Problem with backend fetching data
+                              const message = {"errors": [{
+                                  "message": response.message
+                              }]}
+                              localStorage.setItem('message', JSON.stringify(message.errors));
+                              const message_set = true;
+                              window.location.href = "index.html?gqlerror=1";
+                          }
+                          else {
+                              // Success
+                              var treedata_raw = JSON.parse(json.data.Run.response).payload;
+                              headerInstanceName = JSON.parse(json.data.Run.response).agentIP; //  CONSUL : change from instanceName to agentIp
+                              treedata = JSON.parse(treedata_raw);
+                          }
+                      }
+                  }
+                  else {
+                      // Status code of XHR request not 200
+                      console.log("Cannot fetch data to fetch Tree data.");
+                      if(typeof message_set !== 'undefined') {
+                          const message = {"errors": [{"message": "Error while fetching data for Tree. Status code" + xhr.status}]}
+                          localStorage.setItem('message', JSON.stringify(message.errors));
+                      }
+                      window.location.href = "index.html?gqlerror=1";
+                  }
+              }
+          }
+          console.log("sending post")
+          xhr.send(JSON.stringify(payload));
+      }
+      catch(except) {
+          console.log("Cannot fetch data to fetch Tree data.")
+          if(typeof message_set == 'undefined') {
+              const message = {"errors": [{
+                  "message": "Error while fetching data for Tree"
+                }]}
+              localStorage.setItem('message', JSON.stringify(message.errors));
+          }
+  
+          window.location.href = "index.html?gqlerror=1";
+      }
+      key = key + 1;
+      return true;
+  }
+
     render() {
-		  var bool = getData();
-
       loadingBoxHide();
 
-      let apptext = " List of Applications";
+      let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
       let title = " | View"
       
-      if (bool) {
         return (
             <div>
                 <Header text={title} applinktext={apptext} instanceName={headerInstanceName}/>
                 <TestComponent key={key} data={treedata} reloadController={this.reload}/>
             </div>
         );
-      } else {
-        treedata = [];
-        key = key + 1;
-        return (
-          <div>
-              <Header text={title} applinktext={apptext} instanceName={headerInstanceName}/>
-              <TestComponent key={key} data={treedata} reloadController={this.reload}/>
-          </div>
-      );
-      }
     }
 }
 

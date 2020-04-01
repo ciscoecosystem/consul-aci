@@ -5,6 +5,7 @@ import Header from './Header'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppTable from "./AppTable"
+import { PROFILE_NAME } from "../constants.js";
 import './style.css'
 
 function getCookieVal(offset) {
@@ -48,7 +49,7 @@ var headerInstanceName;
 class Container extends React.Component {
     constructor(props) {
         super(props);
-        this.sortField = "appProfileName";
+        this.sortField = PROFILE_NAME;
         this.sortType = "asc";
         var urlToParse = window.location.search;
         let urlParams = {};
@@ -60,18 +61,23 @@ class Container extends React.Component {
         );
         let result = urlParams;
 
+        try {
          const rx = /Tenants:(.*)\|/g;
          const topUrl = window.top.location;
          const tenantNames = rx.exec(topUrl);
         
          this.tenantName = tenantNames[1];
+        } catch(err) {
+            console.error("error in getting tenants ", err);
+        }
 
         this.notify = this.notify.bind(this);
         this.getData = this.getData.bind(this);
         this.getStaticData = this.getStaticData.bind(this);
 
         this.getData();
-         //this.getStaticData();
+        //  this.getStaticData();
+
         this.state = {
             load : false,
             "jsonData": jsonData
@@ -133,8 +139,10 @@ class Container extends React.Component {
                 }
                 else {
                     // success
-                    headerInstanceName = JSON.parse(JSON.parse(main_data_raw).data.Application.apps).instanceName;
-                    jsonData = JSON.parse(JSON.parse(main_data_raw).data.Application.apps).payload.app;
+                    // headerInstanceName = JSON.parse(JSON.parse(main_data_raw).data.Application.apps).instanceName;
+                    headerInstanceName = JSON.parse(JSON.parse(main_data_raw).data.Application.apps).agentIP; // CONSUL: replace instanceName with agentIP
+                    jsonData = JSON.parse(JSON.parse(main_data_raw).data.Application.apps).payload.datacenters; // CONSUL: replace app with datacenters
+                    console.log("datacenter list ", jsonData);
                 }
             }
         }
@@ -146,18 +154,16 @@ class Container extends React.Component {
     }
 
     getStaticData() {
+
+        // CONSULT DATA
         jsonData =  [
             {
-                "health": "NORMAL",
-                "appProfileName": "TestApplication1",
-                "isViewEnabled": true,
-                "appId": 9
+                "datacenterName": "TestApplication1",
+                "isViewEnabled": true
             },
             {
-                "health": "NORMAL",
-                "appProfileName": "EComm-NPM-Demo",
+                "datacenterName": "EComm-NPM-Demo",
                 "isViewEnabled": true,
-                "appId": 13
             }
         ];
     }
@@ -226,7 +232,7 @@ class Container extends React.Component {
             return (
              
                 <div style={{minWidth:"950px"}}>
-                    <Header text=" List of Applications" applinktext="" instanceName={headerInstanceName}/>
+                    <Header text=" Consul Datacenters" applinktext="" instanceName={headerInstanceName}/>
                     <Toolbar onReload={this.reloading} />
               
                     <AppTable rows={list} tenantName={this.tenantName}></AppTable>

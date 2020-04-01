@@ -1,4 +1,4 @@
-__author__ = 'nilayshah'
+"""This class returns recomanded EP"""
 
 class generateD3Dict(object):
     # Put it in another file named 'generate_d3.py'
@@ -117,8 +117,9 @@ class generateD3Dict(object):
                                 node_dict['label'] = service['serviceInstance'][:11] + '..'
                             else:
                                 node_dict['label'] = service['serviceInstance']
+
                             node_dict['attributes'] = {
-                                "Service" : service['Service'],
+                                "Service" : service['service'],
                                 "Service Instance" : service['serviceInstance'],
                                 "Port" : service['port'],
                                 "Service Kind" : service['serviceKind'],

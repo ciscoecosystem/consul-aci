@@ -3,6 +3,7 @@ import Header from './Header'
 import DetailsTable from './DetailsTable'
 import './style.css'
 import DataTable from "./DataTable"
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD } from "../../constants.js";
 
 function getCookieVal(offset) {
     var endstr = document.cookie.indexOf(";", offset);
@@ -54,7 +55,7 @@ class Container extends Component {
         this.getData = this.getData.bind(this);
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
-        params_appid = result['appId'];
+    
         params_tn = result['tn'];
 
 
@@ -79,9 +80,10 @@ class Container extends Component {
         /**
         * Use this.httpGet to get data from REST API
         */
-        let payload = {
-            query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
-        }
+       let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn']);
+        // let payload = {
+        //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
+        // }
 
         details_raw = "[]";
         try {
@@ -109,7 +111,7 @@ class Container extends Component {
                 }
                 else {
                     // Success
-                    headerInstanceName = rawJsonData.instanceName;
+                    headerInstanceName = rawJsonData.agentIP; // CONSUL change :replacing instanceName with agent ip
                     this.setState({ loading: false })
                     details_raw = JSON.parse(main_data_raw).data.Details.details;
                     this.setState({
@@ -153,9 +155,10 @@ class Container extends Component {
 
     fetchData() {
     
-        let payload = {
-            query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
-        }
+        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn']);
+        // let payload = {
+        //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
+        // }
         console.log(payload);
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
@@ -262,7 +265,7 @@ class Container extends Component {
     render() {
         console.log("[render] Container"  );
         let title = " | Details";
-        let apptext = " " + result['appProfileName'];
+        let apptext = " " + result[PROFILE_NAME];
 
         let noEndpointsElement = null;
         if (this.state.data.length) {
