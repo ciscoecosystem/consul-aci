@@ -36,13 +36,13 @@ function CONSUL_EPCard(props) {
 
     {('Node' in attributes) &&
       <span>
-        Consul Service
+        Consul Node
       {CardData(Object.assign(props, { name: undefined }), nodeDetailOrder)}
       </span>}
 
     {('Services_List' in attributes) &&
       <span className="mt-2">
-        All Services
+        Consul Services
      {(attributes.Services_List.length > 0) ? attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))
           : NoInformation()}
       </span>}
@@ -75,7 +75,7 @@ function CONSUL_EPGCard(props) {
     {/* 3. consul node */}
     {('Nodes' in attributes) &&
       <span>
-        Consul Services
+        Node Services
         {(attributes.Nodes.length > 0) ?
           attributes.Nodes.map(nodeData => CardData(Object.assign({}, { attributes: nodeData }), nodeDetailOrder))
           : NoInformation()}
@@ -84,7 +84,7 @@ function CONSUL_EPGCard(props) {
     {/* 4. service list  */}
     {('Services_List' in attributes) &&
       <span className="mt-2">
-        All Services
+        Consul Services
       {(attributes.Services_List.length > 0) ? attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))
           : NoInformation()}
       </span>}
