@@ -6,6 +6,9 @@ const successColor = "#6ebe4a";
 const failColor = "#e2231a";
 const warningColor = "#f49141";
 
+const NODE_EP_NAME = "EP";
+const NODE_SERVICE_NAME = "Service";
+
 class DetailsPane extends React.Component {
   constructor(props) {
     super(props);
@@ -36,59 +39,94 @@ class DetailsPane extends React.Component {
   }
 
   render() {
+    let { data } = this.state;
+
+    const CardRender = () => {
+      switch (data.name) {
+        case NODE_SERVICE_NAME:
+          return (
+            <React.Fragment>
+              {data.name} Information
+              <CONSUL_ServiceCard
+                name={data.sub_label || false}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+        case NODE_EP_NAME:
+          return (
+            <React.Fragment>
+              {data.name} Information
+            <CONSUL_EPCard
+                name={data.sub_label || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+        default:
+          return (
+            <React.Fragment>
+              {data.name} Information
+             <CardData
+                name={data.sub_label || false}
+                level={data.level || false}
+                attributes={data.attributes}
+              />
+            </React.Fragment>)
+
+      }
+    }
+
     return (
       <div>
         <div id="myNav" className="overlay-pane">
           <div className="pane-header">
 
             <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
-              {this.props.data.name}
+              {data.sub_label || data.label}
             </span>
 
             <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
 
-            {this.state.data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(this.state.data)}>&nbsp;</Icon> : null}
+            {data.name !== "Node" ? <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-jump-out" onClick={() => this.props.openDetailsPage(data)}>&nbsp;</Icon> : null}
           </div>
+
           <div className="panel-body">
             <div className="info-div">
-              {this.state.data.level == "grey" ?
-                <div>EP Count : {Object.keys(this.state.data.attributes).length}</div> : null
-              }
-              {this.state.data.name} Information
-              <CardData
-                name={this.state.data.sub_label || false}
-                level={this.state.data.level || false}
-                attributes={this.state.data.attributes}
-
-              />
+              {/* {data.level == "grey" ?
+                <div>EP Count : {Object.keys(data.attributes).length}</div> : null
+              } */}
+              {CardRender()}
             </div>
 
-            {this.state.data.attributes.hasOwnProperty("Contracts") && this.state.data.attributes["Contracts"] !== [] ? (
+
+            {data.attributes.hasOwnProperty("Contracts") && data.attributes["Contracts"] !== [] ? (
               <div className="info-div">
                 Contracts Information
                 <ContractDetails
-                  attributes={this.state.data.attributes.Contracts}
+                  attributes={data.attributes.Contracts}
                 />
               </div>
             ) : null}
 
-            {this.state.data.attributes.hasOwnProperty("ServiceEndpoints") ? (
+            {/* {data.attributes.hasOwnProperty("ServiceEndpoints") ? (
               <div className="info-div">
                 ServiceEndpoints Information
                 <ServiceEndpoints
-                  data={this.state.data.attributes["ServiceEndpoints"]}
+                  data={data.attributes["ServiceEndpoints"]}
                 />
               </div>
             ) : null}
 
-            {this.state.data.attributes.hasOwnProperty("HealthRuleViolations") ? (
+            {data.attributes.hasOwnProperty("HealthRuleViolations") ? (
               <div className="info-div">
                 HealthRuleViolations Information
                 <HealthRuleViolations
-                  data={this.state.data.attributes["HealthRuleViolations"]}
+                  data={data.attributes["HealthRuleViolations"]}
                 />
               </div>
-            ) : null}
+            ) : null} */}
           </div>
         </div>
       </div>
@@ -101,47 +139,88 @@ function NoInformation() {
 }
 
 
-function CONSUL_serviceCard(props) {
+function CONSUL_ServiceCard(props) {
   let attributeOrder = ["Service", "Port", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+
+  return CardData(props, attributeOrder);
+}
+
+function CONSUL_EPCard(props) {
+  let { attributes } = props;
+
+  let attributeOrder = ["IP", "Interfaces", "VMM-Domain"];
+  let nodeDetailOrder = ["Node", "Node Checks"];
+  let serviceOrder = ["Service", "Port", "Service Checks"]
+
+  return (<React.Fragment>
+    {CardData(props, attributeOrder)}
+
+    {('Node' in attributes) &&
+      <span>
+        Consul Service
+      {CardData(Object.assign(props, { name: undefined }), nodeDetailOrder)}
+      </span>}
+
+    {('Services_List' in attributes) &&
+      <span className="mt-2">
+        All Services
+      {attributes.Services_List.map(serviceData => CardData(Object.assign({}, { attributes: serviceData }), serviceOrder))}
+      </span>}
+
+  </React.Fragment>
+  )
+
+}
+
+function CardData(props, attributeOrder = undefined) {
+  console.log("Inside card", props, attributeOrder);
+
+  let { attributes, name } = props;
+  if (attributeOrder === undefined || Object.keys(attributeOrder).length === 0) {
+    attributeOrder = Object.keys(props.attributes);
+  }
 
   return (
     <table className="info-table">
-      {props.name ?
+      {name ?
         <tr>
           <td width="30%">Name</td>
-          <td width="70%">{props.name}</td>
+          <td width="70%">{name}</td>
         </tr> : null
       }
-
+      {props.level == "grey" ?
+        (
+          <tr>
+            <td width="30%" className="bold-font">MAC</td>
+            <td width="70%" className="bold-font">IP</td>
+          </tr>
+        ) : null
+      }
       {attributeOrder.map(key => {
-
         // when value is simply string/number
-        if (
-          typeof props.attributes[key] == "string" ||
-          typeof props.attributes[key] == "number"
-        ) {
+        if (typeof attributes[key] == "string" || typeof attributes[key] == "number") {
           return (
             <tr>
               <td width="30%">{key}</td>
-              <td width="70%">{props.attributes[key]}</td>
+              <td width="70%">{attributes[key]}</td>
             </tr>
           );
           // when value is list
         } else if (
-          Array.isArray(props.attributes[key]) &&
-          typeof props.attributes[key][0] == "string"
+          Array.isArray(attributes[key]) &&
+          typeof attributes[key][0] == "string"
         ) {
-              return (
-                <tr>
-                  <td width="30%"> {key} </td>
-                  <td width="70%">{props.attributes[key].join(", ")}</td>
-                </tr>
-              );
+          return (
+            <tr>
+              <td width="30%"> {key} </td>
+              <td width="70%">{attributes[key].join(", ")}</td>
+            </tr>
+          );
         }
         // special case for service checks
-        else if (key === "Service Checks") {
-          let checks = props.attributes[key];
-          return (
+        else if (key === "Service Checks" || key === "Node Checks") {
+          let checks = attributes[key];
+          return (checks) ? (
             <tr>
               <td width="30%">{key}</td>
               <td width="70%">
@@ -151,7 +230,7 @@ function CONSUL_serviceCard(props) {
                   {(checks.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>)}
                 </span>
               </td>
-            </tr>)
+            </tr>) : (null)
         }
       })}
     </table>
@@ -159,133 +238,68 @@ function CONSUL_serviceCard(props) {
 }
 
 
-function CardData(props) {
-  console.log("Inside card");
-
-  if ("Service" in props.attributes) {
-    return CONSUL_serviceCard(props);
-  }
-
-  return (
-    <table className="info-table">
-      {props.name ?
-        <tr>
-          <td width="30%">Name</td>
-          <td width="70%">{props.name}</td>
-        </tr> : null
-      }
-      {props.level == "grey" ?
-
-        (
-
-
-          <tr>
-            <td width="30%" className="bold-font">MAC</td>
-            <td width="70%" className="bold-font">IP</td>
-
-          </tr>
-        ) : null
-
-      }
-      {Object.keys(props.attributes).map(key => {
-        if (key == "App-Health" || key == "Tier-Health") {
-          return null;
-        }
-        else if (
-          typeof props.attributes[key] == "string" ||
-          typeof props.attributes[key] == "number"
-        ) {
-          return (
-            <tr>
-              <td width="30%">{key}</td>
-              <td width="70%">{props.attributes[key]}</td>
-            </tr>
-          );
-        } else if (
-          Array.isArray(props.attributes[key]) &&
-          typeof props.attributes[key][0] == "string"
-        ) {
-          return props.attributes[key].map((element, index) => {
-            if (index == 0) {
-              return (
-                <tr>
-                  <td rowSpan={props.attributes[key].length} width="30%">
-                    {key}
-                  </td>
-                  <td width="70%">{element}</td>
-                </tr>
-              );
-            }
-
-            return (
-              <tr>
-                <td width="70%">{element}</td>
-              </tr>
-            );
-          });
-        }
-      })}
-    </table>
-  );
-}
+/* // Remove in CONSUL
 function HealthRuleViolations(props) {
-  if (props.data && props.data.constructor == Array && props.data.length > 0) {
+if (props.data && props.data.constructor == Array && props.data.length > 0) {
     let keys = [
-      "Violation Id",
-      "Status",
-      "Severity",
-      "Affected Object",
-      "Start Time",
-      "End Time",
-      "Description"
-    ]
-    return props.data.map(endPoint => {
-      return (
-        <table className="info-table">
-          {keys.map(key => {
-            if (
-              typeof endPoint[key] == "string" ||
-              typeof endPoint[key] == "number"
-            ) {
-              return (
-                <tr>
-                  <td width="30%">{key}</td>
-                  <td width="70%">{endPoint[key]}</td>
-                </tr>
-              );
-            }
-          })}
-        </table>
-      );
-    });
-  }
-  return NoInformation();
+    "Violation Id",
+    "Status",
+    "Severity",
+    "Affected Object",
+    "Start Time",
+    "End Time",
+    "Description"
+  ]
+return props.data.map(endPoint => {
+return (
+<table className="info-table">
+    {keys.map(key => {
+      if (
+        typeof endPoint[key] == "string" ||
+        typeof endPoint[key] == "number"
+      ) {
+        return (
+          <tr>
+            <td width="30%">{key}</td>
+            <td width="70%">{endPoint[key]}</td>
+          </tr>
+        );
+      }
+    })}
+  </table>
+  );
+});
 }
-
+return NoInformation();
+}
+ 
 function ServiceEndpoints(props) {
-  if (props.data && props.data.constructor == Array && props.data.length > 0) {
-    return props.data.map(endPoint => {
-      return (
-        <table className="info-table">
-          {Object.keys(endPoint).map(key => {
-            if (
-              typeof endPoint[key] == "string" ||
-              typeof endPoint[key] == "number"
-            ) {
-              return (
-                <tr>
-                  <td width="30%">{key}</td>
-                  <td width="70%">{endPoint[key]}</td>
-                </tr>
-              );
-            }
-          })}
-        </table>
-      );
-    });
-  }
-  return NoInformation();
+if (props.data && props.data.constructor == Array && props.data.length > 0) {
+return props.data.map(endPoint => {
+return (
+<table className="info-table">
+    {Object.keys(endPoint).map(key => {
+      if (
+        typeof endPoint[key] == "string" ||
+        typeof endPoint[key] == "number"
+      ) {
+        return (
+          <tr>
+            <td width="30%">{key}</td>
+            <td width="70%">{endPoint[key]}</td>
+          </tr>
+        );
+      }
+    })}
+  </table>
+  );
+});
 }
+return NoInformation();
+}
+*/
+
+
 function ContractDetails(props) {
   if (props.attributes && props.attributes.constructor == Array && props.attributes.length > 0) {
     return (
