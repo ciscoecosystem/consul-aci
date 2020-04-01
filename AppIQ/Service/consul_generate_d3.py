@@ -101,8 +101,8 @@ class generateD3Dict(object):
 
                         ep_dict['attributes'] = {
                             "Node" : ep_node["nodeName"],
-                            "Node Checks" : ep_node["nodeCheck"]
-                            "Services_List" : ep_service_list
+                            "Node Checks" : ep_node["nodeCheck"],
+                            "Services_List" : ep_service_list,
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
                             'VMM-Domain': ep_nodes[0]['VMM-Domain'] # ep_node should be instead of ep_nodes[0]
