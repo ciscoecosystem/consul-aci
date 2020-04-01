@@ -79,6 +79,7 @@ display: flex;
 }
 .info-table{
 margin-top: 5px;
+margin-bottom: 7px;
 background: #fafafa;
 table-layout: auto; 
 width: 100%;
