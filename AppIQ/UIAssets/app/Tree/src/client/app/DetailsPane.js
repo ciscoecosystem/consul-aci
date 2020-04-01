@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Port", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
@@ -29,7 +29,7 @@ function CONSUL_EPCard(props) {
 
   let attributeOrder = ["IP", "Interfaces", "VMM-Domain"];
   let nodeDetailOrder = ["Node", "Node Checks"];
-  let serviceOrder = ["Service", "Port", "Service Checks"]
+  let serviceOrder = ["Service", "Address", "Service Checks"]
 
   return (<React.Fragment>
     {CardData(props, attributeOrder)}
@@ -57,7 +57,7 @@ function CONSUL_EPGCard(props) {
 
   const infoOrder = ["VRF", "BD"];
   const nodeDetailOrder = ["Node", "Node Checks"];
-  const serviceOrder = ["Service", "Port", "Service Checks"]
+  const serviceOrder = ["Service", "Address", "Service Checks"]
 
   return (<React.Fragment>
     {/* 1. epg information */}
