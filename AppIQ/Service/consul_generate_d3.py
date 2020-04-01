@@ -57,7 +57,7 @@ class generateD3Dict(object):
                         epg_service_list.add(service.get("serviceInstance", ""))
                         service_dict = {
                                 "Service" : service["serviceInstance"],
-                                "Port" : service["port"],
+                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
                                 "Service Checks" : service["serviceChecks"]
                             }
                         epg_service_detalis_list.append(service_dict)
@@ -73,8 +73,8 @@ class generateD3Dict(object):
                     'VRF': epg_nodes[0]['VRF'],
                     'BD': epg_nodes[0]['BD'],
                     'Contracts': epg_nodes[0]['Contracts'],
-                    'Nodes': list(set([x['nodeName'] for x in epg_nodes])),
-                    'Service_List' : epg_service_detalis_list
+                    'Nodes': list([{"Node": n['nodeName'], "Node Checks": n['nodeCheck']} for n in epg_nodes]),
+                    'Services_List' : epg_service_detalis_list
                 }
 
                 epg_dict['children'] = []
@@ -88,7 +88,7 @@ class generateD3Dict(object):
                         for service in ep_node["services"]:
                             service_dict = {
                                 "Service" : service["serviceInstance"],
-                                "Port" : service["port"],
+                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
                                 "Service Checks" : service["serviceChecks"]
                             }
                             ep_service_list.append(service_dict)
@@ -121,7 +121,7 @@ class generateD3Dict(object):
                             node_dict['attributes'] = {
                                 "Service" : service['service'],
                                 "Service Instance" : service['serviceInstance'],
-                                "Port" : service['port'],
+                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
                                 "Service Kind" : service['serviceKind'],
                                 "Service Tag" : service['serviceTags'],
                                 "Service Checks" : service['serviceChecks']
