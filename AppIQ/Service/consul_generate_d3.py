@@ -27,7 +27,7 @@ class generateD3Dict(object):
             app_prof_node = {}
             app_prof_node['name'] = 'AppProf'
             app_prof_node['type'] = '#581552'
-            app_prof_node['label'] = "abc" # app_nodes[0]['appName']##
+            #app_prof_node['label'] = "abc" # app_nodes[0]['appName']##
             app_prof_node['sub_label'] = app_nodes[0]['AppProfile']
             app_prof_node['attributes'] = {}
             app_prof_node['children'] = []
