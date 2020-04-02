@@ -438,17 +438,17 @@ def consul_service_check(service_name):
     for check in service_resp:
         if check.get('Status'):
             if 'passing' == check.get('Status').lower():
-                if check.get('passing'):
+                if check_dict.get('passing'):
                     check_dict['passing'] += 1
                 else:
                     check_dict['passing'] = 1
             elif 'warning' == check.get('Status').lower():
-                if check.get('warning'):
+                if check_dict.get('warning'):
                     check_dict['warning'] += 1
                 else:
                     check_dict['warning'] = 1
             else:
-                if check.get('failing'):
+                if check_dict.get('failing'):
                     check_dict['failing'] += 1
                 else:
                     check_dict['failing'] = 1
@@ -480,17 +480,17 @@ def consul_node_check(node_name):
     for check in node_resp:
         if check.get('Status'):
             if 'passing' == check.get('Status').lower():
-                if check.get('passing'):
+                if check_dict.get('passing'):
                     check_dict['passing'] += 1
                 else:
                     check_dict['passing'] = 1
             elif 'warning' == check.get('Status').lower():
-                if check.get('warning'):
+                if check_dict.get('warning'):
                     check_dict['warning'] += 1
                 else:
                     check_dict['warning'] = 1
             else:
-                if check.get('failing'):
+                if check_dict.get('failing'):
                     check_dict['failing'] += 1
                 else:
                     check_dict['failing'] = 1
