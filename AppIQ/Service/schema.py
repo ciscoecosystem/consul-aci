@@ -66,6 +66,8 @@ class Run(graphene.ObjectType):
 class Details(graphene.ObjectType):
     details = graphene.String()
 
+class ServiceChecks(graphene.ObjectType):
+    service_checks = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -89,6 +91,8 @@ class Query(graphene.ObjectType):
 
     # EnableView = graphene.Field(EnableView,view=graphene.String())
     Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
+
+    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -176,6 +180,9 @@ class Query(graphene.ObjectType):
         #    appId = int(args.get('appId'))
         Details.details = app.get_details(tn, 9)
         return Details
+
+    def resolve_ServiceChecks(self, info, service_name, service_id):
+        ServiceChecks.service_checks = app.get_service_check(service_name, service_id)
 
         # def resolve_EnableView(self, args, context, info):
         #

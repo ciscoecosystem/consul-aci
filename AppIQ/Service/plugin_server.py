@@ -1298,3 +1298,11 @@ def get_eps_info(dn, ip):
 
     except Exception as e:
         logger.exception("Error in get_eps_info: "+str(e))
+
+
+def get_service_check(service_name, service_id):
+    try:
+        service_checks = consul_merge.consul_detailed_service_check(service_name, service_id)
+        return service_checks
+    except Exception as e:
+        logger.exception("Error in get_service_check: "+ str(e))
