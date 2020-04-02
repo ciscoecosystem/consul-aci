@@ -183,6 +183,7 @@ class Query(graphene.ObjectType):
 
     def resolve_ServiceChecks(self, info, service_name, service_id):
         ServiceChecks.service_checks = app.get_service_check(service_name, service_id)
+        return ServiceChecks
 
         # def resolve_EnableView(self, args, context, info):
         #
