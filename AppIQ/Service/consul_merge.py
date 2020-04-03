@@ -52,32 +52,37 @@ def merge_aci_consul(tenant, data_center, aci_util_obj):
                     if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['domainName'] == str(aci['dn']):
                         # Service to CEp mapping
                         for node in consul_data:
-                            if aci.get(aci_key).upper() not in node.get('ipAddressList'):
-                                new_node = {
-                                    'nodeId': node.get('nodeId'),
-                                    'nodeName': node.get('nodeName'),
-                                    'ipAddressList': node.get('ipAddressList'),
-                                    'nodeCheck': node.get('nodeCheck'),
-                                    'services': []
-                                }
-                                services_with_ip = [service for service in node.get('services', []) if aci.get(aci_key).upper() == service.get('serviceIP') ]
-                                if services_with_ip:
-                                    for service in services_with_ip:
-                                        node['services'].remove(service)
-                                        new_node['services'].append(service)
-                                    new_node.update(aci)
-                                    merge_list.append(new_node)
-                                    if aci[aci_key] not in merged_eps:
-                                        merged_eps.append(aci[aci_key])
-                                        if aci['EPG'] not in merged_epg_count:
-                                            merged_epg_count[aci['EPG']] = [aci[aci_key]]
-                                        else:
-                                            merged_epg_count[aci['EPG']].append(aci[aci_key])
+                            new_node = {
+                                'nodeId': node.get('nodeId'),
+                                'nodeName': node.get('nodeName'),
+                                'ipAddressList': node.get('ipAddressList'),
+                                'nodeCheck': node.get('nodeCheck'),
+                                'services': []
+                            }
+                            # All the services which matches CEp and its ip is different from its nodes ip
+                            for service in node.get('services', []):
+                                if aci.get(aci_key).upper() == service.get('serviceIP') and aci.get(aci_key).upper() not in node.get('ipAddressList'):
+                                    node['services'].remove(service)
+                                    new_node['services'].append(service)
+                                # Below statements is supposed to remove all the services which do not map to any ip in mappings.
+                                # but this will remove all the non mapped services in first itteration node
+                                elif service.get('serviceIP') != "" and service.get('serviceIP') not in [each.get(mapping_key) for each in mappings]:
+                                    node['services'].remove(service)
+                            if new_node['services']:
+                                new_node.update(aci)
+                                merge_list.append(new_node)
+                                # what is this for?
+                                if aci[aci_key] not in merged_eps:
+                                    merged_eps.append(aci[aci_key])
+                                    if aci['EPG'] not in merged_epg_count:
+                                        merged_epg_count[aci['EPG']] = [aci[aci_key]]
+                                    else:
+                                        merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                         logger.info('Service to CEp mapped:' + str(merge_list))
 
                         # node to EP mapping
-                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('ipAddressList', []) and node.get('services', [])]
+                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('ipAddressList', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
