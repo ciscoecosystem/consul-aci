@@ -180,7 +180,7 @@ export default class DetailePage extends Component {
       let serviceInstance = data.attributes['Service Instance'];
       let query = "";
       try {
-        query = 'query{ServiceChecks(service_name:"AppDynamics",service_id:"' + serviceInstance + '"){response}}';
+        query = { "query": 'query{ServiceChecks(serviceName:"AppDynamics", serviceId:"' + serviceInstance + '"){response}}'};
         console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
