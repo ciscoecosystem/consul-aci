@@ -1302,7 +1302,12 @@ def get_eps_info(dn, ip):
 
 def get_service_check(service_name, service_id):
     try:
-        service_checks = consul_merge.consul_detailed_service_check(service_name, service_id)
-        return service_checks
+        start_time = datetime.datetime.now()
+        response = consul_merge.consul_detailed_service_check(service_name, service_id)
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in get_service_check: "+ str(e))
+        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load service checks."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for get_service_check: " + str(end_time - start_time))
