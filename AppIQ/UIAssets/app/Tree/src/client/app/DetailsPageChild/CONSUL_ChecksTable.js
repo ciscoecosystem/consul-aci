@@ -38,7 +38,7 @@ function getCookie(name) {
 window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
 window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
-export default class CONSUL_ServiceChecksTable extends Component {
+export default class CONSUL_ChecksTable extends Component {
     constructor(props) {
         super(props);
 
@@ -66,7 +66,7 @@ export default class CONSUL_ServiceChecksTable extends Component {
             autoClose: 2500
         });
     }
-    componentDidMount() {
+    componentWillMount() {
         if (!this.props.query) {
             this.setState({ loading: false })
         }

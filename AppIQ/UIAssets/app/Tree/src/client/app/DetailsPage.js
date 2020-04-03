@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import "./DetailsPage.css";
 import EventAnalytics from "./DetailsPageChild/EventAnalytics";
-import { Icon, Tab, Screen } from "blueprint-react";
+import { Loader, Tab, Screen } from "blueprint-react";
 import clone from "clone";
 import DataTable from "./DetailsPageChild/DataTable.js";
 import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
-import CONSUL_ServiceChecksTable from "./DetailsPageChild/CONSUL_ServiceChecksTable";
+import CONSUL_ChecksTable from "./DetailsPageChild/CONSUL_ChecksTable";
 
 export default class DetailePage extends Component {
   constructor(props) {
@@ -20,7 +20,6 @@ export default class DetailePage extends Component {
     this.state = {
       data: this.props.data,
       tabs: [
-
         {
           label: "Operational",
           key: "Operational",
@@ -80,8 +79,9 @@ export default class DetailePage extends Component {
 
 
   }
-  componentWillMount() {
+  componentDidMount() {
     const { data } = this.state;
+
 
     const queryParams = this.getQueryParams()
     let clonedObj = clone(this.state.tabs)
@@ -93,7 +93,7 @@ export default class DetailePage extends Component {
       clonedObj.splice(0, 1);
       console.log(clonedObj);
 
-      this.setState({ tabs: clonedObj });
+      this.setState({ tabs: [] });
     }
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
@@ -101,12 +101,22 @@ export default class DetailePage extends Component {
       let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
+
+      // let tabsObj =  [
+      //   {
+      //     label: "Operational",
+      //     key: "Operational",
+      //     content: <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
+      //   }
+      // ]
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
 
       this.setState({ tabs: clonedObj });
     }
+    // for EP detail view expansion ; Tabs are [Operational, Health Check, Node check, Service Check]
     if (data.name == "EP") {
-      clonedObj.splice(1, 1);
+      console.log("SEttting tab in EP");
+      // clonedObj.splice(1, 1);
       let moType = data.name.toLowerCase();
       let ipList = this.getIPList();
 
@@ -115,12 +125,57 @@ export default class DetailePage extends Component {
         param, type: "GetOperationalInfo",
         list: "{operationalList}"
       }
-      clonedObj[0]["content"] = <DataTable key="operational" query={query} index="3" />
 
-      this.setState({ tabs: clonedObj });
+      // Setting query ...
+
+      let nodeName = ""; //data.attributes['Node'];
+      let serviceList = "";//data.attributes['Services_List'];
+
+      try {
+        nodeName = data.attributes['Node'];
+        serviceList = data.attributes['Services_List'];
+      } catch (error) {
+        console.log("error in setting quert", error);
+      }
+
+      let healthCheckQuery = 'query{HealthChecks(node_name:"' + nodeName + '"){response}}';
+      let NodeCheckQuery = 'query{NodeChecks(service_name:"AppDynamics",service_id:"' + nodeName + '"){response}}';
+      let ServiceCheckQuery = 'query{ ServiceChecksEP(service_list:' + serviceList + '){response}}';
+
+      let tabsObj = [
+        {
+          label: "Operational",
+          key: "Operational",
+          content: <DataTable key="operational" query={query} index="3" />
+        },
+        {
+          label: "Health Checks",
+          key: "Health Checks",
+          content: <CONSUL_ChecksTable key={"healthChecks"} query={healthCheckQuery} />
+        },
+        {
+          label: "Node Checks",
+          key: "Node Checks",
+          content: <CONSUL_ChecksTable key={"nodeChecks"} query={NodeCheckQuery} />
+        },
+        {
+          label: "Service Checks",
+          key: "Service Checks",
+          content: <CONSUL_ChecksTable key={"serviceChecks"} query={ServiceCheckQuery} />
+        }
+      ]
+
+      this.setState({
+        tabs: tabsObj
+      }, () => {
+        console.log("Settin tab for ", this.state.tabs);
+      })
+
+      // clonedObj[0]["content"] = <DataTable key="operational" query={query} index="3" />
+      // this.setState({ tabs: clonedObj });
     }
 
-    // service checks tab
+    // Service detail view ; Tabs: [Service Checks]
     if (data.name == "Service") {
       let serviceInstance = data.attributes['Service Instance'];
       let query = "";
@@ -136,15 +191,15 @@ export default class DetailePage extends Component {
           {
             label: "Service Checks",
             key: "Service Checks",
-            content: <CONSUL_ServiceChecksTable key={"serviceChecks"} query={query} />
+            content: <CONSUL_ChecksTable key={"serviceChecks"} query={query} />
           }
         ]
       })
     }
 
-    if (data.attributes.HealthRuleViolations) {
-      this.setNewTab(clonedObj);
-    }
+    // if (data.attributes.HealthRuleViolations) {
+    //   this.setNewTab(clonedObj);
+    // }
   }
 
   test(props) {
@@ -175,9 +230,10 @@ export default class DetailePage extends Component {
       //       onClick={this.props.closeDetailsPage}
       //     />
       //   </div> */}
-
-        <Tab type="secondary-tabs" tabs={this.state.tabs} />
+        {(this.state.tabs.length > 0) ?
+          <Tab type="secondary-tabs" tabs={this.state.tabs} />
+          : <Loader> loading </Loader>}
       </Screen>
-    );
+    )
   }
 }
