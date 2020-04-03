@@ -483,7 +483,7 @@ def consul_node_check(node_name):
 
     check_dict = {}
     for check in node_resp:
-        if check.get('Status'):
+        if not check.get('ServiceID') and check.get('Status'):
             if 'passing' == check.get('Status').lower():
                 if check_dict.get('passing'):
                     check_dict['passing'] += 1
