@@ -6,6 +6,7 @@ import clone from "clone";
 import DataTable from "./DetailsPageChild/DataTable.js";
 import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
+import CONSUL_ServiceChecksTable from "./DetailsPageChild/CONSUL_ServiceChecksTable";
 
 export default class DetailePage extends Component {
   constructor(props) {
@@ -14,7 +15,7 @@ export default class DetailePage extends Component {
     this.getIPList = this.getIPList.bind(this);
     this.getQueryParams = this.getQueryParams.bind(this);
     this.getCustomQuery = this.getCustomQuery.bind(this);
-	this.setNewTab = this.setNewTab.bind(this);
+    this.setNewTab = this.setNewTab.bind(this);
 
     this.state = {
       data: this.props.data,
@@ -80,27 +81,33 @@ export default class DetailePage extends Component {
 
   }
   componentWillMount() {
+    const { data } = this.state;
+
     const queryParams = this.getQueryParams()
-    var clonedObj = clone(this.state.tabs)
-    if (this.state.data.name == "AppProf" || this.state.data.name == "EPG") {
+    let clonedObj = clone(this.state.tabs)
+    if (data.name == "AppProf" || data.name == "EPG") {
       clonedObj[1]["content"] = <EventAnalytics queryParams={queryParams} key="analytics"></EventAnalytics>;
 
     }
-    if (this.state.data.name == "AppProf") {
+    if (data.name == "AppProf") {
       clonedObj.splice(0, 1);
       console.log(clonedObj);
+
+      this.setState({ tabs: clonedObj });
     }
-    if (this.state.data.name == "EPG") {
-      let moType = this.state.data.name.toLowerCase();
+    if (data.name == "EPG") {
+      let moType = data.name.toLowerCase();
       let ipList = "";
       let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
+
+      this.setState({ tabs: clonedObj });
     }
-    if (this.state.data.name == "EP") {
+    if (data.name == "EP") {
       clonedObj.splice(1, 1);
-      let moType = this.state.data.name.toLowerCase();
+      let moType = data.name.toLowerCase();
       let ipList = this.getIPList();
 
       let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
@@ -109,9 +116,33 @@ export default class DetailePage extends Component {
         list: "{operationalList}"
       }
       clonedObj[0]["content"] = <DataTable key="operational" query={query} index="3" />
+
+      this.setState({ tabs: clonedObj });
     }
-    this.setState({ tabs: clonedObj });
-	if (this.state.data.attributes.HealthRuleViolations) {
+
+    // service checks tab
+    if (data.name == "Service") {
+      let serviceInstance = data.attributes['Service Instance'];
+      let query = "";
+      try {
+        query = 'query{ServiceChecks(service_name:"AppDynamics",service_id:"' + serviceInstance + '"){response}}';
+        console.log("== query build ", query);
+      } catch (err) {
+        console.log("error in query:- ", err);
+      }
+
+      this.setState({
+        tabs: [
+          {
+            label: "Service Checks",
+            key: "Service Checks",
+            content: <CONSUL_ServiceChecksTable key={"serviceChecks"} query={query} />
+          }
+        ]
+      })
+    }
+
+    if (data.attributes.HealthRuleViolations) {
       this.setNewTab(clonedObj);
     }
   }
@@ -121,8 +152,19 @@ export default class DetailePage extends Component {
   }
 
   render() {
+    let { data } = this.state;
+    console.log("[detailpage]== allstate ", this.state);
+    console.log("[detailpage]== tab ", this.state.tabs)
+
+    let title = "";
+    if (data.name === "Service") {
+      title = data.attributes['Service Instance']
+    } else {
+      title = this.state.data.sub_label || this.state.data.label || "EndPoint Information";
+    }
+
     return (
-      <Screen hideFooter={true} title={this.state.data.sub_label || this.state.data.label || "EndPoint Information"} allowMinimize={false} onClose={this.props.closeDetailsPage}>
+      <Screen hideFooter={true} title={title} allowMinimize={false} onClose={this.props.closeDetailsPage}>
 
         {/* // <div className="page-overlay">
       //   <div className="panel-header">

@@ -14,8 +14,6 @@ import "./style.css";
 import DetailsPane from "./DetailsPane";
 import DetailsPage from "./DetailsPage";
 
-import LegendNode from "./LegendNode.js";
-
 const svgSquare = {
   shape: "rect",
   shapeProps: {
@@ -593,14 +591,12 @@ export default class Tree extends React.Component {
               data={this.state.detailsPane.data}
             />
           ) : null}   
-          {/* {this.state.detailsPage.visible ? (
+          {this.state.detailsPage.visible ? (
             <DetailsPage
               data = {this.state.detailsPage.data}
               closeDetailsPage={this.closeDetailsPage}
             />
           ) : null}
-
-        */}
         </div>
       </div>
     );
