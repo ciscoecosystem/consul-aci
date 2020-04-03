@@ -496,3 +496,94 @@ def consul_node_check(node_name):
                     check_dict['failing'] = 1
 
     return check_dict
+
+def consul_detailed_service_check(service_name, service_id):
+    try:
+        service_resp = requests.get('{}/v1/health/checks/{}'.format('http://10.23.239.14:8500', service_name))
+        service_resp = json.loads(service_resp.content)
+
+        service_checks_list = []
+        for check in service_resp:
+            if check.get("ServiceID").lower() == service_id.lower():
+                service_check = {}
+                service_check["ServiceName"] = check.get("ServiceName")
+                service_check["CheckID"] = check.get("CheckID")
+                service_check["Type"] = check.get("Type")
+                service_check["Notes"] = check.get("Notes")
+                service_check["Output"] = check.get("Output")
+                service_check["Name"] = check.get("Name")
+                service_check["Status"] = check.get("Status")
+                service_checks_list.append(service_check)
+
+        return service_checks_list
+    except Exception as e:
+        logger.exception("error in fatching service checks : " + str(e))
+        return [] 
+
+def consul_detailed_health_check(node_name):
+    try:
+        health_resp = requests.get('{}/v1/health/node/{}'.format('http://10.23.239.14:8500', node_name))
+        helath_resp = json.loads(health_resp.content)
+
+        health_checks_list = []
+        for check in node_resp:
+            health_check = {}
+            health_check["Name"] = check.get("Name")
+            health_check["ServiceName"] = check.get("ServiceName")
+            health_check["CheckID"] = check.get("CheckID")
+            health_check["Type"] = check.get("Type")
+            health_check["Notes"] = check.get("Notes")
+            health_check["Output"] = check.get("Output")
+            health_checks_list.append(node_check)
+        
+        return health_checks_list
+    except Exception as e:
+        logger.exception("error in fatching health checks : " + str(e))
+        return []
+
+def consul_detailed_node_check(node_name):
+    try:
+        node_resp = requests.get('{}/v1/health/node/{}'.format('http://10.23.239.14:8500', node_name))
+        node_resp = json.loads(node_resp.content)
+
+        node_checks_list = []
+        for check in node_resp:
+            if check.get("ServiceName") = "":
+                node_check = {}
+                node_check["Name"] = check.get("Name")
+                node_check["ServiceName"] = "-"
+                node_check["CheckID"] = check.get("CheckID")
+                node_check["Type"] = check.get("Type")
+                node_check["Notes"] = check.get("Notes")
+                node_check["Output"] = check.get("Output")
+                node_checks_list.append(node_check)
+        return node_checks_list
+    except Exception as e:
+        logger.exception("error in fatching node checks : " + str(e))
+        return []
+    
+def consul_detailed_service_check_ep(service_list):
+    try:
+        service_checks_list = []
+        for service_dict in service_list:
+            service_name = service_dict["Service"]
+            service_id = service_dict["ServiceID"]
+
+            service_resp = requests.get('{}/v1/health/checks/{}'.format('http://10.23.239.14:8500', service_name))
+            service_resp = json.loads(service_resp.content)
+            
+            for check in service_resp:
+                if check.get("ServiceID").lower() == service_id.lower():
+                    service_check = {}
+                    service_check["ServiceName"] = check.get("ServiceName")
+                    service_check["CheckID"] = check.get("CheckID")
+                    service_check["Type"] = check.get("Type")
+                    service_check["Notes"] = check.get("Notes")
+                    service_check["Output"] = check.get("Output")
+                    service_check["Name"] = check.get("Name")
+                    service_check["Status"] = check.get("Status")
+                    service_checks_list.append(service_check)
+        return service_checks_list
+    except Exception as e:
+        logger.exception("error in fatching service checks : " + str(e))
+        return []

@@ -1298,3 +1298,51 @@ def get_eps_info(dn, ip):
 
     except Exception as e:
         logger.exception("Error in get_eps_info: "+str(e))
+
+def get_service_check(service_name, service_id):
+    try:
+        start_time = datetime.datetime.now()
+        response = consul_merge.consul_detailed_service_check(service_name, service_id)
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in get_service_check: "+ str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load service checks."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for get_service_check: " + str(end_time - start_time))
+
+def get_health_checks(node_name):
+    try:
+        start_time = datetime.datetime.now()
+        node_checks = consul_merge.consul_detailed_health_check(node_name)
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in get_node_check: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for get_health_check: " + str(end_time - start_time))
+
+def get_node_checks(node_name):
+    try:
+        start_time = datetime.datetime.now()
+        node_checks = consul_merge.consul_detailed_node_check(node_name)
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in get_node_check: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for get_health_check: " + str(end_time - start_time))
+
+def get_service_check_ep(service_list):
+    try:
+        start_time = datetime.datetime.now()
+        node_checks = consul_merge.consul_detailed_service_check_ep(service_list)
+        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in get_node_check: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for get_service_check_ep: " + str(end_time - start_time))

@@ -66,6 +66,17 @@ class Run(graphene.ObjectType):
 class Details(graphene.ObjectType):
     details = graphene.String()
 
+class ServiceChecks(graphene.ObjectType):
+    service_checks = graphene.String()
+
+class HealthChecks(graphene.ObjectType):
+    health_checks = graphene.String()
+
+class NodeChecks(graphene.ObjectType):
+    node_checks = graphene.String()
+
+class ServiceChecksEP(graphene.ObjectType):
+    service_checks_ep = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -89,6 +100,10 @@ class Query(graphene.ObjectType):
 
     # EnableView = graphene.Field(EnableView,view=graphene.String())
     Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
+    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
+    HealthChecks = graphene.Field(HealthChecks, node_name=graphene.String())
+    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -176,6 +191,23 @@ class Query(graphene.ObjectType):
         #    appId = int(args.get('appId'))
         Details.details = app.get_details(tn, 9)
         return Details
+
+    def resolve_ServiceChecks(self, info, service_name, service_id):
+        ServiceChecks.service_checks = app.get_service_check(service_name, service_id)
+        return ServiceChecks
+
+
+    def resolve_HealthChecks(self, info, node_name):
+        HealthChecks.health_checks = app.get_health_checks(node_name)
+        return HealthChecks
+    
+    def resolve_NodeChecks(self, info, node_name):
+        NodeChecks.node_checks = app.get_node_checks(node_name)
+        return NodeChecks
+
+    def resolve_ServiceChecksEP(self, info, service_list):
+        ServiceChecksEP.service_checks_ep = app.get_service_check_ep(service_list)
+        return ServiceChecksEP
 
         # def resolve_EnableView(self, args, context, info):
         #
