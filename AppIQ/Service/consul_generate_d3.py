@@ -55,9 +55,13 @@ class generateD3Dict(object):
                     service_list = epg_node.get("services", {})
                     for service in service_list:
                         epg_service_list.add(service.get("serviceInstance", ""))
+                        if service["serviceIP"]:
+                            service_address = str(service["serviceIP"]) + ":" + str(service["port"])
+                        else:
+                            service_address = str(epg_node['ipAddressList'][0]) + ":" + str(service["port"]) # for now 0th is taken, will change
                         service_dict = {
                                 "Service" : service["serviceInstance"],
-                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
+                                "Address" : service_address,
                                 "Service Checks" : service["serviceChecks"]
                             }
                         epg_service_detalis_list.append(service_dict)
@@ -86,9 +90,13 @@ class generateD3Dict(object):
                     for ep_node in ep_nodes:
                         ep_service_list = []
                         for service in ep_node["services"]:
+                            if service["serviceIP"]:
+                                service_address = str(service["serviceIP"]) + ":" + str(service["port"])
+                            else:
+                                service_address = str(ep_node['ipAddressList'][0]) + ":" + str(service["port"]) # for now 0th is taken, will change
                             service_dict = {
                                 "Service" : service["serviceInstance"],
-                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
+                                "Address" : service_address,
                                 "Service Checks" : service["serviceChecks"]
                             }
                             ep_service_list.append(service_dict)
@@ -118,10 +126,14 @@ class generateD3Dict(object):
                             else:
                                 node_dict['label'] = service['serviceInstance']
 
+                            if service["serviceIP"]:
+                                service_address = str(service["serviceIP"]) + ":" + str(service["port"])
+                            else:
+                                service_address = str(ep_node['ipAddressList'][0]) + ":" + str(service["port"]) # for now 0th is taken, will change
                             node_dict['attributes'] = {
                                 "Service" : service['service'],
                                 "Service Instance" : service['serviceInstance'],
-                                "Address" : str(service["serviceIP"]) + ":" + str(service["port"]),
+                                "Address" : service_address,
                                 "Service Kind" : service['serviceKind'],
                                 "Service Tag" : service['serviceTags'],
                                 "Service Checks" : service['serviceChecks']
