@@ -501,3 +501,30 @@ def consul_node_check(node_name):
                     check_dict['failing'] = 1
 
     return check_dict
+
+
+def consul_detailed_service_check(service_name, service_id):
+    try:
+        service_resp = requests.get('{}/v1/health/checks/{}'.format('http://10.23.239.14:8500', service_name))
+        service_resp = json.loads(service_resp.content)
+
+        service_checks_list = []
+        for check in service_resp:
+            if check.get("ServiceID").lower() == service_id.lower():
+                service_check = {}
+                service_check["ServiceName"] = check.get("ServiceName")
+                service_check["CheckID"] = check.get("CheckID")
+                service_check["Type"] = check.get("Type")
+                service_check["Notes"] = check.get("Notes")
+                service_check["Output"] = check.get("Output")
+                service_check["Name"] = check.get("Name")
+                if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                    service_check["Status"] = check.get("Status")
+                else:
+                    service_check["Status"] = 'failing'
+                service_checks_list.append(service_check)
+
+        return service_checks_list
+    except Exception as e:
+        logger.exception("error in fatching service checks : " + str(e))
+        return [] 
