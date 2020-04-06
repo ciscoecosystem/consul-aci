@@ -67,16 +67,16 @@ class Details(graphene.ObjectType):
     details = graphene.String()
 
 class ServiceChecks(graphene.ObjectType):
-    service_checks = graphene.String()
+    response = graphene.String()
 
 class HealthChecks(graphene.ObjectType):
-    health_checks = graphene.String()
+    response = graphene.String()
 
 class NodeChecks(graphene.ObjectType):
-    node_checks = graphene.String()
+    response = graphene.String()
 
 class ServiceChecksEP(graphene.ObjectType):
-    service_checks_ep = graphene.String()
+    response = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -104,6 +104,8 @@ class Query(graphene.ObjectType):
     HealthChecks = graphene.Field(HealthChecks, node_name=graphene.String())
     NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
     ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+
+    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -193,20 +195,20 @@ class Query(graphene.ObjectType):
         return Details
 
     def resolve_ServiceChecks(self, info, service_name, service_id):
-        ServiceChecks.service_checks = app.get_service_check(service_name, service_id)
+        ServiceChecks.response = app.get_service_check(service_name, service_id)
         return ServiceChecks
 
 
     def resolve_HealthChecks(self, info, node_name):
-        HealthChecks.health_checks = app.get_health_checks(node_name)
+        HealthChecks.response = app.get_health_checks(node_name)
         return HealthChecks
     
     def resolve_NodeChecks(self, info, node_name):
-        NodeChecks.node_checks = app.get_node_checks(node_name)
+        NodeChecks.response = app.get_node_checks(node_name)
         return NodeChecks
 
     def resolve_ServiceChecksEP(self, info, service_list):
-        ServiceChecksEP.service_checks_ep = app.get_service_check_ep(service_list)
+        ServiceChecksEP.response = app.get_service_check_ep(service_list)
         return ServiceChecksEP
 
         # def resolve_EnableView(self, args, context, info):

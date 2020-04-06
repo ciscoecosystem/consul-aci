@@ -52,32 +52,37 @@ def merge_aci_consul(tenant, data_center, aci_util_obj):
                     if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['domainName'] == str(aci['dn']):
                         # Service to CEp mapping
                         for node in consul_data:
-                            if aci.get(aci_key).upper() not in node.get('ipAddressList'):
-                                new_node = {
-                                    'nodeId': node.get('nodeId'),
-                                    'nodeName': node.get('nodeName'),
-                                    'ipAddressList': node.get('ipAddressList'),
-                                    'nodeCheck': node.get('nodeCheck'),
-                                    'services': []
-                                }
-                                services_with_ip = [service for service in node.get('services', []) if aci.get(aci_key).upper() == service.get('serviceIP') ]
-                                if services_with_ip:
-                                    for service in services_with_ip:
-                                        node['services'].remove(service)
-                                        new_node['services'].append(service)
-                                    new_node.update(aci)
-                                    merge_list.append(new_node)
-                                    if aci[aci_key] not in merged_eps:
-                                        merged_eps.append(aci[aci_key])
-                                        if aci['EPG'] not in merged_epg_count:
-                                            merged_epg_count[aci['EPG']] = [aci[aci_key]]
-                                        else:
-                                            merged_epg_count[aci['EPG']].append(aci[aci_key])
+                            new_node = {
+                                'nodeId': node.get('nodeId'),
+                                'nodeName': node.get('nodeName'),
+                                'ipAddressList': node.get('ipAddressList'),
+                                'nodeCheck': node.get('nodeCheck'),
+                                'services': []
+                            }
+                            # All the services which matches CEp and its ip is different from its nodes ip
+                            for service in node.get('services', []):
+                                if aci.get(aci_key).upper() == service.get('serviceIP') and aci.get(aci_key).upper() not in node.get('ipAddressList'):
+                                    node['services'].remove(service)
+                                    new_node['services'].append(service)
+                                # Below statements is supposed to remove all the services which do not map to any ip in mappings.
+                                # but this will remove all the non mapped services in first itteration node
+                                elif service.get('serviceIP') != "" and service.get('serviceIP') not in [each.get(mapping_key) for each in mappings]:
+                                    node['services'].remove(service)
+                            if new_node['services']:
+                                new_node.update(aci)
+                                merge_list.append(new_node)
+                                # what is this for?
+                                if aci[aci_key] not in merged_eps:
+                                    merged_eps.append(aci[aci_key])
+                                    if aci['EPG'] not in merged_epg_count:
+                                        merged_epg_count[aci['EPG']] = [aci[aci_key]]
+                                    else:
+                                        merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                         logger.info('Service to CEp mapped:' + str(merge_list))
 
                         # node to EP mapping
-                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('ipAddressList', []) and node.get('services', [])]
+                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('ipAddressList', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
@@ -478,7 +483,7 @@ def consul_node_check(node_name):
 
     check_dict = {}
     for check in node_resp:
-        if check.get('Status'):
+        if not check.get('ServiceID') and check.get('Status'):
             if 'passing' == check.get('Status').lower():
                 if check_dict.get('passing'):
                     check_dict['passing'] += 1
@@ -497,6 +502,7 @@ def consul_node_check(node_name):
 
     return check_dict
 
+
 def consul_detailed_service_check(service_name, service_id):
     try:
         service_resp = requests.get('{}/v1/health/checks/{}'.format('http://10.23.239.14:8500', service_name))
@@ -512,7 +518,10 @@ def consul_detailed_service_check(service_name, service_id):
                 service_check["Notes"] = check.get("Notes")
                 service_check["Output"] = check.get("Output")
                 service_check["Name"] = check.get("Name")
-                service_check["Status"] = check.get("Status")
+                if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                    service_check["Status"] = check.get("Status")
+                else:
+                    service_check["Status"] = 'failing'
                 service_checks_list.append(service_check)
 
         return service_checks_list
@@ -520,13 +529,14 @@ def consul_detailed_service_check(service_name, service_id):
         logger.exception("error in fatching service checks : " + str(e))
         return [] 
 
+
 def consul_detailed_health_check(node_name):
     try:
         health_resp = requests.get('{}/v1/health/node/{}'.format('http://10.23.239.14:8500', node_name))
         helath_resp = json.loads(health_resp.content)
 
         health_checks_list = []
-        for check in node_resp:
+        for check in helath_resp:
             health_check = {}
             health_check["Name"] = check.get("Name")
             health_check["ServiceName"] = check.get("ServiceName")
@@ -534,12 +544,17 @@ def consul_detailed_health_check(node_name):
             health_check["Type"] = check.get("Type")
             health_check["Notes"] = check.get("Notes")
             health_check["Output"] = check.get("Output")
-            health_checks_list.append(node_check)
+            if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                health_check["Status"] = check.get("Status")
+            else:
+                health_check["Status"] = 'failing'
+            health_checks_list.append(health_check)
         
         return health_checks_list
     except Exception as e:
         logger.exception("error in fatching health checks : " + str(e))
         return []
+
 
 def consul_detailed_node_check(node_name):
     try:
@@ -548,7 +563,7 @@ def consul_detailed_node_check(node_name):
 
         node_checks_list = []
         for check in node_resp:
-            if check.get("ServiceName") = "":
+            if not check.get("ServiceName"):
                 node_check = {}
                 node_check["Name"] = check.get("Name")
                 node_check["ServiceName"] = "-"
@@ -556,12 +571,17 @@ def consul_detailed_node_check(node_name):
                 node_check["Type"] = check.get("Type")
                 node_check["Notes"] = check.get("Notes")
                 node_check["Output"] = check.get("Output")
+                if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                    node_check["Status"] = check.get("Status")
+                else:
+                    node_check["Status"] = 'failing'
                 node_checks_list.append(node_check)
         return node_checks_list
     except Exception as e:
         logger.exception("error in fatching node checks : " + str(e))
         return []
-    
+
+
 def consul_detailed_service_check_ep(service_list):
     try:
         service_checks_list = []
@@ -581,7 +601,10 @@ def consul_detailed_service_check_ep(service_list):
                     service_check["Notes"] = check.get("Notes")
                     service_check["Output"] = check.get("Output")
                     service_check["Name"] = check.get("Name")
-                    service_check["Status"] = check.get("Status")
+                    if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                        service_check["Status"] = check.get("Status")
+                    else:
+                        service_check["Status"] = 'failing'
                     service_checks_list.append(service_check)
         return service_checks_list
     except Exception as e:
