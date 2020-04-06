@@ -67,7 +67,7 @@ class Details(graphene.ObjectType):
     details = graphene.String()
 
 class ServiceChecks(graphene.ObjectType):
-    service_checks = graphene.String()
+    response = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -182,7 +182,7 @@ class Query(graphene.ObjectType):
         return Details
 
     def resolve_ServiceChecks(self, info, service_name, service_id):
-        ServiceChecks.service_checks = app.get_service_check(service_name, service_id)
+        ServiceChecks.response = app.get_service_check(service_name, service_id)
         return ServiceChecks
 
         # def resolve_EnableView(self, args, context, info):
