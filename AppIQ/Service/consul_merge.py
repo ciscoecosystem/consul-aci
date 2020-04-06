@@ -513,7 +513,10 @@ def consul_detailed_service_check(service_name, service_id):
                 service_check["Notes"] = check.get("Notes")
                 service_check["Output"] = check.get("Output")
                 service_check["Name"] = check.get("Name")
-                service_check["Status"] = check.get("Status")
+                if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                    service_check["Status"] = check.get("Status")
+                else:
+                    service_check["Status"] = 'failing'
                 service_checks_list.append(service_check)
 
         return service_checks_list
