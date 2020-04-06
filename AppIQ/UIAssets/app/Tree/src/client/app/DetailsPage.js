@@ -138,9 +138,9 @@ export default class DetailePage extends Component {
         console.log("error in setting quert", error);
       }
 
-      let healthCheckQuery = 'query{HealthChecks(node_name:"' + nodeName + '"){response}}';
-      let NodeCheckQuery = 'query{NodeChecks(service_name:"AppDynamics",service_id:"' + nodeName + '"){response}}';
-      let ServiceCheckQuery = 'query{ ServiceChecksEP(service_list:' + serviceList + '){response}}';
+      let healthCheckQuery = {"query": 'query{HealthChecks(node_name:"' + nodeName + '"){response}}'};
+      let NodeCheckQuery = {"query": 'query{NodeChecks(node_name:"' + nodeName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(service_list:' + serviceList + '){response}}'};
 
       let tabsObj = [
         {
@@ -178,9 +178,10 @@ export default class DetailePage extends Component {
     // Service detail view ; Tabs: [Service Checks]
     if (data.name == "Service") {
       let serviceInstance = data.attributes['Service Instance'];
+      let serviceName = data.attributes['Service'];
       let query = "";
       try {
-        query = { "query": 'query{ServiceChecks(serviceName:"AppDynamics", serviceId:"' + serviceInstance + '"){response}}'};
+        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '"){response}}'};
         console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
