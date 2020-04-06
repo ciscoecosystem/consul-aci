@@ -7,6 +7,7 @@ import DataTable from "./DetailsPageChild/DataTable.js";
 import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
 import CONSUL_ChecksTable from "./DetailsPageChild/CONSUL_ChecksTable";
+import CONSUL_ConsulTab from "./DetailsPageChild/CONSUL_ConsulTab";
 
 export default class DetailePage extends Component {
   constructor(props) {
@@ -110,6 +111,30 @@ export default class DetailePage extends Component {
       //   }
       // ]
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
+
+      /**
+       * Consul tab:- 
+       */
+
+      // Setting query ...
+      let nodeList = [];
+      let serviceList = [];
+
+      try {
+        nodeList = data.attributes['Nodes'].map(val => val["Node"])
+        serviceList = data.attributes['Services_List'];
+      } catch (error) {
+        console.log("error in setting query", error);
+      }
+
+      let NodeCheckQuery = 'query{NodeChecks(nodes:[' + nodeList + ']){response}}';
+      let ServiceCheckQuery = 'query{ ServiceChecksEP(service_list:[' + serviceList + ']){response}}';
+
+      clonedObj.push({
+        label: "Consul",
+        key: "Consul",
+        content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+      });
 
       this.setState({ tabs: clonedObj });
     }
