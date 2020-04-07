@@ -1342,7 +1342,7 @@ def get_node_checks(node_name):
 def get_service_check_ep(service_list):
     try:
         start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_service_check_ep(service_list)
+        response = consul_merge.consul_detailed_service_check_ep(json.loads(service_list))
         return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in get_node_check: " + str(e))
