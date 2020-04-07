@@ -105,7 +105,6 @@ class Query(graphene.ObjectType):
     NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
     ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
 
-    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
