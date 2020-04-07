@@ -610,3 +610,30 @@ def consul_detailed_service_check_ep(service_list):
     except Exception as e:
         logger.exception("error in fatching service checks : " + str(e))
         return []
+
+
+def consul_detailed_node_check_epg(node_list):
+    try:
+        node_checks_list = []
+        for node_name in node_list:
+            node_resp = requests.get('{}/v1/health/node/{}'.format('http://10.23.239.14:8500', node_name))
+            node_resp = json.loads(node_resp.content)
+
+            for check in node_resp:
+                if not check.get("ServiceName"):
+                    node_check = {}
+                    node_check["Name"] = check.get("Name")
+                    node_check["ServiceName"] = "-"
+                    node_check["CheckID"] = check.get("CheckID")
+                    node_check["Type"] = check.get("Type")
+                    node_check["Notes"] = check.get("Notes")
+                    node_check["Output"] = check.get("Output")
+                    if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                        node_check["Status"] = check.get("Status")
+                    else:
+                        node_check["Status"] = 'failing'
+                    node_checks_list.append(node_check)
+        return node_checks_list
+    except Exception as e:
+        logger.exception("error in fatching node checks for EPG : " + str(e))
+        return []
