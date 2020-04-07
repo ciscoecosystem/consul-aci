@@ -103,7 +103,7 @@ class Query(graphene.ObjectType):
     ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
     HealthChecks = graphene.Field(HealthChecks, node_name=graphene.String())
     NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
-    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.List(graphene.String))
 
 
     def resolve_GetFaults(self, info, dn):
