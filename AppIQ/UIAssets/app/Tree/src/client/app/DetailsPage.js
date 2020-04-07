@@ -129,17 +129,29 @@ export default class DetailePage extends Component {
       // Setting query ...
 
       let nodeName = "";
-      let serviceList = "";
+      let serviceList = [];
 
       try {
         nodeName = data.attributes['Node'];
-        serviceList = data.attributes['Services_List'];
+        let epServices = data.children;
+        console.log("epServies ", epServices);
+
+        if (epServices && epServices.length > 0){
+          serviceList = epServices.map(inData => {
+            return Object.assign({},
+              { 'Service': inData.attributes['Service'],
+                'ServiceID':inData.attributes['Service Instance']
+              })
+            })
+        } else {
+          serviceList = [];
+        }
       } catch (error) {
         console.log("error in setting quert", error);
       }
 
       let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + serviceList + '){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
 
       let tabsObj = [
         {
