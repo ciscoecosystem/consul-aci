@@ -122,13 +122,25 @@ export default class DetailePage extends Component {
 
       try {
         nodeList = data.attributes['Nodes'].map(val => val["Node"])
-        serviceList = data.attributes['Services_List'];
+        let epServices = data.children;
+        console.log("epServies ", epServices);
+
+        if (epServices && epServices.length > 0){
+          serviceList = epServices.map(inData => {
+            return Object.assign({},
+              { 'Service': inData.attributes['Service'],
+                'ServiceID':inData.attributes['Service Instance']
+              })
+            })
+        } else {
+          serviceList = [];
+        }
       } catch (error) {
         console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = 'query{NodeChecks(nodes:[' + nodeList + ']){response}}';
-      let ServiceCheckQuery = 'query{ ServiceChecksEP(service_list:[' + serviceList + ']){response}}';
+      let NodeCheckQuery = {"query": 'query{NodeChecks(nodes:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(service_list:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
 
       clonedObj.push({
         label: "Consul",
