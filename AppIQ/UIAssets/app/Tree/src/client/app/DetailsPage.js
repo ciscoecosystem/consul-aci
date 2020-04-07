@@ -128,8 +128,8 @@ export default class DetailePage extends Component {
 
       // Setting query ...
 
-      let nodeName = ""; //data.attributes['Node'];
-      let serviceList = "";//data.attributes['Services_List'];
+      let nodeName = "";
+      let serviceList = "";
 
       try {
         nodeName = data.attributes['Node'];
@@ -138,20 +138,14 @@ export default class DetailePage extends Component {
         console.log("error in setting quert", error);
       }
 
-      let healthCheckQuery = {"query": 'query{HealthChecks(node_name:"' + nodeName + '"){response}}'};
-      let NodeCheckQuery = {"query": 'query{NodeChecks(node_name:"' + nodeName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(service_list:' + serviceList + '){response}}'};
+      let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + serviceList + '){response}}'};
 
       let tabsObj = [
         {
           label: "Operational",
           key: "Operational",
           content: <DataTable key="operational" query={query} index="3" />
-        },
-        {
-          label: "Health Checks",
-          key: "Health Checks",
-          content: <CONSUL_ChecksTable key={"healthChecks"} query={healthCheckQuery} />
         },
         {
           label: "Node Checks",
