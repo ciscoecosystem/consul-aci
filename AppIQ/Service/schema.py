@@ -69,6 +69,15 @@ class Details(graphene.ObjectType):
 class ServiceChecks(graphene.ObjectType):
     response = graphene.String()
 
+class HealthChecks(graphene.ObjectType):
+    response = graphene.String()
+
+class NodeChecks(graphene.ObjectType):
+    response = graphene.String()
+
+class ServiceChecksEP(graphene.ObjectType):
+    response = graphene.String()
+
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
     LoginApp = graphene.Field(LoginApp, ip=graphene.String(), port=graphene.String(), username=graphene.String(),
@@ -91,8 +100,11 @@ class Query(graphene.ObjectType):
 
     # EnableView = graphene.Field(EnableView,view=graphene.String())
     Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
-
     ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
+    HealthChecks = graphene.Field(HealthChecks, node_name=graphene.String())
+    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -184,6 +196,19 @@ class Query(graphene.ObjectType):
     def resolve_ServiceChecks(self, info, service_name, service_id):
         ServiceChecks.response = app.get_service_check(service_name, service_id)
         return ServiceChecks
+
+
+    def resolve_HealthChecks(self, info, node_name):
+        HealthChecks.response = app.get_health_checks(node_name)
+        return HealthChecks
+    
+    def resolve_NodeChecks(self, info, node_name):
+        NodeChecks.response = app.get_node_checks(node_name)
+        return NodeChecks
+
+    def resolve_ServiceChecksEP(self, info, service_list):
+        ServiceChecksEP.response = app.get_service_check_ep(service_list)
+        return ServiceChecksEP
 
         # def resolve_EnableView(self, args, context, info):
         #
