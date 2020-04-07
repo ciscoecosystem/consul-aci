@@ -153,30 +153,36 @@ export default class DetailePage extends Component {
 
       // Setting query ...
 
-      let nodeName = ""; //data.attributes['Node'];
-      let serviceList = "";//data.attributes['Services_List'];
+      let nodeName = "";
+      let serviceList = [];
 
       try {
         nodeName = data.attributes['Node'];
-        serviceList = data.attributes['Services_List'];
+        let epServices = data.children;
+        console.log("epServies ", epServices);
+
+        if (epServices && epServices.length > 0){
+          serviceList = epServices.map(inData => {
+            return Object.assign({},
+              { 'Service': inData.attributes['Service'],
+                'ServiceID':inData.attributes['Service Instance']
+              })
+            })
+        } else {
+          serviceList = [];
+        }
       } catch (error) {
         console.log("error in setting quert", error);
       }
 
-      let healthCheckQuery = 'query{HealthChecks(node_name:"' + nodeName + '"){response}}';
-      let NodeCheckQuery = 'query{NodeChecks(service_name:"AppDynamics",service_id:"' + nodeName + '"){response}}';
-      let ServiceCheckQuery = 'query{ ServiceChecksEP(service_list:' + serviceList + '){response}}';
+      let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
 
       let tabsObj = [
         {
           label: "Operational",
           key: "Operational",
           content: <DataTable key="operational" query={query} index="3" />
-        },
-        {
-          label: "Health Checks",
-          key: "Health Checks",
-          content: <CONSUL_ChecksTable key={"healthChecks"} query={healthCheckQuery} />
         },
         {
           label: "Node Checks",
@@ -203,9 +209,10 @@ export default class DetailePage extends Component {
     // Service detail view ; Tabs: [Service Checks]
     if (data.name == "Service") {
       let serviceInstance = data.attributes['Service Instance'];
+      let serviceName = data.attributes['Service'];
       let query = "";
       try {
-        query = 'query{ServiceChecks(service_name:"AppDynamics",service_id:"' + serviceInstance + '"){response}}';
+        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '"){response}}'};
         console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
