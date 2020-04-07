@@ -139,8 +139,8 @@ export default class DetailePage extends Component {
         console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{NodeChecks(nodes:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
-      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(service_list:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
+      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
 
       clonedObj.push({
         label: "Consul",
