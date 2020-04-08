@@ -32,14 +32,6 @@ export default class Operational extends React.Component {
                     content: <div>Work In Progress</div>, //add your component here
                     gqlCall: "GetAuditLogs",
                     list: "{auditLogsList}"
-                },
-                {
-                    label: "Controller End-Points",
-                    key: "cep",
-                    content: <div>Work In Progress</div>, //add your component here
-                    gqlCall: "GetAuditLogs",
-                    list: "{auditLogsList}"
-
                 }
             ],
             nestedTabs: [
