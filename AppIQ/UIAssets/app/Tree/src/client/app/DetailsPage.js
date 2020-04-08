@@ -7,6 +7,7 @@ import DataTable from "./DetailsPageChild/DataTable.js";
 import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
 import CONSUL_ChecksTable from "./DetailsPageChild/CONSUL_ChecksTable";
+import CONSUL_ConsulTab from "./DetailsPageChild/CONSUL_ConsulTab";
 
 export default class DetailePage extends Component {
   constructor(props) {
@@ -110,6 +111,42 @@ export default class DetailePage extends Component {
       //   }
       // ]
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
+
+      /**
+       * Consul tab:- 
+       */
+
+      // Setting query ...
+      let nodeList = [];
+      let serviceList = [];
+
+      try {
+        nodeList = data.attributes['Nodes'].map(val => val["Node"])
+        let epServices = data.children;
+        console.log("epServies ", epServices);
+
+        if (epServices && epServices.length > 0){
+          serviceList = epServices.map(inData => {
+            return Object.assign({},
+              { 'Service': inData.attributes['Service'],
+                'ServiceID':inData.attributes['Service Instance']
+              })
+            })
+        } else {
+          serviceList = [];
+        }
+      } catch (error) {
+        console.log("error in setting query", error);
+      }
+
+      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
+
+      clonedObj.push({
+        label: "Consul",
+        key: "Consul",
+        content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+      });
 
       this.setState({ tabs: clonedObj });
     }
