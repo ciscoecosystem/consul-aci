@@ -75,6 +75,9 @@ class NodeChecks(graphene.ObjectType):
 class ServiceChecksEP(graphene.ObjectType):
     response = graphene.String()
 
+class NodeChecksEPG(graphene.ObjectType):
+    response = graphene.String()
+
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
     LoginApp = graphene.Field(LoginApp, ip=graphene.String(), port=graphene.String(), username=graphene.String(),
@@ -100,6 +103,7 @@ class Query(graphene.ObjectType):
     ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
     NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
     ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
 
 
     def resolve_GetFaults(self, info, dn):
@@ -200,6 +204,10 @@ class Query(graphene.ObjectType):
     def resolve_ServiceChecksEP(self, info, service_list):
         ServiceChecksEP.response = app.get_service_check_ep(service_list)
         return ServiceChecksEP
+
+    def resolve_NodeChecksEPG(self, info, node_list):
+        NodeChecksEPG.response = app.get_node_check_epg(node_list)
+        return NodeChecksEPG 
 
         # def resolve_EnableView(self, args, context, info):
         #
