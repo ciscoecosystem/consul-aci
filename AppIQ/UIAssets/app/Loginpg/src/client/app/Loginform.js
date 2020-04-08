@@ -152,6 +152,7 @@ class LoginForm extends React.Component {
         return (
             <div>
             <ToastContainer />
+            {/* Temporarily commented --- 
             <form onSubmit={this.handleSignIn}>
                 <center>
                     <table>
@@ -194,6 +195,15 @@ class LoginForm extends React.Component {
                     </table>
                     <br/>
                     <input type="submit" value="Login" className="button view-button" />
+                </center>
+            </form>
+            */}
+
+            {/* for Temporary bypass purpose */}
+            <form>
+                <center>
+                    <br/>
+                    <input type="button" value="Login" className="button view-button" onClick={()=> window.location.href = "index.html"}/>
                 </center>
             </form>
             </div>
