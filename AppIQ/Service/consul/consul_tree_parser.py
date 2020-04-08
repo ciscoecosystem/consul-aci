@@ -51,7 +51,7 @@ def consul_tree_dict(self, data):
                     'VRF': epg_eps[0]['VRF'],
                     'BD': epg_eps[0]['BD'],
                     'Contracts': epg_eps[0]['Contracts'],
-                    'Nodes': [],
+                    'Nodes': list([{"Node": n['nodeName'], "Node Checks": n['nodeCheck'], "Reporting Node IP": n['ipAddressList'][0]} for n in epg_eps]),
                     'Services_List': []
                 },
                 'children': []
@@ -86,6 +86,7 @@ def consul_tree_dict(self, data):
                         'attributes': {
                             "Node" : ep_node["node_name"],
                             "Node Checks" : ep_node["node_check"],
+                            "Reporting Node IP": ep_node['ipAddressList'][0],
                             "Services_List" : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
