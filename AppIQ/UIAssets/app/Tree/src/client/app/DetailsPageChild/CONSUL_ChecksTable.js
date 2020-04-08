@@ -138,7 +138,7 @@ export default class CONSUL_ChecksTable extends Component {
     }
 
     render() {
-
+        let { extraColumn } = this.props;
         const headerColumns = [
             {
                 Header: 'Name',
@@ -171,6 +171,10 @@ export default class CONSUL_ChecksTable extends Component {
                 accessor: 'Notes'
             }
         ]
+
+        if (extraColumn){
+            headerColumns.splice(extraColumn.index, 0, extraColumn.value ); // adding extra column at spicified index
+        }
 
         return (
             <Panel style={{ width: "100%" }} border="panel--bordered">
