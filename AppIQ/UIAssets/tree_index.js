@@ -71,7 +71,7 @@ function getData() {
     }
     catch (e) {
         localStorage.setItem('message', "Network error while fetching data for tree.");
-        window.location.href = "index.html?gqlerror=1";
+        window.location.href = "app.html?gqlerror=1";
     }
 
     xhr.setRequestHeader("Content-type", "application/json");
@@ -84,7 +84,7 @@ function getData() {
 
             if ('errors' in json) {
                 localStorage.setItem('message', JSON.stringify(json.errors));
-                window.location.href = "index.html?gqlerror=1";
+                window.location.href = "app.html?gqlerror=1";
             }
             treedata = JSON.parse(json.data.Run.response);
             render(<App />, document.getElementById('app'));
@@ -92,7 +92,7 @@ function getData() {
         else {
             console.log("Cannot fetch data to fetch Tree data.")
             localStorage.setItem('message', "Error while fetching data for tree.");
-            window.location.href = "index.html?gqlerror=1";
+            window.location.href = "app.html?gqlerror=1";
         }
     }
     try {
@@ -100,7 +100,7 @@ function getData() {
     }
     catch (e) {
         localStorage.setItem('message', "Network error while fetching data for tree.");
-        window.location.href = "index.html?gqlerror=1";
+        window.location.href = "app.html?gqlerror=1";
     }
 }
 

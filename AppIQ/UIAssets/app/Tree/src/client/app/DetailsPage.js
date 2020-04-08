@@ -119,28 +119,39 @@ export default class DetailePage extends Component {
       // Setting query ...
       let nodeList = [];
       let serviceList = [];
+      let finalServiceList = [];
 
       try {
         nodeList = data.attributes['Nodes'].map(val => val["Node"])
-        let epServices = data.children;
-        console.log("epServies ", epServices);
+        let epList = data.children; // List of EP
 
-        if (epServices && epServices.length > 0){
-          serviceList = epServices.map(inData => {
-            return Object.assign({},
-              { 'Service': inData.attributes['Service'],
-                'ServiceID':inData.attributes['Service Instance']
+        if (epList && epList.length > 0) {
+          // traversing all EP and appending its childen service in serviceList 
+          epList.forEach(element => {
+
+            let epServices = element.children;
+            if (epServices && epServices.length > 0) {
+
+              let serviceListNew = epServices.map(inData => {
+                return Object.assign({},
+                  {
+                    'Service': inData.attributes['Service'],
+                    'ServiceID': inData.attributes['Service Instance']
+                  })
               })
-            })
-        } else {
-          serviceList = [];
+              serviceList.push(serviceListNew);
+            }
+          });
         }
+
+        finalServiceList = [].concat.apply([], serviceList);
+
       } catch (error) {
         console.log("error in setting query", error);
       }
 
       let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
-      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + '){response}}'};
 
       clonedObj.push({
         label: "Consul",
