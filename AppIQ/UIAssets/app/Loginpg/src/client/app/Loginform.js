@@ -73,7 +73,7 @@ class LoginForm extends React.Component {
         try {
             if(JSON.parse(JSON.parse(checkData).data.Check.checkpoint).status_code == "200") {
                 if(typeof getUrlVars()['reset'] == "undefined") {
-                    window.location.href = "index.html";
+                    window.location.href = "app.html";
                 }
             }
         }
@@ -128,7 +128,7 @@ class LoginForm extends React.Component {
                         let resp = JSON.parse(json.data.LoginApp.loginStatus)
                         if(resp.status_code == 200) {
                             signin(username, password, account, port, ip);
-                            window.location.href = "index.html";
+                            window.location.href = "app.html";
                         }
                         else {
                             thiss.notify(resp.message);
@@ -203,7 +203,7 @@ class LoginForm extends React.Component {
             <form>
                 <center>
                     <br/>
-                    <input type="button" value="Login" className="button view-button" onClick={()=> window.location.href = "index.html"}/>
+                    <input type="button" value="Login" className="button view-button" onClick={()=> window.location.href = "app.html"}/>
                 </center>
             </form>
             </div>
