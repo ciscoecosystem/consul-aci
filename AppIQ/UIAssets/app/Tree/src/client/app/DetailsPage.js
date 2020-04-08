@@ -119,6 +119,7 @@ export default class DetailePage extends Component {
       // Setting query ...
       let nodeList = [];
       let serviceList = [];
+      let finalServiceList = [];
 
       try {
         nodeList = data.attributes['Nodes'].map(val => val["Node"])
@@ -142,12 +143,15 @@ export default class DetailePage extends Component {
             }
           });
         }
+
+        finalServiceList = [].concat.apply([], serviceList);
+
       } catch (error) {
         console.log("error in setting query", error);
       }
 
       let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
-      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + '){response}}'};
 
       clonedObj.push({
         label: "Consul",
