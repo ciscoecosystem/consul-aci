@@ -628,6 +628,7 @@ def consul_detailed_node_check_epg(node_list):
                     node_check["Type"] = check.get("Type")
                     node_check["Notes"] = check.get("Notes")
                     node_check["Output"] = check.get("Output")
+                    node_check["NodeName"] = node_name
                     if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
                         node_check["Status"] = check.get("Status")
                     else:
