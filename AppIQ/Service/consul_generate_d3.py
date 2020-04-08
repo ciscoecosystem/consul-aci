@@ -77,7 +77,7 @@ class generateD3Dict(object):
                     'VRF': epg_nodes[0]['VRF'],
                     'BD': epg_nodes[0]['BD'],
                     'Contracts': epg_nodes[0]['Contracts'],
-                    'Nodes': list([{"Node": n['nodeName'], "Node Checks": n['nodeCheck'], "NodeIP": n['ipAddressList'][0]} for n in epg_nodes]), # node ip to add in package, 0th used for now
+                    'Nodes': list([{"Node": n['nodeName'], "Node Checks": n['nodeCheck'], "Reporting Node IP": n['ipAddressList'][0]} for n in epg_nodes]), # node ip to add in package, 0th used for now
                     'Services_List' : epg_service_detalis_list
                 }
 
@@ -110,7 +110,7 @@ class generateD3Dict(object):
                         ep_dict['attributes'] = {
                             "Node" : ep_node["nodeName"],
                             "Node Checks" : ep_node["nodeCheck"],
-                            "NodeIP": n['ipAddressList'][0],  # node ip to add in package, 0th used for now
+                            "Reporting Node IP": n['ipAddressList'][0],  # node ip to add in package, 0th used for now
                             "Services_List" : ep_service_list,
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
