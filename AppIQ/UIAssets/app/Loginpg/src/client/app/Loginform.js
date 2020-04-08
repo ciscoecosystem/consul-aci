@@ -64,6 +64,8 @@ class LoginForm extends React.Component {
     constructor(props) {
         super(props);
 
+        /*
+        // ** TEMPORARILY PURPOSE bypass
         const check_payload = {query: `query{
             Check{checkpoint}            
           }`}
@@ -80,7 +82,8 @@ class LoginForm extends React.Component {
         catch(e) {
             console.log('Error collecting checkpoint');
         }
-        
+        */
+
         this.handleSignIn = this.handleSignIn.bind(this);
         this.notify = this.notify.bind(this);
     }
