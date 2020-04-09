@@ -94,7 +94,7 @@ export default class DetailePage extends Component {
       clonedObj.splice(0, 1);
       console.log(clonedObj);
 
-      this.setState({ tabs: [] });
+      this.setState({ tabs: clonedObj });
     }
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();

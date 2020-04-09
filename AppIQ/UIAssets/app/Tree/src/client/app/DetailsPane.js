@@ -263,7 +263,7 @@ class DetailsPane extends React.Component {
           <div className="pane-header">
 
             <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
-              {data.attributes.Service || data.sub_label || data.label}
+              {data.attributes.Service || data.sub_label || data.label || "Non-service endpoint"}
             </span>
 
             <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
