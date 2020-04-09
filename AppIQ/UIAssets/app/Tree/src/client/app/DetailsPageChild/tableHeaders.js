@@ -166,6 +166,10 @@ const TABLE_COLUMNS_FAULTS = [
         accessor: 'code'
     },
     {
+        Header: 'Cause',
+        accessor: 'cause'
+    },
+    {
         Header: 'Affected Object',
         accessor: 'affected'
     },
@@ -176,10 +180,6 @@ const TABLE_COLUMNS_FAULTS = [
     {
         Header: 'Creation Time',
         accessor: 'created'
-    },
-    {
-        Header: 'Cause',
-        accessor: 'cause'
     }];
 const TABLE_COLUMNS_EVENTS = [
     {
