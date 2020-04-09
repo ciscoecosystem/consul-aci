@@ -1,54 +1,50 @@
 import React from 'react';
 import Tree from './Tree.js';
 import Legend from './Legend.js'
+// import { dummyData } from './dummydata.js';
 import './style.css';
 
-import clone from 'clone';
-import request from 'request';
-
-var treeNumber = 0
+let treeNumber = 0
 export default class TestComponent extends React.Component {
 
     constructor(props) {
         super(props);
-        this.getInList = this.getInList.bind(this);
-    }
-
-    getInList(item) {
-        let list = [];
-        list.push(item);
-        return list;
     }
 
     render() {
-
-        let legend = {
-            "name": "AppProf",
-            "level": "#27AAE1",
-            "label": "Application Profile",
-            "type": "#27AAE1",
-            "trans": 0
-        }
         let nodeData = (this.props.data === undefined) ? [] : this.props.data
-        console.log("NodeData ", nodeData);
+        // let nodeData = dummyData;
+        let totApps = nodeData.length;
+        /*
+        nodeWrapper act as a root node and under it would be all nodes, but the root node (ie nodewrapper) is avoided tobe shown
+        */
+
+        let nodeWrapper = (totApps === 0) ? [] : [{
+            "name": "allNodes",
+            "children": nodeData
+        }]
+
         return (
             <div>
-                <Legend  reloadController={this.props.reloadController}/>
+                <Legend reloadController={this.props.reloadController} />
                 <div id="treeWrapper">
-                    <Tree 
-                        data={nodeData}
-                        treeNum={treeNumber+1}
+                    <Tree
+                        data={nodeWrapper} // nodeWrapper contains 1 array element which further contains multiple node
+                        treeNum={treeNumber + 1}
+                        totApps={totApps} // signifies total root node (ie total tree)
                         orientation='vertical'
                         textLayout={{ textAnchor: "middle", y: 0 }}
                         nodeSvgShape={{ shape: 'circle', shapeProps: { r: 20 } }}
-                        styles={{ 
-                            nodes: { 
-                                node: { circle: { fill: "#DFF" }, 
-                                attributes: { fill: "#000" } }, 
-                                leafNode: { circle: { fill: "#DFF" } } 
-                            } 
-                        }} 
-                        translate={{ x: 400, y: 60}} 
+                        styles={{
+                            nodes: {
+                                node: {
+                                    circle: { fill: "#DFF" },
+                                    attributes: { fill: "#000" }
+                                },
+                                leafNode: { circle: { fill: "#DFF" } }
+                            }
+                        }}
+                        translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
                     />
 
                 </div >
