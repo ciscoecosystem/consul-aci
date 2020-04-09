@@ -92,7 +92,7 @@ class Query(graphene.ObjectType):
     GetFaults = graphene.Field(GetFaults, dn=graphene.String())
     GetEvents = graphene.Field(GetEvents, dn=graphene.String())
     GetAuditLogs = graphene.Field(GetAuditLogs, dn=graphene.String())
-    GetOperationalInfo = graphene.Field(GetOperationalInfo, dn = graphene.String(), moType = graphene.String(), ipList = graphene.String())
+    GetOperationalInfo = graphene.Field(GetOperationalInfo, dn = graphene.String(), moType = graphene.String(), macList = graphene.String())
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies, tn = graphene.String(), ap = graphene.String(), epg = graphene.String())
     GetToEpgTraffic = graphene.Field(GetToEpgTraffic, dn = graphene.String())
     GetSubnets = graphene.Field(GetSubnets, dn = graphene.String())
@@ -118,8 +118,8 @@ class Query(graphene.ObjectType):
         GetAuditLogs.auditLogsList = app.get_audit_logs(dn)
         return GetAuditLogs
     
-    def resolve_GetOperationalInfo(self, info, dn, moType, ipList):
-        GetOperationalInfo.operationalList = app.get_childrenEp_info(dn, moType, ipList)
+    def resolve_GetOperationalInfo(self, info, dn, moType, macList):
+        GetOperationalInfo.operationalList = app.get_childrenEp_info(dn, moType, macList)
         return GetOperationalInfo
 
     def resolve_GetConfiguredAccessPolicies(self, info, tn, ap, epg):

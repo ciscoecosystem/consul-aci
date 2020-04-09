@@ -470,17 +470,17 @@ def get_audit_logs(dn):
             "payload": []
         })
 
-def get_childrenEp_info(dn, mo_type, ip_list):
+def get_childrenEp_info(dn, mo_type, mac_list):
     start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     if mo_type == "ep":
-        ip_list = ip_list.split(",")
-        ip_query_filter_list = []
-        for ip in ip_list:
-            ip_query_filter_list.append('eq(fvCEp.ip,"' + ip + '")')
-        ip_query_filter = ",".join(ip_query_filter_list)
+        mac_list = mac_list.split(",")
+        mac_query_filter_list = []
+        for mac in mac_list:
+            mac_query_filter_list.append('eq(fvCEp.mac,"' + mac + '")')
+        mac_query_filter = ",".join(mac_query_filter_list)
 
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + ip_query_filter +')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
+        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + mac_query_filter +')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
     elif mo_type == "epg":
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
 
