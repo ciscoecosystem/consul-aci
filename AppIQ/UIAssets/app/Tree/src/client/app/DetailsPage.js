@@ -13,7 +13,7 @@ export default class DetailePage extends Component {
   constructor(props) {
     super(props);
     this.test = this.test.bind(this);
-    this.getIPList = this.getIPList.bind(this);
+    this.getMacList = this.getMacList.bind(this);
     this.getQueryParams = this.getQueryParams.bind(this);
     this.getCustomQuery = this.getCustomQuery.bind(this);
     this.setNewTab = this.setNewTab.bind(this);
@@ -61,12 +61,12 @@ export default class DetailePage extends Component {
       epg: this.state.data.sub_label
     }
   }
-  getIPList() {
+  getMacList() {
     if (this.state.data.type === "grey") {
-      return Object.values(this.state.data.attributes) || ""
+      return Object.keys(this.state.data.attributes) || ""
     }
     else {
-      return this.state.data.attributes.IP || ""
+      return this.state.data.attributes.Mac || ""
     }
   }
   setNewTab(clonedObj) {
@@ -94,12 +94,12 @@ export default class DetailePage extends Component {
       clonedObj.splice(0, 1);
       console.log(clonedObj);
 
-      this.setState({ tabs: [] });
+      this.setState({ tabs: clonedObj });
     }
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
-      let ipList = "";
-      let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
+      let macList = "";
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
 
@@ -166,9 +166,9 @@ export default class DetailePage extends Component {
       console.log("SEttting tab in EP");
       // clonedObj.splice(1, 1);
       let moType = data.name.toLowerCase();
-      let ipList = this.getIPList();
+      let macList = this.getMacList();
 
-      let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
       let query = {
         param, type: "GetOperationalInfo",
         list: "{operationalList}"
