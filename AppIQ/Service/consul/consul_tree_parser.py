@@ -56,7 +56,7 @@ def consul_tree_dict(self, data):
             epg_dict = {
                 'name': 'EPG',
                 'type': '#085A87',
-                'label': "",
+                'label': '',
                 'sub_label': epg,
                 'fraction': epg_eps[0]['fraction'],
                 'attributes': {
@@ -91,15 +91,15 @@ def consul_tree_dict(self, data):
 
                     # 3rd layer nodes in Tree (EP)
                     ep_dict = {
-                        'name': "EP",
+                        'name': 'EP',
                         'type': '#2DBBAD',
-                        'label': ep_node["node_name"],
+                        'label': ep_node['node_name'],
                         'sub_label': ep_node['VM-Name'],
                         'attributes': {
-                            "Node" : ep_node["node_name"],
-                            "Node Checks" : ep_node["node_check"],
-                            "Reporting Node IP": ep_node['ipAddressList'][0],
-                            "Services_List" : [],
+                            'Node' : ep_node['node_name'],
+                            'Node Checks' : ep_node['node_check'],
+                            'Reporting Node IP': ep_node['ipAddressList'][0],
+                            'Services_List' : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
                             'VMM-Domain': ep_node['VMM-Domain']
@@ -108,30 +108,30 @@ def consul_tree_dict(self, data):
                     }
 
                     # Iterating for each Service in EP
-                    for service in ep_node["services"]:
+                    for service in ep_node['services']:
 
                         if len(service['service_instance']) > 11:
                             service_label = service['service_instance'][:11] + '..'
                         else:
                             service_label = service['service_instance']
 
-                        if service["service_ip"]:
-                            service_address = str(service["service_ip"]) + ":" + str(service["port"])
+                        if service['service_ip']:
+                            service_address = str(service['service_ip']) + ':' + str(service['port'])
                         else:
-                            service_address = str(ep_node['ip_list'][0]) + ":" + str(service["port"]) # for now 0th is taken, will change
+                            service_address = str(ep_node['ip_list'][0]) + ':' + str(service['port']) # for now 0th is taken, will change
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
-                            'name': "Service",
+                            'name': 'Service',
                             'type': '#C5D054',
                             'label': service_label,
                             'attributes': {
-                                "Service" : service['service'],
-                                "Service Instance" : service['service_instance'],
-                                "Address" : service_address,
-                                "Service Kind" : service['service_kind'],
-                                "Service Tag" : service['service_tags'],
-                                "Service Checks" : service['service_checks']
+                                'Service' : service['service'],
+                                'Service Instance' : service['service_instance'],
+                                'Address' : service_address,
+                                'Service Kind' : service['service_kind'],
+                                'Service Tag' : service['service_tags'],
+                                'Service Checks' : service['service_checks']
                             }
                         }
 
@@ -145,9 +145,9 @@ def consul_tree_dict(self, data):
 
                         # Service for side pane
                         service_side_pane = {
-                            "Service" : service["service_instance"],
-                            "Address" : service_address,
-                            "Service Checks" : service["service_checks"]
+                            'Service' : service['service_instance'],
+                            'Address' : service_address,
+                            'Service Checks' : service['service_checks']
                         }
 
                         # Adding services to EP attributes
@@ -162,7 +162,7 @@ def consul_tree_dict(self, data):
                         # the EPs, But as it is difficult to show all of those in the tree view 
                         # UI only 1 is shown with ellipsis
                         if not epg_dict['label']:
-                            epg_dict['label'] = service["service_instance"] + ", ..."
+                            epg_dict['label'] = service['service_instance'] + ', ...'
 
 
                     # Add EP to EPG
@@ -174,9 +174,9 @@ def consul_tree_dict(self, data):
 
                     # Node for side pane
                     ep_side_pane = {
-                        "Node": ep_node['nodeName'],
-                        "Node Checks": ep_node['nodeCheck'],
-                        "Reporting Node IP": ep_node['ipAddressList'][0]
+                        'Node': ep_node['nodeName'],
+                        'Node Checks': ep_node['nodeCheck'],
+                        'Reporting Node IP': ep_node['ipAddressList'][0]
                     }
 
                     # Adding Node to EPG attributes
@@ -184,6 +184,7 @@ def consul_tree_dict(self, data):
                         epg_dict['attributes']['Nodes'].append(ep_side_pane)
 
 
+            # 3rd layer nodes in Tree (EP)
             #  Iterating for each Non service end point in EPG
             if epg_eps[0]['Non_IPs']: # TODO: understand Y is this [0], Also the key
                 non_ep_dict={}
