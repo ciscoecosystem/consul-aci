@@ -1,4 +1,14 @@
-"""Module for TODO:parsing/generating tree data for consul"""
+"""Module for parsing tree data for consul
+
+    This module will gets the mapped data and return a 
+    hirachical Tree data for the D3 component in UI.
+
+    Multiple Tree will be returned in case of multiple
+    AP in that mapped data.
+    Along with every node(AP,EP,EPG,Service) information 
+    to be show in the side pane is also displayed is also
+    sent in attributes.
+"""
 
 def consul_tree_dict(self, data):
     """Create tree specific dict
@@ -15,10 +25,12 @@ def consul_tree_dict(self, data):
     # distinct APs
     ap_set= set([node['AppProfile'] for node in data])
 
-    # Iterating for each AP
+    # Iterating for each AP and creating a tree view for 
+    # each AP, with all node's info to be shown in the tree
+    # and its Side Pane(when clicked on the node).
     for ap in ap_set:
 
-        # Extract ap EPs
+        # Extract all AP EPs
         ap_eps = [ep for ep in data if ep['AppProfile'] == ap]
 
         # Top level node in Tree
@@ -86,6 +98,7 @@ def consul_tree_dict(self, data):
                         'attributes': {
                             "Node" : ep_node["node_name"],
                             "Node Checks" : ep_node["node_check"],
+                            "Reporting Node IP": ep_node['ipAddressList'][0],
                             "Services_List" : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
@@ -122,6 +135,13 @@ def consul_tree_dict(self, data):
                             }
                         }
 
+                        # Add Service to EP
+                        ep_dict['children'].append(service_dict)
+
+
+                        # Now adding the service info in EP and EPG attributes
+                        # for the Side Pane info, 
+                        # And adding services lable to EPG
 
                         # Service for side pane
                         service_side_pane = {
@@ -138,18 +158,25 @@ def consul_tree_dict(self, data):
                         if service_side_pane not in epg_dict['attributes']['Services_List']:
                             epg_dict['attributes']['Services_List'].append(service_side_pane)
 
-                        # Add lable to EPG if not there
+                        # Add lable to EPG if not there, a EPG can have more then one services in 
+                        # the EPs, But as it is difficult to show all of those in the tree view 
+                        # UI only 1 is shown with ellipsis
                         if not epg_dict['label']:
                             epg_dict['label'] = service["service_instance"] + ", ..."
 
-                        # Add Service to EP
-                        ep_dict['children'].append(service_dict)
 
+                    # Add EP to EPG
+                    epg_dict['children'].append(ep_dict)
+
+
+                    # Now adding the Node info in the EPG Side Pane 
+                    # if it does not exist
 
                     # Node for side pane
                     ep_side_pane = {
                         "Node": ep_node['nodeName'],
-                        "Node Checks": ep_node['nodeCheck']
+                        "Node Checks": ep_node['nodeCheck'],
+                        "Reporting Node IP": ep_node['ipAddressList'][0]
                     }
 
                     # Adding Node to EPG attributes
@@ -157,17 +184,14 @@ def consul_tree_dict(self, data):
                         epg_dict['attributes']['Nodes'].append(ep_side_pane)
 
 
-                    # Add EP to EPG
-                    epg_dict['children'].append(ep_dict)
-
             #  Iterating for each Non service end point in EPG
             if epg_eps[0]['Non_IPs']: # TODO: understand Y is this [0], Also the key
                 non_ep_dict={}
                 non_ep_dict['name'] = 'EP'
                 non_ep_dict['type'] = 'grey'
-                non_ep_dict['level'] = 'grey' # Verify 2 labels
-                non_ep_dict['label'] = '' # Verify 2 labels
-                non_ep_dict['sub_label'] = '' # Verify if this is needed or not.
+                non_ep_dict['level'] = 'grey' # TODO: Verify 2 labels
+                non_ep_dict['label'] = '' # TODO: Verify 2 labels
+                non_ep_dict['sub_label'] = '' # TODO: Verify if this is needed or not.
                 non_ep_dict['attributes'] = epg_eps[0]['Non_IPs']
                 non_ep_dict['fractions'] = epg_eps[0]['fraction']
                 epg_dict['children'].append(non_ep_dict)
