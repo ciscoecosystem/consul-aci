@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import uuid from "uuid";
 import { select } from "d3";
+import { Icon } from "blueprint-react";
 import "./style.css";
 import "react-tippy/dist/tippy.css";
 import d3Tip from "d3-tip";
@@ -9,6 +10,10 @@ d3.tip = d3Tip;
 
 // var qtip;
 var d;
+
+const successColor = "#6ebe4a";
+const failColor = "#e2231a";
+const warningColor = "#f49141";
 
 export default class Node extends React.Component {
   constructor(props) {
@@ -238,6 +243,7 @@ export default class Node extends React.Component {
 
   render() {
     const { nodeData, nodeSvgShape, textLayout, styles } = this.props;
+    const checks = ("checks" in nodeData) ? nodeData.checks : undefined; // for checks [passing/ warning / failing]
     const nodeStyle = nodeData._children
       ? { ...styles.node }
       : { ...styles.leafNode };
@@ -337,6 +343,16 @@ export default class Node extends React.Component {
         ) : (
           ""
         )}
+       
+       {/* checks part */}
+        {(checks !== undefined) && <foreignObject x="-47" y="45" width="100" height="30" className="node-icon">
+            <span>
+                {(checks.passing !== undefined ) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{1}&nbsp;&nbsp;</span>}
+                {(checks.warning !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{2}&nbsp;&nbsp;</span>}
+                {(checks.failing !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{3} </span>}
+            </span>
+        </foreignObject>}
+
       </g>
     );
   }
