@@ -113,6 +113,7 @@ class generateD3Dict(object):
                             "Reporting Node IP": n['ipAddressList'][0],  # node ip to add in package, 0th used for now
                             "Services_List" : ep_service_list,
                             'IP': ep_node['IP'],
+                            'Mac': ep_nodes[0]['CEP-Mac'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
                             'VMM-Domain': ep_nodes[0]['VMM-Domain'] # ep_node should be instead of ep_nodes[0]
                         }

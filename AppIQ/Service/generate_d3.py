@@ -104,6 +104,7 @@ class generateD3Dict(object):
                                     hrv_list_dict[hrv['Violation Id']] = hrv
                     ep_dict['attributes'] = {
                         'IP': epg_ip,
+                        'Mac': ep_nodes[0]['CEP-Mac'],
                         'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])),
                         'ServiceEndpoints': sep_list_dict.values(),
                         'HealthRuleViolations': hrv_list_dict.values(),
