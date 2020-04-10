@@ -14,8 +14,6 @@ import "./style.css";
 import DetailsPane from "./DetailsPane";
 import DetailsPage from "./DetailsPage";
 
-import LegendNode from "./LegendNode.js";
-
 const svgSquare = {
   shape: "rect",
   shapeProps: {
@@ -548,7 +546,8 @@ export default class Tree extends React.Component {
               className="rd3t-g"
               transform={`translate(${translate.x},${translate.y})`}
             >
-              {links.map(linkData => (
+               {/* the links under root node is avoided */}
+              {links.slice(this.props.totApps).map(linkData => (
                 <Link
                   key={uuid.v4()}
                   orientation={orientation}
@@ -559,7 +558,8 @@ export default class Tree extends React.Component {
                 />
               ))}
 
-              {nodes.map(nodeData => (
+              {/* root node is avoided */}
+              {nodes.slice(1).map(nodeData => (
                 <Node
                   key={nodeData.id}
                   nodeSvgShape={nodeSvgShape}
@@ -593,14 +593,12 @@ export default class Tree extends React.Component {
               data={this.state.detailsPane.data}
             />
           ) : null}   
-          {/* {this.state.detailsPage.visible ? (
+          {this.state.detailsPage.visible ? (
             <DetailsPage
               data = {this.state.detailsPage.data}
               closeDetailsPage={this.closeDetailsPage}
             />
           ) : null}
-
-        */}
         </div>
       </div>
     );

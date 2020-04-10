@@ -29,7 +29,7 @@ class Header extends React.Component {
         this.setState({showModal:false})
     }
     handleLogoutClick() {
-        window.location.href = "login.html?reset=1";
+        window.location.href = "index.html?reset=1"; //TEMPORARY change to login.html
     }
 
     render() {
@@ -37,7 +37,8 @@ class Header extends React.Component {
         return (
             <div className="clearfix">
                 {this.state.showModal ? <Modal close={this.closeModal}></Modal> : null}
-                <a href="index.html" className="sub-header floal">{this.props.applinktext}</a>
+                {/* TEMPORARY change to index.html */}
+                <a href="app.html" className="sub-header floal">{this.props.applinktext}</a>
                 <div className="sub-header floal">{this.props.text}</div>
              
 			

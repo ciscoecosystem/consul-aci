@@ -66,6 +66,17 @@ class Run(graphene.ObjectType):
 class Details(graphene.ObjectType):
     details = graphene.String()
 
+class ServiceChecks(graphene.ObjectType):
+    response = graphene.String()
+
+class NodeChecks(graphene.ObjectType):
+    response = graphene.String()
+
+class ServiceChecksEP(graphene.ObjectType):
+    response = graphene.String()
+
+class NodeChecksEPG(graphene.ObjectType):
+    response = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -81,7 +92,7 @@ class Query(graphene.ObjectType):
     GetFaults = graphene.Field(GetFaults, dn=graphene.String())
     GetEvents = graphene.Field(GetEvents, dn=graphene.String())
     GetAuditLogs = graphene.Field(GetAuditLogs, dn=graphene.String())
-    GetOperationalInfo = graphene.Field(GetOperationalInfo, dn = graphene.String(), moType = graphene.String(), ipList = graphene.String())
+    GetOperationalInfo = graphene.Field(GetOperationalInfo, dn = graphene.String(), moType = graphene.String(), macList = graphene.String())
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies, tn = graphene.String(), ap = graphene.String(), epg = graphene.String())
     GetToEpgTraffic = graphene.Field(GetToEpgTraffic, dn = graphene.String())
     GetSubnets = graphene.Field(GetSubnets, dn = graphene.String())
@@ -89,6 +100,11 @@ class Query(graphene.ObjectType):
 
     # EnableView = graphene.Field(EnableView,view=graphene.String())
     Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
+    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
+    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
+
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -102,8 +118,8 @@ class Query(graphene.ObjectType):
         GetAuditLogs.auditLogsList = app.get_audit_logs(dn)
         return GetAuditLogs
     
-    def resolve_GetOperationalInfo(self, info, dn, moType, ipList):
-        GetOperationalInfo.operationalList = app.get_childrenEp_info(dn, moType, ipList)
+    def resolve_GetOperationalInfo(self, info, dn, moType, macList):
+        GetOperationalInfo.operationalList = app.get_childrenEp_info(dn, moType, macList)
         return GetOperationalInfo
 
     def resolve_GetConfiguredAccessPolicies(self, info, tn, ap, epg):
@@ -176,6 +192,22 @@ class Query(graphene.ObjectType):
         #    appId = int(args.get('appId'))
         Details.details = app.get_details(tn, 9)
         return Details
+
+    def resolve_ServiceChecks(self, info, service_name, service_id):
+        ServiceChecks.response = app.get_service_check(service_name, service_id)
+        return ServiceChecks
+    
+    def resolve_NodeChecks(self, info, node_name):
+        NodeChecks.response = app.get_node_checks(node_name)
+        return NodeChecks
+
+    def resolve_ServiceChecksEP(self, info, service_list):
+        ServiceChecksEP.response = app.get_service_check_ep(service_list)
+        return ServiceChecksEP
+
+    def resolve_NodeChecksEPG(self, info, node_list):
+        NodeChecksEPG.response = app.get_node_check_epg(node_list)
+        return NodeChecksEPG 
 
         # def resolve_EnableView(self, args, context, info):
         #
