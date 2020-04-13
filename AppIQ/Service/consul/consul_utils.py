@@ -97,7 +97,7 @@ class Cosnul(object):
             logger.exception('Exception in Consul check connection: {}'.format(str(e)))
 
 
-    def catalog_nodes(self):
+    def nodes(self):
         """Fetching all the nodes using an agent
         
         return: [
@@ -135,14 +135,12 @@ class Cosnul(object):
                 node_list.append({
                     'node_id': node.get('ID', ''),
                     'node_name': node_name,
-                    'node_ips': list(set(ip_list)),
-                    'node_check': node_checks(node_name),
-                    'node_services': node_services(node_name)
+                    'node_ips': list(set(ip_list))
                 })
         except Exception as e:
              logger.exception('Exception in Catalog Nodes: {}'.format(str(e)))
 
-        logger.debug('catalog_nodes return: {}'.format(str(node_list)))
+        logger.debug('nodes return: {}'.format(str(node_list)))
         return node_list
 
 
@@ -153,18 +151,11 @@ class Cosnul(object):
         
         return: [
                     {
-                        'service_id':       string: id
-                        'service_name':     string: name
-                        'service_ip':       string: ip
-                        'service_port':     string: port
-                        'service_address':  string: service ip,if exists, else parent node ip + port
-                        'service_tags':     string list: tags
-                        'service_kind':     string: kind
-                        'service_checks': {
-                                        passing: int: if val > 0
-                                        warning: int: if val > 0
-                                        failing: int: if val > 0
-                                    }
+                        service_id:       string: id
+                        service_name:     string: name
+                        service_ip:       string: ip
+                        service_port:     string: port
+                        service_address:  string: service ip,if exists, else parent node ip + port
                     }, ...
                 ]
         """
@@ -178,11 +169,6 @@ class Cosnul(object):
             logger.debug('Node "{}" Services API data: {}'.format(node_name, str(services_resp)))
 
             for service in services_resp.get('Services'):
-                
-                # get service check, tags and kind using service name
-                service_name = service.get('Service') # This may fail
-                service_check = service_checks(service_name)
-                service_tags, service_kind = service_tags_kind(service_name)
 
                 # form service_address
                 service_ip = service.get('Address')
@@ -195,18 +181,15 @@ class Cosnul(object):
                 # Form a dict
                 service_list.append({
                     'service_id': service.get('ID', ''),
-                    'service_name': service_name,
+                    'service_name': service.get('Service'),
                     'service_ip': service_ip,
                     'service_port': service_port,
-                    'service_address': service_address,
-                    'service_checks': service_check,
-                    'service_tags': service_tags,
-                    'service_kind': service_kind,
+                    'service_address': service_address
                 })
         except Exception as e:
             logger.exception('Exception in Nodes Services: {}'.format(str(e)))
 
-        logger.debug('catalog_nodes return: {}'.format(str(service_list)))
+        logger.debug('nodes_services return: {}'.format(str(service_list)))
         return service_list
 
 
@@ -253,6 +236,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception('Exception in Nodes Checks: {}'.format(str(e)))
 
+        logger.debug('node_checks return: {}'.format(str(check_dict)))
         return check_dict
 
 
@@ -296,6 +280,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception('Exception in Service Checks: {}'.format(str(e)))
 
+        logger.debug('service_checks return: {}'.format(str(check_dict)))
         return check_dict
 
 
@@ -325,4 +310,202 @@ class Cosnul(object):
         except Exception as e:
             logger.exception('Exception in Service Details: {}'.format(str(e)))
 
+        logger.debug('service_tags_kind return: {}, {}'.format(tag_list, service_kind))
         return tag_list, service_kind
+
+
+    def datacenters(self):
+        """This will return datacenters list of an agent
+        
+        return: string list
+        """
+
+        logger.info('Datacentres for agent: {}:{}'.format(self.agent_ip, self.port))
+        datacenter_list = []
+        try:
+            agent_resp = requests.get(urls.CATALOG_DC.format(self.base_url))
+            datacenter_list = json.loads(agent_resp.content)
+            logger.debug('Datacenter API data: {}'.format(datacenter_list))
+
+        except Exception as e:
+            logger.exception("Error in Datacenter list: {}".format(e))
+        
+        logger.debug('datacenters return: {}, {}'.format(str(datacenter_list)))
+        return datacenter_list
+
+
+    def detailed_service_check(self, service_name, service_id):
+        """Get serveice checks details
+        
+        service_name: name of the service for checks
+
+        return: [{
+            ServiceName: string
+            CheckID: string
+            Type: string
+            Notes: string
+            Output: string
+            Name: string
+            Status: {
+                passing: int: if val > 0
+                warning: int: if val > 0
+                failing: int: if val > 0
+                }
+            },...]
+        """
+
+        logger.info('Service Checks for service: {}, {}'.format(service_name, service_id))
+        service_checks_list = []
+        try:
+            service_resp = requests.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
+            service_resp = json.loads(service_resp.content)
+            logger.debug('Service Check API data: {}'.format(service_resp))
+            
+            for check in service_resp:
+                if check.get("ServiceID").lower() == service_id.lower():
+                    service_check = {}
+                    service_check["ServiceName"] = check.get("ServiceName")
+                    service_check["CheckID"] = check.get("CheckID")
+                    service_check["Type"] = check.get("Type")
+                    service_check["Notes"] = check.get("Notes")
+                    service_check["Output"] = check.get("Output")
+                    service_check["Name"] = check.get("Name")
+                    if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                        service_check["Status"] = check.get("Status")
+                    else:
+                        service_check["Status"] = 'failing'
+                    service_checks_list.append(service_check)
+        except Exception as e:
+            logger.exception("error in fatching service checks : " + str(e))
+
+        logger.debug('detailed_service_check return: {}, {}'.format(str(service_checks_list)))
+        return service_checks_list
+
+
+    def detailed_node_check(self, node_name):
+        """Get node checks details
+
+        node_name: name of the node for checks
+
+        return: [{
+            Name: streing
+            ServiceName: string
+            CheckID: string
+            Type: string
+            Notes: string
+            Output: string
+            Status: {
+                passing: int: if val > 0
+                warning: int: if val > 0
+                failing: int: if val > 0
+                }
+            },...]
+        """
+
+        logger.info('Node Checks for node: {}'.format(node_name))
+        node_checks_list = []
+        try:
+            node_resp = requests.get(urls.NODE_CHECK.format(self.base_url, node_name))
+            node_resp = json.loads(node_resp.content)
+            logger.debug('Node Check API data: {}'.format(node_resp))
+
+            for check in node_resp:
+                if not check.get("ServiceName"):
+                    node_check = {}
+                    node_check["Name"] = check.get("Name")
+                    node_check["ServiceName"] = "-"
+                    node_check["CheckID"] = check.get("CheckID")
+                    node_check["Type"] = check.get("Type")
+                    node_check["Notes"] = check.get("Notes")
+                    node_check["Output"] = check.get("Output")
+                    if 'passing' == check.get('Status').lower() or 'warning' == check.get('Status').lower():
+                        node_check["Status"] = check.get("Status")
+                    else:
+                        node_check["Status"] = 'failing'
+                    node_checks_list.append(node_check)
+        except Exception as e:
+            logger.exception("error in fatching node checks : " + str(e))
+
+        logger.debug('detailed_node_check return: {}, {}'.format(str(node_checks_list)))
+        return node_checks_list
+
+
+    def get_consul_data(self):
+        """
+        This will fetch the data from the API and return for now
+        Decide the form of data neede in the merge logic and return as per that.
+
+        return: [
+                    {
+                        node_id:    string: id
+                        node_name:  string: name
+                        node_ips:   unique string list: ips
+                        node_check: {
+                                passing: int: if val > 0
+                                warning: int: if val > 0
+                                failing: int: if val > 0
+                            }
+                        node_services: [
+                                {
+                                    service_id:       string: id
+                                    service_name:     string: name
+                                    service_ip:       string: ip
+                                    service_port:     string: port
+                                    service_address:  string: service ip,if exists, else parent node ip + port
+                                    service_tags:     string list: tags
+                                    service_kind:     string: kind
+                                    service_checks: {
+                                                    passing: int: if val > 0
+                                                    warning: int: if val > 0
+                                                    failing: int: if val > 0
+                                                }
+                                }, ...
+                            ]
+                    }, ...
+                ]
+        """
+
+        logger.info('Get all consul data.')
+        consul_data = []
+        try:
+
+            list_of_nodes = nodes()
+
+            for node in list_of_nodes:
+
+                # get all the services info using name
+                node_name = node.get('node_name')
+                service_list = nodes_services(node_name)
+                final_service_list = []
+
+                for service in service_list:
+
+                    # get service check, tags and kind using service name
+                    service_name = service.get('Service') # This may fail
+                    service_check = service_checks(service_name)
+                    service_tags, service_kind = service_tags_kind(service_name)
+
+                    # Form final dict
+                    final_service_list.append({
+                        'service_id': service.get('service_id'),
+                        'service_ip': service.get('service_ip'),
+                        'service_port': service.get('service_port'),
+                        'service_address': service.get('service_address'),
+                        'service_name': service_name,
+                        'service_checks': service_check,
+                        'service_tags': service_tags,
+                        'service_kind': service_kind,
+                    })
+
+                consul_data.append({
+                    'node_id': node.get('node_id'),
+                    'node_name': node_name,
+                    'node_ips': node.get('node_ips'),
+                    'node_check': node_checks(node_name),
+                    'node_services': final_service_list
+                })
+        except Exception as e:
+            logger.exception("Error while merge_aci_data : "+str(e))
+
+        logger.debug('get_consul_data return: {}, {}'.format(str(consul_data)))
+        return consul_data
