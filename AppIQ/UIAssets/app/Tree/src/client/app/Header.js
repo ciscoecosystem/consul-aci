@@ -29,7 +29,7 @@ class Header extends React.Component {
         this.setState({showModal:false})
     }
     handleLogoutClick() {
-        window.location.href = "login.html?reset=1";
+        window.location.href = "index.html?reset=1"; //TEMPORARY change to login.html
     }
 
     render() {
