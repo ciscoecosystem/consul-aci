@@ -347,9 +347,9 @@ export default class Node extends React.Component {
        {/* checks part */}
         {(checks !== undefined) && <foreignObject x="-47" y="45" width="100" height="30" className="node-icon">
             <span>
-                {(checks.passing !== undefined ) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{1}&nbsp;&nbsp;</span>}
-                {(checks.warning !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{2}&nbsp;&nbsp;</span>}
-                {(checks.failing !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{3} </span>}
+                {(checks.passing !== undefined ) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{checks.passing}&nbsp;&nbsp;</span>}
+                {(checks.warning !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{checks.warning}&nbsp;&nbsp;</span>}
+                {(checks.failing !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>}
             </span>
         </foreignObject>}
 
