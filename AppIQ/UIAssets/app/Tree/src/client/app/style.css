@@ -271,3 +271,12 @@
   background-color : #a0a0a0;
   color : #000;
 }
+
+
+.node-icon {
+  text-align: center;
+}
+
+.cui .node-icon .icon-tiny:before {
+  font-size: 13px!important;
+}
