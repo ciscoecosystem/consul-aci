@@ -13,6 +13,9 @@ class Cosnul(object):
     """Consul class"""
 
     def __init__(self, agent_ip, port, token):
+        
+        logger.info('Consul Object init for agent: {}:{}'.format(agent_ip, port))
+
         self.agent_ip = str(agent_ip)
         self.port = str(port)
         self.token = token
