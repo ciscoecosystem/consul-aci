@@ -383,7 +383,8 @@ def get_faults(dn):
                 "severity" : fault_attr.get("severity"),
                 "affected" : fault_attr.get("affected"),
                 "descr" : fault_attr.get("descr"),
-                "created" : fault_attr.get("created")
+                "created" : fault_attr.get("created"),
+                "cause" : fault_attr.get("cause")
             }
             faults_payload.append(fault_dict)
         return json.dumps({
