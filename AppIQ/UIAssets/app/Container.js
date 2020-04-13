@@ -216,7 +216,7 @@ class Container extends React.Component {
     }
 
     handleLoginClick() {
-        window.location.href = "login.html?reset=1";
+        window.location.href = "index.html?reset=1"; //TEMPORARY change to login.html
     }
    
     render() {

@@ -7,12 +7,13 @@ import DataTable from "./DetailsPageChild/DataTable.js";
 import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
 import CONSUL_ChecksTable from "./DetailsPageChild/CONSUL_ChecksTable";
+import CONSUL_ConsulTab from "./DetailsPageChild/CONSUL_ConsulTab";
 
 export default class DetailePage extends Component {
   constructor(props) {
     super(props);
     this.test = this.test.bind(this);
-    this.getIPList = this.getIPList.bind(this);
+    this.getMacList = this.getMacList.bind(this);
     this.getQueryParams = this.getQueryParams.bind(this);
     this.getCustomQuery = this.getCustomQuery.bind(this);
     this.setNewTab = this.setNewTab.bind(this);
@@ -60,12 +61,12 @@ export default class DetailePage extends Component {
       epg: this.state.data.sub_label
     }
   }
-  getIPList() {
+  getMacList() {
     if (this.state.data.type === "grey") {
-      return Object.values(this.state.data.attributes) || ""
+      return Object.keys(this.state.data.attributes) || ""
     }
     else {
-      return this.state.data.attributes.IP || ""
+      return this.state.data.attributes.Mac || ""
     }
   }
   setNewTab(clonedObj) {
@@ -93,12 +94,12 @@ export default class DetailePage extends Component {
       clonedObj.splice(0, 1);
       console.log(clonedObj);
 
-      this.setState({ tabs: [] });
+      this.setState({ tabs: clonedObj });
     }
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
-      let ipList = "";
-      let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
+      let macList = "";
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
 
@@ -111,6 +112,53 @@ export default class DetailePage extends Component {
       // ]
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
 
+      /**
+       * Consul tab:- 
+       */
+
+      // Setting query ...
+      let nodeList = [];
+      let serviceList = [];
+      let finalServiceList = [];
+
+      try {
+        nodeList = data.attributes['Nodes'].map(val => val["Node"])
+        let epList = data.children; // List of EP
+
+        if (epList && epList.length > 0) {
+          // traversing all EP and appending its childen service in serviceList 
+          epList.forEach(element => {
+
+            let epServices = element.children;
+            if (epServices && epServices.length > 0) {
+
+              let serviceListNew = epServices.map(inData => {
+                return Object.assign({},
+                  {
+                    'Service': inData.attributes['Service'],
+                    'ServiceID': inData.attributes['Service Instance']
+                  })
+              })
+              serviceList.push(serviceListNew);
+            }
+          });
+        }
+
+        finalServiceList = [].concat.apply([], serviceList);
+
+      } catch (error) {
+        console.log("error in setting query", error);
+      }
+
+      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + '){response}}'};
+
+      clonedObj.push({
+        label: "Consul",
+        key: "Consul",
+        content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+      });
+
       this.setState({ tabs: clonedObj });
     }
     // for EP detail view expansion ; Tabs are [Operational, Health Check, Node check, Service Check]
@@ -118,9 +166,9 @@ export default class DetailePage extends Component {
       console.log("SEttting tab in EP");
       // clonedObj.splice(1, 1);
       let moType = data.name.toLowerCase();
-      let ipList = this.getIPList();
+      let macList = this.getMacList();
 
-      let param = queryParams + '",moType:"' + moType + '",ipList:"' + ipList
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
       let query = {
         param, type: "GetOperationalInfo",
         list: "{operationalList}"

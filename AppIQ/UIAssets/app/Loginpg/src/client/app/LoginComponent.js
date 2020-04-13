@@ -32,7 +32,7 @@ class LoginComponent extends React.Component {
             <div>
                 {
                     (this.state.user) ?
-                        window.location.href = "index.html"
+                        window.location.href = "app.html" //temporary
                         :
                             <LoginForm
                                 onSignIn={this.signIn.bind(this)}

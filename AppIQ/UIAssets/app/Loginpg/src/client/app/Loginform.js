@@ -64,6 +64,8 @@ class LoginForm extends React.Component {
     constructor(props) {
         super(props);
 
+        /*
+        // ** TEMPORARILY PURPOSE bypass
         const check_payload = {query: `query{
             Check{checkpoint}            
           }`}
@@ -73,14 +75,15 @@ class LoginForm extends React.Component {
         try {
             if(JSON.parse(JSON.parse(checkData).data.Check.checkpoint).status_code == "200") {
                 if(typeof getUrlVars()['reset'] == "undefined") {
-                    window.location.href = "index.html";
+                    window.location.href = "app.html";
                 }
             }
         }
         catch(e) {
             console.log('Error collecting checkpoint');
         }
-        
+        */
+
         this.handleSignIn = this.handleSignIn.bind(this);
         this.notify = this.notify.bind(this);
     }
@@ -128,7 +131,7 @@ class LoginForm extends React.Component {
                         let resp = JSON.parse(json.data.LoginApp.loginStatus)
                         if(resp.status_code == 200) {
                             signin(username, password, account, port, ip);
-                            window.location.href = "index.html";
+                            window.location.href = "app.html";
                         }
                         else {
                             thiss.notify(resp.message);
@@ -152,6 +155,7 @@ class LoginForm extends React.Component {
         return (
             <div>
             <ToastContainer />
+            {/* Temporarily commented --- 
             <form onSubmit={this.handleSignIn}>
                 <center>
                     <table>
@@ -194,6 +198,15 @@ class LoginForm extends React.Component {
                     </table>
                     <br/>
                     <input type="submit" value="Login" className="button view-button" />
+                </center>
+            </form>
+            */}
+
+            {/* for Temporary bypass purpose */}
+            <form>
+                <center>
+                    <br/>
+                    <input type="button" value="Login" className="button view-button" onClick={()=> window.location.href = "app.html"}/>
                 </center>
             </form>
             </div>

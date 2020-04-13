@@ -138,7 +138,7 @@ export default class CONSUL_ChecksTable extends Component {
     }
 
     render() {
-
+        let { extraColumn } = this.props;
         const headerColumns = [
             {
                 Header: 'Name',
@@ -172,6 +172,10 @@ export default class CONSUL_ChecksTable extends Component {
             }
         ]
 
+        if (extraColumn){
+            headerColumns.splice(extraColumn.index, 0, extraColumn.value ); // adding extra column at spicified index
+        }
+
         return (
             <Panel style={{ width: "100%" }} border="panel--bordered">
                 <ToastContainer></ToastContainer>
@@ -183,8 +187,23 @@ export default class CONSUL_ChecksTable extends Component {
                     expanded={this.state.expanded}
                     onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
                     SubComponent={row => {
-                        return (<div style={{ margin: "8px 32px" }}>
-                            <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}><bold>Output: </bold>&nbsp;{row.original.Output} </Label>
+                        let { Output } = row.original;
+                        return (<div className="table-cell-output">
+                            <div className="d-flex">
+                                <div className="cell-label"> Output: </div>
+                                <div className="cell-code">
+                                    <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>
+                                        <pre>
+                                            {Output.split("\n").map(ele => {
+                                                return <code>
+                                                    {ele}
+                                                    <br />
+                                                </code>
+                                            })}
+                                        </pre>
+                                    </Label>
+                                </div>
+                            </div>
                         </div>)
                     }} />
 
