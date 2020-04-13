@@ -98,7 +98,7 @@ def consul_tree_dict(self, data):
                         'attributes': {
                             'Node' : ep_node['node_name'],
                             'Node Checks' : ep_node['node_check'],
-                            'Reporting Node IP': ep_node['ipAddressList'][0],
+                            'Reporting Node IP': ep_node['node_ips'][0],
                             'Services_List' : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
@@ -118,7 +118,7 @@ def consul_tree_dict(self, data):
                         if service['service_ip']:
                             service_address = str(service['service_ip']) + ':' + str(service['port'])
                         else:
-                            service_address = str(ep_node['ip_list'][0]) + ':' + str(service['port']) # for now 0th is taken, will change
+                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['port']) # for now 0th is taken, will change
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
@@ -174,9 +174,9 @@ def consul_tree_dict(self, data):
 
                     # Node for side pane
                     ep_side_pane = {
-                        'Node': ep_node['nodeName'],
-                        'Node Checks': ep_node['nodeCheck'],
-                        'Reporting Node IP': ep_node['ipAddressList'][0]
+                        'Node': ep_node['node_name'],
+                        'Node Checks': ep_node['node_check'],
+                        'Reporting Node IP': ep_node['node_ips'][0]
                     }
 
                     # Adding Node to EPG attributes
