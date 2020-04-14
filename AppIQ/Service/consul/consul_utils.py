@@ -3,7 +3,7 @@
 import urls
 import json
 import requests
-from .. import custom_logger
+import custom_logger
 
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
@@ -330,7 +330,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception("Error in Datacenter list: {}".format(e))
         
-        logger.debug('datacenters return: {}, {}'.format(str(datacenter_list)))
+        logger.debug('datacenters return: {}'.format(str(datacenter_list)))
         return datacenter_list
 
 

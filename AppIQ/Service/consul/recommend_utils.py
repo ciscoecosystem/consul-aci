@@ -1,7 +1,8 @@
 """"""
 
-from ..custom_logger import CustomLogger
-logger = CustomLogger.get_logger("/home/app/log/app.log")
+import custom_logger
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
+
 
 def getCommonEPs(source_ip_list, aci_parsed_eps):
     """Map EP(ACI) to Nodes(AppD/Consul)

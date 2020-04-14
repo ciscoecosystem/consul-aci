@@ -1,8 +1,8 @@
 import datetime
 import json
-from ..custom_logger import CustomLogger
+import custom_logger
 
-logger = CustomLogger.get_logger("/home/app/log/app.log")
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):

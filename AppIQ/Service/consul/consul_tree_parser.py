@@ -112,15 +112,15 @@ def consul_tree_dict(self, data):
                     # Iterating for each Service in EP
                     for service in ep_node['services']:
 
-                        if len(service['service_instance']) > 11:
-                            service_label = service['service_instance'][:11] + '..'
+                        if len(service['service_id']) > 11:
+                            service_label = service['service_id'][:11] + '..'
                         else:
-                            service_label = service['service_instance']
+                            service_label = service['service_id']
 
                         if service['service_ip']:
-                            service_address = str(service['service_ip']) + ':' + str(service['port'])
+                            service_address = str(service['service_ip']) + ':' + str(service['service_port'])
                         else:
-                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['port']) # for now 0th is taken, will change
+                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port']) # for now 0th is taken, will change
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
@@ -128,8 +128,8 @@ def consul_tree_dict(self, data):
                             'type': '#C5D054',
                             'label': service_label,
                             'attributes': {
-                                'Service' : service['service'],
-                                'Service Instance' : service['service_instance'],
+                                'Service' : service['service_name'],
+                                'Service Instance' : service['service_id'],
                                 'Address' : service_address,
                                 'Service Kind' : service['service_kind'],
                                 'Service Tag' : service['service_tags'],
@@ -147,7 +147,7 @@ def consul_tree_dict(self, data):
 
                         # Service for side pane
                         service_side_pane = {
-                            'Service' : service['service_instance'],
+                            'Service' : service['service_id'],
                             'Address' : service_address,
                             'Service Checks' : service['service_checks']
                         }

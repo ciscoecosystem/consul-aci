@@ -12,14 +12,14 @@ from . import recommend_utils
 from . import consul_tree_parser
 from consul_utils import Cosnul
 
-from .. import aci_utils
-from ..custom_logger import CustomLogger
+import aci_utils
+import custom_logger
 
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
 app.debug = True  # See use
 
-logger = CustomLogger.get_logger("/home/app/log/app.log")
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
 def set_polling_interval(interval):
@@ -67,10 +67,10 @@ def get_datacenter_list():
 
     try:        
         # get list of all agents
-        agent_list = get_agent_list()
+        agent_list = get_agent_list('all')
 
         for agent in agent_list:
-            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
             
             agent_datacenters = consul_obj.datacenters()
             for datacenter in agent_datacenters:
@@ -88,7 +88,7 @@ def get_datacenter_list():
             "message": "OK"
             })
     except Exception as e:
-        logger.exception("Could not fetch datacenter list, Error: {}"+str(e))
+        logger.exception("Could not fetch datacenter list, Error: {}".format(str(e)))
         return json.dumps({
             "payload": {}, 
             "status_code": "300", 
@@ -140,16 +140,16 @@ def tree(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
-            ip_list += node.get('ipAddressList', [])
+            ip_list += node.get('node_ips', [])
             # For fetching ips of services.
-            for service in node.get('services', []):
+            for service in node.get('node_services', []):
                 # check ip is not empty string
-                if service.get('serviceIP', ''):
-                    ip_list.append(service.get('serviceIP'))
+                if service.get('service_ip', ''):
+                    ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
         aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
@@ -199,16 +199,16 @@ def details(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
-            ip_list += node.get('ipAddressList', [])
+            ip_list += node.get('node_ips', [])
             # For fetching ips of services.
-            for service in node.get('services', []):
+            for service in node.get('node_services', []):
                 # check ip is not empty string
-                if service.get('serviceIP', ''):
-                    ip_list.append(service.get('serviceIP'))
+                if service.get('service_ip', ''):
+                    ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
         aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
@@ -234,9 +234,9 @@ def details(tenant):
                     'ap': each.get('AppProfile'),
                     'epgName': each.get('EPG'),
                     'epgHealth': epg_health,
-                    'consulNode': each.get('nodeName'),
-                    'nodeChecks': each.get('nodeCheck'),
-                    'services': each.get('services')
+                    'consulNode': each.get('node_name'),
+                    'nodeChecks': each.get('node_check'),
+                    'services': each.get('node_services')
                 })
         logger.debug("Details final data ended: " + str(details_list))
         
@@ -248,7 +248,7 @@ def details(tenant):
             "message": "OK"
             })
     except Exception as e:
-        logger.exception("Could not load the Details. Error: {}".formate(str(e)))
+        logger.exception("Could not load the Details. Error: {}".format(str(e)))
         return json.dumps({
             "payload": {},
             "status_code": "300",
@@ -321,7 +321,7 @@ def get_service_check(service_name, service_id):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -358,7 +358,7 @@ def get_node_checks(node_name):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -396,7 +396,7 @@ def get_service_check_ep(service_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -438,7 +438,7 @@ def get_node_check_epg(node_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
 
         for node_name in node_list:
             response += consul_obj.detailed_node_check(node_name)
