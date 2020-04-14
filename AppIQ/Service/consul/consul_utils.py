@@ -180,7 +180,7 @@ class Cosnul(object):
                 
                 # Form a dict
                 service_list.append({
-                    'service_id': service.get('ID', ''),
+                    'service_id': service.get('ID'),
                     'service_name': service.get('Service'),
                     'service_ip': service_ip,
                     'service_port': service_port,
@@ -310,7 +310,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception('Exception in Service Details: {}'.format(str(e)))
 
-        logger.debug('service_tags_kind return: {}, {}'.format(tag_list, service_kind))
+        logger.debug('service_tags_kind return: {}'.format(tag_list, service_kind))
         return tag_list, service_kind
 
 
@@ -378,7 +378,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception("error in fatching service checks : " + str(e))
 
-        logger.debug('detailed_service_check return: {}, {}'.format(str(service_checks_list)))
+        logger.debug('detailed_service_check return: {}'.format(str(service_checks_list)))
         return service_checks_list
 
 
@@ -426,7 +426,7 @@ class Cosnul(object):
         except Exception as e:
             logger.exception("error in fatching node checks : " + str(e))
 
-        logger.debug('detailed_node_check return: {}, {}'.format(str(node_checks_list)))
+        logger.debug('detailed_node_check return: {}'.format(str(node_checks_list)))
         return node_checks_list
 
 
@@ -469,21 +469,21 @@ class Cosnul(object):
         consul_data = []
         try:
 
-            list_of_nodes = nodes()
+            list_of_nodes = self.nodes()
 
             for node in list_of_nodes:
 
                 # get all the services info using name
                 node_name = node.get('node_name')
-                service_list = nodes_services(node_name)
+                service_list = self.nodes_services(node_name)
                 final_service_list = []
 
                 for service in service_list:
 
                     # get service check, tags and kind using service name
-                    service_name = service.get('Service') # This may fail
-                    service_check = service_checks(service_name)
-                    service_tags, service_kind = service_tags_kind(service_name)
+                    service_name = service.get('service_name') # This may fail
+                    service_check = self.service_checks(service_name)
+                    service_tags, service_kind = self.service_tags_kind(service_name)
 
                     # Form final dict
                     final_service_list.append({
@@ -501,11 +501,11 @@ class Cosnul(object):
                     'node_id': node.get('node_id'),
                     'node_name': node_name,
                     'node_ips': node.get('node_ips'),
-                    'node_check': node_checks(node_name),
+                    'node_check': self.node_checks(node_name),
                     'node_services': final_service_list
                 })
         except Exception as e:
             logger.exception("Error while merge_aci_data : "+str(e))
 
-        logger.debug('get_consul_data return: {}, {}'.format(str(consul_data)))
+        logger.debug('get_consul_data return: {}'.format(str(consul_data)))
         return consul_data
