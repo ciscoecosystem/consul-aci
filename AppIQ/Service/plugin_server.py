@@ -256,10 +256,8 @@ def mapping(tenant, appDId):
         appId = str(appDId) + str(tenant)
         mapping_dict = {"source_cluster": [], "target_cluster": []}
         
-        # returns the mapping from Mapping Table
-        already_mapped_data = database_object.return_mapping(appId)
-        rec_object = Recommend.Recommend()
-        mapped_objects = rec_object.correlate_aci_appd(tenant, appDId)        
+        consul_data = consul_merge.get_consul_data()
+        mapped_objects = consul_merge.correlate_aci_consul(tenant, "data_center", consul_data)
 
         if not mapped_objects:
             logger.info('Empty Mapping dict for appDId:'+str(appDId))
@@ -269,31 +267,12 @@ def mapping(tenant, appDId):
         # Get new mapping based on recommendation which may have new nodes
         current_mapping = get_mapping_dict_target_cluster(mapped_objects)
 
-        if already_mapped_data != None:
-            logger.info('Mapping to target cluster already exists')
-
-            #current mapping -> new mapping between aci and appd
-            for new_map in current_mapping:
-                #already_mapped_data from database right side
-                for each_already_mapped in already_mapped_data:
-                    key = 'ipaddress'
-                    if 'ipaddress' not in each_already_mapped:
-                        key = 'macaddress'
-                        
-                    # Find node which is same as based on recommendation
-                    if each_already_mapped.get(key) == new_map.get(key) and each_already_mapped.get('domainName') == new_map.get('domainName'):
-                        # If disabled node found in recommended and saved mapping then it should be disabled
-                        if each_already_mapped.get('disabled') == True:
-                            new_map['disabled'] = True
-                        break
-
-        database_object.check_if_exists_and_update('Mapping', [appId, current_mapping])
         mapping_dict['target_cluster'] = [node for node in current_mapping if node.get('disabled') == False]
 
         for new_object in mapped_objects:
             mapping_dict['source_cluster'].append(new_object)
 
-        return json.dumps({"instanceName":get_instance_name(),
+        return json.dumps({"instanceName":"10.23.239.14",
                            "payload": mapping_dict, # {"source_cluster": mapped_objects, "target_cluster": {{dn:IP},{dn:IP}}}
                            "status_code": "200",
                            "message": "OK"})
@@ -332,37 +311,39 @@ def save_mapping(appDId, tenant, mappedData):
     """
     Save mapping to database.
     """
-    start_time = datetime.datetime.now()
-    try:
-        appId = str(appDId) + str(tenant)
-        logger.info('Saving Mappings for app:'+str(appId))
-        mappedData_dict = json.loads(
-            (str(mappedData).strip("'<>() ").replace('\'', '\"')))  # new implementation for GraphQL
-        data_list = []
 
-        already_mapped_data = database_object.return_mapping(appId)
-        for mapping in mappedData_dict:
-            if mapping.get('ipaddress') != "":
-                data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
-            elif mapping.get('macaddress') != "":
-                data_list.append({'macaddress': mapping.get('macaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+    return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
+    # start_time = datetime.datetime.now()
+    # try:
+    #     appId = str(appDId) + str(tenant)
+    #     logger.info('Saving Mappings for app:'+str(appId))
+    #     mappedData_dict = json.loads(
+    #         (str(mappedData).strip("'<>() ").replace('\'', '\"')))  # new implementation for GraphQL
+    #     data_list = []
 
-        if not data_list:
-            database_object.delete_entry('Mapping', appId)
-            #enable_view(appDId, False)
-        else:
-            data_list = parse_mapping_before_save(already_mapped_data, data_list)
-            database_object.delete_entry('Mapping', appId)
-            database_object.check_if_exists_and_update('Mapping', [appId, data_list])
-            enable_view(appDId, True)
-        database_object.commit_session()
-        return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Could not save mappings to the database. Error: "+str(e))
-        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for saveMapping: " + str(end_time - start_time))
+    #     already_mapped_data = database_object.return_mapping(appId)
+    #     for mapping in mappedData_dict:
+    #         if mapping.get('ipaddress') != "":
+    #             data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+    #         elif mapping.get('macaddress') != "":
+    #             data_list.append({'macaddress': mapping.get('macaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+
+    #     if not data_list:
+    #         database_object.delete_entry('Mapping', appId)
+    #         #enable_view(appDId, False)
+    #     else:
+    #         data_list = parse_mapping_before_save(already_mapped_data, data_list)
+    #         database_object.delete_entry('Mapping', appId)
+    #         database_object.check_if_exists_and_update('Mapping', [appId, data_list])
+    #         enable_view(appDId, True)
+    #     database_object.commit_session()
+    #     return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
+    # except Exception as e:
+    #     logger.exception("Could not save mappings to the database. Error: "+str(e))
+    #     return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
+    # finally:
+    #     end_time =  datetime.datetime.now()
+    #     logger.info("Time for saveMapping: " + str(end_time - start_time))
 
 
 def get_faults(dn):
