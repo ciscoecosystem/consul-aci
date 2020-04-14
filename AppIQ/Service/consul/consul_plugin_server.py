@@ -6,10 +6,14 @@ import socket
 import datetime
 from flask import Flask
 
-import consul_tree_parser as tree_parser
+
+from . import consul_merge
+from . import recommend_utils
+from . import consul_tree_parser
+from consul_utils import Cosnul
+
 from .. import aci_utils
 from ..custom_logger import CustomLogger
-from consul_utils import Cosnul
 
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
@@ -27,7 +31,7 @@ def set_polling_interval(interval):
     return "200", "Polling Interval Set!"
 
 
-def get_agent_list():
+def get_agent_list(data_center):
     """Returns list of all the agents
     
     TODO: should not be static, should be from Alchemy
@@ -132,11 +136,30 @@ def tree(tenant):
     start_time = datetime.datetime.now()
     try:
         aci_obj = aci_utils.ACI_Utils()
+        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
+        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        merged_data = consul_merge.merge_aci_consul(tenant, 'data_centre', aci_obj)
+        agent = get_agent_list('default')[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_data = consul_obj.get_consul_data()
+        ip_list = []
+        for node in consul_data:
+            ip_list += node.get('ipAddressList', [])
+            # For fetching ips of services.
+            for service in node.get('services', []):
+                # check ip is not empty string
+                if service.get('serviceIP', ''):
+                    ip_list.append(service.get('serviceIP'))
+
+        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
+
+        aci_data = aci_obj.main(tenant)
+
+        merged_data = consul_merge.merge_aci_consul(tenant, consul_data, aci_data, aci_consul_mappings)
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
-        response = json.dumps(tree_parser.consul_tree_dict(merged_data))
+        response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
@@ -171,11 +194,32 @@ def details(tenant):
     logger.info("Details view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
-        aci_util_obj = aci_utils.ACI_Utils()
+        aci_obj = aci_utils.ACI_Utils()
+        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
+        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
+
+        agent = get_agent_list('default')[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
+        consul_data = consul_obj.get_consul_data()
+        ip_list = []
+        for node in consul_data:
+            ip_list += node.get('ipAddressList', [])
+            # For fetching ips of services.
+            for service in node.get('services', []):
+                # check ip is not empty string
+                if service.get('serviceIP', ''):
+                    ip_list.append(service.get('serviceIP'))
+
+        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
+
+        aci_data = aci_obj.main(tenant)
+
+        merged_data = consul_merge.merge_aci_consul(tenant, consul_data, aci_data, aci_consul_mappings)
+
         details_list = []
-        merged_data = consul_merge.merge_aci_consul(tenant, 'data_center', aci_util_obj)
         for each in merged_data:
-            epg_health = aci_util_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
+            epg_health = aci_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
             ep_info = get_eps_info(each.get('dn'), each.get('IP'))
             details_list.append({
                     'interface': ep_info.get('interface'),
@@ -213,6 +257,22 @@ def details(tenant):
     finally:
         end_time =  datetime.datetime.now()
         logger.debug("Time for DETAILS: " + str(end_time - start_time))
+
+
+def get_mapping_dict_target_cluster(mapped_objects):
+    """
+    return mapping dict from recommended objects
+
+
+    TODO: this can be handled in tree and Details or get proper mapping from db
+    """
+    target = []
+    for map_object in mapped_objects:
+        for entry in map_object.get('domains'):
+            if entry.get('recommended') == True:
+                logger.debug("Mapping found with ipaddress for "+str(map_object))
+                target.append({'domainName': entry.get('domainName'), 'ipaddress': map_object.get('ipaddress'), 'disabled': False})
+    return target
 
 
 def get_eps_info(dn, ip):
@@ -260,7 +320,7 @@ def get_service_check(service_name, service_id):
     logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list()[0]
+        agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
@@ -297,7 +357,7 @@ def get_node_checks(node_name):
     logger.info("Node Check for node: {}".format(node_name))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list()[0]
+        agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
@@ -335,7 +395,7 @@ def get_service_check_ep(service_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list()[0]
+        agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
 
         for service_dict in service_list:
@@ -377,7 +437,7 @@ def get_node_check_epg(node_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list()[0]
+        agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent('token')) # TODO: all the 3 keys expected
 
         for node_name in node_list:

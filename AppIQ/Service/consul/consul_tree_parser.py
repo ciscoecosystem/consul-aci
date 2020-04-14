@@ -8,6 +8,8 @@
     Along with every node(AP,EP,EPG,Service) information 
     to be show in the side pane is also displayed is also
     sent in attributes.
+
+    TODO: add checks in each tree node
 """
 
 def consul_tree_dict(self, data):
