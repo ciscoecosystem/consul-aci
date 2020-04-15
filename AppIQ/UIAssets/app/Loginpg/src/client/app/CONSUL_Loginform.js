@@ -10,7 +10,8 @@ import 'react-toastify/dist/ReactToastify.css';
 // Error messages
 const FILL_DETAILS = 'Please fill the details';
 const CANT_DELETE_AGENT_AS_SOME_BEEN_WRITTEN = "An agent is being written, can't process this!";
-const QUERY_URL="http://127.0.0.1:5000/graphql.json";
+// const QUERY_URL="http://127.0.0.1:5000/graphql.json";
+const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
 
 
 function getCookieVal(offset) {
@@ -388,7 +389,7 @@ class CONSUL_LoginForm extends React.Component {
         let {details} = this.state;
         details.unshift({
             ip: '',
-            port: '',
+            port: 'http',
             token: '',
             protocol: null,
             status: undefined
@@ -405,11 +406,12 @@ class CONSUL_LoginForm extends React.Component {
         accessor: 'protocol',
         Cell: props => {
             let { protocol } = props.original;
+            console.log("protocol of "+props.index + "is ", protocol)
         return <span className="radio-grp">
-            <Radio name={"protocol"+props.index} value="http" label="http" 
+            <Radio key={"protocol"+props.index} name={"protocol"+props.index} value="http" label="http" 
                    checked={protocol === "http"} disabled={props.index!==editAgentIndex} onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"http"})} />
    
-            <Radio name={"protocol"+props.index} value="https" label="https"
+            <Radio key={"protocol"+props.index} name={"protocol"+props.index} value="https" label="https"
                    checked={protocol === "https"} disabled={props.index!==editAgentIndex} onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"https"})} />
         </span>
         }
@@ -418,19 +420,19 @@ class CONSUL_LoginForm extends React.Component {
         header: 'ip',
         accessor: 'ip',
         Cell: props => {
-            return  <Input placeHolder="ip" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
+            return  <Input key={"ip"+props.index} placeHolder="ip" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
         }
     },
     {
         header: 'Port',
         accessor: 'port',
-        Cell: props =>  <Input placeHolder="port" disabled={props.index!==editAgentIndex} value={props.original.port}  name={"port"} onChange={(e) => this.handleChange(props.index, e.target)} />
+        Cell: props =>  <Input key={"port"+props.index} placeHolder="port" disabled={props.index!==editAgentIndex} value={props.original.port}  name={"port"} onChange={(e) => this.handleChange(props.index, e.target)} />
     },
     {
         header: 'Token',
         accessor: 'token',
         width:200,
-        Cell: props =>  <Input placeHolder="token" type={(props.index!==editAgentIndex) ? "password":"text"} disabled={props.index!==editAgentIndex} value={props.original.token}  name={"token"} onChange={(e) => this.handleChange(props.index, e.target)} />
+        Cell: props =>  <Input key={"token"+props.index} placeHolder="token" type={(props.index!==editAgentIndex) ? "password":"text"} disabled={props.index!==editAgentIndex} value={props.original.token}  name={"token"} onChange={(e) => this.handleChange(props.index, e.target)} />
     }, 
     {
         header: 'status',
@@ -449,29 +451,21 @@ class CONSUL_LoginForm extends React.Component {
         Cell: props =>  {
             if (props.index === editAgentIndex) { // Update an agent; to show [Update, Abort, Delete]
                 return <React.Fragment>
-                <Icon style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type="icon-check" onClick={()=>this.updateAgent(props.index)}></Icon>
+                <Icon key={"updateagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type="icon-check" onClick={()=>this.updateAgent(props.index)}></Icon>
 
                 {/* if new agent being written; dont show abort */}
-                {(this.state.isNewAgentAdded === false) && <Icon style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent(props.index)}></Icon> }
+                {(this.state.isNewAgentAdded === false) && <Icon key={"abortagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent(props.index)}></Icon> }
 
-                <Tooltip key={"delete"} title={"title"} content={"Delete"} placement={"auto"}>
-                        <Icon className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
-                    </Tooltip>
+                    <Icon key={"removeagent"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                  </React.Fragment>
             }
             else if (editAgentIndex === null){ // no action on row; to show [Edit, delete]
                 return <React.Fragment>
-                    <Tooltip key={"title"} title={"title"} content={"Edit"} placement={"auto"}>
-                            <Icon className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
-                    </Tooltip>
-                    <Tooltip key={"delete"} title={"title"} content={"Delete"} placement={"auto"}>
-                        <Icon className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
-                    </Tooltip>
+                        <Icon key={"editagent"} className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
+                        <Icon key={"removeagent2"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                 </React.Fragment>
             } else {    // only show delete
-                return <Tooltip key={"delete"} title={"title"} content={"Delete"} placement={"auto"}>
-                    <Icon className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
-                </Tooltip>
+                return <Icon key={"removeagent3"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
             }
         }
     }
@@ -481,8 +475,8 @@ class CONSUL_LoginForm extends React.Component {
             <div className="login-form">
             <ToastContainer />
             <center>
-                {(this.state.readAgentLoading) ? <Loader> loading </Loader> :
-                <Table loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} data={this.state.details} columns={tableColumns} minRows={3} showPagination={false} TheadComponent={props => null}>
+                {(this.state.readAgentLoading) ? <span>loading.. <Loader> loading </Loader>  </span>:
+                <Table key={"agentTable"} loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} data={this.state.details} columns={tableColumns} minRows={3} showPagination={false} TheadComponent={props => null}>
                 </Table>}
             </center>
          
