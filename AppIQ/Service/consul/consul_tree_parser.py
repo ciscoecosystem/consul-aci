@@ -37,7 +37,7 @@ def consul_tree_dict(data):
 
         # Top level node in Tree
         # TODO: lable not sent because not needed in Consul: Try send ''
-        ap_node = {
+        ap_dict = {
             'name': 'AppProf',
             'type': '#581552',
             'sub_label': ap,
@@ -109,7 +109,7 @@ def consul_tree_dict(data):
                             'VMM-Domain': ep_node['VMM-Domain']
                         },
                         'children': [],
-                        'checks': ep_node['node_name']
+                        'checks': ep_node['node_check']
                     }
 
                     # Iterating for each Service in EP
@@ -145,7 +145,7 @@ def consul_tree_dict(data):
                         ep_dict['children'].append(service_dict)
 
                         # Add Service checks to EP checks
-                        ep_dict['checks'] = add_checks(ep_dict['checks'], service['service_checks'])
+                        ep_dict['checks'] = add_checks(ep_dict['checks'], service_dict['checks'])
 
 
                         # Now adding the service info in EP and EPG attributes
@@ -210,19 +210,31 @@ def consul_tree_dict(data):
                 epg_dict['children'].append(non_ep_dict)
 
             # Add EPG to AP
-            ap_node['children'].append(epg_dict)
+            ap_dict['children'].append(epg_dict)
 
             # Add EPG checks to AP checks
-            ap['checks'] = add_checks(ap['checks'], epg_dict['checks'])
+            ap_dict['checks'] = add_checks(ap_dict['checks'], epg_dict['checks'])
 
         # Add AP to responce list
-        ap_list.append(ap_node)
+        ap_list.append(ap_dict)
     return ap_list
 
 
-def add_checks(self, base_checks, new_checks):
-    for status, check_value in new_checks.iteritems():
-        if status in base_checks:
-            base_checks[status] += check_value
+def add_checks(base_checks, new_checks):
+    """Adding up checks for every node"""
+    
+    final_check = {}
+
+    for status, check_value in base_checks.iteritems():
+        if status in final_check:
+            final_check[status] += check_value
         else:
-            base_checks[status] = check_value
+            final_check[status] = check_value
+
+    for status, check_value in new_checks.iteritems():
+        if status in final_check:
+            final_check[status] += check_value
+        else:
+            final_check[status] = check_value
+
+    return final_check
