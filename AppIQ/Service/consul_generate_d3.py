@@ -149,7 +149,7 @@ class generateD3Dict(object):
                                 "Service Instance" : service['serviceInstance'],
                                 "Address" : service_address,
                                 "Service Kind" : service['serviceKind'],
-                                "Service Tag" : service['serviceTags'],
+                                "Service Tags" : service['serviceTags'],
                                 "Service Checks" : service['serviceChecks']
                             }
                             ep_dict['children'].append(node_dict)
