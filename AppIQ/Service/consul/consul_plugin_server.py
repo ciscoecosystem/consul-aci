@@ -105,6 +105,9 @@ def mapping(tenant, appDId):
     """
 
     try:
+
+        mapping_dict = {"source_cluster": [], "target_cluster": []}
+
         aci_obj = aci_utils.ACI_Utils()
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
@@ -122,11 +125,16 @@ def mapping(tenant, appDId):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
-        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
+        current_mapping = get_mapping_dict_target_cluster(aci_consul_mappings)
+
+        mapping_dict['target_cluster'] = [node for node in current_mapping if node.get('disabled') == False]
+        
+        for new_object in aci_consul_mappings:
+            mapping_dict['source_cluster'].append(new_object)
     
         return json.dumps({
             "agentIP":"10.23.239.14", # TODO: what to return here
-            "payload": aci_consul_mappings,
+            "payload": mapping_dict,
             "status_code": "200",
             "message": "OK"
             })
