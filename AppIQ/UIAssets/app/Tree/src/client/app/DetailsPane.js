@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tags", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
