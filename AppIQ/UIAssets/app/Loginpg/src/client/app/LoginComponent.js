@@ -1,5 +1,5 @@
 import React from 'react';
-import LoginForm from "./Loginform";
+import CONSUL_LoginForm from "./CONSUL_Loginform";
 import './style.css';
 
 class LoginComponent extends React.Component {
@@ -34,7 +34,7 @@ class LoginComponent extends React.Component {
                     (this.state.user) ?
                         window.location.href = "app.html" //temporary
                         :
-                            <LoginForm
+                            <CONSUL_LoginForm
                                 onSignIn={this.signIn.bind(this)}
                                 onSignOut={this.signOut.bind(this)}
                             />
