@@ -103,14 +103,41 @@ def mapping(tenant, appDId):
     """
     TODO: return valid dict
     """
+
+    try:
+        aci_obj = aci_utils.ACI_Utils()
+        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
+        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
+
+        agent = get_agent_list('default')[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_data = consul_obj.get_consul_data()
+        ip_list = []
+        for node in consul_data:
+            ip_list += node.get('node_ips', [])
+            # For fetching ips of services.
+            for service in node.get('node_services', []):
+                # check ip is not empty string
+                if service.get('service_ip', ''):
+                    ip_list.append(service.get('service_ip'))
+
+        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
     
-    return json.dumps({
-        "agentIP":"10.23.239.14", # TODO: what to return here
-        "payload": {},
-        "status_code": "200",
-        "message": "OK"
-        })
-  
+        return json.dumps({
+            "agentIP":"10.23.239.14", # TODO: what to return here
+            "payload": aci_consul_mappings,
+            "status_code": "200",
+            "message": "OK"
+            })
+    except Exception as e:
+        logger.exception("Could not load mapping, Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {}, 
+            "status_code": "300", 
+            "message": "Could not load mapping"
+            })
+
 
 def save_mapping(appDId, tenant, mappedData):
     """Save mapping to database.
@@ -494,7 +521,8 @@ def get_faults(dn):
                 "severity" : fault_attr.get("severity"),
                 "affected" : fault_attr.get("affected"),
                 "descr" : fault_attr.get("descr"),
-                "created" : fault_attr.get("created")
+                "created" : fault_attr.get("created"),
+                "cause" : fault_attr.get("cause")
             }
             faults_payload.append(fault_dict)
         return json.dumps({

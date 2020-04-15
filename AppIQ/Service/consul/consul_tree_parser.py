@@ -42,7 +42,8 @@ def consul_tree_dict(data):
             'type': '#581552',
             'sub_label': ap,
             'attributes': {},
-            'children': []
+            'children': [],
+            'checks': {}
         }
 
         # distinct EPGs in current AP
@@ -68,7 +69,8 @@ def consul_tree_dict(data):
                     'Nodes': [],
                     'Services_List': []
                 },
-                'children': []
+                'children': [],
+                'checks': {}
             }
 
             # distinct ips in current EPg
@@ -106,7 +108,8 @@ def consul_tree_dict(data):
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
                             'VMM-Domain': ep_node['VMM-Domain']
                         },
-                        'children': []
+                        'children': [],
+                        'checks': ep_node['node_name']
                     }
 
                     # Iterating for each Service in EP
@@ -134,11 +137,15 @@ def consul_tree_dict(data):
                                 'Service Kind' : service['service_kind'],
                                 'Service Tag' : service['service_tags'],
                                 'Service Checks' : service['service_checks']
-                            }
+                            },
+                            'checks': service['service_checks']
                         }
 
                         # Add Service to EP
                         ep_dict['children'].append(service_dict)
+
+                        # Add Service checks to EP checks
+                        ep_dict['checks'] = add_checks(ep_dict['checks'], service['service_checks'])
 
 
                         # Now adding the service info in EP and EPG attributes
@@ -169,6 +176,9 @@ def consul_tree_dict(data):
 
                     # Add EP to EPG
                     epg_dict['children'].append(ep_dict)
+
+                    # Add EP checks to EPG checks
+                    epg_dict['checks'] = add_checks(epg_dict['checks'], ep_dict['checks'])
 
 
                     # Now adding the Node info in the EPG Side Pane 
@@ -202,6 +212,17 @@ def consul_tree_dict(data):
             # Add EPG to AP
             ap_node['children'].append(epg_dict)
 
+            # Add EPG checks to AP checks
+            ap['checks'] = add_checks(ap['checks'], epg_dict['checks'])
+
         # Add AP to responce list
         ap_list.append(ap_node)
     return ap_list
+
+
+def add_checks(self, base_checks, new_checks):
+    for status, check_value in new_checks.iteritems():
+        if status in base_checks:
+            base_checks[status] += check_value
+        else:
+            base_checks[status] = check_value

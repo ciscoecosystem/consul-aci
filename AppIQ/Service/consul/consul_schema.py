@@ -204,7 +204,7 @@ class Query(graphene.ObjectType):
 
 
     def resolve_Mapping(self, info, tn, appId):
-        Mapping.mappings = app.mapping(tn, int(appId))
+        Mapping.mappings = app.mapping(tn, 9)
         return Mapping
 
 
