@@ -202,9 +202,8 @@ def consul_tree_dict(data):
                 non_ep_dict={}
                 non_ep_dict['name'] = 'EP'
                 non_ep_dict['type'] = 'grey'
-                non_ep_dict['level'] = 'grey' # TODO: Verify 2 labels
-                non_ep_dict['label'] = '' # TODO: Verify 2 labels
-                non_ep_dict['sub_label'] = '' # TODO: Verify if this is needed or not.
+                non_ep_dict['label'] = '' # No lable is shown in the ui for a non-service ep
+                non_ep_dict['sub_label'] = '' # No sub_lable is shown in the ui for a non-service ep
                 non_ep_dict['attributes'] = epg_eps[0]['Non_IPs']
                 non_ep_dict['fractions'] = epg_eps[0]['fraction']
                 epg_dict['children'].append(non_ep_dict)
