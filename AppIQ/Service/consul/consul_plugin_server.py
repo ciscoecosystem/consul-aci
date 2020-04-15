@@ -20,7 +20,7 @@ app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/
 app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
-
+consul_credential_file_path = "/home/app/log/consulCredentials.json"
 
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
@@ -1158,3 +1158,114 @@ def get_all_interfaces(interfaces):
             logger.error("Incompetible format of Interfaces found")
             raise Exception("Incompetible format of Interfaces found")
     return interface_list
+
+
+def read_creds():
+    try:
+        start_time = datetime.datetime.now()
+        file_exists = os.path.isfile(consul_credential_file_path)
+        
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+                for agent in creds:
+                    consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+                    status = consul_obj.check_connection()
+                    agent['status'] = status
+                return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
+        else:
+            return json.dumps({"agentIP":"10.23.239.14", "payload": [], "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in read credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for read_creds: " + str(end_time - start_time))
+
+def write_creds(agent_list):
+    try:
+        start_time = datetime.datetime.now()
+        agent_list = json.loads(agent_list)
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+        creds += agent_list
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        for agent in agent_list:
+            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+            status = consul_obj.check_connection()
+            agent['status'] = status
+        return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in write credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for write_creds: " + str(end_time - start_time))
+
+
+def update_creds(update_input):
+    try:
+        start_time = datetime.datetime.now()
+        update_input = json.loads(update_input)
+        old_data = update_input.get('oldData')
+        new_data = update_input.get('newData')
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+        response = {}
+
+        for agent in creds:
+            if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
+                agent["protocol"] = new_data.get("protocol")
+                agent["ip"] = new_data.get("ip")
+                agent["port"] = new_data.get("port")
+                agent["token"] = new_data.get("token")
+                response.update(agent)
+                consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+                response["status"] = consul_obj.check_connection()
+                break        
+        
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in update credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for update_creds: " + str(end_time - start_time))
+
+
+def delete_creds(agent_data):
+    try:
+        start_time = datetime.datetime.now()
+        agent_data = json.loads(agent_data)
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+
+        for agent in creds:
+            if agent_data.get("protocol") == agent.get("protocol") and agent_data.get("ip") == agent.get("ip") and agent_data.get("port") == agent.get("port"):
+                creds.remove(agent)
+                break
+        
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        return json.dumps({"agentIP":"10.23.239.14", "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in delete credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for delete_creds: " + str(end_time - start_time))

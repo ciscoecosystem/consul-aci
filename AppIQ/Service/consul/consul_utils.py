@@ -12,20 +12,24 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 class Cosnul(object):
     """Consul class"""
 
-    def __init__(self, agent_ip, port, token):
+    def __init__(self, agent_ip, port, token, protocol=None):
         
         logger.info('Consul Object init for agent: {}:{}'.format(agent_ip, port))
 
         self.agent_ip = str(agent_ip)
         self.port = str(port)
         self.token = token
+        if protocol:
+            self.protocol = protocol
+        else:
+            self.protocol = "http"
 
         self.session = requests.Session()
         self.connected = False # TODO: remove if no use
 
         # The base URL is set with protocol http, 
         # if http failes https will be tried
-        self.base_url = 'http://{}:{}'.format(self.agent_ip, self.port)
+        self.base_url = '{}://{}:{}'.format(self.protocol, self.agent_ip, self.port)
         if self.token:
             logger.info('Token provided')
             self.header = {'X-Consul-Token' : token}
@@ -54,12 +58,12 @@ class Cosnul(object):
                         self.connected = True
                         return self.connected
 
-                    # In case of faliure with http, try using https
-                    elif 'http:' in self.base_url:
-                        logger.info("Connection failed with status_code: {}".format(status_code))
-                        logger.info("Trying connection using https")
-                        self.base_url = self.base_url.replace("http:", "https:")
-                        continue
+                    # # In case of faliure with http, try using https
+                    # elif 'http:' in self.base_url:
+                    #     logger.info("Connection failed with status_code: {}".format(status_code))
+                    #     logger.info("Trying connection using https")
+                    #     self.base_url = self.base_url.replace("http:", "https:")
+                    #     continue
 
                     # In case of failiure to connect using both http and https
                     # try connecting without token
@@ -95,6 +99,7 @@ class Cosnul(object):
                         return self.connected
         except Exception as e:
             logger.exception('Exception in Consul check connection: {}'.format(str(e)))
+            return self.connected
 
 
     def nodes(self):
