@@ -126,7 +126,7 @@ def generatelist(ipList):
     return src_clus_list
 
 
-def recommanded_eps(self, tenant, source_ip_list, parsed_eps):
+def recommanded_eps(tenant, source_ip_list, parsed_eps):
     """This finds all the recommanded EPs in APIC wrt the source data
     
     TODO: explain

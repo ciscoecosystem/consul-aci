@@ -176,7 +176,7 @@ class Cosnul(object):
                 if service_ip:
                     service_address = str(service_ip) + ':' + str(service_port)
                 else:
-                    service_address = str(node_ip = services_resp.get('Node', {}).get('Address', '')) + ':' + str(service_port)
+                    service_address = str(services_resp.get('Node', {}).get('Address', '')) + ':' + str(service_port)
                 
                 # Form a dict
                 service_list.append({

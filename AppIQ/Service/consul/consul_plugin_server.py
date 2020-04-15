@@ -156,7 +156,7 @@ def tree(tenant):
 
         aci_data = aci_obj.main(tenant)
 
-        merged_data = consul_merge.merge_aci_consul(tenant, consul_data, aci_data, aci_consul_mappings)
+        merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
         response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
@@ -215,7 +215,7 @@ def details(tenant):
 
         aci_data = aci_obj.main(tenant)
 
-        merged_data = consul_merge.merge_aci_consul(tenant, consul_data, aci_data, aci_consul_mappings)
+        merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
@@ -236,7 +236,7 @@ def details(tenant):
                     'epgHealth': epg_health,
                     'consulNode': each.get('node_name'),
                     'nodeChecks': each.get('node_check'),
-                    'services': each.get('node_services')
+                    'services': change_key(each.get('node_services'))
                 })
         logger.debug("Details final data ended: " + str(details_list))
         
@@ -273,6 +273,21 @@ def get_mapping_dict_target_cluster(mapped_objects):
                 logger.debug("Mapping found with ipaddress for "+str(map_object))
                 target.append({'domainName': entry.get('domainName'), 'ipaddress': map_object.get('ipaddress'), 'disabled': False})
     return target
+
+
+def change_key(services):
+    final_list = []
+    if services:
+        for service in services:
+            final_list.append({
+                'service': service.get('service_name'),
+                'serviceInstance': service.get('service_id'),
+                'port': service.get('service_port'),
+                'serviceTags': service.get('service_tags'),
+                'serviceKind': service.get('service_kind'),
+                'serviceChecks': service.get('service_checks')
+            })
+    return final_list
 
 
 def get_eps_info(dn, ip):

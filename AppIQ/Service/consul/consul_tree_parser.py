@@ -12,7 +12,7 @@
     TODO: add checks in each tree node
 """
 
-def consul_tree_dict(self, data):
+def consul_tree_dict(data):
     """Create tree specific dict
     
     input:   The merged CEps data
@@ -110,7 +110,7 @@ def consul_tree_dict(self, data):
                     }
 
                     # Iterating for each Service in EP
-                    for service in ep_node['services']:
+                    for service in ep_node['node_services']:
 
                         if len(service['service_id']) > 11:
                             service_label = service['service_id'][:11] + '..'
@@ -164,7 +164,7 @@ def consul_tree_dict(self, data):
                         # the EPs, But as it is difficult to show all of those in the tree view 
                         # UI only 1 is shown with ellipsis
                         if not epg_dict['label']:
-                            epg_dict['label'] = service['service_instance'] + ', ...'
+                            epg_dict['label'] = service['service_id'] + ', ...'
 
 
                     # Add EP to EPG
