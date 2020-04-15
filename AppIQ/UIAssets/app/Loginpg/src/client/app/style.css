@@ -162,5 +162,5 @@ td {
 .label-connection .label {
     width: 100px;
     justify-content: center;
-    /* border-radius: 20px; */
+    border-radius: 20px;
 }
