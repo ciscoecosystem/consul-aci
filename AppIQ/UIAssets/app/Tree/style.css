@@ -105,3 +105,8 @@
     cursor: pointer;
     margin-right : 0em;
 }
+
+.ReactTable .rt-noData {
+  color: black;
+  font-size: 16px;
+}
