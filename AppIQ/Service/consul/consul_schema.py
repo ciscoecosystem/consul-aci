@@ -80,6 +80,18 @@ class NodeChecksEPG(graphene.ObjectType):
     response = graphene.String()
 
 
+class ReadCreds(graphene.ObjectType):
+    creds = graphene.String()
+
+class WriteCreds(graphene.ObjectType):
+    creds = graphene.String()
+
+class UpdateCreds(graphene.ObjectType):
+    creds = graphene.String()
+
+class DeleteCreds(graphene.ObjectType):
+    message = graphene.String()
+
 class Query(graphene.ObjectType):
     """Query class which resolves all the incomming requests"""
     
@@ -142,6 +154,10 @@ class Query(graphene.ObjectType):
 
     NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
 
+    ReadCreds = graphene.Field(ReadCreds)
+    WriteCreds = graphene.Field(WriteCreds, agent_list=graphene.String())
+    UpdateCreds = graphene.Field(UpdateCreds, update_input=graphene.String())
+    DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -242,6 +258,22 @@ class Query(graphene.ObjectType):
     def resolve_NodeChecksEPG(self, info, node_list):
         NodeChecksEPG.response = app.get_node_check_epg(node_list)
         return NodeChecksEPG 
+
+    def resolve_ReadCreds(self, info):
+        ReadCreds.creds = app.read_creds()
+        return ReadCreds
+
+    def resolve_WriteCreds(self, info, agent_list):
+        WriteCreds.creds = app.write_creds(agent_list)
+        return WriteCreds
+
+    def resolve_UpdateCreds(self, info, update_input):
+        UpdateCreds.creds = app.update_creds(update_input)
+        return UpdateCreds
+
+    def resolve_DeleteCreds(self, info, agent_data):
+        DeleteCreds.message = app.delete_creds(agent_data)
+        return DeleteCreds
 
 
 schema = graphene.Schema(query=Query)

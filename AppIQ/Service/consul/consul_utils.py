@@ -19,10 +19,7 @@ class Cosnul(object):
         self.agent_ip = str(agent_ip)
         self.port = str(port)
         self.token = token
-        if protocol:
-            self.protocol = protocol
-        else:
-            self.protocol = "http"
+        self.protocol = protocol
 
         self.session = requests.Session()
         self.connected = False # TODO: remove if no use
@@ -58,19 +55,11 @@ class Cosnul(object):
                         self.connected = True
                         return self.connected
 
-                    # # In case of faliure with http, try using https
-                    # elif 'http:' in self.base_url:
-                    #     logger.info("Connection failed with status_code: {}".format(status_code))
-                    #     logger.info("Trying connection using https")
-                    #     self.base_url = self.base_url.replace("http:", "https:")
-                    #     continue
-
-                    # In case of failiure to connect using both http and https
+                    
                     # try connecting without token
                     else:
                         logger.info("Connection failed with https, status_code: {}".format(status_code))
                         logger.info("Trying connection without token using http")
-                        self.base_url = self.base_url.replace("https:", "http:")
                         self.header = {} # TODO: header is removed for trying token less connection. Understand the usecsase where it fails
                         continue
 
@@ -85,14 +74,7 @@ class Cosnul(object):
                         self.connected = True
                         return self.connected
 
-                    # In case of faliure with http, try using https
-                    elif 'http:' in self.base_url:
-                        logger.info("Connection failed with status_code: {}".format(status_code))
-                        logger.info("Trying connection using https")
-                        self.base_url = self.base_url.replace("http:", "https:")
-                        continue
-
-                    # When all the cases fail with/without token and with http/https
+                    # When all the cases fail with/without token
                     else:
                         logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
                         self.connected = False

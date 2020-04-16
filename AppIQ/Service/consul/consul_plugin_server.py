@@ -41,7 +41,8 @@ def get_agent_list(data_center):
         {
             "ip": "10.23.239.14",
             "port" : "8500",
-            "token": ""
+            "token": "",
+            "protocol" : "http"
         }
     ]
     return agent_list
@@ -70,7 +71,7 @@ def get_datacenter_list():
         agent_list = get_agent_list('all')
 
         for agent in agent_list:
-            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
             
             agent_datacenters = consul_obj.datacenters()
             for datacenter in agent_datacenters:
@@ -113,7 +114,7 @@ def mapping(tenant, appDId):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -175,7 +176,7 @@ def tree(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -234,7 +235,7 @@ def details(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -371,7 +372,7 @@ def get_service_check(service_name, service_id):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -408,7 +409,7 @@ def get_node_checks(node_name):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -446,7 +447,7 @@ def get_service_check_ep(service_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -488,7 +489,7 @@ def get_node_check_epg(node_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
 
         for node_name in node_list:
             response += consul_obj.detailed_node_check(node_name)
