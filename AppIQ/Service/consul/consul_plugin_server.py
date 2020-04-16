@@ -1173,6 +1173,7 @@ def read_creds():
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
                     status = consul_obj.check_connection()
                     agent['status'] = status
+                    agent['datacenter'] = consul_obj.datacenters()[0]
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
         else:
             return json.dumps({"agentIP":"10.23.239.14", "payload": [], "status_code": "200", "message": "OK"})
@@ -1200,6 +1201,7 @@ def write_creds(agent_list):
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
             status = consul_obj.check_connection()
             agent['status'] = status
+            agent['datacenter'] = consul_obj.datacenters()[0]
         return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
@@ -1232,6 +1234,7 @@ def update_creds(update_input):
                 response.update(agent)
                 consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
                 response["status"] = consul_obj.check_connection()
+                response['datacenter'] = consul_obj.datacenters()[0]
                 break        
         
         with open(consul_credential_file_path, 'w') as fwrite:
