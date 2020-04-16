@@ -158,9 +158,3 @@ td {
 .login-form .ReactTable .rt-tr .rt-td {
     justify-content: space-around;
 }
-
-.label-connection .label {
-    width: 100px;
-    justify-content: center;
-    border-radius: 20px;
-}

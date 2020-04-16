@@ -1,7 +1,5 @@
 import React from 'react';
 import './style.css';
-// import { strictEqual } from 'assert';
-// import { stringify } from 'querystring';
 import {Table,Button, Icon, Input, Label, Radio, Tooltip, Loader} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -80,26 +78,6 @@ class CONSUL_LoginForm extends React.Component {
     constructor(props) {
         super(props);
 
-        /*
-        // ** TEMPORARILY PURPOSE bypass
-        const check_payload = {query: `query{
-            Check{checkpoint}            
-          }`}
-
-        let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
-        let checkData = httpGet(url, check_payload);
-        try {
-            if(JSON.parse(JSON.parse(checkData).data.Check.checkpoint).status_code == "200") {
-                if(typeof getUrlVars()['reset'] == "undefined") {
-                    window.location.href = "app.html";
-                }
-            }
-        }
-        catch(e) {
-            console.log('Error collecting checkpoint');
-        }
-        */
-
         this.notify = this.notify.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.removeAgent = this.removeAgent.bind(this);
@@ -109,7 +87,7 @@ class CONSUL_LoginForm extends React.Component {
         this.addAgentCall = this.addAgentCall.bind(this);
 
         this.state = {
-                details : [],
+            details : [],
             editAgentIndex: null, // [0,1,...n] indicates row number & [-1] indicates a row is added and being written
             editDetailCopy: undefined,
             isNewAgentAdded: false,
@@ -136,7 +114,7 @@ class CONSUL_LoginForm extends React.Component {
         const payload = {query: `query{
             ReadCreds{creds}
         }`}
-
+        let isDetail = false;
         try {
             // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
             let checkData = httpGet(QUERY_URL, payload);
@@ -145,6 +123,11 @@ class CONSUL_LoginForm extends React.Component {
             let credsData = JSON.parse(JSON.parse(checkData).data.ReadCreds.creds);
             if(credsData.status_code == "200") {
                 this.setState({ details: credsData.payload })
+
+                // to check if more than 1 detail exists
+                if (credsData.payload.length > 0){
+                    isDetail = true;
+                }
             } else {
                 this.notify("Something went wrong")
             }
@@ -153,12 +136,20 @@ class CONSUL_LoginForm extends React.Component {
             console.log('Error getting agents');
         }
         finally {
-            this.setState({ readAgentLoading: false})
+            this.setState({ readAgentLoading: false});
+            // if no data found then initial add agent form
+            if (!isDetail) {
+                this.addAgent();
+            }
         }
 
     }
 
     addAgentCall(agentDetail) {
+        if (JSON.stringify(this.state.editDetailCopy) === JSON.stringify(agentDetail)) { // no change in copy
+            console.log("no change");
+            return;
+        }
         let { isNewAgentAdded } = this.state;
         
         delete agentDetail.status;
@@ -391,6 +382,7 @@ class CONSUL_LoginForm extends React.Component {
             ip: '',
             port: 'http',
             token: '',
+            datacenter: null,
             protocol: null,
             status: undefined
         })
@@ -435,14 +427,22 @@ class CONSUL_LoginForm extends React.Component {
         Cell: props =>  <Input key={"token"+props.index} placeHolder="token" type={(props.index!==editAgentIndex) ? "password":"text"} disabled={props.index!==editAgentIndex} value={props.original.token}  name={"token"} onChange={(e) => this.handleChange(props.index, e.target)} />
     }, 
     {
+        header: 'Datacenter',
+        accessor: 'datacenter',
+        Cell: props => (props.original.datacenter === null) ? (<i>datacenter</i>) : props.original.datacenter
+    },
+    {
         header: 'status',
         accessor: 'status',
+        width: 70,
         Cell: props => {
         let { status } = props.original;
         if (status === true) {
-            return <span className="label-connection"> <Label theme={"label--success"} size={"MEDIUM"}>Connected</Label> </span> 
+            return <Label theme={"label--success label--circle"} size={"MEDIUM"}></Label> 
         } else if (status === false) {
-            return <span className="label-connection"> <Label theme={"label--danger"} size={"MEDIUM"}>Disconnected</Label>  </span>
+            return <Label theme={"label--danger label--circle"} size={"MEDIUM"}></Label>
+        } else {
+            return <Label theme={"label--ltgray label--circle"} size={"MEDIUM"}></Label>
         }
         }
     },
@@ -476,7 +476,7 @@ class CONSUL_LoginForm extends React.Component {
             <ToastContainer />
             <center>
                 {(this.state.readAgentLoading) ? <span>loading.. <Loader> loading </Loader>  </span>:
-                <Table key={"agentTable"} loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} data={this.state.details} columns={tableColumns} minRows={3} showPagination={false} TheadComponent={props => null}>
+                <Table key={"agentTable"} loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} data={this.state.details} columns={tableColumns} minRows={1} showPagination={false} TheadComponent={props => null}>
                 </Table>}
             </center>
          
