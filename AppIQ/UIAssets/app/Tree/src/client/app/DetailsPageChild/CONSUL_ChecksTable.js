@@ -180,6 +180,7 @@ export default class CONSUL_ChecksTable extends Component {
             <Panel style={{ width: "100%" }} border="panel--bordered">
                 <ToastContainer></ToastContainer>
                 <Table
+                    noDataText="No data found"
                     data={this.state.rows}
                     columns={headerColumns}
                     loading={this.state.loading}

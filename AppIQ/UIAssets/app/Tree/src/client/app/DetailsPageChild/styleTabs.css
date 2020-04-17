@@ -47,4 +47,9 @@
   .d-flex {
     display: flex !important;
   }
+
+  .ReactTable .rt-noData {
+    color: black;
+    font-size: 16px;
+  }
   

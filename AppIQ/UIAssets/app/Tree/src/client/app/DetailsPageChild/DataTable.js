@@ -189,8 +189,9 @@ export default class DataTable extends Component {
       <Panel style={{ width: "100%" }} border="panel--bordered">
         <ToastContainer></ToastContainer>
         <Table
+          noDataText="No data found"
           data={this.state.rows}
-		  defaultSorted={this.props.defaultSorted}
+		      defaultSorted={this.props.defaultSorted}
           columns={this.tableHeaders[this.props.index]}
           loading={this.state.loading}
         />

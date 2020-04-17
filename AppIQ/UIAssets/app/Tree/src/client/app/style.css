@@ -280,3 +280,8 @@
 .cui .node-icon .icon-tiny:before {
   font-size: 13px!important;
 }
+
+.ReactTable .rt-noData {
+  color: black;
+  font-size: 16px;
+}
