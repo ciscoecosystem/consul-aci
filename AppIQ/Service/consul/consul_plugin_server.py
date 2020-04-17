@@ -1164,6 +1164,7 @@ def get_all_interfaces(interfaces):
 def read_creds():
     try:
         start_time = datetime.datetime.now()
+        logger.info("Reading agents.")
         file_exists = os.path.isfile(consul_credential_file_path)
         
         if file_exists:
@@ -1174,8 +1175,10 @@ def read_creds():
                     status = consul_obj.check_connection()
                     agent['status'] = status
                     agent['datacenter'] = consul_obj.datacenters()[0]
+                logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
         else:
+            logger.debug("credential file not found.")
             return json.dumps({"agentIP":"10.23.239.14", "payload": [], "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in read credentials: " + str(e))
@@ -1187,6 +1190,7 @@ def read_creds():
 def write_creds(agent_list):
     try:
         start_time = datetime.datetime.now()
+        logger.info("Writing agents: " + str(agent_list))
         agent_list = json.loads(agent_list)
         file_exists = os.path.isfile(consul_credential_file_path)
         if file_exists:
@@ -1194,6 +1198,7 @@ def write_creds(agent_list):
                 creds = json.load(fread)
         else:
             creds = []
+        logger.debug("credentials file content: " + str(creds))
         creds += agent_list
         with open(consul_credential_file_path, 'w') as fwrite:
             json.dump(creds, fwrite)
@@ -1202,6 +1207,7 @@ def write_creds(agent_list):
             status = consul_obj.check_connection()
             agent['status'] = status
             agent['datacenter'] = consul_obj.datacenters()[0]
+        logger.debug("New agent data: " + str(agent_list))
         return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
@@ -1215,14 +1221,18 @@ def update_creds(update_input):
     try:
         start_time = datetime.datetime.now()
         update_input = json.loads(update_input)
+        logger.info("Updating agents.")
         old_data = update_input.get('oldData')
+        logger.info("Old Data: " + str(old_data))
         new_data = update_input.get('newData')
+        logger.info("New Data: " + str(new_data))
         file_exists = os.path.isfile(consul_credential_file_path)
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
                 creds = json.load(fread)
         else:
             creds = []
+        logger.debug("credentials file content: " + str(creds))
         response = {}
 
         for agent in creds:
@@ -1236,7 +1246,9 @@ def update_creds(update_input):
                 response["status"] = consul_obj.check_connection()
                 response['datacenter'] = consul_obj.datacenters()[0]
                 break        
-        
+        logger.debug("new file content: " + str(creds))
+        logger.debug("response: " + str(response))
+
         with open(consul_credential_file_path, 'w') as fwrite:
             json.dump(creds, fwrite)
         return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
@@ -1251,6 +1263,7 @@ def update_creds(update_input):
 def delete_creds(agent_data):
     try:
         start_time = datetime.datetime.now()
+        logger.info("deleting agents: " + str(agent_data))
         agent_data = json.loads(agent_data)
         file_exists = os.path.isfile(consul_credential_file_path)
         if file_exists:
@@ -1258,12 +1271,14 @@ def delete_creds(agent_data):
                 creds = json.load(fread)
         else:
             creds = []
-
+        logger.debug("credential file content before delete: " + str(creds))
+        
         for agent in creds:
             if agent_data.get("protocol") == agent.get("protocol") and agent_data.get("ip") == agent.get("ip") and agent_data.get("port") == agent.get("port"):
                 creds.remove(agent)
                 break
-        
+        logger.debug("credential file content after delete: " + str(creds))
+
         with open(consul_credential_file_path, 'w') as fwrite:
             json.dump(creds, fwrite)
         return json.dumps({"agentIP":"10.23.239.14", "status_code": "200", "message": "OK"})
