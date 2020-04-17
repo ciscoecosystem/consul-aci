@@ -193,6 +193,12 @@ def tree(tenant):
         aci_data = aci_obj.main(tenant)
 
         merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
+
+        # parse interface data
+        for ep_data in merged_data:
+            interface_list = [ get_iface_name(iface_name) for iface_name in ep_data['Interfaces']]
+            ep_data['Interfaces'] = interface_list
+
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
         response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
@@ -1161,6 +1167,30 @@ def get_all_interfaces(interfaces):
     return interface_list
 
 
+def get_iface_name(name):
+    if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        #The ethernet name is NOT available
+        eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
+        iface_name = eth_name
+        return iface_name
+    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        eth_name = name.split("/pathep-[")[1][0:-1]
+        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
+        return iface_name
+    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        eth_name = name.split("/pathep-[")[1][0:-1]
+        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
+        return iface_name
+    else:
+        logger.error("Different format of interface is found: {}".format(name))
+        raise Exception("Different format of interface is found: {}".format(name))
+
 def read_creds():
     try:
         start_time = datetime.datetime.now()
@@ -1174,7 +1204,16 @@ def read_creds():
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
                     status = consul_obj.check_connection()
                     agent['status'] = status
-                    agent['datacenter'] = consul_obj.datacenters()[0]
+                    if status:
+                        datacenter_list = consul_obj.datacenters()
+                        if datacenter_list:
+                            agent['datacenter'] = datacenter_list[0]
+                        else:
+                            agent['datacenter'] = "-"
+                    else:
+                        agent['datacenter'] = "-"
+                    
+                    
                 logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
         else:
@@ -1206,7 +1245,14 @@ def write_creds(agent_list):
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
             status = consul_obj.check_connection()
             agent['status'] = status
-            agent['datacenter'] = consul_obj.datacenters()[0]
+            if status:
+                datacenter_list = consul_obj.datacenters()
+                if datacenter_list:
+                    agent['datacenter'] = datacenter_list[0]
+                else:
+                    agent['datacenter'] = "-"
+            else:
+                agent['datacenter'] = "-"
         logger.debug("New agent data: " + str(agent_list))
         return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
@@ -1243,8 +1289,16 @@ def update_creds(update_input):
                 agent["token"] = new_data.get("token")
                 response.update(agent)
                 consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                response["status"] = consul_obj.check_connection()
-                response['datacenter'] = consul_obj.datacenters()[0]
+                status = consul_obj.check_connection()
+                response["status"] = status
+                if status:
+                    datacenter_list = consul_obj.datacenters()
+                    if datacenter_list:
+                        response['datacenter'] = datacenter_list[0]
+                    else:
+                        response['datacenter'] = "-"
+                else:
+                    response['datacenter'] = "-"
                 break        
         logger.debug("new file content: " + str(creds))
         logger.debug("response: " + str(response))
@@ -1272,9 +1326,9 @@ def delete_creds(agent_data):
         else:
             creds = []
         logger.debug("credential file content before delete: " + str(creds))
-        
+
         for agent in creds:
-            if agent_data.get("protocol") == agent.get("protocol") and agent_data.get("ip") == agent.get("ip") and agent_data.get("port") == agent.get("port"):
+            if agent_data.get("protocol") == agent.get("protocol") and agent_data.get("ip") == agent.get("ip") and agent_data.get("port") == agent.get("port") and agent_data.get("token") == agent.get("token"):
                 creds.remove(agent)
                 break
         logger.debug("credential file content after delete: " + str(creds))
