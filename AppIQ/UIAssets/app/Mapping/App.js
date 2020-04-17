@@ -16,8 +16,8 @@ class App extends React.Component {
           }
         );
         let result = urlParams;
-        let apptext = " List of Applications";
-        let title = " | Application Mapping - " + result['appProfileName'];
+        let apptext = " Datacenter";
+        let title = " | Consul Mapping ";
         return (
             <div>
                 <Container appId={result['appId']} tenantName={result['tn']} applinktext={apptext} headertext={title}/>

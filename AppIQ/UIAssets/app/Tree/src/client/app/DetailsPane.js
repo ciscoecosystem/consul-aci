@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tags", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
@@ -75,7 +75,7 @@ function CONSUL_EPGCard(props) {
     {/* 3. consul node */}
     {('Nodes' in attributes) &&
       <span>
-        Node Services
+        Consul Nodes
         {(attributes.Nodes.length > 0) ?
           attributes.Nodes.map(nodeData => CardData(Object.assign({}, { attributes: nodeData }), nodeDetailOrder))
           : NoInformation()}

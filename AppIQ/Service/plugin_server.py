@@ -7,13 +7,11 @@ import datetime
 import aci_utils
 import appd_utils
 import alchemy as database
-import consul_generate_d3 as d3
+import generate_d3 as d3
 import RecommendedDNObjects as Recommend
 from flask import Flask
 from multiprocessing import Process, Value
 from custom_logger import CustomLogger
-import consul_merge # TODO: 
-import requests
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
 app.debug = True
@@ -174,59 +172,30 @@ def set_polling_interval(interval):
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for set_polling_interval: " + str(end_time - start_time))
-
-
-def get_agent_list():
-    agent_list = [
-        {
-            "ip": "10.23.239.14",
-            "port" : "8500",
-            "token": ""
-        }
-    ]
-    return agent_list
-
+    
 
 def apps(tenant):
     start_time = datetime.datetime.now()
     try:
         logger.info("UI Action app.json started")
         
-        agent_list = get_agent_list()
-        datacenter_dict = {}
-        datacenter_set = set()
-        datacenter_list = []
-        if agent_list:
-            for agent in agent_list:
-                agent_datacenters = consul_agents_datacenter(agent['ip'], agent['port'], agent['token'])
-                for datacenter in agent_datacenters: datacenter_set.add(datacenter)
-            logger.info("datacenters : {}".format(datacenter_set))
-
-        for datacenter in datacenter_set:
-            datacenter_list.append({"datacenterName" : datacenter, "isViewEnabled" : True})
-        datacenter_dict['datacenters'] = datacenter_list
-
+        appsList = database_object.get_app_list()
+        app_dict = {}
+        app_list = []
+        for each in appsList:
+            temp_dict = {'appProfileName': each.get('appName'), 'isViewEnabled': each.get('isViewEnabled'),
+                         'health': str(each.get('appHealth')), 'appId': each.get('appId')}
+            app_list.append(temp_dict)
+        app_dict['app'] = app_list
         
         logger.info("UI Action app.json ended")
-        return json.dumps({"agentIP":"10.23.239.14", "payload": datacenter_dict, "status_code": "200", "message": "OK"})
+        return json.dumps({"instanceName":get_instance_name(),"payload": app_dict, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Could not fetch applications from databse. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not fetch applications from databse."})
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for APPS: " + str(end_time - start_time))
-
-
-def consul_agents_datacenter(agent_ip, agent_port, agent_token):
-    """This will return all the datacenters of an agent"""
-    try:
-        agent_resp = requests.get('http://{}:{}/v1/catalog/datacenters'.format(agent_ip, agent_port))
-        datacenter_list = json.loads(agent_resp.content)
-        return datacenter_list
-    except Exception as e:
-        logger.info("Error in loading datacenter list. " + e)
-        return []
-
 
 def get_mapping_dict_target_cluster(mapped_objects):
     """
@@ -256,10 +225,8 @@ def mapping(tenant, appDId):
         appId = str(appDId) + str(tenant)
         mapping_dict = {"source_cluster": [], "target_cluster": []}
         
-        # returns the mapping from Mapping Table
-        already_mapped_data = database_object.return_mapping(appId)
-        rec_object = Recommend.Recommend()
-        mapped_objects = rec_object.correlate_aci_appd(tenant, appDId)        
+        consul_data = consul_merge.get_consul_data()
+        mapped_objects = consul_merge.correlate_aci_consul(tenant, "data_center", consul_data)
 
         if not mapped_objects:
             logger.info('Empty Mapping dict for appDId:'+str(appDId))
@@ -269,31 +236,12 @@ def mapping(tenant, appDId):
         # Get new mapping based on recommendation which may have new nodes
         current_mapping = get_mapping_dict_target_cluster(mapped_objects)
 
-        if already_mapped_data != None:
-            logger.info('Mapping to target cluster already exists')
-
-            #current mapping -> new mapping between aci and appd
-            for new_map in current_mapping:
-                #already_mapped_data from database right side
-                for each_already_mapped in already_mapped_data:
-                    key = 'ipaddress'
-                    if 'ipaddress' not in each_already_mapped:
-                        key = 'macaddress'
-                        
-                    # Find node which is same as based on recommendation
-                    if each_already_mapped.get(key) == new_map.get(key) and each_already_mapped.get('domainName') == new_map.get('domainName'):
-                        # If disabled node found in recommended and saved mapping then it should be disabled
-                        if each_already_mapped.get('disabled') == True:
-                            new_map['disabled'] = True
-                        break
-
-        database_object.check_if_exists_and_update('Mapping', [appId, current_mapping])
         mapping_dict['target_cluster'] = [node for node in current_mapping if node.get('disabled') == False]
 
         for new_object in mapped_objects:
             mapping_dict['source_cluster'].append(new_object)
 
-        return json.dumps({"instanceName":get_instance_name(),
+        return json.dumps({"instanceName":"10.23.239.14",
                            "payload": mapping_dict, # {"source_cluster": mapped_objects, "target_cluster": {{dn:IP},{dn:IP}}}
                            "status_code": "200",
                            "message": "OK"})
@@ -332,37 +280,39 @@ def save_mapping(appDId, tenant, mappedData):
     """
     Save mapping to database.
     """
-    start_time = datetime.datetime.now()
-    try:
-        appId = str(appDId) + str(tenant)
-        logger.info('Saving Mappings for app:'+str(appId))
-        mappedData_dict = json.loads(
-            (str(mappedData).strip("'<>() ").replace('\'', '\"')))  # new implementation for GraphQL
-        data_list = []
 
-        already_mapped_data = database_object.return_mapping(appId)
-        for mapping in mappedData_dict:
-            if mapping.get('ipaddress') != "":
-                data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
-            elif mapping.get('macaddress') != "":
-                data_list.append({'macaddress': mapping.get('macaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+    return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
+    # start_time = datetime.datetime.now()
+    # try:
+    #     appId = str(appDId) + str(tenant)
+    #     logger.info('Saving Mappings for app:'+str(appId))
+    #     mappedData_dict = json.loads(
+    #         (str(mappedData).strip("'<>() ").replace('\'', '\"')))  # new implementation for GraphQL
+    #     data_list = []
 
-        if not data_list:
-            database_object.delete_entry('Mapping', appId)
-            #enable_view(appDId, False)
-        else:
-            data_list = parse_mapping_before_save(already_mapped_data, data_list)
-            database_object.delete_entry('Mapping', appId)
-            database_object.check_if_exists_and_update('Mapping', [appId, data_list])
-            enable_view(appDId, True)
-        database_object.commit_session()
-        return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Could not save mappings to the database. Error: "+str(e))
-        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for saveMapping: " + str(end_time - start_time))
+    #     already_mapped_data = database_object.return_mapping(appId)
+    #     for mapping in mappedData_dict:
+    #         if mapping.get('ipaddress') != "":
+    #             data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+    #         elif mapping.get('macaddress') != "":
+    #             data_list.append({'macaddress': mapping.get('macaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+
+    #     if not data_list:
+    #         database_object.delete_entry('Mapping', appId)
+    #         #enable_view(appDId, False)
+    #     else:
+    #         data_list = parse_mapping_before_save(already_mapped_data, data_list)
+    #         database_object.delete_entry('Mapping', appId)
+    #         database_object.check_if_exists_and_update('Mapping', [appId, data_list])
+    #         enable_view(appDId, True)
+    #     database_object.commit_session()
+    #     return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
+    # except Exception as e:
+    #     logger.exception("Could not save mappings to the database. Error: "+str(e))
+    #     return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
+    # finally:
+    #     end_time =  datetime.datetime.now()
+    #     logger.info("Time for saveMapping: " + str(end_time - start_time))
 
 
 def get_faults(dn):
@@ -383,7 +333,8 @@ def get_faults(dn):
                 "severity" : fault_attr.get("severity"),
                 "affected" : fault_attr.get("affected"),
                 "descr" : fault_attr.get("descr"),
-                "created" : fault_attr.get("created")
+                "created" : fault_attr.get("created"),
+                "cause" : fault_attr.get("cause")
             }
             faults_payload.append(fault_dict)
         return json.dumps({
@@ -956,9 +907,9 @@ def tree(tenant, appId):
         logger.info('UI Action TREE started')
         aci_util_obj = aci_utils.ACI_Utils()
         mapping(tenant, appId)
-        merged_data = consul_merge.merge_aci_consul(tenant, 'data_centre', aci_util_obj)
+        merged_data = merge_aci_appd(tenant, appId, aci_util_obj)
         response = json.dumps(d3Object.generate_d3_compatible_dict(merged_data))
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
+        return json.dumps({"instanceName":get_instance_name(),"payload": response, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error while building tree from run.json for app:" + str(appId) + ". Error:" + str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the View."})
@@ -1159,12 +1110,33 @@ def get_details(tenant, appId):
         start_time = datetime.datetime.now()
         logger.info("UI Action details.json started")
         
-        # consul_details can be merged with this function,
-        # or put in a parsing/ class
-        details_list = consul_details(tenant)
-        logger.info("UI Action details.json ended: " + str(details_list))
-        # details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
-        return json.dumps({"agentIP":"10.23.239.14","payload": details_list, "status_code": "200", "message": "OK"})
+        aci_util_obj = aci_utils.ACI_Utils()
+
+        details_list = []
+        
+        mapping(tenant, appId)
+        merged_data = merge_aci_appd(tenant, appId, aci_util_obj)
+        #get_to_Epg_traffic("uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-Ord")
+
+        for each in merged_data:
+            epg_health = aci_util_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
+            node = get_node_from_interface(each['Interfaces'])
+            interfaces = get_all_interfaces(each['Interfaces']) 
+            details_list.append({
+                    'IP': each.get('IP'),
+                    'epgName': each.get('EPG'),
+                    'epgHealth': epg_health,
+                    'endPointName': each.get('VM-Name'),
+                    'tierName': each.get('tierName'),
+                    'tierHealth': each.get('tierHealth'),
+                    'dn': each.get('dn'),
+                    'mac': each.get('CEP-Mac'),
+                    'interface': str(interfaces),
+                    'node': str(node)
+                })
+        logger.info("UI Action details.json ended")
+        details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
+        return json.dumps({"instanceName":get_instance_name(),"payload": details, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Could not load the Details. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the Details."})
@@ -1245,121 +1217,3 @@ def get_all_interfaces(interfaces):
             logger.error("Incompetible format of Interfaces found")
             raise Exception("Incompetible format of Interfaces found")
     return interface_list
-
-
-def consul_details(tenant):
-    try:
-        logger.info("Consul Details start")
-
-        aci_util_obj = aci_utils.ACI_Utils()
-        details_list = []
-        merged_data = consul_merge.merge_aci_consul(tenant, 'data_centre', aci_util_obj)
-        for each in merged_data:
-            epg_health = aci_util_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
-            ep_info = get_eps_info(each.get('dn'), each.get('IP'))
-            details_list.append({
-                    'interface': ep_info.get('interface'),
-                    'endPointName': each.get('VM-Name'),
-                    'ip': each.get('IP'),
-                    'mac': each.get('CEP-Mac'),
-                    'learningSource': ep_info.get('learningSource'),
-                    'hostingServer': ep_info.get('hostingServer'),
-                    'reportingController': ep_info.get('reportingController'),
-                    'vrf': each.get('VRF'),
-                    'bd': each.get('BD'),
-                    'ap': each.get('AppProfile'),
-                    'epgName': each.get('EPG'),
-                    'epgHealth': epg_health,
-                    'consulNode': each.get('nodeName'),
-                    'nodeChecks': each.get('nodeCheck'),
-                    'services': each.get('services')
-                })
-        return details_list
-    except Exception as e:
-        logger.exception("Error in consul_details: "+str(e))
-        return []
-
-
-def get_eps_info(dn, ip):
-
-    try:
-        aci_util_obj = aci_utils.ACI_Utils()
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(eq(fvCEp.ip,"'+ip+'"))&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
-        ep = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
-        ep_info = get_ep_info(ep[0].get("fvCEp").get("children"), aci_util_obj)
-        ep_attr = ep[0].get("fvCEp").get("attributes")
-
-        return {
-            'interface': ep_info.get('iface_name'),
-            'learningSource':ep_attr.get("lcC"),
-            'hostingServer': ep_info.get('hosting_server_name'),
-            'reportingController': ep_info.get('ctrlr_name')
-        }
-
-    except Exception as e:
-        logger.exception("Error in get_eps_info: "+str(e))
-
-
-def get_service_check(service_name, service_id):
-    try:
-        start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_service_check(service_name, service_id)
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Error in get_service_check: "+ str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load service checks."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for get_service_check: " + str(end_time - start_time))
-
-
-def get_health_checks(node_name):
-    try:
-        start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_health_check(node_name)
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Error in get_node_check: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for get_health_check: " + str(end_time - start_time))
-
-
-def get_node_checks(node_name):
-    try:
-        start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_node_check(node_name)
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Error in get_node_check: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for get_health_check: " + str(end_time - start_time))
-
-
-def get_service_check_ep(service_list):
-    try:
-        start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_service_check_ep(json.loads(service_list))
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Error in get_node_check: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " + str(end_time - start_time))
-
-def get_node_check_epg(node_list):
-    try:
-        start_time = datetime.datetime.now()
-        response = consul_merge.consul_detailed_node_check_epg(json.loads(node_list))
-        return json.dumps({"agentIP":"10.23.239.14","payload": response, "status_code": "200", "message": "OK"})
-    except Exception as e:
-        logger.exception("Error in get_node_check: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load node checks."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " + str(end_time - start_time))
-    
