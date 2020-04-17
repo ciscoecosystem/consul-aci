@@ -268,7 +268,7 @@ export default class DetailePage extends Component {
 
     let title = "";
     if (data.name === "Service") {
-      title = data.attributes['Service Instance']
+      title = data.attributes['Service']
     } else {
       title = this.state.data.sub_label || this.state.data.label || "EndPoint Information";
     }
