@@ -256,6 +256,12 @@ class DetailsPane extends React.Component {
 
       }
     }
+    let title = "";
+    if (data.name === "Service") {
+      title = data.attributes['Service Instance']
+    } else {
+      title = this.state.data.sub_label || this.state.data.label || "EndPoint Information";
+    }
 
     return (
       <div>
@@ -263,7 +269,7 @@ class DetailsPane extends React.Component {
           <div className="pane-header">
 
             <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
-              {data.attributes.Service || data.sub_label || data.label}
+              {title}
             </span>
 
             <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>
