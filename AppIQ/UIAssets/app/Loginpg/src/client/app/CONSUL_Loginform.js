@@ -116,7 +116,6 @@ class CONSUL_LoginForm extends React.Component {
         }`}
         let isDetail = false;
         try {
-            // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
             let checkData = httpGet(QUERY_URL, payload);
             console.log("== > cehckdata", checkData );
 
@@ -300,15 +299,17 @@ class CONSUL_LoginForm extends React.Component {
     // remove an agent
     removeAgent(index) {
         let {details, isNewAgentAdded} = this.state;
+
         if (isNewAgentAdded === true && index !== 0){ // new agent being written; while delete other agent
             this.notify(CANT_DELETE_AGENT_AS_SOME_BEEN_WRITTEN);
             return;
         }
         
         let newDetails = [...details];
-        if (isNewAgentAdded === true){
+        if (isNewAgentAdded === true){ // its internal to delete, no api call so clear state and return 
             newDetails.splice(index, 1);
             this.setState({ details: newDetails, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false  });
+            return; 
         }
        
         this.setState({ readAgentLoading: true});
@@ -317,8 +318,6 @@ class CONSUL_LoginForm extends React.Component {
                 thiss.removeAgentCall(Object.assign({}, newDetails.splice(index, 1)[0] ) ) 
         }, 0)
 
-        // newDetails.splice(index, 1);
-        // this.setState({ details: newDetails, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false  });
     }
 
     // edit an Agent
@@ -353,7 +352,7 @@ class CONSUL_LoginForm extends React.Component {
         let details = this.state.details[index];
         console.log("update agent", details);
 
-        if (!details.ip || !details.port || !details.token || !details.protocol ){ // cgeckung if all field added
+        if (!details.ip || !details.port || !details.protocol ){ // checking if all field added
             this.notify(FILL_DETAILS);
             return;
         }
@@ -367,6 +366,7 @@ class CONSUL_LoginForm extends React.Component {
                         editDetailCopy: undefined,
                         editAgentIndex: null,
                         isNewAgentAdded: false,
+                        readAgentLoading: false
                     })
                 }, 0)
             });       
@@ -380,10 +380,10 @@ class CONSUL_LoginForm extends React.Component {
         let {details} = this.state;
         details.unshift({
             ip: '',
-            port: 'http',
+            port: '',
             token: '',
             datacenter: null,
-            protocol: null,
+            protocol: "http",
             status: undefined
         })
         this.setState({ details, editAgentIndex: 0, isNewAgentAdded: true }); // isNewAgentAdded == true indicate a row has been written
@@ -398,14 +398,33 @@ class CONSUL_LoginForm extends React.Component {
         accessor: 'protocol',
         Cell: props => {
             let { protocol } = props.original;
-            console.log("protocol of "+props.index + "is ", protocol)
-        return <span className="radio-grp">
-            <Radio key={"protocol"+props.index} name={"protocol"+props.index} value="http" label="http" 
-                   checked={protocol === "http"} disabled={props.index!==editAgentIndex} onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"http"})} />
-   
-            <Radio key={"protocol"+props.index} name={"protocol"+props.index} value="https" label="https"
-                   checked={protocol === "https"} disabled={props.index!==editAgentIndex} onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"https"})} />
-        </span>
+            return <span className="radio-grp">
+            <label>
+              <input
+              id={"http"+props.index}
+              id={"http"+props.index}
+              type="radio"
+              value="http"
+              checked={protocol === "http"}
+              onChange={(e)=> {
+                  this.handleChange(props.index, { name: "protocol", value:"http"}) 
+                }
+              } 
+            />
+                http
+            </label>&nbsp;&nbsp;
+            <label>
+              <input
+              id={"http"+props.index}
+              name={"http"+props.index}
+              type="radio"
+              value="https"
+              checked={protocol === "https"}
+              onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"https"})}
+            />
+                https
+            </label>
+         </span>
         }
     },
     {
@@ -418,7 +437,7 @@ class CONSUL_LoginForm extends React.Component {
     {
         header: 'Port',
         accessor: 'port',
-        Cell: props =>  <Input key={"port"+props.index} placeHolder="port" disabled={props.index!==editAgentIndex} value={props.original.port}  name={"port"} onChange={(e) => this.handleChange(props.index, e.target)} />
+        Cell: props =>  <Input key={"port"+props.index} type="number" placeHolder="port" disabled={props.index!==editAgentIndex} value={props.original.port} name={"port"} onChange={(e) => this.handleChange(props.index, e.target)} />
     },
     {
         header: 'Token',
