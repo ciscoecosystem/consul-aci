@@ -20,7 +20,7 @@ app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/
 app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
-
+consul_credential_file_path = "/home/app/log/consulCredentials.json"
 
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
@@ -41,7 +41,8 @@ def get_agent_list(data_center):
         {
             "ip": "10.23.239.14",
             "port" : "8500",
-            "token": ""
+            "token": "",
+            "protocol" : "http"
         }
     ]
     return agent_list
@@ -70,7 +71,7 @@ def get_datacenter_list():
         agent_list = get_agent_list('all')
 
         for agent in agent_list:
-            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
             
             agent_datacenters = consul_obj.datacenters()
             for datacenter in agent_datacenters:
@@ -113,7 +114,7 @@ def mapping(tenant, appDId):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -175,7 +176,7 @@ def tree(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -192,6 +193,12 @@ def tree(tenant):
         aci_data = aci_obj.main(tenant)
 
         merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
+
+        # parse interface data
+        for ep_data in merged_data:
+            interface_list = [ get_iface_name(iface_name) for iface_name in ep_data['Interfaces']]
+            ep_data['Interfaces'] = interface_list
+
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
         response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
@@ -234,7 +241,7 @@ def details(tenant):
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -371,7 +378,7 @@ def get_service_check(service_name, service_id):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -408,7 +415,7 @@ def get_node_checks(node_name):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -446,7 +453,7 @@ def get_service_check_ep(service_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -488,7 +495,7 @@ def get_node_check_epg(node_list):
     response = []
     try:
         agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token')) # TODO: all the 3 keys expected
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
 
         for node_name in node_list:
             response += consul_obj.detailed_node_check(node_name)
@@ -1158,3 +1165,180 @@ def get_all_interfaces(interfaces):
             logger.error("Incompetible format of Interfaces found")
             raise Exception("Incompetible format of Interfaces found")
     return interface_list
+
+
+def get_iface_name(name):
+    if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        #The ethernet name is NOT available
+        eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
+        iface_name = eth_name
+        return iface_name
+    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        eth_name = name.split("/pathep-[")[1][0:-1]
+        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
+        return iface_name
+    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
+        pod_number = name.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(name)
+        eth_name = name.split("/pathep-[")[1][0:-1]
+        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
+        return iface_name
+    else:
+        logger.error("Different format of interface is found: {}".format(name))
+        raise Exception("Different format of interface is found: {}".format(name))
+
+def read_creds():
+    try:
+        start_time = datetime.datetime.now()
+        logger.info("Reading agents.")
+        file_exists = os.path.isfile(consul_credential_file_path)
+        
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+                for agent in creds:
+                    consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+                    status = consul_obj.check_connection()
+                    agent['status'] = status
+                    if status:
+                        datacenter_list = consul_obj.datacenters()
+                        if datacenter_list:
+                            agent['datacenter'] = datacenter_list[0]
+                        else:
+                            agent['datacenter'] = "-"
+                    else:
+                        agent['datacenter'] = "-"
+                    
+                    
+                logger.debug("agent data: " + str(creds))
+                return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
+        else:
+            logger.debug("credential file not found.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": [], "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in read credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for read_creds: " + str(end_time - start_time))
+
+def write_creds(agent_list):
+    try:
+        start_time = datetime.datetime.now()
+        logger.info("Writing agents: " + str(agent_list))
+        agent_list = json.loads(agent_list)
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+        logger.debug("credentials file content: " + str(creds))
+        creds += agent_list
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        for agent in agent_list:
+            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+            status = consul_obj.check_connection()
+            agent['status'] = status
+            if status:
+                datacenter_list = consul_obj.datacenters()
+                if datacenter_list:
+                    agent['datacenter'] = datacenter_list[0]
+                else:
+                    agent['datacenter'] = "-"
+            else:
+                agent['datacenter'] = "-"
+        logger.debug("New agent data: " + str(agent_list))
+        return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in write credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for write_creds: " + str(end_time - start_time))
+
+
+def update_creds(update_input):
+    try:
+        start_time = datetime.datetime.now()
+        update_input = json.loads(update_input)
+        logger.info("Updating agents.")
+        old_data = update_input.get('oldData')
+        logger.info("Old Data: " + str(old_data))
+        new_data = update_input.get('newData')
+        logger.info("New Data: " + str(new_data))
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+        logger.debug("credentials file content: " + str(creds))
+        response = {}
+
+        for agent in creds:
+            if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
+                agent["protocol"] = new_data.get("protocol")
+                agent["ip"] = new_data.get("ip")
+                agent["port"] = new_data.get("port")
+                agent["token"] = new_data.get("token")
+                response.update(agent)
+                consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+                status = consul_obj.check_connection()
+                response["status"] = status
+                if status:
+                    datacenter_list = consul_obj.datacenters()
+                    if datacenter_list:
+                        response['datacenter'] = datacenter_list[0]
+                    else:
+                        response['datacenter'] = "-"
+                else:
+                    response['datacenter'] = "-"
+                break        
+        logger.debug("new file content: " + str(creds))
+        logger.debug("response: " + str(response))
+
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in update credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for update_creds: " + str(end_time - start_time))
+
+
+def delete_creds(agent_data):
+    try:
+        start_time = datetime.datetime.now()
+        logger.info("deleting agents: " + str(agent_data))
+        agent_data = json.loads(agent_data)
+        file_exists = os.path.isfile(consul_credential_file_path)
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+        else:
+            creds = []
+        logger.debug("credential file content before delete: " + str(creds))
+
+        for agent in creds:
+            if agent_data.get("protocol") == agent.get("protocol") and agent_data.get("ip") == agent.get("ip") and agent_data.get("port") == agent.get("port") and agent_data.get("token") == agent.get("token"):
+                creds.remove(agent)
+                break
+        logger.debug("credential file content after delete: " + str(creds))
+
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+        return json.dumps({"agentIP":"10.23.239.14", "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Error in delete credentials: " + str(e))
+        return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for delete_creds: " + str(end_time - start_time))
