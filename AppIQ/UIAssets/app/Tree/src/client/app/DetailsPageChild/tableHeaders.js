@@ -166,6 +166,10 @@ const TABLE_COLUMNS_FAULTS = [
         accessor: 'code'
     },
     {
+        Header: 'Cause',
+        accessor: 'cause'
+    },
+    {
         Header: 'Affected Object',
         accessor: 'affected'
     },

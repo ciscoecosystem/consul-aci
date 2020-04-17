@@ -10,6 +10,12 @@ class generateD3Dict(object):
         if health == 'CRITICAL':
             return 'red'
 
+    def add_checks(self, base_checks, new_checks):
+        for status, check_value in new_checks.iteritems():
+            if status in base_checks:
+                base_checks[status] += check_value
+            else:
+                base_checks[status] = check_value
 
     def generate_d3_compatible_dict(self, data):
         # Get distinct app profiles
@@ -31,7 +37,7 @@ class generateD3Dict(object):
             app_prof_node['sub_label'] = app_nodes[0]['AppProfile']
             app_prof_node['attributes'] = {}
             app_prof_node['children'] = []
-
+            app_prof_checks = {}
             # 2nd layer nodes in Tree (EPG)
             # distinct EPGs for current application profile
             epgs = set()
@@ -80,6 +86,7 @@ class generateD3Dict(object):
                     'Nodes': list([{"Node": n['nodeName'], "Node Checks": n['nodeCheck'], "Reporting Node IP": n['ipAddressList'][0]} for n in epg_nodes]), # node ip to add in package, 0th used for now
                     'Services_List' : epg_service_detalis_list
                 }
+                epg_checks = {}
 
                 epg_dict['children'] = []
 
@@ -104,13 +111,15 @@ class generateD3Dict(object):
                         ep_dict = {}
                         ep_dict['name'] = "EP"
                         ep_dict['type'] = '#2DBBAD'
+                        ep_checks = {}
+                        self.add_checks(ep_checks, ep_node['nodeCheck'])
                         ep_dict['sub_label'] = ep_nodes[0]['VM-Name']   # ep_node should be instead of ep_nodes[0]
                         ep_dict['label'] =  ep_node["nodeName"] #",".join(epg_service_list)
 
                         ep_dict['attributes'] = {
                             "Node" : ep_node["nodeName"],
                             "Node Checks" : ep_node["nodeCheck"],
-                            "Reporting Node IP": n['ipAddressList'][0],  # node ip to add in package, 0th used for now
+                            "Reporting Node IP": ep_node['ipAddressList'][0],  # node ip to add in package, 0th used for now
                             "Services_List" : ep_service_list,
                             'IP': ep_node['IP'],
                             'Mac': ep_nodes[0]['CEP-Mac'],
@@ -123,6 +132,9 @@ class generateD3Dict(object):
                             node_dict = {}
                             node_dict['name'] = "Service"
                             node_dict['type'] = '#C5D054'
+                            node_dict['checks'] = service['serviceChecks']
+                            self.add_checks(ep_checks, service['serviceChecks'])
+
                             if len(service['serviceInstance']) > 11:
                                 node_dict['label'] = service['serviceInstance'][:11] + '..'
                             else:
@@ -141,7 +153,9 @@ class generateD3Dict(object):
                                 "Service Checks" : service['serviceChecks']
                             }
                             ep_dict['children'].append(node_dict)
-                        
+                        ep_dict['checks'] = ep_checks
+
+                        self.add_checks(epg_checks, ep_checks)                       
                         epg_dict['children'].append(ep_dict)
 
                 if epg_nodes[0]['Non_IPs']:
@@ -156,8 +170,11 @@ class generateD3Dict(object):
                     epg_dict['children'].append(non_ep_dict)
 
                 # List of IPs -
+                epg_dict['checks'] = epg_checks
+                self.add_checks(app_prof_checks, epg_checks)
                 app_prof_node['children'].append(epg_dict)
                 epg_cnt = epg_cnt + 1   # not used
 
+            app_prof_node['checks'] = app_prof_checks
             app_profs_converted.append(app_prof_node)
         return app_profs_converted

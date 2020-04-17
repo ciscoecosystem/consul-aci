@@ -3,7 +3,7 @@ __author__ = 'nilayshah'
 from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
-from schema import schema
+from consul.consul_schema import schema
 import alchemy as Database
 import os
 import requests
