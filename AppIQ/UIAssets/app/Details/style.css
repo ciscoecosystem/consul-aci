@@ -26,6 +26,11 @@
     padding-right: 10px;
 }
 
+.ReactTable .rt-noData {
+    color: black;
+    font-size: 16px;
+  }
+
 
 
 

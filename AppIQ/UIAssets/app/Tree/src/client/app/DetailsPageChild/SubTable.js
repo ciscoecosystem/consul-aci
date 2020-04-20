@@ -81,6 +81,7 @@ export default class SubTable extends Component {
         return (
             <Panel style={{ width: "100%" }} border="panel--bordered">
                 <Table
+                    noDataText="No data found"
                     data={this.state.data}
                     SubComponent={row => <div className="sub-table"><Table data={row.original["Evaluation States"]} defaultPageSize={5} columns={this.state.subColumns}></Table></div>}
                     columns={this.state.columns}
