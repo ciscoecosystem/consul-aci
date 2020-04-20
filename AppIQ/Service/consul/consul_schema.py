@@ -107,7 +107,7 @@ class Query(graphene.ObjectType):
 
     Application = graphene.Field(Application, tn=graphene.String())
 
-    Mapping = graphene.Field(Mapping, tn=graphene.String(), appId=graphene.String())
+    Mapping = graphene.Field(Mapping, tn=graphene.String(), datacenter=graphene.String())
 
     SaveMapping = graphene.Field(SaveMapping, 
                                     appId = graphene.String(),
@@ -115,7 +115,7 @@ class Query(graphene.ObjectType):
                                     data = graphene.String()
                                 )
 
-    Run = graphene.Field(Run, tn=graphene.String(), appId=graphene.String())
+    Run = graphene.Field(Run, tn=graphene.String(), datacenter=graphene.String())
 
     GetFaults = graphene.Field(GetFaults, dn=graphene.String())
 
@@ -141,7 +141,7 @@ class Query(graphene.ObjectType):
 
     SetPollingInterval = graphene.Field(SetPollingInterval, interval = graphene.String())
 
-    Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
+    Details = graphene.Field(Details, tn=graphene.String(), datacenter=graphene.String())
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                     service_name = graphene.String(),
