@@ -1213,7 +1213,11 @@ def read_creds():
         
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
+                creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+
                 for agent in creds:
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
                     status = consul_obj.check_connection()
@@ -1248,11 +1252,14 @@ def write_creds(agent_list):
         logger.info("Writing agents: " + str(agent_list))
         agent_list = json.loads(agent_list)
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
+
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+        
         logger.debug("credentials file content: " + str(creds))
         
         for agent in agent_list:
@@ -1292,11 +1299,14 @@ def update_creds(update_input):
         new_data = update_input.get('newData')
         logger.info("New Data: " + str(new_data))
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+        
+            
         logger.debug("credentials file content: " + str(creds))
         response = {}
 
@@ -1342,11 +1352,13 @@ def delete_creds(agent_data):
         logger.info("deleting agents: " + str(agent_data))
         agent_data = json.loads(agent_data)
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+            
         logger.debug("credential file content before delete: " + str(creds))
 
         for agent in creds:

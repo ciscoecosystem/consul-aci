@@ -27,6 +27,7 @@ class Cosnul(object):
         # The base URL is set with protocol http, 
         # if http failes https will be tried
         self.base_url = '{}://{}:{}'.format(self.protocol, self.agent_ip, self.port)
+        self.header = {}
         if self.token:
             logger.info('Token provided')
             self.header = {'X-Consul-Token' : token}
