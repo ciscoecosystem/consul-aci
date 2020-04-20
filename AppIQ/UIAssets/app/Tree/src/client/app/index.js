@@ -454,7 +454,7 @@ class App extends React.Component {
         console.error("set state error", err);
       }
   
-      let payload = TREE_VIEW_QUERY_PAYLOAD(result['tn'])
+      let payload = TREE_VIEW_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME])
       // let payload = { query: 'query{Run(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){response}}' }
       let xhr = new XMLHttpRequest();
       let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
@@ -475,7 +475,7 @@ class App extends React.Component {
                           // Error related to query
                           localStorage.setItem('message', JSON.stringify(json.errors));
                           const message_set = true;
-                          window.location.href = "app.html?gqlerror=1";
+                          window.location.href = "index.html?gqlerror=1";
                       }
                       else {
                           // Response successful
@@ -487,7 +487,7 @@ class App extends React.Component {
                               }]}
                               localStorage.setItem('message', JSON.stringify(message.errors));
                               const message_set = true;
-                              window.location.href = "app.html?gqlerror=1";
+                              window.location.href = "index.html?gqlerror=1";
                           }
                           else {
                               // Success
@@ -504,7 +504,7 @@ class App extends React.Component {
                           const message = {"errors": [{"message": "Error while fetching data for Tree. Status code" + xhr.status}]}
                           localStorage.setItem('message', JSON.stringify(message.errors));
                       }
-                      window.location.href = "app.html?gqlerror=1";
+                      window.location.href = "index.html?gqlerror=1";
                   }
               }
           }
@@ -520,7 +520,7 @@ class App extends React.Component {
               localStorage.setItem('message', JSON.stringify(message.errors));
           }
   
-          window.location.href = "app.html?gqlerror=1";
+          window.location.href = "index.html?gqlerror=1";
       }
       key = key + 1;
       return true;
