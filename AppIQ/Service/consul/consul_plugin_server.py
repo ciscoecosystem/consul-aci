@@ -454,6 +454,7 @@ def get_service_check_ep(service_list):
     try:
         agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        service_list = json.loads(service_list)
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -496,6 +497,7 @@ def get_node_check_epg(node_list):
     try:
         agent = get_agent_list('default')[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        node_list = json.loads(node_list)
 
         for node_name in node_list:
             response += consul_obj.detailed_node_check(node_name)
