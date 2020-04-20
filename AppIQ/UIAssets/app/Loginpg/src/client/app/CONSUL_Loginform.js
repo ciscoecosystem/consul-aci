@@ -1,7 +1,8 @@
 import React from 'react';
 import './style.css';
-import {Table,Button, Icon, Input, Label, Radio, Tooltip, Loader} from "blueprint-react"
+import {Table,Button, Icon, Input, Label, Loader} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
+import { PROFILE_NAME } from '../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -11,35 +12,11 @@ const CANT_DELETE_AGENT_AS_SOME_BEEN_WRITTEN = "An agent is being written, can't
 // const QUERY_URL="http://127.0.0.1:5000/graphql.json";
 const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
 
-
-function getCookieVal(offset) {
-    var endstr = document.cookie.indexOf(";", offset);
-    if (endstr == -1) {
-        endstr = document.cookie.length;
-    }
-    return unescape(document.cookie.substring(offset, endstr));
-}
-
-function getCookie(name) {
-    var arg = name + "=";
-    var alen = arg.length;
-    var clen = document.cookie.length;
-    var i = 0;
-    var j = 0;
-    while (i < clen) {
-        j = i + alen;
-        if (document.cookie.substring(i, j) == arg) {
-            return getCookieVal(j);
-        }
-        i = document.cookie.indexOf(" ", i) + 1;
-        if (i === 0) {
-            break;
-        }
-    }
-    return null;
-}
-
-
+const dummylist = [
+    {"protocol" : "http", "ip" : "10.0.0.0", "port" : 8050, "token" : "lnfeialilsacirvjlnlaial", "status" : true, "datacenter" : "datacenter1"},
+    {"protocol" : "https", "ip" : "10.0.0.1", "port" : 8051, "token" : "lnfeialilsacirvjlglaial", "status" : false, "datacenter" : "datacenter1"},
+    {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : false, "datacenter" : "datacenter2"}
+]
 /**
 * @param {string} theUrl The URL of the REST API
 *
@@ -57,14 +34,6 @@ function httpGet(theUrl, payload) {
     xmlHttp.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
     xmlHttp.send(JSON.stringify(payload));
     return xmlHttp.responseText;
-}
-
-function getUrlVars() {
-    var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-    vars[key] = value;
-    });
-    return vars;
 }
 
 // Scroll the table to specific row mentioned @param indextable
@@ -91,7 +60,8 @@ class CONSUL_LoginForm extends React.Component {
             editAgentIndex: null, // [0,1,...n] indicates row number & [-1] indicates a row is added and being written
             editDetailCopy: undefined,
             isNewAgentAdded: false,
-            readAgentLoading: false
+            readAgentLoading: false,
+            tenantName: this.props.tenantName
         }
     }
 
@@ -117,7 +87,7 @@ class CONSUL_LoginForm extends React.Component {
         let isDetail = false;
         try {
             let checkData = httpGet(QUERY_URL, payload);
-            console.log("== > cehckdata", checkData );
+            console.log("== > data", checkData );
 
             let credsData = JSON.parse(JSON.parse(checkData).data.ReadCreds.creds);
             if(credsData.status_code == "200") {
@@ -390,8 +360,19 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     render() {
-    let { editAgentIndex } = this.state;
-    console.log("Render state: ", this.state);
+    let { editAgentIndex, tenantName } = this.state;
+
+    // Handle redirection to page 
+    function handleMapClick(profileNameValue) {
+        localStorage.setItem(PROFILE_NAME, profileNameValue);
+        window.location.href = `mapping.html?&${PROFILE_NAME}=` + encodeURIComponent(profileNameValue) + "&tn=" + encodeURIComponent(tenantName);
+    }
+    function handleViewClick(profileNameValue) {
+        window.location.href = `tree.html?${PROFILE_NAME}=` + encodeURIComponent(profileNameValue) + "&tn=" + encodeURIComponent(tenantName);
+    }
+    function handleDetailsClick(profileNameValue) {
+        window.location.href = `details.html?${PROFILE_NAME}=` + encodeURIComponent(profileNameValue) + "&tn=" + encodeURIComponent(tenantName);
+    }
 
     const tableColumns = [  {
         header: 'protocol',
@@ -488,14 +469,49 @@ class CONSUL_LoginForm extends React.Component {
             }
         }
     }
-    ]   
+    ]
 
     return (
             <div className="login-form">
             <ToastContainer />
             <center>
                 {(this.state.readAgentLoading) ? <span>loading.. <Loader> loading </Loader>  </span>:
-                <Table key={"agentTable"} loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} data={this.state.details} columns={tableColumns} minRows={1} showPagination={false} TheadComponent={props => null}>
+                <Table key={"agentTable"} 
+                loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} 
+                data={this.state.details} 
+                columns={tableColumns} 
+                minRows={1} 
+                showPagination={false} 
+                SubComponent={row => {
+                    let { datacenter, status } = row.original;
+                    if (status === false) return undefined; 
+                    return (
+                      <Table
+                        data={[{spaceCol:"",btnCol:""}]}
+                        columns={[
+                                { 
+                                     accessor:"spaceCol"
+                                },
+                                { 
+                                      accessor:"btnCol",
+                                       Cell: props => {
+                                        return <div>
+                                            <Button key={"reddetail"} className="half-margin-left" size="btn--small" type="btn--secondary" onClick={()=>{ handleDetailsClick(datacenter) }}>Details</Button>
+                                            <Button key={"redmap"} className="half-margin-left" size="btn--small" type="btn--secondary" onClick={()=>{ handleMapClick(datacenter) }}>Map</Button>
+                                            <Button key={"redview"} className="half-margin-left" size="btn--small" type="btn--secondary" onClick={()=>{ handleViewClick(datacenter) }}>Operational</Button>
+                                           </div>
+                                        } 
+                                }
+                              
+                        ]}
+                        noDataText={"No services found"}
+                        defaultPageSize={100}
+                        minRows={0}
+                        showPagination={false}
+                        TheadComponent={props => null} />
+                    )
+                  }}
+                TheadComponent={props => null}>
                 </Table>}
             </center>
          
@@ -503,7 +519,6 @@ class CONSUL_LoginForm extends React.Component {
                 <center>
                     <br/>
                     <Button style={{ marginRight: "20px"}} disabled={editAgentIndex!==null} type="btn--success" size="btn--small" onClick={this.addAgent}>Add Agent</Button>
-                    <input style={{color:"white"}} type="button" disabled={editAgentIndex!==null} value="Login" className="button view-button" onClick={()=> window.location.href = "app.html"}/>
                 </center>
             </form>
             </div>

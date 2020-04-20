@@ -9,36 +9,23 @@ class LoginComponent extends React.Component {
         this.state = {
             user: null
         }
-    }
 
-    signIn(username, password, account, port, ip) {
-        this.setState({
-            user: {
-                username,
-                account,
-                password,
-                port,
-                ip
-            }
-        })
-    }
-
-    signOut() {
-        this.setState({ user: null })
+        // Fetching TenantName 'tn' from url
+        try {
+            const rx = /Tenants:(.*)\|/g;
+            const topUrl = window.top.location;
+            const tenantNames = rx.exec(topUrl);
+                 
+            this.tenantName = tenantNames[1];
+        } catch(err) {
+            console.error("error in getting tenants ", err);
+        }
     }
 
     render() {
         return (
-            <div>
-                {
-                    (this.state.user) ?
-                        window.location.href = "app.html" //temporary
-                        :
-                            <CONSUL_LoginForm
-                                onSignIn={this.signIn.bind(this)}
-                                onSignOut={this.signOut.bind(this)}
-                            />
-                }
+            <div> 
+                <CONSUL_LoginForm tenantName={this.tenantName}/>
             </div>
         )
     }
