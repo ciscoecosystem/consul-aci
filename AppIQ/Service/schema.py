@@ -66,17 +66,6 @@ class Run(graphene.ObjectType):
 class Details(graphene.ObjectType):
     details = graphene.String()
 
-class ServiceChecks(graphene.ObjectType):
-    response = graphene.String()
-
-class NodeChecks(graphene.ObjectType):
-    response = graphene.String()
-
-class ServiceChecksEP(graphene.ObjectType):
-    response = graphene.String()
-
-class NodeChecksEPG(graphene.ObjectType):
-    response = graphene.String()
 
 class Query(graphene.ObjectType):
     Check = graphene.Field(Check)
@@ -100,11 +89,6 @@ class Query(graphene.ObjectType):
 
     # EnableView = graphene.Field(EnableView,view=graphene.String())
     Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
-    ServiceChecks = graphene.Field(ServiceChecks, service_name=graphene.String(), service_id=graphene.String())
-    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
-    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
-    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
-
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -167,7 +151,7 @@ class Query(graphene.ObjectType):
         # def resolve_Mapping(self, args, context, info): # On local desktop
         #    tn = args.get('tn')
         #    appId = int(args.get('appId'))
-        Mapping.mappings = app.mapping(tn, int(appId))  # Add params to plugin_server for this method
+        Mapping.mappings = app.mapping(tn, 9)  # Add params to plugin_server for this method
         return Mapping
 
     def resolve_SaveMapping(self, info, appId, tn, data):  # On APIC
@@ -179,35 +163,19 @@ class Query(graphene.ObjectType):
         SaveMapping.savemapping = app.save_mapping(int(appId), str(tn), mappedData)
         return SaveMapping
 
-    def resolve_Run(self, info, tn):  # On APIC
+    def resolve_Run(self, info, tn, appId):  # On APIC
         # def resolve_Run(self,args,context,info): # On local desktop (Uncomment appId and tn args)
         #    tn = args.get('tn')
         #    appId = int(args.get('appId'))
-        Run.response = app.tree(tn, 9)
+        Run.response = app.tree(tn, int(appId))
         return Run
 
-    def resolve_Details(self, info, tn):  # On APIC
+    def resolve_Details(self, info, tn, appId):  # On APIC
         # def resolve_Details(self,args,context,info):# On local desktop (Uncomment appId and tn args)
         #    tn = args.get('tn')
         #    appId = int(args.get('appId'))
-        Details.details = app.get_details(tn, 9)
+        Details.details = app.get_details(tn, int(appId))
         return Details
-
-    def resolve_ServiceChecks(self, info, service_name, service_id):
-        ServiceChecks.response = app.get_service_check(service_name, service_id)
-        return ServiceChecks
-    
-    def resolve_NodeChecks(self, info, node_name):
-        NodeChecks.response = app.get_node_checks(node_name)
-        return NodeChecks
-
-    def resolve_ServiceChecksEP(self, info, service_list):
-        ServiceChecksEP.response = app.get_service_check_ep(service_list)
-        return ServiceChecksEP
-
-    def resolve_NodeChecksEPG(self, info, node_list):
-        NodeChecksEPG.response = app.get_node_check_epg(node_list)
-        return NodeChecksEPG 
 
         # def resolve_EnableView(self, args, context, info):
         #

@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tag", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tags", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
@@ -75,7 +75,7 @@ function CONSUL_EPGCard(props) {
     {/* 3. consul node */}
     {('Nodes' in attributes) &&
       <span>
-        Node Services
+        Consul Nodes
         {(attributes.Nodes.length > 0) ?
           attributes.Nodes.map(nodeData => CardData(Object.assign({}, { attributes: nodeData }), nodeDetailOrder))
           : NoInformation()}
@@ -263,7 +263,7 @@ class DetailsPane extends React.Component {
           <div className="pane-header">
 
             <span style={{ verticalAlign: "super", fontSize: "1.3em", fontWeight: 550 }}>
-              {data.attributes.Service || data.sub_label || data.label}
+              {data.attributes.Service || data.sub_label || data.label || "Non-service Endpoint"}
             </span>
 
             <Icon className="no-link toggle pull-right" size="icon-medium-small" type="icon-exit-contain" onClick={this.props.closeDetailsPane}>&nbsp;</Icon>

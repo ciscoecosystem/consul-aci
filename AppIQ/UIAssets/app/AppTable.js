@@ -46,7 +46,7 @@ export default class AppTable extends React.Component{
         window.location.href = `details.html?${PROFILE_NAME}=` + encodeURIComponent(data[PROFILE_NAME]) + "&tn=" + encodeURIComponent(this.state.tenantName);
     }
     render(){
-      return  <Table data={this.props.rows} columns={this.columns} TheadComponent={props => null}></Table>
+      return  <Table noDataText="No data found" data={this.props.rows} columns={this.columns} TheadComponent={props => null}></Table>
     }
 
 }
