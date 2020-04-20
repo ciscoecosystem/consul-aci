@@ -17,6 +17,7 @@ import custom_logger
 
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
+app.secret_key = "consul_key"
 app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
@@ -36,16 +37,25 @@ def get_agent_list(data_center):
     
     TODO: should not be static, should be from Alchemy
     """
-    
-    agent_list = [
-        {
-            "ip": "10.23.239.14",
-            "port" : "8500",
-            "token": "",
-            "protocol" : "http"
-        }
-    ]
-    return agent_list
+    try:
+        start_time = datetime.datetime.now()
+        logger.info("Reading agent for datacenter " + str(data_center))
+        file_exists = os.path.isfile(consul_credential_file_path)
+        agent_list = []
+
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+            
+            for agent in creds:
+                if agent.get('datacenter') == data_center:
+                    agent_list.append(agent)
+                    return agent_list
+        else:
+            return []
+    except Exception as e:
+        logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(data_center, str(e)))
+        return []
 
 
 def get_datacenter_list():
@@ -100,7 +110,7 @@ def get_datacenter_list():
         logger.debug("Time for get_datacenter_list: " + str(end_time - start_time))
 
 
-def mapping(tenant, appDId):
+def mapping(tenant, datacenter):
     """
     TODO: return valid dict
     """
@@ -113,7 +123,7 @@ def mapping(tenant, appDId):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
@@ -157,7 +167,7 @@ def save_mapping(appDId, tenant, mappedData):
     return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
 
 
-def tree(tenant):
+def tree(tenant, datacenter):
     """Get correltated Tree view data.
     
     return: {
@@ -175,8 +185,10 @@ def tree(tenant):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        session["consulObject"] = consul_obj
+        
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -222,7 +234,7 @@ def tree(tenant):
         logger.debug("Time for TREE: " + str(end_time - start_time))
 
 
-def details(tenant):
+def details(tenant, datacenter):
     """Get correlated Details view data
     
     return: {
@@ -240,7 +252,7 @@ def details(tenant):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0] # TODO: for now first agent
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
@@ -1214,7 +1226,9 @@ def read_creds():
                             agent['datacenter'] = "-"
                     else:
                         agent['datacenter'] = "-"
-                    
+            
+            with open(consul_credential_file_path, 'w') as fwrite:
+                json.dump(creds, fwrite)
                     
                 logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
@@ -1240,9 +1254,7 @@ def write_creds(agent_list):
         else:
             creds = []
         logger.debug("credentials file content: " + str(creds))
-        creds += agent_list
-        with open(consul_credential_file_path, 'w') as fwrite:
-            json.dump(creds, fwrite)
+        
         for agent in agent_list:
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
             status = consul_obj.check_connection()
@@ -1256,6 +1268,11 @@ def write_creds(agent_list):
             else:
                 agent['datacenter'] = "-"
         logger.debug("New agent data: " + str(agent_list))
+
+        creds += agent_list
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+
         return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
@@ -1297,10 +1314,13 @@ def update_creds(update_input):
                     datacenter_list = consul_obj.datacenters()
                     if datacenter_list:
                         response['datacenter'] = datacenter_list[0]
+                        agent["datacenter"] = datacenter_list[0]
                     else:
                         response['datacenter'] = "-"
+                        agent['datacenter'] = "-"
                 else:
                     response['datacenter'] = "-"
+                    agent['datacenter'] = "-"
                 break        
         logger.debug("new file content: " + str(creds))
         logger.debug("response: " + str(response))

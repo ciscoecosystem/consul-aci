@@ -219,8 +219,8 @@ class Query(graphene.ObjectType):
         return Application
 
 
-    def resolve_Mapping(self, info, tn, appId):
-        Mapping.mappings = app.mapping(tn, 9)
+    def resolve_Mapping(self, info, tn, datacenter):
+        Mapping.mappings = app.mapping(tn, datacenter)
         return Mapping
 
 
@@ -230,13 +230,13 @@ class Query(graphene.ObjectType):
         return SaveMapping
 
 
-    def resolve_Run(self, info, tn):
-        Run.response = app.tree(tn)
+    def resolve_Run(self, info, tn, datacenter):
+        Run.response = app.tree(tn, datacenter)
         return Run
 
 
-    def resolve_Details(self, info, tn):
-        Details.details = app.details(tn)
+    def resolve_Details(self, info, tn, datacenter):
+        Details.details = app.details(tn, datacenter)
         return Details
 
 
