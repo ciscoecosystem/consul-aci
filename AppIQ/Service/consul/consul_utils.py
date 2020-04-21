@@ -27,6 +27,7 @@ class Cosnul(object):
         # The base URL is set with protocol http, 
         # if http failes https will be tried
         self.base_url = '{}://{}:{}'.format(self.protocol, self.agent_ip, self.port)
+        self.header = {}
         if self.token:
             logger.info('Token provided')
             self.header = {'X-Consul-Token' : token}
@@ -400,6 +401,7 @@ class Cosnul(object):
                 if not check.get("ServiceName"):
                     node_check = {}
                     node_check["Name"] = check.get("Name")
+                    node_check["NodeName"] = node_name
                     node_check["ServiceName"] = "-"
                     node_check["CheckID"] = check.get("CheckID")
                     node_check["Type"] = check.get("Type")

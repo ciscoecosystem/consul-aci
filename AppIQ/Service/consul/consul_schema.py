@@ -107,7 +107,7 @@ class Query(graphene.ObjectType):
 
     Application = graphene.Field(Application, tn=graphene.String())
 
-    Mapping = graphene.Field(Mapping, tn=graphene.String(), appId=graphene.String())
+    Mapping = graphene.Field(Mapping, tn=graphene.String(), datacenter=graphene.String())
 
     SaveMapping = graphene.Field(SaveMapping, 
                                     appId = graphene.String(),
@@ -115,7 +115,7 @@ class Query(graphene.ObjectType):
                                     data = graphene.String()
                                 )
 
-    Run = graphene.Field(Run, tn=graphene.String(), appId=graphene.String())
+    Run = graphene.Field(Run, tn=graphene.String(), datacenter=graphene.String())
 
     GetFaults = graphene.Field(GetFaults, dn=graphene.String())
 
@@ -141,7 +141,7 @@ class Query(graphene.ObjectType):
 
     SetPollingInterval = graphene.Field(SetPollingInterval, interval = graphene.String())
 
-    Details = graphene.Field(Details, tn=graphene.String(), appId=graphene.String())
+    Details = graphene.Field(Details, tn=graphene.String(), datacenter=graphene.String())
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                     service_name = graphene.String(),
@@ -219,8 +219,8 @@ class Query(graphene.ObjectType):
         return Application
 
 
-    def resolve_Mapping(self, info, tn, appId):
-        Mapping.mappings = app.mapping(tn, 9)
+    def resolve_Mapping(self, info, tn, datacenter):
+        Mapping.mappings = app.mapping(tn, datacenter)
         return Mapping
 
 
@@ -230,13 +230,13 @@ class Query(graphene.ObjectType):
         return SaveMapping
 
 
-    def resolve_Run(self, info, tn):
-        Run.response = app.tree(tn)
+    def resolve_Run(self, info, tn, datacenter):
+        Run.response = app.tree(tn, datacenter)
         return Run
 
 
-    def resolve_Details(self, info, tn):
-        Details.details = app.details(tn)
+    def resolve_Details(self, info, tn, datacenter):
+        Details.details = app.details(tn, datacenter)
         return Details
 
 

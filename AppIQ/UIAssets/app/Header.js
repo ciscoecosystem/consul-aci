@@ -38,7 +38,7 @@ class Header extends React.Component {
             <div className="clearfix">
                 {this.state.showModal ? <Modal close={this.closeModal}></Modal> : null}
                 {/* TEMPORARY CHANGE TO index.html */}
-                <a href="app.html" className="sub-header floal">{this.props.applinktext}</a>
+                <a href="index.html" className="sub-header floal">{this.props.applinktext}</a>
                 <div className="sub-header floal">{this.props.text}</div>
              
 			

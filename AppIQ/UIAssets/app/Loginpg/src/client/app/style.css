@@ -146,3 +146,15 @@ td {
     padding : 0.5em;
     text-align : right;
 }
+
+.radio-grp .form-group {
+    margin-top: 0px;
+}
+
+.icon-space {
+    margin: 5px
+}
+
+.login-form .ReactTable .rt-tr .rt-td {
+    justify-content: space-around;
+}
