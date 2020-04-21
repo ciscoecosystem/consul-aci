@@ -401,6 +401,7 @@ class Cosnul(object):
                 if not check.get("ServiceName"):
                     node_check = {}
                     node_check["Name"] = check.get("Name")
+                    node_check["NodeName"] = node_name
                     node_check["ServiceName"] = "-"
                     node_check["CheckID"] = check.get("CheckID")
                     node_check["Type"] = check.get("Type")

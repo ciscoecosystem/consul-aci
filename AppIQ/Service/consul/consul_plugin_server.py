@@ -23,6 +23,8 @@ app.debug = True  # See use
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/log/consulCredentials.json"
 
+session = {}
+
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
     
@@ -389,8 +391,8 @@ def get_service_check(service_name, service_id):
     logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -426,8 +428,8 @@ def get_node_checks(node_name):
     logger.info("Node Check for node: {}".format(node_name))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -464,8 +466,8 @@ def get_service_check_ep(service_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         service_list = json.loads(service_list)
 
         for service_dict in service_list:
@@ -507,8 +509,8 @@ def get_node_check_epg(node_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         node_list = json.loads(node_list)
 
         for node_name in node_list:
