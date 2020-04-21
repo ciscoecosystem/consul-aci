@@ -597,6 +597,7 @@ export default class Tree extends React.Component {
             <DetailsPage
               data = {this.state.detailsPage.data}
               closeDetailsPage={this.closeDetailsPage}
+              datacenterName={this.props.datacenterName}
             />
           ) : null}
         </div>
@@ -636,6 +637,7 @@ Tree.defaultProps = {
 
 Tree.propTypes = {
   data: PropTypes.array.isRequired,
+  datacenterName: PropTypes.string,
   nodeSvgShape: PropTypes.shape({
     shape: PropTypes.string,
     shapeProps: PropTypes.object

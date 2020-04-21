@@ -12,7 +12,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 class Cosnul(object):
     """Consul class"""
 
-    def __init__(self, agent_ip, port, token, protocol=None):
+    def __init__(self, agent_ip, port, token, protocol):
         
         logger.info('Consul Object init for agent: {}:{}'.format(agent_ip, port))
 

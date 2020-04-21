@@ -31,7 +31,8 @@ export default class DetailePage extends Component {
           key: "EventAnalytics",
           content: this.test("event")
         }
-      ]
+      ],
+      datacenterName: this.props.datacenterName
     };
   }
   getQueryParams() {
@@ -81,7 +82,7 @@ export default class DetailePage extends Component {
 
   }
   componentDidMount() {
-    const { data } = this.state;
+    const { data, datacenterName } = this.state;
 
 
     const queryParams = this.getQueryParams()
@@ -103,13 +104,6 @@ export default class DetailePage extends Component {
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
 
-      // let tabsObj =  [
-      //   {
-      //     label: "Operational",
-      //     key: "Operational",
-      //     content: <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
-      //   }
-      // ]
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
 
       /**
@@ -150,8 +144,8 @@ export default class DetailePage extends Component {
         console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + '){response}}'};
-      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + '){response}}'};
+      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
 
       clonedObj.push({
         label: "Consul",
@@ -198,8 +192,8 @@ export default class DetailePage extends Component {
         console.log("error in setting quert", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + '){response}}'};
+      let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '", datacenter:"' + datacenterName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
 
       let tabsObj = [
         {
@@ -235,7 +229,7 @@ export default class DetailePage extends Component {
       let serviceName = data.attributes['Service'];
       let query = "";
       try {
-        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '"){response}}'};
+        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '", datacenter:"' + datacenterName + '"){response}}'};
         console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
