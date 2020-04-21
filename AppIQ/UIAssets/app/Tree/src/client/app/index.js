@@ -535,7 +535,7 @@ class App extends React.Component {
         return (
             <div>
                 <Header text={title} applinktext={apptext} instanceName={headerInstanceName}/>
-                <TestComponent key={key} data={treedata} reloadController={this.reload}/>
+                <TestComponent key={key} data={treedata} reloadController={this.reload} datacenterName={this.state.result[PROFILE_NAME]}/>
             </div>
         );
     }
