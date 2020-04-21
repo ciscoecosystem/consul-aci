@@ -103,6 +103,7 @@ def consul_tree_dict(data):
                             'Node' : ep_node['node_name'],
                             'Node Checks' : ep_node['node_check'],
                             'Reporting Node IP': ep_node['node_ips'][0],
+                            'Mac': ep_node['CEP-Mac'],
                             'Services_List' : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
