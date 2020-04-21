@@ -17,10 +17,13 @@ import custom_logger
 
 
 app = Flask(__name__, template_folder="../UIAssets", static_folder="../UIAssets/public")
+app.secret_key = "consul_key"
 app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/log/consulCredentials.json"
+
+session = {}
 
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
@@ -36,16 +39,25 @@ def get_agent_list(data_center):
     
     TODO: should not be static, should be from Alchemy
     """
-    
-    agent_list = [
-        {
-            "ip": "10.23.239.14",
-            "port" : "8500",
-            "token": "",
-            "protocol" : "http"
-        }
-    ]
-    return agent_list
+    try:
+        start_time = datetime.datetime.now()
+        logger.info("Reading agent for datacenter " + str(data_center))
+        file_exists = os.path.isfile(consul_credential_file_path)
+        agent_list = []
+
+        if file_exists:
+            with open(consul_credential_file_path, 'r') as fread:
+                creds = json.load(fread)
+            
+            for agent in creds:
+                if agent.get('datacenter') == data_center:
+                    agent_list.append(agent)
+                    return agent_list
+        else:
+            return []
+    except Exception as e:
+        logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(data_center, str(e)))
+        return []
 
 
 def get_datacenter_list():
@@ -100,7 +112,7 @@ def get_datacenter_list():
         logger.debug("Time for get_datacenter_list: " + str(end_time - start_time))
 
 
-def mapping(tenant, appDId):
+def mapping(tenant, datacenter):
     """
     TODO: return valid dict
     """
@@ -113,7 +125,7 @@ def mapping(tenant, appDId):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
@@ -157,7 +169,7 @@ def save_mapping(appDId, tenant, mappedData):
     return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
 
 
-def tree(tenant):
+def tree(tenant, datacenter):
     """Get correltated Tree view data.
     
     return: {
@@ -175,8 +187,10 @@ def tree(tenant):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        session["consulObject"] = consul_obj
+        
         consul_data = consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
@@ -222,7 +236,7 @@ def tree(tenant):
         logger.debug("Time for TREE: " + str(end_time - start_time))
 
 
-def details(tenant):
+def details(tenant, datacenter):
     """Get correlated Details view data
     
     return: {
@@ -240,7 +254,7 @@ def details(tenant):
         end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
         parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
 
-        agent = get_agent_list('default')[0]
+        agent = get_agent_list(datacenter)[0] # TODO: for now first agent
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
         consul_data = consul_obj.get_consul_data()
         ip_list = []
@@ -377,8 +391,8 @@ def get_service_check(service_name, service_id):
     logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -414,8 +428,8 @@ def get_node_checks(node_name):
     logger.info("Node Check for node: {}".format(node_name))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -452,8 +466,8 @@ def get_service_check_ep(service_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         service_list = json.loads(service_list)
 
         for service_dict in service_list:
@@ -495,8 +509,8 @@ def get_node_check_epg(node_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list('default')[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
+        # agent = get_agent_list('default')[0]
+        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
         node_list = json.loads(node_list)
 
         for node_name in node_list:
@@ -1201,7 +1215,11 @@ def read_creds():
         
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
+                creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+
                 for agent in creds:
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
                     status = consul_obj.check_connection()
@@ -1214,7 +1232,9 @@ def read_creds():
                             agent['datacenter'] = "-"
                     else:
                         agent['datacenter'] = "-"
-                    
+            
+            with open(consul_credential_file_path, 'w') as fwrite:
+                json.dump(creds, fwrite)
                     
                 logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
@@ -1234,15 +1254,16 @@ def write_creds(agent_list):
         logger.info("Writing agents: " + str(agent_list))
         agent_list = json.loads(agent_list)
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
+
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+        
         logger.debug("credentials file content: " + str(creds))
-        creds += agent_list
-        with open(consul_credential_file_path, 'w') as fwrite:
-            json.dump(creds, fwrite)
+        
         for agent in agent_list:
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
             status = consul_obj.check_connection()
@@ -1256,6 +1277,11 @@ def write_creds(agent_list):
             else:
                 agent['datacenter'] = "-"
         logger.debug("New agent data: " + str(agent_list))
+
+        creds += agent_list
+        with open(consul_credential_file_path, 'w') as fwrite:
+            json.dump(creds, fwrite)
+
         return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
@@ -1275,11 +1301,14 @@ def update_creds(update_input):
         new_data = update_input.get('newData')
         logger.info("New Data: " + str(new_data))
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+        
+            
         logger.debug("credentials file content: " + str(creds))
         response = {}
 
@@ -1297,10 +1326,13 @@ def update_creds(update_input):
                     datacenter_list = consul_obj.datacenters()
                     if datacenter_list:
                         response['datacenter'] = datacenter_list[0]
+                        agent["datacenter"] = datacenter_list[0]
                     else:
                         response['datacenter'] = "-"
+                        agent['datacenter'] = "-"
                 else:
                     response['datacenter'] = "-"
+                    agent['datacenter'] = "-"
                 break        
         logger.debug("new file content: " + str(creds))
         logger.debug("response: " + str(response))
@@ -1322,11 +1354,13 @@ def delete_creds(agent_data):
         logger.info("deleting agents: " + str(agent_data))
         agent_data = json.loads(agent_data)
         file_exists = os.path.isfile(consul_credential_file_path)
+        creds = []
         if file_exists:
             with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-        else:
-            creds = []
+                creds_string = fread.read()
+                if creds_string:
+                    creds = json.loads(creds_string)
+            
         logger.debug("credential file content before delete: " + str(creds))
 
         for agent in creds:
