@@ -429,7 +429,7 @@ def get_node_checks(node_name, datacenter):
     start_time = datetime.datetime.now()
     try:
         agent = get_agent_list(datacenter)[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -467,7 +467,7 @@ def get_service_check_ep(service_list, datacenter):
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
         service_list = json.loads(service_list)
 
         for service_dict in service_list:
@@ -510,7 +510,7 @@ def get_node_check_epg(node_list, datacenter):
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
         node_list = json.loads(node_list)
 
         for node_name in node_list:
