@@ -8,6 +8,13 @@
     font-family: 'Roboto', sans-serif;
 }
 
+body {
+    overflow:unset !important;
+}
+.cui body, body.cui {
+    overflow:unset !important;
+}
+
 .header {
     font-family: 'Roboto', sans-serif;
     background-color: transparent;
