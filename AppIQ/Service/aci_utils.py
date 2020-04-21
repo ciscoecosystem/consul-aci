@@ -4,6 +4,7 @@ import requests
 import json, base64
 import datetime
 import urls
+from collections import defaultdict
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
 from cobra.model.aaa import AppUser as AaaAppUser
@@ -321,6 +322,19 @@ class ACI_Utils(object):
             response.append(val)
         return response
 
+    def parse_contracts(self, contracts_list):
+        contracts_dict = defaultdict(list)
+        parsed_contracts = []
+
+        for contract in contracts_list:
+            for contract_key, contract_value in contract.iteritems():
+                contracts_dict[contract_key].append(contract_value)
+
+        for contract_key, contract_list in contracts_dict.iteritems():
+            parsed_contracts.append({contract_key: contract_list})
+
+        return parsed_contracts
+
 
     def apic_parseData(self, ep_resp, apic_token=None):
         start_time = datetime.datetime.now()
@@ -350,6 +364,7 @@ class ACI_Utils(object):
                     vrf_data = self.apic_fetchVRF(vrf_str, apic_token=apic_token)
                     vrf_name =  dn_split[1].split('-')[1] + "/" + vrf_data
                     ct_data_list = self.apic_fetchContract(bd_str, apic_token=apic_token)
+                    ct_data_list = self.parse_contracts(ct_data_list)
 
                     for ip in fviplist:
                         
