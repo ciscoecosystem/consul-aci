@@ -80,7 +80,7 @@ class Container extends Component {
         /**
         * Use this.httpGet to get data from REST API
         */
-       let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn']);
+       let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
         // let payload = {
         //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
         // }
@@ -95,7 +95,7 @@ class Container extends Component {
                 // Error related to query
                 localStorage.setItem('message', JSON.stringify(main_data_json.errors));
                 const message_set = true;
-                window.location.href = "app.html?gqlerror=1";
+                window.location.href = "index.html?gqlerror=1";
             }
             else {
                 if (rawJsonData.status_code != "200") {
@@ -107,7 +107,7 @@ class Container extends Component {
                     }
                     localStorage.setItem('message', JSON.stringify(message.errors));
                     const message_set = true;
-                    window.location.href = "app.html?gqlerror=1";
+                    window.location.href = "index.html?gqlerror=1";
                 }
                 else {
                     // Success
@@ -130,7 +130,7 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "app.html?gqlerror=1";
+            window.location.href = "index.html?gqlerror=1";
         }
     }
 
@@ -155,7 +155,7 @@ class Container extends Component {
 
     fetchData() {
     
-        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn']);
+        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
         // let payload = {
         //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
         // }
@@ -184,7 +184,7 @@ class Container extends Component {
                   // Error related to query
                   localStorage.setItem('message', JSON.stringify(main_data_json.errors));
                   const message_set = true;
-                  window.location.href = "app.html?gqlerror=1";
+                  window.location.href = "index.html?gqlerror=1";
                 } else {
                   // Response successful
                   let response = JSON.parse(json.data.Details.details)
@@ -198,7 +198,7 @@ class Container extends Component {
                     }
                     localStorage.setItem('message', JSON.stringify(message.errors));
                     const message_set = true;
-                    window.location.href = "app.html?gqlerror=1";
+                    window.location.href = "index.html?gqlerror=1";
                   } else {
                     // Success
                     headerInstanceName = response.instanceName;
@@ -220,7 +220,7 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "app.html?gqlerror=1";
+            window.location.href = "index.html?gqlerror=1";
               }
             }
           };
@@ -234,13 +234,13 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "app.html?gqlerror=1";
+            window.location.href = "index.html?gqlerror=1";
         }
         
       }
 
     handleBackClick() {
-        window.location.href = "app.html";
+        window.location.href = "index.html";
     }
 
     CONSUL_setExpand(index) {    

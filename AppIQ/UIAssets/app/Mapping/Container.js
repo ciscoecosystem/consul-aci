@@ -1,6 +1,7 @@
 import React from 'react'
 import Header from '../Header'
 import ClusterList from './ClusterList'
+import { PROFILE_NAME } from '../../constants.js';
 import './style.css'
 
 function getCookieVal(offset) {
@@ -49,7 +50,7 @@ class Container extends React.Component {
         /**
         * Use this.httpGet to get data from REST API
         */
-        let payload = { query: 'query{Mapping(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){mappings}}' }
+        let payload = { query: 'query{Mapping(tn:"' + result['tn'] + '",datacenter:"' + result[PROFILE_NAME] + '"){mappings}}' }
 
         let mappings_json_data = {
             target_cluster : [],
