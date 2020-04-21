@@ -377,7 +377,7 @@ def get_eps_info(dn, ip):
         logger.exception("Error in get_eps_info: "+str(e))
 
 
-def get_service_check(service_name, service_id):
+def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
     
     return: {
@@ -391,8 +391,8 @@ def get_service_check(service_name, service_id):
     logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     start_time = datetime.datetime.now()
     try:
-        # agent = get_agent_list('default')[0]
-        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
         response = consul_obj.detailed_service_check(service_name, service_id)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -414,7 +414,7 @@ def get_service_check(service_name, service_id):
         logger.info("Time for get_service_check: " + str(end_time - start_time))
 
 
-def get_node_checks(node_name):
+def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
     
     return: {
@@ -428,8 +428,8 @@ def get_node_checks(node_name):
     logger.info("Node Check for node: {}".format(node_name))
     start_time = datetime.datetime.now()
     try:
-        # agent = get_agent_list('default')[0]
-        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
         response = consul_obj.detailed_node_check(node_name)
         logger.debug('Response of Service chceck: {}'.format(response))
 
@@ -451,7 +451,7 @@ def get_node_checks(node_name):
         logger.info("Time for get_health_check: " + str(end_time - start_time))
 
 
-def get_service_check_ep(service_list):
+def get_service_check_ep(service_list, datacenter):
     """Service checks with all detailed info of multiple service
     
     return: {
@@ -466,8 +466,8 @@ def get_service_check_ep(service_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        # agent = get_agent_list('default')[0]
-        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
         service_list = json.loads(service_list)
 
         for service_dict in service_list:
@@ -494,7 +494,7 @@ def get_service_check_ep(service_list):
         logger.info("Time for get_service_check_ep: " + str(end_time - start_time))
 
 
-def get_node_check_epg(node_list):
+def get_node_check_epg(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
     
     return: {
@@ -509,8 +509,8 @@ def get_node_check_epg(node_list):
     start_time = datetime.datetime.now()
     response = []
     try:
-        # agent = get_agent_list('default')[0]
-        consul_obj = Cosnul('10.23.239.14', '8500', '', 'http')
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent('protocol'))
         node_list = json.loads(node_list)
 
         for node_name in node_list:

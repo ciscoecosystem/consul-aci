@@ -145,14 +145,15 @@ class Query(graphene.ObjectType):
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                     service_name = graphene.String(),
-                                    service_id = graphene.String()
+                                    service_id = graphene.String(),
+                                    datacenter = graphene.String()
                                 )
 
-    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
+    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String(), datacenter=graphene.String())
 
-    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String(), datacenter=graphene.String())
 
-    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
+    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String(), datacenter=graphene.String())
 
     ReadCreds = graphene.Field(ReadCreds)
     WriteCreds = graphene.Field(WriteCreds, agent_list=graphene.String())
@@ -240,23 +241,23 @@ class Query(graphene.ObjectType):
         return Details
 
 
-    def resolve_ServiceChecks(self, info, service_name, service_id):
-        ServiceChecks.response = app.get_service_check(service_name, service_id)
+    def resolve_ServiceChecks(self, info, service_name, service_id, datacenter):
+        ServiceChecks.response = app.get_service_check(service_name, service_id, datacenter)
         return ServiceChecks
 
 
-    def resolve_NodeChecks(self, info, node_name):
-        NodeChecks.response = app.get_node_checks(node_name)
+    def resolve_NodeChecks(self, info, node_name, datacenter):
+        NodeChecks.response = app.get_node_checks(node_name, datacenter)
         return NodeChecks
 
 
-    def resolve_ServiceChecksEP(self, info, service_list):
-        ServiceChecksEP.response = app.get_service_check_ep(service_list)
+    def resolve_ServiceChecksEP(self, info, service_list, datacenter):
+        ServiceChecksEP.response = app.get_service_check_ep(service_list, datacenter)
         return ServiceChecksEP
 
 
-    def resolve_NodeChecksEPG(self, info, node_list):
-        NodeChecksEPG.response = app.get_node_check_epg(node_list)
+    def resolve_NodeChecksEPG(self, info, node_list, datacenter):
+        NodeChecksEPG.response = app.get_node_check_epg(node_list, datacenter)
         return NodeChecksEPG 
 
     def resolve_ReadCreds(self, info):
