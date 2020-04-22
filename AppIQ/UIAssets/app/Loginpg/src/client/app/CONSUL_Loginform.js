@@ -102,8 +102,11 @@ class CONSUL_LoginForm extends React.Component {
         setTimeout(function(){ thiss.readAgentsCall() }, 0 ); // making async function.. fix for now
     }
 
-    notify(message) {
-        toast.error(message, {
+    notify(message, isSuccess = false) {
+        isSuccess ?  toast.success(message, {
+            position: toast.POSITION.BOTTOM_CENTER
+            }) :
+            toast.error(message, {
             position: toast.POSITION.BOTTOM_CENTER
           });
     }
@@ -143,12 +146,12 @@ class CONSUL_LoginForm extends React.Component {
 
     }
 
-    addAgentCall(agentDetail) {
+    addAgentCall(agentDetail, updateIndex) {
         if (JSON.stringify(this.state.editDetailCopy) === JSON.stringify(agentDetail)) { // no change in copy
             console.log("no change");
             return;
         }
-        let { isNewAgentAdded } = this.state;
+        let { isNewAgentAdded, details } = this.state;
         
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
@@ -202,10 +205,27 @@ class CONSUL_LoginForm extends React.Component {
 
                         if(resp.status_code == 200) {
                             console.log("Its 200; alling readagentCalls");
-                            toast.success("Agent added successfully", {
-                                position: toast.POSITION.BOTTOM_CENTER
-                            });
-                            thiss.readAgentsCall();
+
+                            if (isNewAgentAdded){ // new agent added
+                                thiss.notify("Agent added successfully", true);
+
+                                if (resp.agent_list && resp.agent_list.length > 0){
+                                    details[updateIndex] = resp.agent_list[0];
+                                    this.setState({ details });
+                                } else {
+                                    thiss.notify("Some technical glitch!");
+                                }
+
+                            } else { // updated an agent
+                                thiss.notify("Agent updated successfully", true);
+
+                                if (resp.response){
+                                    details[updateIndex] = resp.response;
+                                    this.setState({ details });
+                                } else {
+                                    thiss.notify("Some technical glitch!");
+                                }
+                            }
                         }
                         else {
                             thiss.notify(resp.message);
@@ -225,10 +245,12 @@ class CONSUL_LoginForm extends React.Component {
       
     }
 
-    removeAgentCall(agentDetail) {
+    removeAgentCall(agentDetail, deleteIndex) {
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
         console.log("agentDetail", agentDetail);
+
+        let { details } = this.state;
 
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
@@ -262,10 +284,10 @@ class CONSUL_LoginForm extends React.Component {
                         let resp = JSON.parse(json.data.DeleteCreds.message)
                         if(resp.status_code == 200) {
                             console.log("Its 200; working delete call");
-                            toast.success("Agent "+agentDetail.ip+" removed successfully", {
-                                position: toast.POSITION.BOTTOM_CENTER
-                            });
-                            thiss.readAgentsCall();
+                            thiss.notify("Agent "+agentDetail.ip+" removed successfully", true);
+
+                            details.splice(deleteIndex, 1);
+                            thiss.setState({ details });
                         }
                         else {
                             thiss.notify(resp.message);
@@ -314,7 +336,7 @@ class CONSUL_LoginForm extends React.Component {
         this.setState({ readAgentLoading: true});
         let thiss = this;
         setTimeout(function(){ 
-                thiss.removeAgentCall(Object.assign({}, newDetails.splice(index, 1)[0] ) ) 
+                thiss.removeAgentCall(Object.assign({}, newDetails.splice(index, 1)[0] ), index ) 
         }, 0)
 
     }
@@ -359,7 +381,7 @@ class CONSUL_LoginForm extends React.Component {
             let thiss = this;
             this.setState({ readAgentLoading: true}, function() {
                 setTimeout(function(){ 
-                    thiss.addAgentCall(Object.assign({}, details))
+                    thiss.addAgentCall(Object.assign({}, details, index))
                     
                     thiss.setState({
                         editDetailCopy: undefined,
@@ -415,6 +437,7 @@ class CONSUL_LoginForm extends React.Component {
               id={"http"+props.index}
               type="radio"
               value="http"
+              disabled={props.index!==editAgentIndex}
               checked={protocol === "http"}
               onChange={(e)=> {
                   this.handleChange(props.index, { name: "protocol", value:"http"}) 
@@ -429,6 +452,7 @@ class CONSUL_LoginForm extends React.Component {
               name={"http"+props.index}
               type="radio"
               value="https"
+              disabled={props.index!==editAgentIndex}
               checked={protocol === "https"}
               onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"https"})}
             />
