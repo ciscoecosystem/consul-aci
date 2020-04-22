@@ -324,16 +324,12 @@ class ACI_Utils(object):
 
     def parse_contracts(self, contracts_list):
         contracts_dict = defaultdict(list)
-        parsed_contracts = []
 
         for contract in contracts_list:
             for contract_key, contract_value in contract.iteritems():
                 contracts_dict[contract_key].append(contract_value)
 
-        for contract_key, contract_list in contracts_dict.iteritems():
-            parsed_contracts.append({contract_key: contract_list})
-
-        return parsed_contracts
+        return contracts_dict
 
 
     def apic_parseData(self, ep_resp, apic_token=None):
