@@ -85,9 +85,9 @@ def get_datacenter_list():
         for agent in agent_list:
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
             
-            agent_datacenters = consul_obj.datacenters()
-            for datacenter in agent_datacenters:
-                datacenter_set.add(datacenter)
+            agent_datacenter = consul_obj.datacenter()
+            datacenter_set.add(agent_datacenter)
+
         logger.debug("Final datacenters set : {}".format(datacenter_set))
 
         datacenter_list = [{"datacenterName" : dc, "isViewEnabled" : True} for dc in datacenter_set]
@@ -1225,9 +1225,9 @@ def read_creds():
                     status = consul_obj.check_connection()
                     agent['status'] = status
                     if status:
-                        datacenter_list = consul_obj.datacenters()
-                        if datacenter_list:
-                            agent['datacenter'] = datacenter_list[0]
+                        datacenter_name = consul_obj.datacenter()
+                        if datacenter_name:
+                            agent['datacenter'] = datacenter_name
                         else:
                             agent['datacenter'] = "-"
                     else:
@@ -1269,9 +1269,9 @@ def write_creds(agent_list):
             status = consul_obj.check_connection()
             agent['status'] = status
             if status:
-                datacenter_list = consul_obj.datacenters()
-                if datacenter_list:
-                    agent['datacenter'] = datacenter_list[0]
+                datacenter_name = consul_obj.datacenter()
+                if datacenter_name:
+                    agent['datacenter'] = datacenter_name
                 else:
                     agent['datacenter'] = "-"
             else:
@@ -1323,10 +1323,10 @@ def update_creds(update_input):
                 status = consul_obj.check_connection()
                 response["status"] = status
                 if status:
-                    datacenter_list = consul_obj.datacenters()
-                    if datacenter_list:
-                        response['datacenter'] = datacenter_list[0]
-                        agent["datacenter"] = datacenter_list[0]
+                    datacenter_name = consul_obj.datacenter()
+                    if datacenter_name:
+                        response['datacenter'] = datacenter_name
+                        agent["datacenter"] = datacenter_name
                     else:
                         response['datacenter'] = "-"
                         agent['datacenter'] = "-"
