@@ -268,7 +268,7 @@ class DetailsPane extends React.Component {
     if (data.name === "Service") {
       title = data.attributes['Service Instance']
     } else {
-      title = this.state.data.sub_label || this.state.data.label || "EndPoint Information";
+      title = this.state.data.sub_label || this.state.data.label || "Non-service Endpoint";
     }
 
     return (

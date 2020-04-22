@@ -142,6 +142,7 @@ export default class CONSUL_ChecksTable extends Component {
         const headerColumns = [
             {
                 Header: 'Name',
+                accessor:"Name", // key for table header
                 Cell: row => {
                     let { Name, Status } = row.original;
                     return <div>
