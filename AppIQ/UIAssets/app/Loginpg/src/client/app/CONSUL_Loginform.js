@@ -240,6 +240,8 @@ class CONSUL_LoginForm extends React.Component {
         }
         catch(e) {
             this.notify("Error while logging in.");
+        }
+        finally {
             this.setState({ readAgentLoading: false})
         }
       
@@ -305,6 +307,8 @@ class CONSUL_LoginForm extends React.Component {
         }
         catch(e) {
             this.notify("Error while logging in.");
+        }
+        finally {
             this.setState({ readAgentLoading: false})
         }
     }
@@ -373,24 +377,23 @@ class CONSUL_LoginForm extends React.Component {
         let details = this.state.details[index];
         console.log("update agent", details);
 
-        if (!details.ip || !details.port || !details.protocol ){ // checking if all field added
-            this.notify(FILL_DETAILS);
-            return;
-        }
-
-            let thiss = this;
-            this.setState({ readAgentLoading: true}, function() {
-                setTimeout(function(){ 
-                    thiss.addAgentCall(Object.assign({}, details, index))
-                    
-                    thiss.setState({
-                        editDetailCopy: undefined,
-                        editAgentIndex: null,
-                        isNewAgentAdded: false,
-                        readAgentLoading: false
-                    })
-                }, 0)
-            });       
+        if (!details.protocol) { this.notify("Protocol required, please select."); return; }
+        if (!details.ip) { this.notify("Ip / Dns required, please enter."); return; }
+        if (!details.port) { this.notify("Port required, please enter."); return; }
+        
+        let thiss = this;
+        this.setState({ readAgentLoading: true}, function() {
+            setTimeout(function(){ 
+                thiss.addAgentCall(Object.assign({}, details, index))
+                   
+                thiss.setState({
+                    editDetailCopy: undefined,
+                    editAgentIndex: null,
+                    isNewAgentAdded: false,
+                    readAgentLoading: false
+                })
+            }, 0)
+         });       
     }
 
     addAgent() {
@@ -465,7 +468,7 @@ class CONSUL_LoginForm extends React.Component {
         header: 'ip',
         accessor: 'ip',
         Cell: props => {
-            return  <Input key={"ip"+props.index} placeHolder="ip" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
+            return  <Input key={"ip"+props.index} placeHolder="ip / dns" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
         }
     },
     {
