@@ -1235,7 +1235,7 @@ def read_creds():
             
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
-                creds.sort(key = lambda x: x['timestamp'])
+                creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
@@ -1282,7 +1282,7 @@ def write_creds(agent_list):
 
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
 
-        new_agent_list = [agent for agent in agent_list if (agent.get('ip'), agent.get('port')) in ip_port_list]
+        new_agent_list = [agent for agent in agent_list if (agent.get('ip'), agent.get('port')) not in ip_port_list]
         creds += new_agent_list
 
         with open(consul_credential_file_path, 'w') as fwrite:
@@ -1319,6 +1319,7 @@ def update_creds(update_input):
         response = {}
 
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
+        ip_port_list.remove((old_data.get('ip'), old_data.get('port')))
 
         if (new_data.get('ip'), new_data.get('port')) not in ip_port_list:
             for agent in creds:
