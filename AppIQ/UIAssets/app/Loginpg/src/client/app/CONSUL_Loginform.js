@@ -166,6 +166,12 @@ class CONSUL_LoginForm extends React.Component {
 
     }
 
+    // make sure everytim it updates
+    shouldComponentUpdate(nextProps, nextState){
+        console.log("Shouldcomponentupdate ", nextProps, nextState);
+        return true;
+    }
+
     addAgentCall(agentDetail, updateIndex) {
         if (JSON.stringify(this.state.editDetailCopy) === JSON.stringify(agentDetail)) { // no change in copy
             console.log("no change");
@@ -294,10 +300,6 @@ class CONSUL_LoginForm extends React.Component {
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
-        // let payload = { query: `query{
-        //     WriteCreds(agentList: ${JSON.stringify(JSON.stringify([agentDetail]))} ){creds}
-        // }`}
-        // { "query": 'query{DeleteCreds(agentData:){message}}'}
         let payload = { query: `query{
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
@@ -323,7 +325,7 @@ class CONSUL_LoginForm extends React.Component {
                         let resp = JSON.parse(json.data.DeleteCreds.message)
                         if(resp.status_code == 200) {
                             console.log("Its 200; working delete call");
-                            thiss.notify("Agent "+agentDetail.ip+" removed successfully", true);
+                            // thiss.notify("Agent "+agentDetail.ip+" removed successfully", true);
 
                             details.splice(deleteIndex, 1);
                             thiss.setState({ details });
@@ -346,7 +348,7 @@ class CONSUL_LoginForm extends React.Component {
             this.notify("Error while logging in.");
         }
         finally {
-            this.setState({ readAgentLoading: false})
+            this.setState({ readAgentLoading: false, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false })
         }
     }
 
@@ -411,17 +413,28 @@ class CONSUL_LoginForm extends React.Component {
 
     // Accept the change made while editing
     updateAgent(index){
-        let details = this.state.details[index];
-        console.log("update agent", details);
+        let { details } = this.state;
+        let updatingAgentDetail = details[index];
+        console.log("update agent", updatingAgentDetail);
 
-        if (!details.protocol) { this.notify("Protocol required, please select."); return; }
-        if (!details.ip) { this.notify("Ip / Dns required, please enter."); return; }
-        if (!details.port) { this.notify("Port required, please enter."); return; }
+        if (!updatingAgentDetail.protocol) { this.notify("Protocol required, please select."); return; }
+        if (!updatingAgentDetail.ip) { this.notify("Ip / Dns required, please enter."); return; }
+        if (!updatingAgentDetail.port) { this.notify("Port required, please enter."); return; }
+
+         // check if Details in Index is not same as others in [...Details] as per port and ip
+        for (let ind=0; ind < details.length; ind++) {
+            if (index === ind) continue;
+            if (details[ind].ip === updatingAgentDetail.ip && parseInt(details[ind].port) === parseInt(updatingAgentDetail.port) ){
+                console.log("same as @", ind);
+                this.notify("Agent already exists.")
+                return;
+            }
+        }
         
         let thiss = this;
         this.setState({ readAgentLoading: true}, function() {
             setTimeout(function(){ 
-                thiss.addAgentCall(Object.assign({}, details), index)
+                thiss.addAgentCall(Object.assign({}, updatingAgentDetail), index)
                    
                 thiss.setState({
                     editDetailCopy: undefined,
@@ -543,6 +556,8 @@ class CONSUL_LoginForm extends React.Component {
     {
         accessor: '',
         Cell: props =>  {
+            let isSomeAgentInEditMode = (editAgentIndex !== null && props.index !== editAgentIndex);
+
             if (props.index === editAgentIndex) { // Update an agent; to show [Update, Abort, Delete]
                 return <React.Fragment>
                 <Icon key={"updateagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type="icon-check" onClick={()=>this.updateAgent(props.index)}></Icon>
@@ -553,13 +568,11 @@ class CONSUL_LoginForm extends React.Component {
                     <Icon key={"removeagent"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                  </React.Fragment>
             }
-            else if (editAgentIndex === null){ // no action on row; to show [Edit, delete]
+            else { // no action on row; to show [Edit, delete]
                 return <React.Fragment>
-                        <Icon key={"editagent"} className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
-                        <Icon key={"removeagent2"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
+                        <Icon key={"editagent"} disabled={isSomeAgentInEditMode} className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
+                        <Icon key={"removeagent2"} disabled={isSomeAgentInEditMode} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                 </React.Fragment>
-            } else {    // only show delete
-                return <Icon key={"removeagent3"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
             }
         }
     }
@@ -600,7 +613,6 @@ class CONSUL_LoginForm extends React.Component {
                                            </div>
                                         } 
                                 }
-                              
                         ]}
                         noDataText={"No services found"}
                         defaultPageSize={100}
