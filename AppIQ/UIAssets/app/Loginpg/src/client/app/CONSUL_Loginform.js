@@ -15,7 +15,7 @@ const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.jso
 const dummylist = [
     {"protocol" : "http", "ip" : "10.0.0.0", "port" : 8050, "token" : "lnfeialilsacirvjlnlaial", "status" : true, "datacenter" : "datacenter1"},
     {"protocol" : "https", "ip" : "10.0.0.1", "port" : 8051, "token" : "lnfeialilsacirvjlglaial", "status" : false, "datacenter" : "datacenter1"},
-    {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : false, "datacenter" : "datacenter2"}
+    {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : true, "datacenter" : "datacenter2"}
 ]
 
 function getCookieVal(offset) {
@@ -83,6 +83,8 @@ class CONSUL_LoginForm extends React.Component {
         this.readAgentsCall = this.readAgentsCall.bind(this);
         this.removeAgentCall = this.removeAgentCall.bind(this);
         this.addAgentCall = this.addAgentCall.bind(this);
+        this.abortEditAgent = this.abortEditAgent.bind(this);
+        this.abortUpdateAgentAction = this.abortUpdateAgentAction.bind(this);
 
         this.state = {
             details : [],
@@ -102,13 +104,30 @@ class CONSUL_LoginForm extends React.Component {
         setTimeout(function(){ thiss.readAgentsCall() }, 0 ); // making async function.. fix for now
     }
 
-    notify(message, isSuccess = false) {
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ?  toast.warn(message, {
+            position: toast.POSITION.BOTTOM_CENTER
+            }) :
         isSuccess ?  toast.success(message, {
             position: toast.POSITION.BOTTOM_CENTER
             }) :
             toast.error(message, {
             position: toast.POSITION.BOTTOM_CENTER
           });
+    }
+
+    abortUpdateAgentAction() {
+        let { isNewAgentAdded , details} = this.state;
+
+        if (isNewAgentAdded){ // new agent being added
+            // remove first element from details
+            details.shift();
+            this.setState({ details });
+        } 
+        else {  // existing agent being updated
+            // abort edit and show exsising data 
+            this.abortEditAgent();
+        }
     }
 
     readAgentsCall() {
@@ -130,11 +149,12 @@ class CONSUL_LoginForm extends React.Component {
                     isDetail = true;
                 }
             } else {
-                this.notify("Something went wrong")
+                this.notify("Error while fetching agent information please refresh")
             }
         }
         catch(e) {
-            console.log('Error getting agents');
+            this.notify("Error while fetching agent information please refresh")
+            console.error('Error getting agents',e);
         }
         finally {
             this.setState({ readAgentLoading: false});
@@ -151,6 +171,7 @@ class CONSUL_LoginForm extends React.Component {
             console.log("no change");
             return;
         }
+        console.log("updateIndex = ", updateIndex );
         let { isNewAgentAdded, details } = this.state;
         
         delete agentDetail.status;
@@ -183,7 +204,6 @@ class CONSUL_LoginForm extends React.Component {
         }
 
         let xhr = new XMLHttpRequest();
-        // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, false);
@@ -207,39 +227,56 @@ class CONSUL_LoginForm extends React.Component {
                             console.log("Its 200; alling readagentCalls");
 
                             if (isNewAgentAdded){ // new agent added
-                                thiss.notify("Agent added successfully", true);
+                                console.log("In write response ", resp);
+                                if (resp.payload && resp.payload.length > 0){
+                                    details[updateIndex] = resp.payload[0];
+                                    thiss.setState({ details });
 
-                                if (resp.agent_list && resp.agent_list.length > 0){
-                                    details[updateIndex] = resp.agent_list[0];
-                                    this.setState({ details });
+                                     // connection is not true
+                                    if (resp.payload.status !== true && resp.message){
+                                        this.notify(resp.message, true);
+                                        // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
+                                    }
                                 } else {
+                                    thiss.abortUpdateAgentAction();
                                     thiss.notify("Some technical glitch!");
                                 }
 
                             } else { // updated an agent
-                                thiss.notify("Agent updated successfully", true);
+                                // thiss.notify("Agent updated successfully", true);
 
-                                if (resp.response){
-                                    details[updateIndex] = resp.response;
-                                    this.setState({ details });
+                                if (resp.payload){
+                                    details[updateIndex] = resp.payload;
+                                    thiss.setState({ details });
+
+                                    // connection is not true
+                                    if (resp.payload.status !== true && resp.message){
+                                        this.notify(resp.message, true);
+                                        // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
+                                    }
                                 } else {
+                                    thiss.abortUpdateAgentAction();
                                     thiss.notify("Some technical glitch!");
                                 }
                             }
                         }
                         else {
+                            thiss.abortUpdateAgentAction();
                             thiss.notify(resp.message);
                         }
                     }
                 }
                 else {
+                    thiss.abortUpdateAgentAction();
                     thiss.notify("Error while reaching the container.")
                 }
             }
             xhr.send(JSON.stringify(payload));
         }
         catch(e) {
-            this.notify("Error while logging in.");
+            console.error("Error api addAgentCall", e);
+            // this.notify("Error while logging in.");
+            this.abortUpdateAgentAction();
         }
         finally {
             this.setState({ readAgentLoading: false})
@@ -355,7 +392,7 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     // Abort editing Agent
-    abortEditAgent(index){
+    abortEditAgent(){
         let newDetail = [...this.state.details];
 
         if (this.state.editDetailCopy === undefined){
@@ -384,7 +421,7 @@ class CONSUL_LoginForm extends React.Component {
         let thiss = this;
         this.setState({ readAgentLoading: true}, function() {
             setTimeout(function(){ 
-                thiss.addAgentCall(Object.assign({}, details, index))
+                thiss.addAgentCall(Object.assign({}, details), index)
                    
                 thiss.setState({
                     editDetailCopy: undefined,
@@ -414,6 +451,7 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     render() {
+        console.log("login render state", this.state);
     let { editAgentIndex, tenantName } = this.state;
 
     // Handle redirection to page 
@@ -510,7 +548,7 @@ class CONSUL_LoginForm extends React.Component {
                 <Icon key={"updateagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type="icon-check" onClick={()=>this.updateAgent(props.index)}></Icon>
 
                 {/* if new agent being written; dont show abort */}
-                {(this.state.isNewAgentAdded === false) && <Icon key={"abortagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent(props.index)}></Icon> }
+                {(this.state.isNewAgentAdded === false) && <Icon key={"abortagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent()}></Icon> }
 
                     <Icon key={"removeagent"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                  </React.Fragment>
@@ -540,7 +578,11 @@ class CONSUL_LoginForm extends React.Component {
                 showPagination={false} 
                 SubComponent={row => {
                     let { datacenter, status } = row.original;
-                    if (status === false) return undefined; 
+                    /* Dont show [Detail, operations And Map] 
+                        when connection not true &
+                             agent in edit state
+                    */
+                    if (status !== true || editAgentIndex === row.index) return undefined; 
                     return (
                       <Table
                         data={[{spaceCol:"",btnCol:""}]}
