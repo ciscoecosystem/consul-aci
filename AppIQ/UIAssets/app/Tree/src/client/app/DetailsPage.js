@@ -202,14 +202,9 @@ export default class DetailePage extends Component {
           content: <DataTable key="operational" query={query} index="3" />
         },
         {
-          label: "Node Checks",
-          key: "Node Checks",
-          content: <CONSUL_ChecksTable key={"nodeChecks"} query={NodeCheckQuery} />
-        },
-        {
-          label: "Service Checks",
-          key: "Service Checks",
-          content: <CONSUL_ChecksTable key={"serviceChecks"} query={ServiceCheckQuery} />
+          label: "Consul",
+          key: "Consul",
+          content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
         }
       ]
 
@@ -230,7 +225,6 @@ export default class DetailePage extends Component {
       let query = "";
       try {
         query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '", datacenter:"' + datacenterName + '"){response}}'};
-        console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
       }
@@ -257,8 +251,6 @@ export default class DetailePage extends Component {
 
   render() {
     let { data } = this.state;
-    console.log("[detailpage]== allstate ", this.state);
-    console.log("[detailpage]== tab ", this.state.tabs)
 
     let title = "";
     if (data.name === "Service") {
