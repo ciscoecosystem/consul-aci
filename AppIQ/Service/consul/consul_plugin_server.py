@@ -21,7 +21,7 @@ app.secret_key = "consul_key"
 app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
-consul_credential_file_path = "/home/app/log/consulCredentials.json"
+consul_credential_file_path = "/home/app/data/consulCredentials.json"
 
 session = {}
 
@@ -1292,8 +1292,8 @@ def write_creds(agent_list):
                 json.dump(creds, fwrite)      
             return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
         else:
-            logger.error("Agent with " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
+            logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
@@ -1358,7 +1358,7 @@ def update_creds(update_input):
             return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
+            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in update credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
