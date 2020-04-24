@@ -422,9 +422,9 @@ class CONSUL_LoginForm extends React.Component {
         let updatingAgentDetail = details[index];
         console.log("update agent", updatingAgentDetail);
 
-        if (!updatingAgentDetail.protocol) { this.notify("Protocol required, please select."); return; }
-        if (!updatingAgentDetail.ip) { this.notify("Ip / Dns required, please enter."); return; }
-        if (!updatingAgentDetail.port) { this.notify("Port required, please enter."); return; }
+        if (!updatingAgentDetail.protocol) { this.notify("Protocol required."); return; }
+        if (!updatingAgentDetail.ip) { this.notify("IP / DNS required."); return; }
+        if (!updatingAgentDetail.port) { this.notify("Port required."); return; }
 
          // check if Details in Index is not same as others in [...Details] as per port and ip
         for (let ind=0; ind < details.length; ind++) {
