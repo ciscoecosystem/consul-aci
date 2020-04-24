@@ -1285,12 +1285,15 @@ def write_creds(agent_list):
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
 
         new_agent_list = [agent for agent in agent_list if (agent.get('ip'), agent.get('port')) not in ip_port_list]
-        creds += new_agent_list
+        if new_agent_list:
+            creds += new_agent_list
 
-        with open(consul_credential_file_path, 'w') as fwrite:
-            json.dump(creds, fwrite)
-
-        return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
+            with open(consul_credential_file_path, 'w') as fwrite:
+                json.dump(creds, fwrite)      
+            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
+        else:
+            logger.error("Agent with " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
