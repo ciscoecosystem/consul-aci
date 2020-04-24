@@ -200,27 +200,22 @@ export default class DetailePage extends Component {
           label: "Operational",
           key: "Operational",
           content: <DataTable key="operational" query={query} index="3" />
-        },
-        {
-          label: "Node Checks",
-          key: "Node Checks",
-          content: <CONSUL_ChecksTable key={"nodeChecks"} query={NodeCheckQuery} />
-        },
-        {
-          label: "Service Checks",
-          key: "Service Checks",
-          content: <CONSUL_ChecksTable key={"serviceChecks"} query={ServiceCheckQuery} />
         }
       ]
+      // show consul tab when EP is not Non service Endpoint 
+      if (data.type !== "grey"){ 
+        tabsObj.push({
+            label: "Consul",
+            key: "Consul",
+            content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+          })
+      }
 
       this.setState({
         tabs: tabsObj
       }, () => {
         console.log("Settin tab for ", this.state.tabs);
       })
-
-      // clonedObj[0]["content"] = <DataTable key="operational" query={query} index="3" />
-      // this.setState({ tabs: clonedObj });
     }
 
     // Service detail view ; Tabs: [Service Checks]
@@ -230,7 +225,6 @@ export default class DetailePage extends Component {
       let query = "";
       try {
         query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '", datacenter:"' + datacenterName + '"){response}}'};
-        console.log("== query build ", query);
       } catch (err) {
         console.log("error in query:- ", err);
       }
@@ -245,10 +239,6 @@ export default class DetailePage extends Component {
         ]
       })
     }
-
-    // if (data.attributes.HealthRuleViolations) {
-    //   this.setNewTab(clonedObj);
-    // }
   }
 
   test(props) {
@@ -257,8 +247,6 @@ export default class DetailePage extends Component {
 
   render() {
     let { data } = this.state;
-    console.log("[detailpage]== allstate ", this.state);
-    console.log("[detailpage]== tab ", this.state.tabs)
 
     let title = "";
     if (data.name === "Service") {
@@ -269,16 +257,6 @@ export default class DetailePage extends Component {
 
     return (
       <Screen hideFooter={true} title={title} allowMinimize={false} onClose={this.props.closeDetailsPage}>
-
-        {/* // <div className="page-overlay">
-      //   <div className="panel-header">
-      //     {this.state.data.sub_label || this.state.data.label}
-      //     <Icon
-      //       type="icon-close"
-      //       className="pull-right toggle"
-      //       onClick={this.props.closeDetailsPage}
-      //     />
-      //   </div> */}
         {(this.state.tabs.length > 0) ?
           <Tab type="secondary-tabs" tabs={this.state.tabs} />
           : <Loader> loading </Loader>}
