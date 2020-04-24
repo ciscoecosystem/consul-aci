@@ -162,6 +162,10 @@ td {
     margin: 5px
 }
 
+.login-form {
+    margin-bottom: 20px;
+}
+
 .login-form .ReactTable .rt-tr .rt-td {
     justify-content: space-around;
 }
