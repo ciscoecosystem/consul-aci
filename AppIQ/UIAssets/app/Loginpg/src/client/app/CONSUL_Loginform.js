@@ -1,6 +1,6 @@
 import React from 'react';
 import './style.css';
-import {Table,Button, Icon, Input, Label, Loader} from "blueprint-react"
+import {Table,Button, Icon, Input, Label, Loader, IconButton} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
 import { PROFILE_NAME } from '../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
@@ -85,6 +85,7 @@ class CONSUL_LoginForm extends React.Component {
         this.addAgentCall = this.addAgentCall.bind(this);
         this.abortEditAgent = this.abortEditAgent.bind(this);
         this.abortUpdateAgentAction = this.abortUpdateAgentAction.bind(this);
+        this.loadAgentList = this.loadAgentList.bind(this);
 
         this.state = {
             details : [],
@@ -98,8 +99,11 @@ class CONSUL_LoginForm extends React.Component {
 
     componentDidMount() {
         console.log("Component Did mount loginform");  
-        let thiss = this;  
+        this.loadAgentList();
+    }
 
+    loadAgentList(){
+        let thiss = this;
         this.setState({ readAgentLoading: true});  
         setTimeout(function(){ thiss.readAgentsCall() }, 0 ); // making async function.. fix for now
     }
@@ -114,6 +118,14 @@ class CONSUL_LoginForm extends React.Component {
             toast.error(message, {
             position: toast.POSITION.BOTTOM_CENTER
           });
+    }
+
+    handleChange(index, target) {
+        let newDetails = [...this.state.details];
+        newDetails[index][target.name] = target.value;
+        this.setState({
+            details: newDetails
+        })
     }
 
     abortUpdateAgentAction() {
@@ -240,7 +252,7 @@ class CONSUL_LoginForm extends React.Component {
 
                                      // connection is not true
                                     if (resp.payload.status !== true && resp.message){
-                                        this.notify(resp.message, true);
+                                        this.notify(resp.message, false, true);
                                         // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
                                     }
                                 } else {
@@ -336,6 +348,7 @@ class CONSUL_LoginForm extends React.Component {
                     }
                     else {
                         thiss.notify("Something went wrong!")
+                        console.log("DelCrefs: response structure invalid")
                     }
                 }
                 else {
@@ -345,19 +358,11 @@ class CONSUL_LoginForm extends React.Component {
             xhr.send(JSON.stringify(payload));
         }
         catch(e) {
-            this.notify("Error while logging in.");
+            console.error("Error api removeagent", e);
         }
         finally {
             this.setState({ readAgentLoading: false, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false })
         }
-    }
-
-    handleChange(index, target) {
-        let newDetails = [...this.state.details];
-        newDetails[index][target.name] = target.value;
-        this.setState({
-            details: newDetails
-        })
     }
   
     // remove an agent
@@ -464,8 +469,7 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     render() {
-        console.log("login render state", this.state);
-    let { editAgentIndex, tenantName } = this.state;
+    let { editAgentIndex, tenantName, readAgentLoading } = this.state;
 
     // Handle redirection to page 
     function handleMapClick(profileNameValue) {
@@ -582,6 +586,34 @@ class CONSUL_LoginForm extends React.Component {
             <div className="login-form">
             <ToastContainer />
             <center>
+            <div className="row toolbar" style={{width: "90%", background: "unset", marginBottom: "10px"}}>
+                <div className="col-md-12" style={{textAlign:"center"}}>
+
+                  {/* <Button style={{ marginRight: "20px"}} disabled={editAgentIndex!==null} type="btn--success" size="btn--small" onClick={this.addAgent}>Add Agent</Button> */}
+             
+                <span className="pull-right">
+                    <IconButton
+                        type="btn--icon btn--gray-ghost"
+                        size="btn--small"
+                        icon="icon-plus"
+                        disabled={editAgentIndex!==null || readAgentLoading === true} 
+                        onClick={this.addAgent}
+                   />
+                     <IconButton
+                        type="btn--icon btn--gray-ghost"
+                        size="btn--small"
+                        icon="icon-refresh"
+                        disabled={editAgentIndex!==null || readAgentLoading === true} 
+                        onClick={this.loadAgentList}
+                   />
+                </span>
+                  
+                </div>
+            </div>
+            </center> 
+
+            <div>
+            <center>
                 {(this.state.readAgentLoading) ? <span>loading.. <Loader> loading </Loader>  </span>:
                 <Table key={"agentTable"} 
                 loading={this.state.readAgentLoading} style={{width:"90%", maxHeight: "35%"}} 
@@ -624,13 +656,7 @@ class CONSUL_LoginForm extends React.Component {
                 TheadComponent={props => null}>
                 </Table>}
             </center>
-         
-            <form onSubmit={(event)=> { event.preventDefault();}}>
-                <center>
-                    <br/>
-                    <Button style={{ marginRight: "20px"}} disabled={editAgentIndex!==null} type="btn--success" size="btn--small" onClick={this.addAgent}>Add Agent</Button>
-                </center>
-            </form>
+            </div>
             </div>
         )
     }
