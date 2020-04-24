@@ -16,7 +16,7 @@ class App extends React.Component {
           }
         );
         let result = urlParams;
-        let apptext = result['datacenterName'];
+        let apptext = " " + result['datacenterName'];
         let title = " | Consul Mapping ";
         return (
             <div>
