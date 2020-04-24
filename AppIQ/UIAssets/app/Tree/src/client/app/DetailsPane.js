@@ -159,17 +159,25 @@ function CardData(props, attributeOrder = undefined) {
 }
 
 function ContractDetails(props) {
-  if (props.attributes && props.attributes.constructor == Array && props.attributes.length > 0) {
+
+  if (props.attributes && props.attributes.constructor == Object && Object.keys(props.attributes).length > 0) {
+    //  { "provider": ["aaa", "bbb"], "consumer": ["hhhh","eeee", "trerereqr"] }; // format
+    let contractData = props.attributes;
+    let contractsKey = Object.keys(contractData);
+    
     return (
       <table className="info-table">
-        {props.attributes.map(key => {
-          return (
-            <tr>
-              <td width="30%">{Object.keys(key)[0]}</td>
-              <td width="70%">{key[Object.keys(key)[0]]}</td>
-            </tr>
-          );
-        })}
+          {contractsKey.map(key => {
+            let list = contractData[ key ];
+
+            return list.map((data,index) => {
+              return (<tr>
+                {(index===0) && <td rowspan={list.length}>{key}</td>}
+                <td>{data}</td>
+              </tr>)
+            })
+          })
+        }
       </table>
     );
   }
@@ -260,7 +268,7 @@ class DetailsPane extends React.Component {
     if (data.name === "Service") {
       title = data.attributes['Service Instance']
     } else {
-      title = this.state.data.sub_label || this.state.data.label || "EndPoint Information";
+      title = this.state.data.sub_label || this.state.data.label || "Non-service Endpoint";
     }
 
     return (
