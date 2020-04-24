@@ -22,6 +22,7 @@ app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/log/consulCredentials.json"
+mapppings_file_path = "/home/app/log/mappings.json"
 
 session = {}
 
@@ -138,7 +139,43 @@ def mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+
+        if not aci_consul_mappings:
+            logger.info("Empty ACI and Consul mappings.")
+            return json.dumps({
+                "agentIP":"10.23.239.14", # TODO: what to return here
+                "payload": mapping_dict,
+                "status_code": "200",
+                "message": "OK"
+                })
+
         current_mapping = get_mapping_dict_target_cluster(aci_consul_mappings)
+        all_datacenter_mapping = {}
+        already_mapped_data = []
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    already_mapped_data = all_datacenter_mapping.get(datacenter)
+
+            if already_mapped_data:
+                # current_mapping is new mapping between aci and consul
+                for new_map in current_mapping:
+                    # already_mapped_data is previously stored mapping by user
+                    for each_already_mapped in already_mapped_data:
+                        if each_already_mapped.get('ipaddress') == new_map.get('ipaddress') and each_already_mapped.get('domainName') == new_map.get('domainName'):
+                            # if node is already disabled then disable it from new mappings also
+                            if each_already_mapped.get('disabled') == True:
+                                new_map['disabled'] = True
+                            break
+
+                all_datacenter_mapping[datacenter] = current_mapping
+
+                with open(mapppings_file_path, 'w') as fwrite:
+                    json.dump(all_datacenter_mapping, fwrite)        
 
         mapping_dict['target_cluster'] = [node for node in current_mapping if node.get('disabled') == False]
         
