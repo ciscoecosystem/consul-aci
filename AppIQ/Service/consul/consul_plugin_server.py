@@ -1207,6 +1207,7 @@ def get_iface_name(name):
         logger.error("Different format of interface is found: {}".format(name))
         raise Exception("Different format of interface is found: {}".format(name))
 
+
 def read_creds():
     try:
         start_time = datetime.datetime.now()
@@ -1248,6 +1249,7 @@ def read_creds():
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for read_creds: " + str(end_time - start_time))
+
 
 def write_creds(agent_list):
     try:
@@ -1352,8 +1354,8 @@ def update_creds(update_input):
                 json.dump(creds, fwrite)
             return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
         else:
-            logger.debug("agent with " + new_data.get('ip') + " and " + str(new_data.get('port')) + " already exists.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "agent with " + new_data.get('ip') + " and " + str(new_data.get('port')) + " already exists."})
+            logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in update credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
