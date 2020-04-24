@@ -375,6 +375,7 @@ def get_eps_info(dn, ip):
         }
     except Exception as e:
         logger.exception("Error in get_eps_info: "+str(e))
+        return {}
 
 
 def get_service_check(service_name, service_id, datacenter):
@@ -734,29 +735,29 @@ def get_ep_info(ep_children_list, aci_util_obj):
                 ep_info["hosting_server_name"] = hyper_name
 
             elif child_name == "fvRsCEpToPathEp":
-                name = ep_child["fvRsCEpToPathEp"]["attributes"]["tDn"]
-                if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
+                interface = ep_child["fvRsCEpToPathEp"]["attributes"]["tDn"]
+                if re.match('topology\/pod-+\d+\/pathgrp-.*',interface):
+                    pod_number = interface.split("/pod-")[1].split("/")[0]
+                    node_number = get_node_from_interface(interface)
                     #The ethernet name is NOT available
-                    eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
+                    eth_name = str(interface.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
                     iface_name = eth_name
                     ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    eth_name = name.split("/pathep-[")[1][0:-1]
+                elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',interface):
+                    pod_number = interface.split("/pod-")[1].split("/")[0]
+                    node_number = get_node_from_interface(interface)
+                    eth_name = interface.split("/pathep-[")[1][0:-1]
                     iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
                     ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    eth_name = name.split("/pathep-[")[1][0:-1]
+                elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',interface):
+                    pod_number = interface.split("/pod-")[1].split("/")[0]
+                    node_number = get_node_from_interface(interface)
+                    eth_name = interface.split("/pathep-[")[1][0:-1]
                     iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
                     ep_info["iface_name"] = iface_name
                 else:
-                    logger.error("Different format of interface is found: {}".format(name))
-                    raise Exception("Different format of interface is found: {}".format(name))
+                    logger.error("Different format of interface is found: {}".format(interface))
+                    ep_info["iface_name"] = interface
 
             elif child_name == "fvRsVm":
                 vm_dn = ep_child["fvRsVm"]["attributes"]["tDn"]
@@ -1183,29 +1184,29 @@ def get_all_interfaces(interfaces):
     return interface_list
 
 
-def get_iface_name(name):
-    if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
+def get_iface_name(interface):
+    if re.match('topology\/pod-+\d+\/pathgrp-.*',interface):
+        pod_number = interface.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(interface)
         #The ethernet name is NOT available
-        eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
+        eth_name = str(interface.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
         iface_name = eth_name
         return iface_name
-    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        eth_name = name.split("/pathep-[")[1][0:-1]
+    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',interface):
+        pod_number = interface.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(interface)
+        eth_name = interface.split("/pathep-[")[1][0:-1]
         iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
         return iface_name
-    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        eth_name = name.split("/pathep-[")[1][0:-1]
+    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',interface):
+        pod_number = interface.split("/pod-")[1].split("/")[0]
+        node_number = get_node_from_interface(interface)
+        eth_name = interface.split("/pathep-[")[1][0:-1]
         iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
         return iface_name
     else:
-        logger.error("Different format of interface is found: {}".format(name))
-        raise Exception("Different format of interface is found: {}".format(name))
+        logger.error("Different format of interface is found: {}".format(interface))
+        return interface
 
 def read_creds():
     try:
