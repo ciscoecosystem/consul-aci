@@ -49,7 +49,7 @@ class Cosnul(object):
             while True:
                 if self.header:
                     logger.info("Token provided, trying connecting to agent with token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header)
+                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
@@ -68,7 +68,7 @@ class Cosnul(object):
                 # it is provided but connection has failed
                 else:
                     logger.info("Token NOT provided, trying connecting to agent without token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url))
+                    response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
