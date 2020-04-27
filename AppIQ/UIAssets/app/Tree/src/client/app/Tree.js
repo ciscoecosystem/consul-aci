@@ -523,7 +523,7 @@ export default class Tree extends React.Component {
             zoomable ? "rd3t-grabbable" : undefined
           }`}
         >
-          <svg className="rd3t-svg" width="100%" height="80%">
+          <svg className="rd3t-svg" width="100%" height="100%">
             <defs>
               <marker
                 id="arrow"

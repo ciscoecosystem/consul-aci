@@ -90,7 +90,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 if aci['EPG'] not in non_merged_ep_dict:
                     non_merged_ep_dict[aci['EPG']] = {aci['CEP-Mac']: str(aci['IP'])}
                 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']].keys():
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']].keys() and aci.get('IP'):
                     multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]+", " + str(aci['IP'])
                     non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
                 else:

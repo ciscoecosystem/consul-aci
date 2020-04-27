@@ -1329,6 +1329,7 @@ def get_iface_name(name):
         logger.error("Different format of interface is found: {}".format(name))
         raise Exception("Different format of interface is found: {}".format(name))
 
+
 def read_creds():
     try:
         start_time = datetime.datetime.now()
@@ -1357,6 +1358,7 @@ def read_creds():
             
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
+                creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
                 return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
@@ -1369,6 +1371,7 @@ def read_creds():
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for read_creds: " + str(end_time - start_time))
+
 
 def write_creds(agent_list):
     try:
@@ -1387,6 +1390,7 @@ def write_creds(agent_list):
         logger.debug("credentials file content: " + str(creds))
         
         for agent in agent_list:
+            agent['timestamp'] = int(time.time())
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
             status = consul_obj.check_connection()
             agent['status'] = status
@@ -1400,11 +1404,18 @@ def write_creds(agent_list):
                 agent['datacenter'] = "-"
         logger.debug("New agent data: " + str(agent_list))
 
-        creds += agent_list
-        with open(consul_credential_file_path, 'w') as fwrite:
-            json.dump(creds, fwrite)
+        ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
 
-        return json.dumps({"agentIP":"10.23.239.14", "payload": agent_list, "status_code": "200", "message": "OK"})
+        new_agent_list = [agent for agent in agent_list if (agent.get('ip'), agent.get('port')) not in ip_port_list]
+        if new_agent_list:
+            creds += new_agent_list
+
+            with open(consul_credential_file_path, 'w') as fwrite:
+                json.dump(creds, fwrite)      
+            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
+        else:
+            logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
@@ -1434,34 +1445,42 @@ def update_creds(update_input):
         logger.debug("credentials file content: " + str(creds))
         response = {}
 
-        for agent in creds:
-            if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
-                agent["protocol"] = new_data.get("protocol")
-                agent["ip"] = new_data.get("ip")
-                agent["port"] = new_data.get("port")
-                agent["token"] = new_data.get("token")
-                response.update(agent)
-                consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                status = consul_obj.check_connection()
-                response["status"] = status
-                if status:
-                    datacenter_name = consul_obj.datacenter()
-                    if datacenter_name:
-                        response['datacenter'] = datacenter_name
-                        agent["datacenter"] = datacenter_name
+        ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
+        ip_port_list.remove((old_data.get('ip'), old_data.get('port')))
+
+        if (new_data.get('ip'), new_data.get('port')) not in ip_port_list:
+            for agent in creds:
+                if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
+                    agent["protocol"] = new_data.get("protocol")
+                    agent["ip"] = new_data.get("ip")
+                    agent["port"] = new_data.get("port")
+                    agent["token"] = new_data.get("token")
+                    agent['timestamp'] = int(time.time())
+                    response.update(agent)
+                    consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+                    status = consul_obj.check_connection()
+                    response["status"] = status
+                    if status:
+                        datacenter_name = consul_obj.datacenter()
+                        if datacenter_name:
+                            response['datacenter'] = datacenter_name
+                            agent["datacenter"] = datacenter_name
+                        else:
+                            response['datacenter'] = "-"
+                            agent['datacenter'] = "-"
                     else:
                         response['datacenter'] = "-"
                         agent['datacenter'] = "-"
-                else:
-                    response['datacenter'] = "-"
-                    agent['datacenter'] = "-"
-                break        
-        logger.debug("new file content: " + str(creds))
-        logger.debug("response: " + str(response))
+                    break        
+            logger.debug("new file content: " + str(creds))
+            logger.debug("response: " + str(response))
 
-        with open(consul_credential_file_path, 'w') as fwrite:
-            json.dump(creds, fwrite)
-        return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
+            with open(consul_credential_file_path, 'w') as fwrite:
+                json.dump(creds, fwrite)
+            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
+        else:
+            logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
+            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in update credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
