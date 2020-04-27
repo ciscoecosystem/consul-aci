@@ -22,6 +22,7 @@ app.debug = True  # See use
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/data/consulCredentials.json"
+mapppings_file_path = "/home/app/data/mappings.json"
 
 session = {}
 
@@ -116,7 +117,7 @@ def mapping(tenant, datacenter):
     """
     TODO: return valid dict
     """
-
+    start_time = datetime.datetime.now()
     try:
 
         mapping_dict = {"source_cluster": [], "target_cluster": []}
@@ -138,7 +139,43 @@ def mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+
+        if not aci_consul_mappings:
+            logger.info("Empty ACI and Consul mappings.")
+            return json.dumps({
+                "agentIP":"10.23.239.14", # TODO: what to return here
+                "payload": mapping_dict,
+                "status_code": "200",
+                "message": "OK"
+                })
+
         current_mapping = get_mapping_dict_target_cluster(aci_consul_mappings)
+        all_datacenter_mapping = {}
+        already_mapped_data = []
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    already_mapped_data = all_datacenter_mapping.get(datacenter)
+
+            if already_mapped_data:
+                # current_mapping is new mapping between aci and consul
+                for new_map in current_mapping:
+                    # already_mapped_data is previously stored mapping by user
+                    for each_already_mapped in already_mapped_data:
+                        if each_already_mapped.get('ipaddress') == new_map.get('ipaddress') and each_already_mapped.get('domainName') == new_map.get('domainName'):
+                            # if node is already disabled then disable it from new mappings also
+                            if each_already_mapped.get('disabled') == True:
+                                new_map['disabled'] = True
+                            break
+
+        all_datacenter_mapping[datacenter] = current_mapping
+
+        with open(mapppings_file_path, 'w') as fwrite:
+            json.dump(all_datacenter_mapping, fwrite)        
 
         mapping_dict['target_cluster'] = [node for node in current_mapping if node.get('disabled') == False]
         
@@ -158,15 +195,75 @@ def mapping(tenant, datacenter):
             "status_code": "300", 
             "message": "Could not load mapping"
             })
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for Mapping: " + str(end_time - start_time))
 
 
-def save_mapping(appDId, tenant, mappedData):
+def save_mapping(tenant, datacenter, mappedData):
     """Save mapping to database.
     
     TODO: complete
     """
+    start_time = datetime.datetime.now()
+    try:        
+        logger.info("Saving mappings for datacenter : " + str(datacenter))
+        logger.debug("Mapped Data : " + mappedData)
+        mappedData = mappedData.replace("'", '"')
+        mappedData_Dict = json.loads(mappedData)
 
-    return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
+        data_list = []
+        all_datacenter_mapping = {}
+        already_mapped_data = []
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    already_mapped_data = all_datacenter_mapping.get(datacenter)
+
+        for mapping in mappedData_Dict:
+            if mapping.get('ipaddress') != "":
+                data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
+        
+        if not data_list:
+            all_datacenter_mapping.pop(datacenter)
+        else:
+            data_list = parse_mapping_before_save(already_mapped_data, data_list)
+            all_datacenter_mapping[datacenter] = data_list
+
+        with open(mapppings_file_path, 'w') as fwrite:
+            json.dump(all_datacenter_mapping, fwrite)
+
+        return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
+    except Exception as e:
+        logger.exception("Could not save mappings to the database. Error: "+str(e))
+        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for saveMapping: " + str(end_time - start_time))
+    
+
+def parse_mapping_before_save(already_mapped_data, data_list):
+    """
+    Set disabled value true if user has disabled particular node manually.
+    """
+    for previous_mapping in already_mapped_data:
+        is_node_exist = False
+        for current_mapping in data_list:
+            if current_mapping.get('ipaddress') == previous_mapping.get('ipaddress') and current_mapping.get('domainName') == previous_mapping.get('domainName'):
+                is_node_exist = True
+                break
+        
+        # Append removed node by user as disabled 
+        if not is_node_exist:
+            previous_mapping['disabled'] = True
+            data_list.append(previous_mapping)
+
+    return data_list
+    
 
 
 def tree(tenant, datacenter):
@@ -183,28 +280,21 @@ def tree(tenant, datacenter):
     logger.info("Tree view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
+        mapping(tenant, datacenter)
+        all_datacenter_mapping = {}
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    aci_consul_mappings = all_datacenter_mapping.get(datacenter)
         aci_obj = aci_utils.ACI_Utils()
-        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
-        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
-
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-        session["consulObject"] = consul_obj
-        
-        consul_data = consul_obj.get_consul_data()
-        ip_list = []
-        for node in consul_data:
-            ip_list += node.get('node_ips', [])
-            # For fetching ips of services.
-            for service in node.get('node_services', []):
-                # check ip is not empty string
-                if service.get('service_ip', ''):
-                    ip_list.append(service.get('service_ip'))
-
-        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
-        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
-
         aci_data = aci_obj.main(tenant)
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+        consul_data = consul_obj.get_consul_data()
 
         merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
 
@@ -250,26 +340,21 @@ def details(tenant, datacenter):
     logger.info("Details view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
+        mapping(tenant, datacenter)
+        all_datacenter_mapping = {}
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    aci_consul_mappings = all_datacenter_mapping.get(datacenter)
         aci_obj = aci_utils.ACI_Utils()
-        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
-        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
-
-        agent = get_agent_list(datacenter)[0] # TODO: for now first agent
-        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-        consul_data = consul_obj.get_consul_data()
-        ip_list = []
-        for node in consul_data:
-            ip_list += node.get('node_ips', [])
-            # For fetching ips of services.
-            for service in node.get('node_services', []):
-                # check ip is not empty string
-                if service.get('service_ip', ''):
-                    ip_list.append(service.get('service_ip'))
-
-        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
-        aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
-
         aci_data = aci_obj.main(tenant)
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+        consul_data = consul_obj.get_consul_data()
 
         merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
 

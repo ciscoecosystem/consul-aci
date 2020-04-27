@@ -117,8 +117,8 @@ class Query(graphene.ObjectType):
                             )
 
     SaveMapping = graphene.Field(SaveMapping, 
-                                    appId = graphene.String(),
                                     tn = graphene.String(),
+                                    datacenter = graphene.String(),
                                     data = graphene.String()
                                 )
 
@@ -253,9 +253,9 @@ class Query(graphene.ObjectType):
         return Mapping
 
 
-    def resolve_SaveMapping(self, info, appId, tn, data):
+    def resolve_SaveMapping(self, info, tn, datacenter, data):
         mappedData = data
-        SaveMapping.savemapping = app.save_mapping(int(appId), str(tn), mappedData)
+        SaveMapping.savemapping = app.save_mapping(str(tn), str(datacenter), data)
         return SaveMapping
 
 
