@@ -12,7 +12,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 class Cosnul(object):
     """Consul class"""
 
-    def __init__(self, agent_ip, port, token, protocol=None):
+    def __init__(self, agent_ip, port, token, protocol):
         
         logger.info('Consul Object init for agent: {}:{}'.format(agent_ip, port))
 
@@ -49,7 +49,7 @@ class Cosnul(object):
             while True:
                 if self.header:
                     logger.info("Token provided, trying connecting to agent with token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header)
+                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
@@ -68,7 +68,7 @@ class Cosnul(object):
                 # it is provided but connection has failed
                 else:
                     logger.info("Token NOT provided, trying connecting to agent without token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url))
+                    response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
@@ -302,24 +302,25 @@ class Cosnul(object):
         return tag_list, service_kind
 
 
-    def datacenters(self):
-        """This will return datacenters list of an agent
+    def datacenter(self):
+        """This will return datacenter of an agent
         
-        return: string list
+        return: string
         """
 
         logger.info('Datacentres for agent: {}:{}'.format(self.agent_ip, self.port))
-        datacenter_list = []
+        datacenter_name = ''
         try:
             agent_resp = requests.get(urls.CATALOG_DC.format(self.base_url))
-            datacenter_list = json.loads(agent_resp.content)
-            logger.debug('Datacenter API data: {}'.format(datacenter_list))
+            agent_resp = json.loads(agent_resp.content)
+            datacenter_name = agent_resp.get('Config', {}).get('Datacenter', '')
+            logger.debug('Datacenter API data: {}'.format(datacenter_name))
 
         except Exception as e:
-            logger.exception("Error in Datacenter list: {}".format(e))
+            logger.exception("Error in Datacenter: {}".format(e))
         
-        logger.debug('datacenters return: {}'.format(str(datacenter_list)))
-        return datacenter_list
+        logger.debug('datacenter return: {}'.format(str(datacenter_name)))
+        return datacenter_name
 
 
     def detailed_service_check(self, service_name, service_id):

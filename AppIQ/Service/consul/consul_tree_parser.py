@@ -103,6 +103,7 @@ def consul_tree_dict(data):
                             'Node' : ep_node['node_name'],
                             'Node Checks' : ep_node['node_check'],
                             'Reporting Node IP': ep_node['node_ips'][0],
+                            'Mac': ep_node['CEP-Mac'],
                             'Services_List' : [],
                             'IP': ep_node['IP'],
                             'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
@@ -203,6 +204,7 @@ def consul_tree_dict(data):
                 non_ep_dict['name'] = 'EP'
                 non_ep_dict['type'] = 'grey'
                 non_ep_dict['label'] = '' # No lable is shown in the ui for a non-service ep
+                non_ep_dict['level'] = 'grey'
                 non_ep_dict['sub_label'] = '' # No sub_lable is shown in the ui for a non-service ep
                 non_ep_dict['attributes'] = epg_eps[0]['Non_IPs']
                 non_ep_dict['fractions'] = epg_eps[0]['fraction']

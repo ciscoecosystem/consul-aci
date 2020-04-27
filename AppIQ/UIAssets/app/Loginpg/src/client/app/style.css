@@ -8,6 +8,13 @@
     font-family: 'Roboto', sans-serif;
 }
 
+body {
+    overflow:unset !important;
+}
+.cui body, body.cui {
+    overflow:unset !important;
+}
+
 .header {
     font-family: 'Roboto', sans-serif;
     background-color: transparent;
@@ -153,6 +160,10 @@ td {
 
 .icon-space {
     margin: 5px
+}
+
+.login-form {
+    margin-bottom: 20px;
 }
 
 .login-form .ReactTable .rt-tr .rt-td {

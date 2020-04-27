@@ -83,14 +83,18 @@ class NodeChecksEPG(graphene.ObjectType):
 class ReadCreds(graphene.ObjectType):
     creds = graphene.String()
 
+
 class WriteCreds(graphene.ObjectType):
     creds = graphene.String()
+
 
 class UpdateCreds(graphene.ObjectType):
     creds = graphene.String()
 
+
 class DeleteCreds(graphene.ObjectType):
     message = graphene.String()
+
 
 class Query(graphene.ObjectType):
     """Query class which resolves all the incomming requests"""
@@ -107,7 +111,10 @@ class Query(graphene.ObjectType):
 
     Application = graphene.Field(Application, tn=graphene.String())
 
-    Mapping = graphene.Field(Mapping, tn=graphene.String(), datacenter=graphene.String())
+    Mapping = graphene.Field(Mapping, 
+                                tn=graphene.String(), 
+                                datacenter=graphene.String()
+                            )
 
     SaveMapping = graphene.Field(SaveMapping, 
                                     appId = graphene.String(),
@@ -145,19 +152,35 @@ class Query(graphene.ObjectType):
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                     service_name = graphene.String(),
-                                    service_id = graphene.String()
+                                    service_id = graphene.String(),
+                                    datacenter = graphene.String()
                                 )
 
-    NodeChecks = graphene.Field(NodeChecks, node_name=graphene.String())
+    NodeChecks = graphene.Field(NodeChecks,
+                                    node_name=graphene.String(), 
+                                    datacenter=graphene.String()
+                                )
 
-    ServiceChecksEP = graphene.Field(ServiceChecksEP, service_list=graphene.String())
+    ServiceChecksEP = graphene.Field(ServiceChecksEP,
+                                        service_list=graphene.String(),
+                                        datacenter=graphene.String()
+                                    )
 
-    NodeChecksEPG = graphene.Field(NodeChecksEPG, node_list=graphene.String())
+    NodeChecksEPG = graphene.Field(NodeChecksEPG,
+                                        node_list=graphene.String(),
+                                        datacenter=graphene.String()
+                                    )
 
     ReadCreds = graphene.Field(ReadCreds)
+
     WriteCreds = graphene.Field(WriteCreds, agent_list=graphene.String())
+
     UpdateCreds = graphene.Field(UpdateCreds, update_input=graphene.String())
+
     DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
+
+
+    """All the resolve methods of class Query"""
 
     def resolve_GetFaults(self, info, dn):
         GetFaults.faultsList = app.get_faults(dn)
@@ -207,14 +230,20 @@ class Query(graphene.ObjectType):
 
 
     def resolve_LoginApp(self, info, ip, port, username, account, password):
-        app_creds = {"appd_ip": ip, "appd_port": port, "appd_user": username, "appd_account": account,
-                     "appd_pw": password}
+        app_creds = {
+            "appd_ip": ip,
+            "appd_port": port,
+            "appd_user": username,
+            "appd_account": account,
+            "appd_pw": password
+        }
+
         loginResp = app.login(app_creds)
         LoginApp.loginStatus = loginResp
         return LoginApp
 
 
-    def resolve_Application(self, info, tn): # TODO: remove the tn
+    def resolve_Application(self, info, tn):
         Application.apps = app.get_datacenter_list()
         return Application
 
@@ -240,36 +269,40 @@ class Query(graphene.ObjectType):
         return Details
 
 
-    def resolve_ServiceChecks(self, info, service_name, service_id):
-        ServiceChecks.response = app.get_service_check(service_name, service_id)
+    def resolve_ServiceChecks(self, info, service_name, service_id, datacenter):
+        ServiceChecks.response = app.get_service_check(service_name, service_id, datacenter)
         return ServiceChecks
 
 
-    def resolve_NodeChecks(self, info, node_name):
-        NodeChecks.response = app.get_node_checks(node_name)
+    def resolve_NodeChecks(self, info, node_name, datacenter):
+        NodeChecks.response = app.get_node_checks(node_name, datacenter)
         return NodeChecks
 
 
-    def resolve_ServiceChecksEP(self, info, service_list):
-        ServiceChecksEP.response = app.get_service_check_ep(service_list)
+    def resolve_ServiceChecksEP(self, info, service_list, datacenter):
+        ServiceChecksEP.response = app.get_service_check_ep(service_list, datacenter)
         return ServiceChecksEP
 
 
-    def resolve_NodeChecksEPG(self, info, node_list):
-        NodeChecksEPG.response = app.get_node_check_epg(node_list)
+    def resolve_NodeChecksEPG(self, info, node_list, datacenter):
+        NodeChecksEPG.response = app.get_node_check_epg(node_list, datacenter)
         return NodeChecksEPG 
+
 
     def resolve_ReadCreds(self, info):
         ReadCreds.creds = app.read_creds()
         return ReadCreds
 
+
     def resolve_WriteCreds(self, info, agent_list):
         WriteCreds.creds = app.write_creds(agent_list)
         return WriteCreds
 
+
     def resolve_UpdateCreds(self, info, update_input):
         UpdateCreds.creds = app.update_creds(update_input)
         return UpdateCreds
+
 
     def resolve_DeleteCreds(self, info, agent_data):
         DeleteCreds.message = app.delete_creds(agent_data)

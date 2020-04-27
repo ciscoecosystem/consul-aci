@@ -30,6 +30,7 @@ export default class TestComponent extends React.Component {
                 <div id="treeWrapper">
                     <Tree
                         data={nodeWrapper} // nodeWrapper contains 1 array element which further contains multiple node
+                        datacenterName={this.props.datacenterName}
                         treeNum={treeNumber + 1}
                         totApps={totApps} // signifies total root node (ie total tree)
                         orientation='vertical'
