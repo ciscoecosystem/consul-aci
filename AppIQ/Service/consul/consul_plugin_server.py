@@ -117,7 +117,7 @@ def mapping(tenant, datacenter):
     """
     TODO: return valid dict
     """
-
+    start_time = datetime.datetime.now()
     try:
 
         mapping_dict = {"source_cluster": [], "target_cluster": []}
@@ -195,6 +195,9 @@ def mapping(tenant, datacenter):
             "status_code": "300", 
             "message": "Could not load mapping"
             })
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.info("Time for Mapping: " + str(end_time - start_time))
 
 
 def save_mapping(tenant, datacenter, mappedData):
@@ -206,6 +209,7 @@ def save_mapping(tenant, datacenter, mappedData):
     try:        
         logger.info("Saving mappings for datacenter : " + str(datacenter))
         logger.debug("Mapped Data : " + mappedData)
+        mappedData = mappedData.replace("'", '"')
         mappedData_Dict = json.loads(mappedData)
 
         data_list = []
@@ -276,26 +280,6 @@ def tree(tenant, datacenter):
     logger.info("Tree view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
-        # aci_obj = aci_utils.ACI_Utils()
-        # end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
-        # parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
-
-        # agent = get_agent_list(datacenter)[0]
-        # consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-        # session["consulObject"] = consul_obj
-        
-        # consul_data = consul_obj.get_consul_data()
-        # ip_list = []
-        # for node in consul_data:
-        #     ip_list += node.get('node_ips', [])
-        #     # For fetching ips of services.
-        #     for service in node.get('node_services', []):
-        #         # check ip is not empty string
-        #         if service.get('service_ip', ''):
-        #             ip_list.append(service.get('service_ip'))
-
-        # aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
-        # aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
 
@@ -356,27 +340,6 @@ def details(tenant, datacenter):
     logger.info("Details view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
-        # aci_obj = aci_utils.ACI_Utils()
-        # end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
-        # parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
-
-        # agent = get_agent_list(datacenter)[0] # TODO: for now first agent
-        # consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-        # consul_data = consul_obj.get_consul_data()
-        # ip_list = []
-        # for node in consul_data:
-        #     ip_list += node.get('node_ips', [])
-        #     # For fetching ips of services.
-        #     for service in node.get('node_services', []):
-        #         # check ip is not empty string
-        #         if service.get('service_ip', ''):
-        #             ip_list.append(service.get('service_ip'))
-
-        # aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
-        # aci_consul_mappings = get_mapping_dict_target_cluster(aci_consul_mappings)
-
-        # aci_data = aci_obj.main(tenant)
-
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
 
