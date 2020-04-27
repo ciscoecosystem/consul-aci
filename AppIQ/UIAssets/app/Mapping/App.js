@@ -20,7 +20,7 @@ class App extends React.Component {
         let title = " | Consul Mapping ";
         return (
             <div>
-                <Container appId={result['appId']} tenantName={result['tn']} applinktext={apptext} headertext={title}/>
+                <Container tenantName={result['tn']} applinktext={apptext} headertext={title}/>
             </div>
         )
     }
