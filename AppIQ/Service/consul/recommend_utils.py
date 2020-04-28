@@ -4,7 +4,7 @@ import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
-def getCommonEPs(source_ip_list, aci_parsed_eps):
+def get_common_eps(source_ip_list, aci_parsed_eps):
     """Map EP(ACI) to Nodes(AppD/Consul)
     
     Matches the IP of ACI fvIp with Source Node IPs and returns a list of matched ACI fvIps dicts"""
@@ -92,14 +92,14 @@ def determine_recommendation(extract_ap_epgs, common_eps):
     return recommendation_list
 
 
-def generatelist(ipList):
+def generatelist(ip_list):
     """
     Generate list based on the IP or Mac.
     """
     src_clus_list = []
     ips = []
     macs = []
-    for each in ipList:
+    for each in ip_list:
         if each[3] == 'IP':
             ips.append(each[0])
         else:
@@ -108,7 +108,7 @@ def generatelist(ipList):
     macs = list(set(macs))
     ip_dict = dict((el,[]) for el in ips)
     mac_dict = dict((el,[]) for el in macs)
-    for each in ipList:
+    for each in ip_list:
         if each[2] == 'No':
             each[2] = False
         if each[2] == 'Yes' or each[2] == 'None':
@@ -152,7 +152,7 @@ def recommanded_eps(source_ip_list, parsed_eps):
 
     # Extract common based on Ips
     try:
-        common_eps = getCommonEPs(source_ip_list, parsed_eps)
+        common_eps = get_common_eps(source_ip_list, parsed_eps)
         logger.debug('Common EPs:'+str(common_eps))
         if common_eps:
             extract_ap_epgs = extract_ap_and_epgs(common_eps)

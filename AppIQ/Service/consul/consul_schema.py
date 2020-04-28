@@ -132,8 +132,8 @@ class Query(graphene.ObjectType):
 
     GetOperationalInfo = graphene.Field(GetOperationalInfo, 
                                             dn = graphene.String(),
-                                            moType = graphene.String(),
-                                            macList = graphene.String()
+                                            mo_type = graphene.String(),
+                                            mac_list = graphene.String()
                                         )
 
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies,
@@ -197,8 +197,8 @@ class Query(graphene.ObjectType):
         return GetAuditLogs
 
 
-    def resolve_GetOperationalInfo(self, info, dn, moType, macList):
-        GetOperationalInfo.operationalList = app.get_childrenEp_info(dn, moType, macList)
+    def resolve_GetOperationalInfo(self, info, dn, mo_type, mac_list):
+        GetOperationalInfo.operationalList = app.get_children_ep_info(dn, mo_type, mac_list)
         return GetOperationalInfo
 
 
@@ -208,7 +208,7 @@ class Query(graphene.ObjectType):
 
 
     def resolve_GetToEpgTraffic(self, info, dn):
-        GetToEpgTraffic.toEpgTrafficList = app.get_to_Epg_traffic(dn)
+        GetToEpgTraffic.toEpgTrafficList = app.get_to_epg_traffic(dn)
         return GetToEpgTraffic
 
 
@@ -238,8 +238,8 @@ class Query(graphene.ObjectType):
             "appd_pw": password
         }
 
-        loginResp = app.login(app_creds)
-        LoginApp.loginStatus = loginResp
+        login_resp = app.login(app_creds)
+        LoginApp.loginStatus = login_resp
         return LoginApp
 
 
@@ -254,7 +254,7 @@ class Query(graphene.ObjectType):
 
 
     def resolve_SaveMapping(self, info, tn, datacenter, data):
-        mappedData = data
+        mapped_data = data
         SaveMapping.savemapping = app.save_mapping(str(tn), str(datacenter), data)
         return SaveMapping
 
