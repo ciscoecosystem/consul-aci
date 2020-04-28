@@ -23,7 +23,6 @@ app.debug = True  # See use
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/data/consulCredentials.json"
 mapppings_file_path = "/home/app/data/mappings.json"
-agent_ip = "10.23.239.14"
 
 
 def set_polling_interval(interval):
@@ -63,7 +62,7 @@ def get_agent_list(data_center):
         end_time = datetime.datetime.now()
         logger.info("time for get agent list : " + str(end_time - start_time))
 
-
+# this is not required now
 def get_datacenter_list():
     """Returns all the datacenters
     
@@ -96,8 +95,7 @@ def get_datacenter_list():
 
         datacenter_list = [{"datacenterName" : dc, "isViewEnabled" : True} for dc in datacenter_set]
 
-        return json.dumps({
-            "agentIP": agent_ip, # TODO: what to return here
+        return json.dumps({ # TODO: what to return here
             "payload": { # TODO This should be list, not a dict of a list
                 'datacenters': datacenter_list
             },
@@ -146,7 +144,7 @@ def mapping(tenant, datacenter):
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
             return json.dumps({
-                "agentIP": agent_ip, # TODO: what to return here
+                "agentIP": agent.get('ip'), # TODO: what to return here
                 "payload": mapping_dict,
                 "status_code": "200",
                 "message": "OK"
@@ -186,7 +184,7 @@ def mapping(tenant, datacenter):
             mapping_dict['source_cluster'].append(new_object)
     
         return json.dumps({
-            "agentIP": agent_ip, # TODO: what to return here
+            "agentIP": agent.get('ip'), # TODO: what to return here
             "payload": mapping_dict,
             "status_code": "200",
             "message": "OK"
@@ -312,7 +310,7 @@ def tree(tenant, datacenter):
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
-            "agentIP": agent_ip, # TODO: send valid ip
+            "agentIP": agent.get('ip'), # TODO: send valid ip
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -386,7 +384,7 @@ def details(tenant, datacenter):
         
         # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
         return json.dumps({
-            "agentIP": agent_ip,
+            "agentIP": agent.get('ip'),
             "payload": details_list,
             "status_code": "200",
             "message": "OK"
@@ -485,7 +483,7 @@ def get_service_check(service_name, service_id, datacenter):
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP": agent_ip,
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -522,7 +520,7 @@ def get_node_checks(node_name, datacenter):
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP": agent_ip,
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -565,7 +563,7 @@ def get_service_check_ep(service_list, datacenter):
             response += consul_obj.detailed_service_check(service_name, service_id)
         
         return json.dumps({
-            "agentIP": agent_ip,
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -605,7 +603,7 @@ def get_node_check_epg(node_list, datacenter):
             response += consul_obj.detailed_node_check(node_name)
 
         return json.dumps({
-            "agentIP": agent_ip,
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -1327,10 +1325,10 @@ def read_creds():
                 creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
-                return json.dumps({"agentIP": agent_ip,"payload": creds, "status_code": "200", "message": "OK"})
+                return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
         else:
             logger.debug("credential file not found.")
-            return json.dumps({"agentIP": agent_ip, "payload": [], "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": [], "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in read credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
@@ -1378,10 +1376,10 @@ def write_creds(agent_list):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)      
-            return json.dumps({"agentIP": agent_ip, "payload": new_agent_list, "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
-            return json.dumps({"agentIP": agent_ip, "payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
+            return json.dumps({"payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
@@ -1443,10 +1441,10 @@ def update_creds(update_input):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
-            return json.dumps({"agentIP": agent_ip, "payload": response, "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
-            return json.dumps({"agentIP": agent_ip, "payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
+            return json.dumps({"payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in update credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
@@ -1478,7 +1476,7 @@ def delete_creds(agent_data):
 
         with open(consul_credential_file_path, 'w') as fwrite:
             json.dump(creds, fwrite)
-        return json.dumps({"agentIP": agent_ip, "status_code": "200", "message": "OK"})
+        return json.dumps({"status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in delete credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})
