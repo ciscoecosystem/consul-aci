@@ -56,7 +56,7 @@ class SetPollingInterval(graphene.ObjectType):
     message = graphene.String()
 
 
-class Run(graphene.ObjectType):
+class OperationalTree(graphene.ObjectType):
     response = graphene.String()
 
 
@@ -72,11 +72,11 @@ class NodeChecks(graphene.ObjectType):
     response = graphene.String()
 
 
-class ServiceChecksEP(graphene.ObjectType):
+class MultiServiceChecks(graphene.ObjectType):
     response = graphene.String()
 
 
-class NodeChecksEPG(graphene.ObjectType):
+class MultiNodeChecks(graphene.ObjectType):
     response = graphene.String()
 
 
@@ -122,7 +122,7 @@ class Query(graphene.ObjectType):
                                     data = graphene.String()
                                 )
 
-    Run = graphene.Field(Run, tn=graphene.String(), datacenter=graphene.String())
+    OperationalTree = graphene.Field(OperationalTree, tn=graphene.String(), datacenter=graphene.String())
 
     GetFaults = graphene.Field(GetFaults, dn=graphene.String())
 
@@ -161,12 +161,12 @@ class Query(graphene.ObjectType):
                                     datacenter=graphene.String()
                                 )
 
-    ServiceChecksEP = graphene.Field(ServiceChecksEP,
+    MultiServiceChecks = graphene.Field(MultiServiceChecks,
                                         service_list=graphene.String(),
                                         datacenter=graphene.String()
                                     )
 
-    NodeChecksEPG = graphene.Field(NodeChecksEPG,
+    MultiNodeChecks = graphene.Field(MultiNodeChecks,
                                         node_list=graphene.String(),
                                         datacenter=graphene.String()
                                     )
@@ -259,9 +259,9 @@ class Query(graphene.ObjectType):
         return SaveMapping
 
 
-    def resolve_Run(self, info, tn, datacenter):
-        Run.response = app.tree(tn, datacenter)
-        return Run
+    def resolve_OperationalTree(self, info, tn, datacenter):
+        OperationalTree.response = app.tree(tn, datacenter)
+        return OperationalTree
 
 
     def resolve_Details(self, info, tn, datacenter):
@@ -279,14 +279,14 @@ class Query(graphene.ObjectType):
         return NodeChecks
 
 
-    def resolve_ServiceChecksEP(self, info, service_list, datacenter):
-        ServiceChecksEP.response = app.get_service_check_ep(service_list, datacenter)
-        return ServiceChecksEP
+    def resolve_MultiServiceChecks(self, info, service_list, datacenter):
+        MultiServiceChecks.response = app.get_service_check_ep(service_list, datacenter)
+        return MultiServiceChecks
 
 
-    def resolve_NodeChecksEPG(self, info, node_list, datacenter):
-        NodeChecksEPG.response = app.get_node_check_epg(node_list, datacenter)
-        return NodeChecksEPG 
+    def resolve_MultiNodeChecks(self, info, node_list, datacenter):
+        MultiNodeChecks.response = app.get_node_check_epg(node_list, datacenter)
+        return MultiNodeChecks 
 
 
     def resolve_ReadCreds(self, info):

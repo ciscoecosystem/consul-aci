@@ -24,7 +24,6 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/data/consulCredentials.json"
 mapppings_file_path = "/home/app/data/mappings.json"
 
-session = {}
 
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
@@ -138,7 +137,7 @@ def mapping(tenant, datacenter):
                 if service.get('service_ip', ''):
                     ip_list.append(service.get('service_ip'))
 
-        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+        aci_consul_mappings = recommend_utils.recommanded_eps(list(set(ip_list)), parsed_eps) # TODO: handle empty response
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
