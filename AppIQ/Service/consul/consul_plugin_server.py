@@ -123,8 +123,8 @@ def mapping(tenant, datacenter):
         mapping_dict = {"source_cluster": [], "target_cluster": []}
 
         aci_obj = aci_utils.ACI_Utils()
-        end_points = aci_obj.apic_fetchEPData(tenant) # TODO: handle this apis failure returned
-        parsed_eps = aci_obj.parseEPs(end_points,tenant) # TODO: handle this apis failure returned
+        end_points = aci_obj.apic_fetchEPGData(tenant) # TODO: handle this apis failure returned
+        parsed_eps = aci_obj.parse_ep(end_points,tenant) # TODO: handle this apis failure returned
 
         agent = get_agent_list(datacenter)[0]
         consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
