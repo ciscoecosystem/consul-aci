@@ -151,7 +151,7 @@ class Query(graphene.ObjectType):
         # def resolve_Mapping(self, args, context, info): # On local desktop
         #    tn = args.get('tn')
         #    appId = int(args.get('appId'))
-        Mapping.mappings = app.mapping(tn, 9)  # Add params to plugin_server for this method
+        Mapping.mappings = app.mapping(tn, int(appId))  # Add params to plugin_server for this method
         return Mapping
 
     def resolve_SaveMapping(self, info, appId, tn, data):  # On APIC
