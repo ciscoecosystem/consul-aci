@@ -828,13 +828,7 @@ def get_ep_info(ep_children_list, aci_util_obj):
                     eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
                     iface_name = eth_name
                     ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    eth_name = name.split("/pathep-[")[1][0:-1]
-                    iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-                    ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
+                elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name) or re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
                     pod_number = name.split("/pod-")[1].split("/")[0]
                     node_number = get_node_from_interface(name)
                     eth_name = name.split("/pathep-[")[1][0:-1]
@@ -1277,13 +1271,7 @@ def get_iface_name(name):
         eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
         iface_name = eth_name
         return iface_name
-    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        eth_name = name.split("/pathep-[")[1][0:-1]
-        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-        return iface_name
-    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
+    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name) or re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
         pod_number = name.split("/pod-")[1].split("/")[0]
         node_number = get_node_from_interface(name)
         eth_name = name.split("/pathep-[")[1][0:-1]
