@@ -57,7 +57,8 @@ export default class DataTable extends Component {
     this.handleError = this.handleError.bind(this);
     this.state = {
       rows: [],
-      loading: true
+      loading: true,
+      intervalId : undefined
     };
   }
   handleError(error) {
@@ -82,7 +83,13 @@ export default class DataTable extends Component {
     }
     else {
       this.fetchData();
+      let intervalId = setInterval(this.fetchData, 5000 );
+      this.setState({intervalId})
     }
+  }
+  componentWillUnmount(){
+    console.log("Component will unount Datatable ", this.state.intervalId);
+    clearInterval(this.state.intervalId)
   }
   fetchData() {
 

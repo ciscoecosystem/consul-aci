@@ -47,7 +47,8 @@ export default class CONSUL_ChecksTable extends Component {
         this.state = {
             rows: [],
             loading: true,
-            expanded: {}
+            expanded: {},
+            intervalId : undefined
         };
     }
     handleError(error) {
@@ -72,8 +73,14 @@ export default class CONSUL_ChecksTable extends Component {
         }
         else {
             this.fetchData();
+            let intervalId = setInterval(this.fetchData, 5000 );
+            this.setState({ intervalId })
         }
     }
+    componentWillUnmount(){
+        console.log("Component will unount checktable", this.state.intervalId)
+        clearInterval(this.state.intervalId)
+      }
     fetchData() {
         let query = this.props.query;
         let payload = query
