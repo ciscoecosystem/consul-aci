@@ -24,7 +24,6 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 consul_credential_file_path = "/home/app/data/consulCredentials.json"
 mapppings_file_path = "/home/app/data/mappings.json"
 
-session = {}
 
 def set_polling_interval(interval):
     """Sets the polling interval in AppDynamics config file
@@ -59,8 +58,11 @@ def get_agent_list(data_center):
     except Exception as e:
         logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(data_center, str(e)))
         return []
+    finally:
+        end_time = datetime.datetime.now()
+        logger.info("time for get agent list : " + str(end_time - start_time))
 
-
+# this is not required now
 def get_datacenter_list():
     """Returns all the datacenters
     
@@ -93,8 +95,7 @@ def get_datacenter_list():
 
         datacenter_list = [{"datacenterName" : dc, "isViewEnabled" : True} for dc in datacenter_set]
 
-        return json.dumps({
-            "agentIP":"10.23.239.14", # TODO: what to return here
+        return json.dumps({ # TODO: what to return here
             "payload": { # TODO This should be list, not a dict of a list
                 'datacenters': datacenter_list
             },
@@ -138,12 +139,12 @@ def mapping(tenant, datacenter):
                 if service.get('service_ip', ''):
                     ip_list.append(service.get('service_ip'))
 
-        aci_consul_mappings = recommend_utils.recommanded_eps(tenant, list(set(ip_list)), parsed_eps) # TODO: handle empty response
+        aci_consul_mappings = recommend_utils.recommanded_eps(list(set(ip_list)), parsed_eps) # TODO: handle empty response
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
             return json.dumps({
-                "agentIP":"10.23.239.14", # TODO: what to return here
+                "agentIP": agent.get('ip'), # TODO: what to return here
                 "payload": mapping_dict,
                 "status_code": "200",
                 "message": "OK"
@@ -183,7 +184,7 @@ def mapping(tenant, datacenter):
             mapping_dict['source_cluster'].append(new_object)
     
         return json.dumps({
-            "agentIP":"10.23.239.14", # TODO: what to return here
+            "agentIP": agent.get('ip'), # TODO: what to return here
             "payload": mapping_dict,
             "status_code": "200",
             "message": "OK"
@@ -200,7 +201,7 @@ def mapping(tenant, datacenter):
         logger.info("Time for Mapping: " + str(end_time - start_time))
 
 
-def save_mapping(tenant, datacenter, mappedData):
+def save_mapping(tenant, datacenter, mapped_data):
     """Save mapping to database.
     
     TODO: complete
@@ -208,9 +209,9 @@ def save_mapping(tenant, datacenter, mappedData):
     start_time = datetime.datetime.now()
     try:        
         logger.info("Saving mappings for datacenter : " + str(datacenter))
-        logger.debug("Mapped Data : " + mappedData)
-        mappedData = mappedData.replace("'", '"')
-        mappedData_Dict = json.loads(mappedData)
+        logger.debug("Mapped Data : " + mapped_data)
+        mapped_data = mapped_data.replace("'", '"')
+        mapped_data_dict = json.loads(mapped_data)
 
         data_list = []
         all_datacenter_mapping = {}
@@ -224,7 +225,7 @@ def save_mapping(tenant, datacenter, mappedData):
                     all_datacenter_mapping = json.loads(file_data)
                     already_mapped_data = all_datacenter_mapping.get(datacenter)
 
-        for mapping in mappedData_Dict:
+        for mapping in mapped_data_dict:
             if mapping.get('ipaddress') != "":
                 data_list.append({'ipaddress': mapping.get('ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
         
@@ -309,7 +310,7 @@ def tree(tenant, datacenter):
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
-            "agentIP":"10.23.239.14", # TODO: send valid ip
+            "agentIP": agent.get('ip'), # TODO: send valid ip
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -383,7 +384,7 @@ def details(tenant, datacenter):
         
         # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
         return json.dumps({
-            "agentIP":"10.23.239.14",
+            "agentIP": agent.get('ip'),
             "payload": details_list,
             "status_code": "200",
             "message": "OK"
@@ -482,7 +483,7 @@ def get_service_check(service_name, service_id, datacenter):
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP":"10.23.239.14",
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -519,7 +520,7 @@ def get_node_checks(node_name, datacenter):
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP":"10.23.239.14",
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -562,7 +563,7 @@ def get_service_check_ep(service_list, datacenter):
             response += consul_obj.detailed_service_check(service_name, service_id)
         
         return json.dumps({
-            "agentIP":"10.23.239.14",
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -602,7 +603,7 @@ def get_node_check_epg(node_list, datacenter):
             response += consul_obj.detailed_node_check(node_name)
 
         return json.dumps({
-            "agentIP":"10.23.239.14",
+            "agentIP": agent.get('ip'),
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -728,7 +729,7 @@ def get_audit_logs(dn):
         })
 
 
-def get_childrenEp_info(dn, mo_type, mac_list):
+def get_children_ep_info(dn, mo_type, mac_list):
     start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     if mo_type == "ep":
@@ -782,7 +783,7 @@ def get_childrenEp_info(dn, mo_type, mac_list):
         })
     finally:
         end_time =  datetime.datetime.now()
-        logger.info("Time for get_childrenEp_info: " + str(end_time - start_time))
+        logger.info("Time for get_children_ep_info: " + str(end_time - start_time))
     
 
 def get_ep_info(ep_children_list, aci_util_obj):
@@ -797,14 +798,14 @@ def get_ep_info(ep_children_list, aci_util_obj):
     for ep_child in ep_children_list:
         for child_name in ep_child:
             if child_name == "fvRsHyper":
-                hyperDn = ep_child["fvRsHyper"]["attributes"]["tDn"]
+                hyper_dn = ep_child["fvRsHyper"]["attributes"]["tDn"]
                 try:
-                    ctrlr_name = re.compile("\/ctrlr-\[.*\]-").split(hyperDn)[1].split("/")[0]
+                    ctrlr_name = re.compile("\/ctrlr-\[.*\]-").split(hyper_dn)[1].split("/")[0]
                 except Exception as e:
                     logger.exception("Exception in EpInfo: " + str(e))
                     ctrlr_name = ""
 
-                hyper_query_string = 'query-target-filter=eq(compHv.dn,"' + hyperDn + '")'
+                hyper_query_string = 'query-target-filter=eq(compHv.dn,"' + hyper_dn + '")'
                 hyper_resp = aci_util_obj.get_all_mo_instances("compHv", hyper_query_string)
 
                 if hyper_resp.get("status"):
@@ -986,7 +987,7 @@ def get_subnets(dn):
         logger.info("Time for one: " + str(end_time - start_time))
 
 
-def get_to_Epg_traffic(epg_dn):
+def get_to_epg_traffic(epg_dn):
     """
     Gets the Traffic Details from the given EPG to other EPGs
     """
@@ -1089,7 +1090,7 @@ def get_to_Epg_traffic(epg_dn):
                         
                         contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
                         flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
-                        ingr_pkts, egr_pkts = getIngressEgress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
+                        ingr_pkts, egr_pkts = get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
                                             
                         to_epg_traffic_dict["contract_subj"] = contract_subject
                         to_epg_traffic_dict["filter_list"] = flt_list
@@ -1115,11 +1116,11 @@ def get_to_Epg_traffic(epg_dn):
             })
         finally:
             end_time =  datetime.datetime.now()
-            logger.info("Time for get_to_Epg_traffic: " + str(end_time - start_time))
+            logger.info("Time for get_to_epg_traffic: " + str(end_time - start_time))
     else:
         logger.error("Could not get Traffic Data related to EPG")
         end_time =  datetime.datetime.now()
-        logger.info("Time for get_to_Epg_traffic: " + str(end_time - start_time))
+        logger.info("Time for get_to_epg_traffic: " + str(end_time - start_time))
         return json.dumps({
             "status_code": "300",
             "message": "Exception while fetching Traffic Data related to EPG",
@@ -1127,7 +1128,7 @@ def get_to_Epg_traffic(epg_dn):
         })
 
 
-def getIngressEgress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
+def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
     """
     Returns the Cumulative Ingress and Egress packets information for the last 15 minutes
     """
@@ -1140,11 +1141,11 @@ def getIngressEgress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
         ingr_pkts = cur_ag_stat_attr.get("ingrPktsCum")
         egr_pkts = cur_ag_stat_attr.get("egrPktsCum")
         end_time =  datetime.datetime.now()
-        logger.info("Time for getIngressEgress: " + str(end_time - start_time))
+        logger.info("Time for get_ingress_egress: " + str(end_time - start_time))
         return ingr_pkts, egr_pkts
     else:
         end_time =  datetime.datetime.now()
-        logger.info("Time for getIngressEgress: " + str(end_time - start_time))
+        logger.info("Time for get_ingress_egress: " + str(end_time - start_time))
         return "0", "0"
 
 
@@ -1324,10 +1325,10 @@ def read_creds():
                 creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
-                return json.dumps({"agentIP":"10.23.239.14","payload": creds, "status_code": "200", "message": "OK"})
+                return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
         else:
             logger.debug("credential file not found.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": [], "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": [], "status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in read credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
@@ -1375,10 +1376,10 @@ def write_creds(agent_list):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)      
-            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
+            return json.dumps({"payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in write credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
@@ -1440,10 +1441,10 @@ def update_creds(update_input):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
-            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
-            return json.dumps({"agentIP":"10.23.239.14", "payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
+            return json.dumps({"payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
     except Exception as e:
         logger.exception("Error in update credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
@@ -1475,7 +1476,7 @@ def delete_creds(agent_data):
 
         with open(consul_credential_file_path, 'w') as fwrite:
             json.dump(creds, fwrite)
-        return json.dumps({"agentIP":"10.23.239.14", "status_code": "200", "message": "OK"})
+        return json.dumps({"status_code": "200", "message": "OK"})
     except Exception as e:
         logger.exception("Error in delete credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})

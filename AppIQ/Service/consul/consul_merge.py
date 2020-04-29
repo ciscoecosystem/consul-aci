@@ -108,7 +108,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         fractions = {}
         if total_epg_count:
             for epg in total_epg_count.keys():
-                #fractions[epg] = str(len(merged_epg_count.get(epg, [])))+"/"+str(total_epg_count.get(epg, []))
                 un_map_eps = int(total_epg_count.get(epg, [])) - len(merged_epg_count.get(epg, []))
                 fractions[epg] = int(un_map_eps)
                 logger.info('Total Unmapped Eps (Inactive):'+str(un_map_eps)+" - "+str(epg))
