@@ -144,8 +144,8 @@ export default class DetailePage extends Component {
         console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{NodeChecksEPG(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + ', datacenter:"' + datacenterName + '"){response}}'};
-      let ServiceCheckQuery = {"query":  'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let NodeCheckQuery = {"query": 'query{MultiNodeChecks(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let ServiceCheckQuery = {"query":  'query{MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
 
       clonedObj.push({
         label: "Consul",
@@ -193,7 +193,7 @@ export default class DetailePage extends Component {
       }
 
       let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '", datacenter:"' + datacenterName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
 
       let tabsObj = [
         {

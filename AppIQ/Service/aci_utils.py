@@ -349,7 +349,7 @@ class ACI_Utils(object):
                         fviplist.append(str(eachip['fvIp']['attributes']['addr']))
 
                 if not is_ip_list:
-                    fviplist.append(str(ep['fvCEp']['attributes']['mac']))
+                    fviplist.append(str(ep['fvCEp']['attributes']['ip']))
 
                 if fviplist: 
                     dn_str = str(ep_attr['dn'])
@@ -547,3 +547,18 @@ class ACI_Utils(object):
             end_time =  datetime.datetime.now()
             logger.info("Time taken for get_ap_epg_faults: " + str(end_time - start_time))
         return faults_dict
+
+
+    def parse_ep(self, data, tenant):
+        """
+        Reads dn, ip and tenant for an fvIp and returns a list of those dictionaries
+        """
+        response = []
+        tenant_str = str(tenant)
+        for each in data:
+            val = {
+                'dn': str(each['fvCEp']['attributes']['dn']),
+                'IP': str(each['fvCEp']['attributes']['ip']),
+                'tenant': tenant_str}
+            response.append(val)
+        return response
