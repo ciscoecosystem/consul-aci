@@ -193,7 +193,7 @@ export default class DetailePage extends Component {
       }
 
       let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '", datacenter:"' + datacenterName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ ServiceChecksEP(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let ServiceCheckQuery = {"query": 'query{ MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
 
       let tabsObj = [
         {

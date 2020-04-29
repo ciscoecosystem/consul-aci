@@ -783,7 +783,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
         })
     finally:
         end_time =  datetime.datetime.now()
-        logger.info("Time for get_childrenEp_info: " + str(end_time - start_time))
+        logger.info("Time for get_children_ep_info: " + str(end_time - start_time))
     
 
 def get_ep_info(ep_children_list, aci_util_obj):
