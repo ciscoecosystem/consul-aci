@@ -255,7 +255,7 @@ class Query(graphene.ObjectType):
 
     def resolve_SaveMapping(self, info, tn, datacenter, data):
         mapped_data = data
-        SaveMapping.savemapping = app.save_mapping(str(tn), str(datacenter), data)
+        SaveMapping.savemapping = app.save_mapping(str(tn), str(datacenter), mapped_data)
         return SaveMapping
 
 
