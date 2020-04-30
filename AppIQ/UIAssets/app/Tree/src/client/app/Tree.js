@@ -80,15 +80,6 @@ export default class Tree extends React.Component {
       initialRender: true,
       data: this.assignInternalProperties(clone(props.data)),
 
-      detailsPane: {
-        visible: false,
-        data: {}
-      },
-
-      detailsPage: {
-        visible: false,
-        data: {}
-      }
     };
     this.findNodesById = this.findNodesById.bind(this);
     this.collapseNode = this.collapseNode.bind(this);
@@ -129,6 +120,8 @@ export default class Tree extends React.Component {
   }
 
   componentDidMount() {
+    console.log("[Componenet did mount ] tree graph");
+
     this.bindZoomListener(this.props);
     this.zoomOutTree = this.zoomOutTree.bind(this);
     this.zoomInTree = this.zoomInTree.bind(this);
@@ -360,54 +353,28 @@ export default class Tree extends React.Component {
    * Opens a Right panel with data of clicked node
    */
   openDetailsPane(nodeData) {
-    this.setState({
-      detailsPane: {
-        visible: true,
-        data: nodeData
-      }
-    });
-   // this.openDetailsPage(nodeData);
+    this.props.toggleDetailsPane(nodeData);
   }
 
  /**
    * Closes a right panel
    */
   closeDetailsPane() {
-    
-    this.setState({
-      detailsPane: {
-        visible: false,
-        data : {}
-       
-      }
-    });
+    this.props.toggleDetailsPane();
   }
 
    /**
    * Opens a details page with data (more details) of clicked node
    */
   openDetailsPage(nodeData) {
-   console.log("open deatails")
-   console.log(nodeData)
-    this.setState({
-      detailsPage: {
-        visible: true,
-        data: nodeData
-      }
-    });
+    this.props.toggleeDetailsPage(nodeData);
   }
 
    /**
    * Closes details page
    */
   closeDetailsPage() {
-
-    this.setState({
-      detailsPage: {
-        visible: false,
-         data:{}
-      }
-    });
+    this.props.toggleeDetailsPage();
   }
 
   /**
@@ -465,6 +432,7 @@ export default class Tree extends React.Component {
   }
 
   render() {
+    console.log("Render of Tree view", this.props.data)
     const { nodes, links } = this.generateTree();
     const {
       nodeSvgShape,
@@ -586,16 +554,16 @@ export default class Tree extends React.Component {
         </div>
 
         <div>
-          {this.state.detailsPane.visible ? (
+          {this.props.detailsPane.visible ? (
             <DetailsPane
               closeDetailsPane={this.closeDetailsPane}
               openDetailsPage={this.openDetailsPage}
-              data={this.state.detailsPane.data}
+              data={this.props.detailsPane.data}
             />
           ) : null}   
-          {this.state.detailsPage.visible ? (
+          {this.props.detailsPage.visible ? (
             <DetailsPage
-              data = {this.state.detailsPage.data}
+              data = {this.props.detailsPage.data}
               closeDetailsPage={this.closeDetailsPage}
               datacenterName={this.props.datacenterName}
             />

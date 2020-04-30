@@ -1,7 +1,6 @@
 import React from 'react';
 import Tree from './Tree.js';
 import Legend from './Legend.js'
-// import { dummyData } from './dummydata.js';
 import './style.css';
 
 let treeNumber = 0
@@ -11,9 +10,14 @@ export default class TestComponent extends React.Component {
         super(props);
     }
 
+    componentDidMount(){
+        console.log("[Componenet did mount ] Testcompoenent");
+    }
+
     render() {
-        let nodeData = (this.props.data === undefined) ? [] : this.props.data
+        let nodeData = (this.props.data === undefined) ? [] : this.props.data;
         // let nodeData = dummyData;
+        console.log("typeof Data => ",nodeData, typeof(nodeData))
         let totApps = nodeData.length;
         /*
         nodeWrapper act as a root node and under it would be all nodes, but the root node (ie nodewrapper) is avoided tobe shown
@@ -21,7 +25,7 @@ export default class TestComponent extends React.Component {
 
         let nodeWrapper = (totApps === 0) ? [] : [{
             "name": "allNodes",
-            "children": nodeData
+            "children": [...nodeData]
         }]
 
         return (
@@ -36,6 +40,10 @@ export default class TestComponent extends React.Component {
                         orientation='vertical'
                         textLayout={{ textAnchor: "middle", y: 0 }}
                         nodeSvgShape={{ shape: 'circle', shapeProps: { r: 20 } }}
+                        detailsPage={this.props.detailsPage}
+                        detailsPane={this.props.detailsPane}
+                        toggleeDetailsPage={this.props.toggleeDetailsPage}
+                        toggleDetailsPane={this.props.toggleDetailsPane}
                         styles={{
                             nodes: {
                                 node: {
