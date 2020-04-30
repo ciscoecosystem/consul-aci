@@ -218,7 +218,7 @@ class App extends React.Component {
                       }
                       else {
                           // Response successful
-                          const response = JSON.parse(json.data.Run.response);
+                          const response = JSON.parse(json.data.OperationalTree.response);
                           if(response.status_code != "200") {
                               // Problem with backend fetching data
                               const message = {"errors": [{
