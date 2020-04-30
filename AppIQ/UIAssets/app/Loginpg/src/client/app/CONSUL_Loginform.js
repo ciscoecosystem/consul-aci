@@ -1,6 +1,6 @@
 import React from 'react';
 import './style.css';
-import {Table,Button, Icon, Input, Label, Loader} from "blueprint-react"
+import {Table,Button, Icon, Input, Label, Loader, IconButton} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
 import { PROFILE_NAME } from '../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,7 +15,7 @@ const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.jso
 const dummylist = [
     {"protocol" : "http", "ip" : "10.0.0.0", "port" : 8050, "token" : "lnfeialilsacirvjlnlaial", "status" : true, "datacenter" : "datacenter1"},
     {"protocol" : "https", "ip" : "10.0.0.1", "port" : 8051, "token" : "lnfeialilsacirvjlglaial", "status" : false, "datacenter" : "datacenter1"},
-    {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : false, "datacenter" : "datacenter2"}
+    {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : true, "datacenter" : "datacenter2"}
 ]
 
 function getCookieVal(offset) {
@@ -83,6 +83,9 @@ class CONSUL_LoginForm extends React.Component {
         this.readAgentsCall = this.readAgentsCall.bind(this);
         this.removeAgentCall = this.removeAgentCall.bind(this);
         this.addAgentCall = this.addAgentCall.bind(this);
+        this.abortEditAgent = this.abortEditAgent.bind(this);
+        this.abortUpdateAgentAction = this.abortUpdateAgentAction.bind(this);
+        this.loadAgentList = this.loadAgentList.bind(this);
 
         this.state = {
             details : [],
@@ -96,16 +99,47 @@ class CONSUL_LoginForm extends React.Component {
 
     componentDidMount() {
         console.log("Component Did mount loginform");  
-        let thiss = this;  
+        this.loadAgentList();
+    }
 
+    loadAgentList(){
+        let thiss = this;
         this.setState({ readAgentLoading: true});  
         setTimeout(function(){ thiss.readAgentsCall() }, 0 ); // making async function.. fix for now
     }
 
-    notify(message) {
-        toast.error(message, {
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ?  toast.warn(message, {
+            position: toast.POSITION.BOTTOM_CENTER
+            }) :
+        isSuccess ?  toast.success(message, {
+            position: toast.POSITION.BOTTOM_CENTER
+            }) :
+            toast.error(message, {
             position: toast.POSITION.BOTTOM_CENTER
           });
+    }
+
+    handleChange(index, target) {
+        let newDetails = [...this.state.details];
+        newDetails[index][target.name] = target.value;
+        this.setState({
+            details: newDetails
+        })
+    }
+
+    abortUpdateAgentAction() {
+        let { isNewAgentAdded , details} = this.state;
+
+        if (isNewAgentAdded){ // new agent being added
+            // remove first element from details
+            details.shift();
+            this.setState({ details });
+        } 
+        else {  // existing agent being updated
+            // abort edit and show exsising data 
+            this.abortEditAgent();
+        }
     }
 
     readAgentsCall() {
@@ -127,11 +161,12 @@ class CONSUL_LoginForm extends React.Component {
                     isDetail = true;
                 }
             } else {
-                this.notify("Something went wrong")
+                this.notify("Error while fetching agent information please refresh")
             }
         }
         catch(e) {
-            console.log('Error getting agents');
+            this.notify("Error while fetching agent information please refresh")
+            console.error('Error getting agents',e);
         }
         finally {
             this.setState({ readAgentLoading: false});
@@ -143,12 +178,19 @@ class CONSUL_LoginForm extends React.Component {
 
     }
 
-    addAgentCall(agentDetail) {
+    // make sure everytim it updates
+    shouldComponentUpdate(nextProps, nextState){
+        console.log("Shouldcomponentupdate ", nextProps, nextState);
+        return true;
+    }
+
+    addAgentCall(agentDetail, updateIndex) {
         if (JSON.stringify(this.state.editDetailCopy) === JSON.stringify(agentDetail)) { // no change in copy
             console.log("no change");
             return;
         }
-        let { isNewAgentAdded } = this.state;
+        console.log("updateIndex = ", updateIndex );
+        let { isNewAgentAdded, details } = this.state;
         
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
@@ -180,7 +222,6 @@ class CONSUL_LoginForm extends React.Component {
         }
 
         let xhr = new XMLHttpRequest();
-        // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, false);
@@ -202,41 +243,75 @@ class CONSUL_LoginForm extends React.Component {
 
                         if(resp.status_code == 200) {
                             console.log("Its 200; alling readagentCalls");
-                            toast.success("Agent added successfully", {
-                                position: toast.POSITION.BOTTOM_CENTER
-                            });
-                            thiss.readAgentsCall();
+
+                            if (isNewAgentAdded){ // new agent added
+                                console.log("In write response ", resp);
+                                if (resp.payload && resp.payload.length > 0){
+                                    details[updateIndex] = resp.payload[0];
+                                    thiss.setState({ details });
+
+                                     // connection is not true
+                                    if (resp.payload.status !== true && resp.message){
+                                        this.notify(resp.message, false, true);
+                                        // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
+                                    }
+                                } else {
+                                    thiss.abortUpdateAgentAction();
+                                    thiss.notify("Some technical glitch!");
+                                }
+
+                            } else { // updated an agent
+                                // thiss.notify("Agent updated successfully", true);
+
+                                if (resp.payload){
+                                    details[updateIndex] = resp.payload;
+                                    thiss.setState({ details });
+
+                                    // connection is not true
+                                    if (resp.payload.status !== true && resp.message){
+                                        this.notify(resp.message, true);
+                                        // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
+                                    }
+                                } else {
+                                    thiss.abortUpdateAgentAction();
+                                    thiss.notify("Some technical glitch!");
+                                }
+                            }
                         }
                         else {
+                            thiss.abortUpdateAgentAction();
                             thiss.notify(resp.message);
                         }
                     }
                 }
                 else {
+                    thiss.abortUpdateAgentAction();
                     thiss.notify("Error while reaching the container.")
                 }
             }
             xhr.send(JSON.stringify(payload));
         }
         catch(e) {
-            this.notify("Error while logging in.");
+            console.error("Error api addAgentCall", e);
+            // this.notify("Error while logging in.");
+            this.abortUpdateAgentAction();
+        }
+        finally {
             this.setState({ readAgentLoading: false})
         }
       
     }
 
-    removeAgentCall(agentDetail) {
+    removeAgentCall(agentDetail, deleteIndex) {
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
         console.log("agentDetail", agentDetail);
 
+        let { details } = this.state;
+
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
-        // let payload = { query: `query{
-        //     WriteCreds(agentList: ${JSON.stringify(JSON.stringify([agentDetail]))} ){creds}
-        // }`}
-        // { "query": 'query{DeleteCreds(agentData:){message}}'}
         let payload = { query: `query{
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
@@ -262,10 +337,10 @@ class CONSUL_LoginForm extends React.Component {
                         let resp = JSON.parse(json.data.DeleteCreds.message)
                         if(resp.status_code == 200) {
                             console.log("Its 200; working delete call");
-                            toast.success("Agent "+agentDetail.ip+" removed successfully", {
-                                position: toast.POSITION.BOTTOM_CENTER
-                            });
-                            thiss.readAgentsCall();
+                            // thiss.notify("Agent "+agentDetail.ip+" removed successfully", true);
+
+                            details.splice(deleteIndex, 1);
+                            thiss.setState({ details });
                         }
                         else {
                             thiss.notify(resp.message);
@@ -273,6 +348,7 @@ class CONSUL_LoginForm extends React.Component {
                     }
                     else {
                         thiss.notify("Something went wrong!")
+                        console.log("DelCrefs: response structure invalid")
                     }
                 }
                 else {
@@ -282,17 +358,11 @@ class CONSUL_LoginForm extends React.Component {
             xhr.send(JSON.stringify(payload));
         }
         catch(e) {
-            this.notify("Error while logging in.");
-            this.setState({ readAgentLoading: false})
+            console.error("Error api removeagent", e);
         }
-    }
-
-    handleChange(index, target) {
-        let newDetails = [...this.state.details];
-        newDetails[index][target.name] = target.value;
-        this.setState({
-            details: newDetails
-        })
+        finally {
+            this.setState({ readAgentLoading: false, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false })
+        }
     }
   
     // remove an agent
@@ -314,7 +384,7 @@ class CONSUL_LoginForm extends React.Component {
         this.setState({ readAgentLoading: true});
         let thiss = this;
         setTimeout(function(){ 
-                thiss.removeAgentCall(Object.assign({}, newDetails.splice(index, 1)[0] ) ) 
+                thiss.removeAgentCall(Object.assign({}, newDetails.splice(index, 1)[0] ), index ) 
         }, 0)
 
     }
@@ -329,7 +399,7 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     // Abort editing Agent
-    abortEditAgent(index){
+    abortEditAgent(){
         let newDetail = [...this.state.details];
 
         if (this.state.editDetailCopy === undefined){
@@ -348,27 +418,37 @@ class CONSUL_LoginForm extends React.Component {
 
     // Accept the change made while editing
     updateAgent(index){
-        let details = this.state.details[index];
-        console.log("update agent", details);
+        let { details } = this.state;
+        let updatingAgentDetail = details[index];
+        console.log("update agent", updatingAgentDetail);
 
-        if (!details.ip || !details.port || !details.protocol ){ // checking if all field added
-            this.notify(FILL_DETAILS);
-            return;
+        if (!updatingAgentDetail.protocol) { this.notify("Protocol required."); return; }
+        if (!updatingAgentDetail.ip) { this.notify("IP / DNS required."); return; }
+        if (!updatingAgentDetail.port) { this.notify("Port required."); return; }
+
+         // check if Details in Index is not same as others in [...Details] as per port and ip
+        for (let ind=0; ind < details.length; ind++) {
+            if (index === ind) continue;
+            if (details[ind].ip === updatingAgentDetail.ip && parseInt(details[ind].port) === parseInt(updatingAgentDetail.port) ){
+                console.log("same as @", ind);
+                this.notify("Agent already exists.")
+                return;
+            }
         }
-
-            let thiss = this;
-            this.setState({ readAgentLoading: true}, function() {
-                setTimeout(function(){ 
-                    thiss.addAgentCall(Object.assign({}, details))
-                    
-                    thiss.setState({
-                        editDetailCopy: undefined,
-                        editAgentIndex: null,
-                        isNewAgentAdded: false,
-                        readAgentLoading: false
-                    })
-                }, 0)
-            });       
+        
+        let thiss = this;
+        this.setState({ readAgentLoading: true}, function() {
+            setTimeout(function(){ 
+                thiss.addAgentCall(Object.assign({}, updatingAgentDetail), index)
+                   
+                thiss.setState({
+                    editDetailCopy: undefined,
+                    editAgentIndex: null,
+                    isNewAgentAdded: false,
+                    readAgentLoading: false
+                })
+            }, 0)
+         });       
     }
 
     addAgent() {
@@ -389,7 +469,7 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     render() {
-    let { editAgentIndex, tenantName } = this.state;
+    let { editAgentIndex, tenantName, readAgentLoading } = this.state;
 
     // Handle redirection to page 
     function handleMapClick(profileNameValue) {
@@ -415,6 +495,7 @@ class CONSUL_LoginForm extends React.Component {
               id={"http"+props.index}
               type="radio"
               value="http"
+              disabled={props.index!==editAgentIndex}
               checked={protocol === "http"}
               onChange={(e)=> {
                   this.handleChange(props.index, { name: "protocol", value:"http"}) 
@@ -429,6 +510,7 @@ class CONSUL_LoginForm extends React.Component {
               name={"http"+props.index}
               type="radio"
               value="https"
+              disabled={props.index!==editAgentIndex}
               checked={protocol === "https"}
               onChange={(e)=> this.handleChange(props.index, { name: "protocol", value:"https"})}
             />
@@ -441,7 +523,7 @@ class CONSUL_LoginForm extends React.Component {
         header: 'ip',
         accessor: 'ip',
         Cell: props => {
-            return  <Input key={"ip"+props.index} placeHolder="ip" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
+            return  <Input key={"ip"+props.index} placeHolder="ip / dns" disabled={props.index!==editAgentIndex} value={props.original.ip} name={"ip"} onChange={(e) => this.handleChange(props.index, e.target)} />
         }
     },
     {
@@ -478,23 +560,23 @@ class CONSUL_LoginForm extends React.Component {
     {
         accessor: '',
         Cell: props =>  {
+            let isSomeAgentInEditMode = (editAgentIndex !== null && props.index !== editAgentIndex);
+
             if (props.index === editAgentIndex) { // Update an agent; to show [Update, Abort, Delete]
                 return <React.Fragment>
                 <Icon key={"updateagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type="icon-check" onClick={()=>this.updateAgent(props.index)}></Icon>
 
                 {/* if new agent being written; dont show abort */}
-                {(this.state.isNewAgentAdded === false) && <Icon key={"abortagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent(props.index)}></Icon> }
+                {(this.state.isNewAgentAdded === false) && <Icon key={"abortagent"} style={{margin:"5px"}} className="no-link toggle pull-right" size="icon-small" type=" icon-exit-outline" onClick={()=>this.abortEditAgent()}></Icon> }
 
                     <Icon key={"removeagent"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                  </React.Fragment>
             }
-            else if (editAgentIndex === null){ // no action on row; to show [Edit, delete]
+            else { // no action on row; to show [Edit, delete]
                 return <React.Fragment>
-                        <Icon key={"editagent"} className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
-                        <Icon key={"removeagent2"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
+                        <Icon key={"editagent"} disabled={isSomeAgentInEditMode} className="no-link toggle pull-right" size="icon-small" type="icon-edit" onClick={()=>this.editAgent(props.index)}></Icon>
+                        <Icon key={"removeagent2"} disabled={isSomeAgentInEditMode} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
                 </React.Fragment>
-            } else {    // only show delete
-                return <Icon key={"removeagent3"} className="no-link toggle pull-right" size="icon-small" type="icon-delete" onClick={()=>this.removeAgent(props.index)}></Icon>
             }
         }
     }
@@ -503,6 +585,34 @@ class CONSUL_LoginForm extends React.Component {
     return (
             <div className="login-form">
             <ToastContainer />
+            <center>
+            <div className="row toolbar" style={{width: "90%", background: "unset", marginBottom: "10px"}}>
+                <div className="col-md-12" style={{textAlign:"center"}}>
+
+                  {/* <Button style={{ marginRight: "20px"}} disabled={editAgentIndex!==null} type="btn--success" size="btn--small" onClick={this.addAgent}>Add Agent</Button> */}
+             
+                <span className="pull-right">
+                    <IconButton
+                        type="btn--icon btn--gray-ghost"
+                        size="btn--small"
+                        icon="icon-plus"
+                        disabled={editAgentIndex!==null || readAgentLoading === true} 
+                        onClick={this.addAgent}
+                   />
+                     <IconButton
+                        type="btn--icon btn--gray-ghost"
+                        size="btn--small"
+                        icon="icon-refresh"
+                        disabled={editAgentIndex!==null || readAgentLoading === true} 
+                        onClick={this.loadAgentList}
+                   />
+                </span>
+                  
+                </div>
+            </div>
+            </center> 
+
+            <div>
             <center>
                 {(this.state.readAgentLoading) ? <span>loading.. <Loader> loading </Loader>  </span>:
                 <Table key={"agentTable"} 
@@ -513,7 +623,11 @@ class CONSUL_LoginForm extends React.Component {
                 showPagination={false} 
                 SubComponent={row => {
                     let { datacenter, status } = row.original;
-                    if (status === false) return undefined; 
+                    /* Dont show [Detail, operations And Map] 
+                        when connection not true &
+                             agent in edit state
+                    */
+                    if (status !== true || editAgentIndex === row.index) return undefined; 
                     return (
                       <Table
                         data={[{spaceCol:"",btnCol:""}]}
@@ -531,7 +645,6 @@ class CONSUL_LoginForm extends React.Component {
                                            </div>
                                         } 
                                 }
-                              
                         ]}
                         noDataText={"No services found"}
                         defaultPageSize={100}
@@ -543,13 +656,7 @@ class CONSUL_LoginForm extends React.Component {
                 TheadComponent={props => null}>
                 </Table>}
             </center>
-         
-            <form onSubmit={(event)=> { event.preventDefault();}}>
-                <center>
-                    <br/>
-                    <Button style={{ marginRight: "20px"}} disabled={editAgentIndex!==null} type="btn--success" size="btn--small" onClick={this.addAgent}>Add Agent</Button>
-                </center>
-            </form>
+            </div>
             </div>
         )
     }

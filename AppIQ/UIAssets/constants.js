@@ -5,5 +5,5 @@ export function DC_DETAILS_QUERY_PAYLOAD(tn, datacenter) {
 }
 
 export function TREE_VIEW_QUERY_PAYLOAD(tn, datacenter) {
-    return { query: 'query{Run(tn:"' + tn + '", datacenter: "' + datacenter + '"){response}}' }
+    return { query: 'query{OperationalTree(tn:"' + tn + '", datacenter: "' + datacenter + '"){response}}' }
 }

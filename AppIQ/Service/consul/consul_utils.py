@@ -49,7 +49,7 @@ class Cosnul(object):
             while True:
                 if self.header:
                     logger.info("Token provided, trying connecting to agent with token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header)
+                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
@@ -68,7 +68,7 @@ class Cosnul(object):
                 # it is provided but connection has failed
                 else:
                     logger.info("Token NOT provided, trying connecting to agent without token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url))
+                    response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
                     status_code = response.status_code
                     if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
                         logger.info("Successfully connected to {}".format(self.agent_ip))
@@ -100,7 +100,7 @@ class Cosnul(object):
         logger.info('In Consul Node List')
         node_list = []
         try:
-            catalog_nodes = requests.get(urls.CATALOG_NODES.format(self.base_url))
+            catalog_nodes = self.session.get(urls.CATALOG_NODES.format(self.base_url))
             catalog_nodes = json.loads(catalog_nodes.content)
             logger.debug('Catalog Nodes API data: {}'.format(str(catalog_nodes)))
             
@@ -152,7 +152,7 @@ class Cosnul(object):
         service_list = []
         try:
             # API works for node id also, ask and decide
-            services_resp = requests.get(urls.NODE_SERVICES.format(self.base_url, node_name))
+            services_resp = self.session.get(urls.NODE_SERVICES.format(self.base_url, node_name))
             services_resp = json.loads(services_resp.content)
             logger.debug('Node "{}" Services API data: {}'.format(node_name, str(services_resp)))
 
@@ -196,7 +196,7 @@ class Cosnul(object):
         logger.info('Node Checks for node: {}'.format(node_name))
         check_dict = {}
         try:
-            node_resp = requests.get(urls.NODE_CHECK.format(self.base_url, node_name))
+            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name))
             node_resp = json.loads(node_resp.content)
             logger.debug('Node Check API data: {}'.format(node_resp))
 
@@ -243,7 +243,7 @@ class Cosnul(object):
         logger.info('Service Checks for node: {}'.format(service_name))
         check_dict = {}
         try:
-            service_resp = requests.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
         
@@ -286,7 +286,7 @@ class Cosnul(object):
         tag_list = []
         service_kind = ''
         try:
-            service_resp = requests.get(urls.SERVICE_INFO.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_INFO.format(self.base_url, service_name))
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Details API data: {}'.format(service_resp))
 
@@ -311,7 +311,7 @@ class Cosnul(object):
         logger.info('Datacentres for agent: {}:{}'.format(self.agent_ip, self.port))
         datacenter_name = ''
         try:
-            agent_resp = requests.get(urls.CATALOG_DC.format(self.base_url))
+            agent_resp = self.session.get(urls.CATALOG_DC.format(self.base_url))
             agent_resp = json.loads(agent_resp.content)
             datacenter_name = agent_resp.get('Config', {}).get('Datacenter', '')
             logger.debug('Datacenter API data: {}'.format(datacenter_name))
@@ -346,7 +346,7 @@ class Cosnul(object):
         logger.info('Service Checks for service: {}, {}'.format(service_name, service_id))
         service_checks_list = []
         try:
-            service_resp = requests.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
             
@@ -394,7 +394,7 @@ class Cosnul(object):
         logger.info('Node Checks for node: {}'.format(node_name))
         node_checks_list = []
         try:
-            node_resp = requests.get(urls.NODE_CHECK.format(self.base_url, node_name))
+            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name))
             node_resp = json.loads(node_resp.content)
             logger.debug('Node Check API data: {}'.format(node_resp))
 

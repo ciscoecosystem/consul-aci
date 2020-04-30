@@ -1,6 +1,7 @@
 import datetime
 import json
 import custom_logger
+import copy
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
@@ -13,7 +14,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
 
     start_time = datetime.datetime.now()
-    logger.info('Merging objects for Tenant:'+str(tenant))
+    logger.info('Merging objects')
 
     try:
         merge_list = []  # TODO: these should go above 946
@@ -49,7 +50,8 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                 'node_services': []
                             }
                             # All the services which matches CEp and its ip is different from its nodes ip
-                            for service in node.get('node_services', []):
+                            node_services = copy.deepcopy(node.get('node_services', []))
+                            for service in node_services:
                                 if aci.get(aci_key).upper() == service.get('service_ip') and aci.get(aci_key).upper() not in node.get('node_ips'):
                                     node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
@@ -106,7 +108,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         fractions = {}
         if total_epg_count:
             for epg in total_epg_count.keys():
-                #fractions[epg] = str(len(merged_epg_count.get(epg, [])))+"/"+str(total_epg_count.get(epg, []))
                 un_map_eps = int(total_epg_count.get(epg, [])) - len(merged_epg_count.get(epg, []))
                 fractions[epg] = int(un_map_eps)
                 logger.info('Total Unmapped Eps (Inactive):'+str(un_map_eps)+" - "+str(epg))
