@@ -6,8 +6,8 @@ import Header from './Header.js'
 import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL } from "../../../../../constants.js"
 // import { dummyData } from './dummydata.js';
 
-const QUERY_URL="http://127.0.0.1:5000/graphql.json";
-// const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
+// const QUERY_URL="http://127.0.0.1:5000/graphql.json";
+const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
 
 var key = 0;
 function getCookieVal(offset) {
