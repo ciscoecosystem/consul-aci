@@ -72,13 +72,25 @@ class Cosnul(object):
                     if status_code == 200:
                         logger.info("Successfully connected to {}".format(self.agent_ip))
                         self.connected = True
-                        return self.connected, None
+                        message = None
+
+                    elif status_code == 403:
+                        logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
+                        self.connected = False
+                        message = "403: Authentication failed!"
+
+                    elif status_code == 500:
+                        logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
+                        self.connected = False
+                        message = "500: Consul Server Error!"
 
                     # When all the cases fail with/without token
                     else:
                         logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
                         self.connected = False
-                        return self.connected, None
+                        message = None
+                    
+                    return self.connected, message
 
         except requests.exceptions.ConnectTimeout as e:
             logger.exception('ConnectTimeout Exception in Consul check connection: {}'.format(str(e)))
