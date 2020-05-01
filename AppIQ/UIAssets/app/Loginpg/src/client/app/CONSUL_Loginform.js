@@ -164,8 +164,12 @@ class CONSUL_LoginForm extends React.Component {
                 if (credsData.payload.length > 0){
                     isDetail = true;
                 }
-            } else {
-                this.notify("Error while fetching agent information please refresh")
+            } else if (credsData.status_code == "300") {
+                try {
+                this.notify(credsData.message)
+                } catch(e){
+                    console.log("message error", e)
+                }
             }
         }
         catch(e) {
@@ -282,9 +286,17 @@ class CONSUL_LoginForm extends React.Component {
                                 }
                             }
                         }
+                        else if (resp.status_code == 300) {
+                            thiss.abortUpdateAgentAction();
+                            try {
+                            thiss.notify(resp.message)
+                            } catch(e){
+                                console.log("message error", e)
+                            }
+                        }
                         else {
                             thiss.abortUpdateAgentAction();
-                            thiss.notify(resp.message);
+                            // thiss.notify(resp.message);
                         }
                     }
                 }
