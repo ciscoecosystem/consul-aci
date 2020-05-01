@@ -134,7 +134,12 @@ function CardData(props, attributeOrder = undefined) {
           return (
             <tr>
               <td width="30%"> {key} </td>
-              <td width="70%">{attributes[key].join(", ")}</td>
+              <td width="70%">{attributes[key].map(val =>{
+                return <React.Fragment>
+                  {val}
+                  <br/>
+                </React.Fragment>
+              })}</td>
             </tr>
           );
         }
