@@ -10,10 +10,6 @@ export default class TestComponent extends React.Component {
         super(props);
     }
 
-    componentDidMount(){
-        console.log("[Componenet did mount ] Testcompoenent");
-    }
-
     render() {
         let nodeData = (this.props.data === undefined) ? [] : this.props.data;
         // let nodeData = dummyData;
@@ -53,7 +49,11 @@ export default class TestComponent extends React.Component {
                                 leafNode: { circle: { fill: "#DFF" } }
                             }
                         }}
-                        translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
+                        transitionDuration={(this.props.initialTreeRender > 1) ?  0 : 500}
+                        // translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
+                        translate={this.props.treeTranslate}
+                        scale={this.props.treeScale}
+                        handleTransitionTree={this.props.handleTransitionTree}
                     />
 
                 </div >

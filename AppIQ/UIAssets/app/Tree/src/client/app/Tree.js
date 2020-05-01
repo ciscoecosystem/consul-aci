@@ -172,21 +172,33 @@ export default class Tree extends React.Component {
    * @return {void}
    */
   bindZoomListener(props) {
-    const { zoomable, scaleExtent, translate } = props;
+    var eventListining = undefined
+    let thiss = this;
+    
+    const { zoomable, scaleExtent, translate, scale } = props;
     boundEvent = behavior
       .zoom()
       .scaleExtent([scaleExtent.min, scaleExtent.max])
       .on("zoom", () => {
-        g.attr(
+        eventListining = event; // tracking event
+
+        g
+        .attr(
           "transform",
           `translate(${event.translate}) scale(${event.scale})`
         );
       })
+      .on("zoomend", () => {
+        console.log("Zoom end ")
+        console.log("eventListining ", eventListining.scale, eventListining.translate);
+        thiss.props.handleTransitionTree(eventListining.translate, eventListining.scale);
+      })
+      .scale(scale)
       // Offset so that first pan and zoom does not jump back to [0,0] coords
       .translate([translate.x, translate.y]);
     const svg = select(".rd3t-svg");
     const g = select(".rd3t-g");
-
+  
     if (zoomable) {
       svg.call(boundEvent);
     }
@@ -432,12 +444,12 @@ export default class Tree extends React.Component {
   }
 
   render() {
-    console.log("Render of Tree view", this.props.data)
     const { nodes, links } = this.generateTree();
     const {
       nodeSvgShape,
       orientation,
       translate,
+      scale,
       pathFunc,
       transitionDuration,
       zoomable,
@@ -456,11 +468,10 @@ export default class Tree extends React.Component {
       depthFactor,
       initialDepth
     };
+    console.log("Tree Render translate :- ", translate, scale)
 
     const windowHeight = parseFloat(window.innerHeight) / 2;
     const windowWidth = parseFloat(window.innerWidth) / 2 - 80;
-
-    // alert(windowHeight + " : " + windowWidth)
 
     if (nodes.length == 0) {
       return (
@@ -512,7 +523,7 @@ export default class Tree extends React.Component {
             <TransitionGroup
               component="g"
               className="rd3t-g"
-              transform={`translate(${translate.x},${translate.y})`}
+              transform={`translate(${translate.x},${translate.y}) scale(${scale})`}
             >
                {/* the links under root node is avoided */}
               {links.slice(this.props.totApps).map(linkData => (
@@ -585,7 +596,7 @@ Tree.defaultProps = {
   orientation: "horizontal",
   translate: { x: 0, y: 0 },
   pathFunc: "diagonal",
-  transitionDuration: 500,
+  // transitionDuration: 0,
   depthFactor: undefined,
   collapsible: true,
   initialDepth: undefined,

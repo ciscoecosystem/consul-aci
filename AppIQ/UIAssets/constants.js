@@ -1,5 +1,5 @@
 export const PROFILE_NAME = "datacenterName";
-export const INTERVAL_API_CALL = 30000; // in milliseconds
+export const INTERVAL_API_CALL = 15000; // in milliseconds
 
 export function DC_DETAILS_QUERY_PAYLOAD(tn, datacenter) {
     return { query: 'query{Details(tn:"' + tn + '", datacenter: "' + datacenter + '"){details}}' }

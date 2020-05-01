@@ -75,7 +75,10 @@ class App extends React.Component {
                 visible: false,
                 data: {}
               },
-            treeApiLoading: false
+            treeApiLoading: false,
+            initialTreeRender: 0,
+            treeTranslate: { x: 400, y: -60 },
+            treeScale: 1
         }
 
         this.reload = this.reload.bind(this);
@@ -83,6 +86,7 @@ class App extends React.Component {
         this.getStaticData = this.getStaticData.bind(this);
         this.toggleDetailsPane = this.toggleDetailsPane.bind(this);
         this.toggleeDetailsPage = this.toggleeDetailsPage.bind(this);
+        this.handleTransitionTree = this.handleTransitionTree.bind(this);
     }
 
     componentWillMount(){
@@ -98,7 +102,10 @@ class App extends React.Component {
     reload() {
         // alert("Reloading");
         loadingBoxShow("block");
-        this.getData(true);
+        this.handleTransitionTree([400, -60], 1);
+        this.setState({ initialTreeRender: 0 }, function() {
+            this.getData(true);
+        })
     }
 
     toggleDetailsPane(nodeData = undefined){ // if no argument that means details pane to be closed
@@ -121,18 +128,23 @@ class App extends React.Component {
         })
     }
 
+    handleTransitionTree(translate, treeScale) {
+        console.log("handleTransitionTree", translate, treeScale)
+        this.setState({
+            treeTranslate: { x: translate[0], y: translate[1] },
+            treeScale
+        })
+    }
+
     getStaticData(fullyReload = false) {
         let thiss = this;
         console.log("GetData of tree;");
         let { detailsPage, detailsPane, treeApiLoading } = this.state;
-  
-        console.log("= detailsPage ", detailsPage);
-        console.log("= detailsPane ", detailsPane);
-  
-        if (detailsPage.visible || detailsPane.visible) return;
+
+        if (detailsPage.visible || detailsPane.visible ) return;
+
         let xhr = new XMLHttpRequest();
-        // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
-      
+
         try {
           console.log("opening post")
           //   xhr.open("POST", QUERY_URL,true);
@@ -151,7 +163,7 @@ class App extends React.Component {
                         if ((JSON.stringify(thiss.state.treedata) !== JSON.stringify(treedata) || fullyReload) && !treeApiLoading){
                             console.log("Tree data taking ");
                             thiss.setState({ treeApiLoading: true}, function() {
-                                setTimeout(function() { thiss.setState({ treedata, treeApiLoading: false }) } , 10 );
+                                thiss.setState({ treedata, treeApiLoading: false, initialTreeRender: thiss.state.initialTreeRender + 1 }); 
                             })
                         } else {
                            console.log("Didnt change as before");
@@ -168,8 +180,8 @@ class App extends React.Component {
             xhr.send(null);
         }
         catch(except) {
-            console.log("Cannot fetch data to fetch Tree data.", except)
             thiss.setState({ treeApiLoading: false})
+            console.log("Cannot fetch data to fetch Tree data.", except);
         }
     }
 
@@ -195,10 +207,10 @@ class App extends React.Component {
       } catch(err){
         console.error("set state error", err);
       }
-  
+
       let payload = TREE_VIEW_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME])
       let xhr = new XMLHttpRequest();
-    
+
       try {
         console.log("opening post")
           xhr.open("POST", QUERY_URL,true); 
@@ -239,9 +251,9 @@ class App extends React.Component {
                                 console.log("Tree data taking ");
 
                                 thiss.setState({ treeApiLoading: true}, function() {
-                                    setTimeout(function() {
-                                        thiss.setState({ treedata : JSON.parse(treedata_raw), treeApiLoading: false });
-                                    } , 10 );
+                                        thiss.setState({ treedata : JSON.parse(treedata_raw),
+                                                         treeApiLoading: false,
+                                                         initialTreeRender: thiss.state.initialTreeRender + 1 })
                                 })
 
                               } else {
@@ -280,12 +292,12 @@ class App extends React.Component {
   }
 
     render() {
-        let { treedata, treeApiLoading } = this.state;
+        let { treedata, treeApiLoading, initialTreeRender, treeTranslate, treeScale } = this.state;
       loadingBoxHide();
       console.log("Render tree index", this.state);
       let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
       let title = " | View"
-      
+
         return (
             <div>
                 <Header text={title} applinktext={apptext} instanceName={headerInstanceName}/>
@@ -296,7 +308,11 @@ class App extends React.Component {
                     toggleeDetailsPage = {this.toggleeDetailsPage}
                     data={this.state.treedata} 
                     reloadController={this.reload} 
-                    datacenterName={this.state.result[PROFILE_NAME]}/> }
+                    datacenterName={this.state.result[PROFILE_NAME]}
+                    initialTreeRender={initialTreeRender}
+                    treeScale={treeScale}
+                    treeTranslate={treeTranslate}
+                    handleTransitionTree={this.handleTransitionTree}/> }
             </div>
         );
     }
