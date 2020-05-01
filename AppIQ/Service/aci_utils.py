@@ -373,6 +373,7 @@ class ACI_Utils(object):
                         splitString = dn_str.split("/")
                         if "." in ip:
                             ep_dict.update({"IP": str(ip)})
+
                         for eachSplit in splitString:
                             if "-" in eachSplit:
                                 epSplit = eachSplit.split("-", 1)
@@ -553,12 +554,33 @@ class ACI_Utils(object):
         """
         Reads dn, ip and tenant for an fvIp and returns a list of those dictionaries
         """
-        response = []
-        tenant_str = str(tenant)
-        for each in data:
-            val = {
-                'dn': str(each['fvCEp']['attributes']['dn']),
-                'IP': str(each['fvCEp']['attributes']['ip']),
-                'tenant': tenant_str}
-            response.append(val)
-        return response
+
+        ep_list = []
+        for ep in data:
+            is_ip_list = False
+            logger.info(str(ep))
+            for eachip in ep['fvCEp']['children']:
+                # If first key is 'fvIp' than add IP to list otherwise add mac address
+                if eachip.keys()[0] == 'fvIp':
+                    is_ip_list = True
+                    ep_list.append(
+                        {
+                            'dn': str(ep['fvCEp']['attributes']['dn']),
+                            'IP': str(eachip['fvIp']['attributes']['addr']),
+                            'tenant': str(tenant)
+                        }
+                    )
+
+            # This condition is added to have a check if the CEp
+            # is mapped with fvIp of CEp's IP
+            if not is_ip_list:
+                ep_list.append(
+                    {
+                    'dn': str(ep['fvCEp']['attributes']['dn']),
+                    'IP': str(ep['fvCEp']['attributes']['ip']),
+                    'tenant': str(tenant),
+                    "cep_ip": True
+                    }
+                )
+        logger.info("Parse EP output " + str(ep_list))
+        return ep_list
