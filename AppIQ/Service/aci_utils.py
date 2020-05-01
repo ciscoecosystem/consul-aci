@@ -4,6 +4,7 @@ import requests
 import json, base64
 import datetime
 import urls
+import re
 from collections import defaultdict
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
@@ -365,11 +366,13 @@ class ACI_Utils(object):
                     for ip in fviplist:
                         
                         ep_dict = {"AppProfile": '', 'EPG': '', 'CEP-Mac': '', 'IP': '', 'Interfaces': [], 'VM-Name': '', 'BD': '',
-                            'VMM-Domain': '', 'Contracts': [], 'VRF':'','dn': '/'.join((dn_str.split('/', 4)[0:4]))}
+                            'VMM-Domain': '', 'Contracts': [], 'VRF':'','dn': '/'.join((dn_str.split('/', 4)[0:4])), 'controllerName': '', 
+                            'hostingServerName': '', 'learningSource': ''}
 
                         ep_dict.update({'VRF': str(vrf_name)})
                         ep_dict.update({'Contracts': ct_data_list})
                         ep_dict.update({'BD': str(bd_data)})
+                        ep_dict.update({'learningSource': ep.get('fvCEp',{}).get('attributes',{}).get('lcC')})
                         splitString = dn_str.split("/")
                         if "." in ip:
                             ep_dict.update({"IP": str(ip)})
@@ -385,29 +388,9 @@ class ACI_Utils(object):
                                     ep_dict.update({"CEP-Mac": str(epSplit[1])})
                         # ep_dict.update({'IP': str(ep_attr['ip'])})
                         ep_child_attr = ep['fvCEp']['children']
-                        path_list = []
-                        for child in ep_child_attr:
-                            if str(child.keys()[0]) == 'fvRsCEpToPathEp':
-                                path_list.append(str(child['fvRsCEpToPathEp']['attributes']['tDn']))
-                            
-                            if str(child.keys()[0]) == 'fvRsToVm':
-                                tDn_dom = str(child['fvRsToVm']['attributes']['tDn'])
-                                vmmDom = str(tDn_dom.split("ctrlr-[")[1].split(']-')[0])
-                                
-                                ep_dict.update({'VMM-Domain': vmmDom})
-                                tDn = str(child['fvRsToVm']['attributes']['tDn'])
-                                vm_url = self.proto + self.apic_ip + '/api/mo/' + tDn + '.json'
-                                vm_response = self.ACI_get(vm_url,cookie={'APIC-Cookie': apic_token})
+                        ep_info = self.get_ep_info(ep_child_attr, ep_attr.get('name'), apic_token)
+                        ep_dict.update(ep_info)
 
-                                vm_name = json.loads(vm_response.text)['imdata'][0]['compVm']['attributes']['name']
-
-                                if not vm_name:
-                                    vm_name = 'EP-'+str(ep['fvCEp']['attributes']['name'])
-                                ep_dict.update({'VM-Name': str(vm_name)})
-                            else:
-                                ep_dict.update({'VMM-Domain':'None'})
-                                ep_dict.update({'VM-Name':'EP-'+str(ep['fvCEp']['attributes']['name'])})
-                            ep_dict.update({'Interfaces': path_list})
                         ep_list.append(ep_dict)
             return ep_list
         except Exception as e:
@@ -417,6 +400,78 @@ class ACI_Utils(object):
             end_time =  datetime.datetime.now()
             logger.info("Time for apic_parseData: " + str(end_time - start_time))
 
+
+    def get_ep_info(self, ep_children_list, default_ep_name="", apic_token=None):
+        ep_info = {
+            "controllerName" : "",
+            "hostingServerName" : "",
+            "Interfaces" : "",
+            "VM-Name" : "",
+            "VMM-Domain": ""
+        }
+        path_list = []
+        for ep_child in ep_children_list:
+            for child_name in ep_child:
+                if child_name == "fvRsHyper":
+                    hyper_dn = ep_child["fvRsHyper"]["attributes"]["tDn"]
+                    try:
+                        ctrlr_name = re.compile("\/ctrlr-\[.*\]-").split(hyper_dn)[1].split("/")[0]
+                    except Exception as e:
+                        logger.exception("Exception in EpInfo: " + str(e))
+                        ctrlr_name = ""
+
+                    hyper_query_string = 'query-target-filter=eq(compHv.dn,"' + hyper_dn + '")'
+                    hyper_resp = self.get_all_mo_instances("compHv", hyper_query_string)
+
+                    if hyper_resp.get("status"):
+                        if hyper_resp.get("payload"):
+                            hyper_name = hyper_resp["payload"][0]["compHv"]["attributes"]["name"]
+                        else:
+                            logger.error("Could not get Hosting Server Name using Hypervisor info")
+                            hyper_name = ""
+                    else:
+                        hyper_name = ""
+                    ep_info["controllerName"] = ctrlr_name
+                    ep_info["hostingServerName"] = hyper_name
+
+                if child_name == "fvRsCEpToPathEp":
+                    interface = ep_child["fvRsCEpToPathEp"]["attributes"]["tDn"]
+                    if re.match('topology\/pod-+\d+\/pathgrp-.*',interface):
+                        pod_number = interface.split("/pod-")[1].split("/")[0]
+                        node_number = self.get_node_from_interface(interface)
+                        #The ethernet name is NOT available
+                        eth_name = str(interface.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
+                        iface_name = eth_name
+                        path_list.append(iface_name)
+                    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',interface) or re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',interface):
+                        pod_number = interface.split("/pod-")[1].split("/")[0]
+                        node_number = self.get_node_from_interface(interface)
+                        eth_name = interface.split("/pathep-[")[1][0:-1]
+                        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
+                        path_list.append(iface_name)
+                    else:
+                        logger.error("Different format of interface is found: {}".format(interface))
+                        path_list.append(interface)
+
+                if child_name == 'fvRsToVm':
+                    tDn_dom = str(ep_child['fvRsToVm']['attributes']['tDn'])
+                    vmmDom = str(tDn_dom.split("ctrlr-[")[1].split(']-')[0])
+                    
+                    ep_info.update({'VMM-Domain': vmmDom})
+                    tDn = str(ep_child['fvRsToVm']['attributes']['tDn'])
+                    vm_url = self.proto + self.apic_ip + '/api/mo/' + tDn + '.json'
+                    vm_response = self.ACI_get(vm_url,cookie={'APIC-Cookie': apic_token})
+
+                    vm_name = json.loads(vm_response.text)['imdata'][0]['compVm']['attributes']['name']
+
+                    if not vm_name:
+                        vm_name = 'EP-'+ default_ep_name
+                    ep_info.update({'VM-Name': str(vm_name)})
+                else:
+                    ep_info.update({'VMM-Domain':'None'})
+                    ep_info.update({'VM-Name':'EP-'+ default_ep_name})
+        ep_info.update({"Interfaces": path_list})   
+        return ep_info
 
     def check_unicast_routing(self, bd):
         """
@@ -584,3 +639,57 @@ class ACI_Utils(object):
                 )
         logger.info("Parse EP output " + str(ep_list))
         return ep_list
+
+    def get_node_from_interface(self, interfaces):
+        """
+        This function extracts the node number from interface
+        """
+        node_number = ''
+        if isinstance(interfaces, list):
+            node_number = ''
+            for interface in interfaces:
+                if (interface.find("/protpaths") != -1):
+                    if node_number != '':
+                        node_number += str(', ' + interface.split("/protpaths-")[1].split("/")[0])
+                    else:
+                        node_number += str(interface.split("/protpaths-")[1].split("/")[0])
+                elif(interface.find("/paths-") != -1):
+                    if node_number != '':
+                        node_number += str(', ' + interface.split("/paths-")[1].split("/")[0])
+                    else:
+                        node_number += str(interface.split("/paths-")[1].split("/")[0])
+                elif(interface.find("/pathgrp-") != -1):
+                    if node_number != '':
+                        node_number += str(', ' + interface.split("/pathgrp-")[1].split("/")[0])
+                    else:
+                        node_number += str(interface.split("/pathgrp-")[1].split("/")[0])
+                else:
+                    try:
+                        if re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface):
+                            if node_number != '':
+                                node_number += str(',' + re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface))
+                            else:
+                                node_number += str(re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface))
+                        else:
+                            raise Exception("interface" + str(interface))
+                    except Exception as e:
+                        node_number += ''
+                        logger.exception("Exception in get_node_from_interface:"+str(e))
+        elif isinstance(interfaces, str) or isinstance(interfaces, unicode):
+            node_number = ''
+            if (interfaces.find("/protpaths") != -1):
+                node_number += str(interfaces.split("/protpaths-")[1].split("/")[0])
+            elif(interfaces.find("/paths-") != -1):
+                node_number += str(interfaces.split("/paths-")[1].split("/")[0])
+            elif(interfaces.find("/pathgrp-") != -1):
+                node_number += str(interfaces.split("/pathgrp-")[1].split("/")[0])
+            else:
+                try:
+                    if re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interfaces):
+                        node_number += str(re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interfaces))
+                    else:
+                        raise Exception("interface" + str(interfaces))
+                except Exception as e:
+                    node_number += ''
+                    logger.exception("Exception in get_node_from_interface:"+str(e))
+        return node_number
