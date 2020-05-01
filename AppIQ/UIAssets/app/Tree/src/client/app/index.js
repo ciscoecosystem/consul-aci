@@ -230,8 +230,8 @@ class App extends React.Component {
                           }
                           else {
                               // Success
-                              var treedata_raw = JSON.parse(json.data.Run.response).payload;
-                              headerInstanceName = JSON.parse(json.data.Run.response).agentIP; //  CONSUL : change from instanceName to agentIp
+                              var treedata_raw = JSON.parse(json.data.OperationalTree.response).payload;
+                              headerInstanceName = JSON.parse(json.data.OperationalTree.response).agentIP; //  CONSUL : change from instanceName to agentIp
 
                               if ((JSON.stringify(thiss.state.treedata) !== JSON.stringify(JSON.parse(treedata_raw)) || fullyReload) 
                                    && !treeApiLoading){
