@@ -51,12 +51,11 @@ class Cosnul(object):
                     logger.info("Token provided, trying connecting to agent with token.")
                     response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
                     status_code = response.status_code
-                    if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
+                    if status_code == 200:
                         logger.info("Successfully connected to {}".format(self.agent_ip))
                         self.connected = True
-                        return self.connected
+                        return self.connected, None
 
-                    
                     # try connecting without token
                     else:
                         logger.info("Connection failed with https, status_code: {}".format(status_code))
@@ -70,19 +69,23 @@ class Cosnul(object):
                     logger.info("Token NOT provided, trying connecting to agent without token.")
                     response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
                     status_code = response.status_code
-                    if status_code == 200 or status_code == 201: # TODO: check for range/ check doc
+                    if status_code == 200:
                         logger.info("Successfully connected to {}".format(self.agent_ip))
                         self.connected = True
-                        return self.connected
+                        return self.connected, None
 
                     # When all the cases fail with/without token
                     else:
                         logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
                         self.connected = False
-                        return self.connected
+                        return self.connected, None
+
+        except requests.exceptions.ConnectTimeout as e:
+            logger.exception('ConnectTimeout Exception in Consul check connection: {}'.format(str(e)))
+            return self.connected, "Connection Timeout Error"
         except Exception as e:
             logger.exception('Exception in Consul check connection: {}'.format(str(e)))
-            return self.connected
+            return self.connected, None
 
 
     def nodes(self):

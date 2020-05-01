@@ -62,57 +62,6 @@ def get_agent_list(data_center):
         end_time = datetime.datetime.now()
         logger.info("time for get agent list : " + str(end_time - start_time))
 
-# this is not required now
-def get_datacenter_list():
-    """Returns all the datacenters
-    
-    return: {
-        agentIP: string
-        payload: { # TODO This should be list, not a dict of a list
-            datacenters: string list
-        } or {}
-        status_code: string: 200/300 
-        message: string
-    }
-    """
-    
-    logger.info('Get Datacenter List')
-    start_time = datetime.datetime.now()
-    datacenter_set = set()
-    datacenter_list = []
-
-    try:        
-        # get list of all agents
-        agent_list = get_agent_list('all')
-
-        for agent in agent_list:
-            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-            
-            agent_datacenter = consul_obj.datacenter()
-            datacenter_set.add(agent_datacenter)
-
-        logger.debug("Final datacenters set : {}".format(datacenter_set))
-
-        datacenter_list = [{"datacenterName" : dc, "isViewEnabled" : True} for dc in datacenter_set]
-
-        return json.dumps({ # TODO: what to return here
-            "payload": { # TODO This should be list, not a dict of a list
-                'datacenters': datacenter_list
-            },
-            "status_code": "200", 
-            "message": "OK"
-            })
-    except Exception as e:
-        logger.exception("Could not fetch datacenter list, Error: {}".format(str(e)))
-        return json.dumps({
-            "payload": {}, 
-            "status_code": "300", 
-            "message": "Could not fetch datacenter list"
-            })
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.debug("Time for get_datacenter_list: " + str(end_time - start_time))
-
 
 def mapping(tenant, datacenter):
     """
@@ -1298,7 +1247,7 @@ def read_creds():
 
                 for agent in creds:
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                    status = consul_obj.check_connection()
+                    status, message = consul_obj.check_connection()
                     agent['status'] = status
                     if status:
                         datacenter_name = consul_obj.datacenter()
@@ -1314,10 +1263,13 @@ def read_creds():
                 creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
-                return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
+                if not message:
+                    return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
+                else:
+                    return json.dumps({"payload": creds, "status_code": "300", "message": message})
         else:
             logger.debug("credential file not found.")
-            return json.dumps({"payload": [], "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": [], "status_code": "500", "message": "Internal Server Error"})
     except Exception as e:
         logger.exception("Error in read credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
@@ -1345,7 +1297,7 @@ def write_creds(agent_list):
         for agent in agent_list:
             agent['timestamp'] = int(time.time())
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-            status = consul_obj.check_connection()
+            status, message = consul_obj.check_connection()
             agent['status'] = status
             if status:
                 datacenter_name = consul_obj.datacenter()
@@ -1364,8 +1316,13 @@ def write_creds(agent_list):
             creds += new_agent_list
 
             with open(consul_credential_file_path, 'w') as fwrite:
-                json.dump(creds, fwrite)      
-            return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
+                json.dump(creds, fwrite)
+
+            if not message:
+                return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
+            else:
+                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": message})
+
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
             return json.dumps({"payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
@@ -1411,7 +1368,7 @@ def update_creds(update_input):
                     agent['timestamp'] = int(time.time())
                     response.update(agent)
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                    status = consul_obj.check_connection()
+                    status, message = consul_obj.check_connection()
                     response["status"] = status
                     if status:
                         datacenter_name = consul_obj.datacenter()
@@ -1430,7 +1387,12 @@ def update_creds(update_input):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
-            return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
+
+            if not message:
+                return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
+            else:
+                return json.dumps({"payload": response, "status_code": "300", "message": message})
+
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
             return json.dumps({"payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
