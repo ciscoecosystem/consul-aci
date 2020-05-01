@@ -109,7 +109,18 @@ const TABLE_OPERATIONAL = [
     },
     {
         Header: 'Interface',
-        accessor: 'iface_name'
+        accessor: 'iface_name',
+        width: 190,
+        Cell: row => {
+            return (<div>
+              {row.value.map(function(val) {
+                return <React.Fragment>
+                  {val}
+                  <br/>
+                </React.Fragment>
+               } )}
+            </div>)
+          } 
     },
     {
         Header: "Multicast Address",
