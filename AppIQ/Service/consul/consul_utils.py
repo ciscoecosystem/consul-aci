@@ -89,7 +89,7 @@ class Cosnul(object):
                         logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
                         self.connected = False
                         message = None
-                    
+
                     return self.connected, message
 
         except requests.exceptions.ConnectTimeout as e:

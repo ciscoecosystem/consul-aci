@@ -1263,10 +1263,7 @@ def read_creds():
                 creds.sort(key = lambda x: x['timestamp'], reverse=True)
                     
                 logger.debug("agent data: " + str(creds))
-                if not message:
-                    return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
-                else:
-                    return json.dumps({"payload": creds, "status_code": "300", "message": message})
+                return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
         else:
             logger.debug("credential file not found.")
             return json.dumps({"payload": [], "status_code": "500", "message": "Internal Server Error"})
@@ -1307,6 +1304,8 @@ def write_creds(agent_list):
                     agent['datacenter'] = "-"
             else:
                 agent['datacenter'] = "-"
+                agent['message'] = message
+
         logger.debug("New agent data: " + str(agent_list))
 
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
@@ -1318,10 +1317,10 @@ def write_creds(agent_list):
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
 
-            if not message:
+            if not [x.get('message', '') for x in new_agent_list if x.get('message', '')]:
                 return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
             else:
-                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": message})
+                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": str(new_agent_list[0].get('message', ''))})
 
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
@@ -1358,6 +1357,7 @@ def update_creds(update_input):
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
         ip_port_list.remove((old_data.get('ip'), old_data.get('port')))
 
+        message = None
         if (new_data.get('ip'), new_data.get('port')) not in ip_port_list:
             for agent in creds:
                 if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
