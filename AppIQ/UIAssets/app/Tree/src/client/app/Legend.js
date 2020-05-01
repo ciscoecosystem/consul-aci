@@ -3,7 +3,6 @@ import uuid from "uuid";
 import { layout, select, behavior, event } from "d3";
 import { IconButton } from "blueprint-react";
 import LegendNode from "./LegendNode.js";
-import Tree from "./Tree.js";
 
 import "./style.css";
 

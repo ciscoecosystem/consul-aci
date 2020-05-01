@@ -13,7 +13,6 @@ export default class TestComponent extends React.Component {
     render() {
         let nodeData = (this.props.data === undefined) ? [] : this.props.data;
         // let nodeData = dummyData;
-        console.log("typeof Data => ",nodeData, typeof(nodeData))
         let totApps = nodeData.length;
         /*
         nodeWrapper act as a root node and under it would be all nodes, but the root node (ie nodewrapper) is avoided tobe shown

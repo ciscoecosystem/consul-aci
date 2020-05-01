@@ -120,8 +120,6 @@ export default class Tree extends React.Component {
   }
 
   componentDidMount() {
-    console.log("[Componenet did mount ] tree graph");
-
     this.bindZoomListener(this.props);
     this.zoomOutTree = this.zoomOutTree.bind(this);
     this.zoomInTree = this.zoomInTree.bind(this);
@@ -189,8 +187,6 @@ export default class Tree extends React.Component {
         );
       })
       .on("zoomend", () => {
-        console.log("Zoom end ")
-        console.log("eventListining ", eventListining.scale, eventListining.translate);
         thiss.props.handleTransitionTree(eventListining.translate, eventListining.scale);
       })
       .scale(scale)
@@ -468,7 +464,6 @@ export default class Tree extends React.Component {
       depthFactor,
       initialDepth
     };
-    console.log("Tree Render translate :- ", translate, scale)
 
     const windowHeight = parseFloat(window.innerHeight) / 2;
     const windowWidth = parseFloat(window.innerWidth) / 2 - 80;

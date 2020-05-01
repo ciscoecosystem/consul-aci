@@ -48,7 +48,6 @@ if(health){
 health.style.display= "none";
 }
   document.getElementById("loading-box").style.display = "block";
-  console.log(document.getElementById("loading-box").style.display)
 }
 
 function loadingBoxHide() {
@@ -96,7 +95,6 @@ class App extends React.Component {
     componentDidMount() { 
       this.getData();
       setInterval(this.getData, INTERVAL_API_CALL);
-      console.log("Tree index [ Component Did mount ]")
     }
 
     reload() {
@@ -129,7 +127,6 @@ class App extends React.Component {
     }
 
     handleTransitionTree(translate, treeScale) {
-        console.log("handleTransitionTree", translate, treeScale)
         this.setState({
             treeTranslate: { x: translate[0], y: translate[1] },
             treeScale
@@ -138,7 +135,6 @@ class App extends React.Component {
 
     getStaticData(fullyReload = false) {
         let thiss = this;
-        console.log("GetData of tree;");
         let { detailsPage, detailsPane, treeApiLoading } = this.state;
 
         if (detailsPage.visible || detailsPane.visible ) return;
@@ -185,8 +181,7 @@ class App extends React.Component {
         }
     }
 
-    getData(fullyReload = false) { 
-      console.log("GetData of tree;");
+    getData(fullyReload = false) {
       let { detailsPage, detailsPane, treeApiLoading } = this.state;
 
       if (detailsPage.visible || detailsPane.visible) return; // IF any popup is open dont call api
@@ -294,7 +289,6 @@ class App extends React.Component {
     render() {
         let { treedata, treeApiLoading, initialTreeRender, treeTranslate, treeScale } = this.state;
       loadingBoxHide();
-      console.log("Render tree index", this.state);
       let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
       let title = " | View"
 
