@@ -9,6 +9,7 @@ import {
   TABLE_TOEPG,
   TABLE_SUBNETS
 } from "./tableHeaders.js";
+import { INTERVAL_API_CALL } from '../../../../../../constants.js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
@@ -57,7 +58,8 @@ export default class DataTable extends Component {
     this.handleError = this.handleError.bind(this);
     this.state = {
       rows: [],
-      loading: true
+      loading: true,
+      intervalId : undefined
     };
   }
   handleError(error) {
@@ -82,7 +84,13 @@ export default class DataTable extends Component {
     }
     else {
       this.fetchData();
+      let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL );
+      this.setState({intervalId})
     }
+  }
+  componentWillUnmount(){
+    console.log("Component will unount Datatable ", this.state.intervalId);
+    clearInterval(this.state.intervalId)
   }
   fetchData() {
 

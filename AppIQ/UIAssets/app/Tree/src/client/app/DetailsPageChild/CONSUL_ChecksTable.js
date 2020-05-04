@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Table, Panel, Icon, Label } from "blueprint-react";
 
 import { ToastContainer, toast } from 'react-toastify';
+import { INTERVAL_API_CALL } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
@@ -47,7 +48,8 @@ export default class CONSUL_ChecksTable extends Component {
         this.state = {
             rows: [],
             loading: true,
-            expanded: {}
+            expanded: {},
+            intervalId : undefined
         };
     }
     handleError(error) {
@@ -72,8 +74,14 @@ export default class CONSUL_ChecksTable extends Component {
         }
         else {
             this.fetchData();
+            let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL );
+            this.setState({ intervalId })
         }
     }
+    componentWillUnmount(){
+        console.log("Component will unount checktable", this.state.intervalId)
+        clearInterval(this.state.intervalId)
+      }
     fetchData() {
         let query = this.props.query;
         let payload = query

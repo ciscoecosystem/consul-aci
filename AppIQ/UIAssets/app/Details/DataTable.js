@@ -1,7 +1,6 @@
 import React, { Component } from "react"
 import { Table, Button, Label, Icon } from "blueprint-react"
 import ToolBar from "./ToolBar"
-import tablestyle from "./tablestyle.css"
 
 const successColor = "#6ebe4a";
 const failColor = "#e2231a";
@@ -14,7 +13,18 @@ export default class DataTable extends Component {
     const HEADER_DETAILS = [
       {
         Header: "Interface",
-        accessor: "interface"
+        accessor: "interface",
+        width: 190,
+        Cell: row => {
+          return (<div>
+            {row.value.map(function(val) {
+              return <React.Fragment>
+                {val}
+                <br/>
+              </React.Fragment>
+             } )}
+          </div>)
+        } 
       },
       {
         Header: "Endpoint",
