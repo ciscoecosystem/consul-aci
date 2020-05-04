@@ -248,7 +248,7 @@ class CONSUL_LoginForm extends React.Component {
                                 ('UpdateCreds' in json.data && 'creds' in json.data.UpdateCreds )
                     ) {
                         let resp = (isNewAgentAdded) ? JSON.parse(json.data.WriteCreds.creds) : JSON.parse(json.data.UpdateCreds.creds) ;
-
+                        console.log("Reading data");
                         if(resp.status_code == 200) {
                             console.log("Its 200; alling readagentCalls");
 
@@ -287,6 +287,7 @@ class CONSUL_LoginForm extends React.Component {
                             }
                         }
                         else if (resp.status_code == 300) {
+                            console.log("Its 300 and error");
                             thiss.abortUpdateAgentAction();
                             try {
                             thiss.notify(resp.message)
@@ -294,14 +295,13 @@ class CONSUL_LoginForm extends React.Component {
                                 console.log("message error", e)
                             }
                         }
-                        else if (resp.status_code == 301) { // detail updated but some server error
-                            if (isNewAgentAdded){ // new agent added
+                        else if (resp.status_code == 301) { // detail updated but some server error 
                                 console.log("In 301 write response ", resp);
-
+                                
                                 thiss.notify(resp.message); // error message
 
                                 if (isNewAgentAdded){ // new agent added
-                                    console.log("In write response ", resp);
+                                    console.log(" writing  response ", resp.payload);
                                     if (resp.payload && resp.payload.length > 0){
                                         details[updateIndex] = resp.payload[0];
                                         thiss.setState({ details });
@@ -313,7 +313,7 @@ class CONSUL_LoginForm extends React.Component {
     
                                 } else { // updated an agent
                                     // thiss.notify("Agent updated successfully", true);
-    
+                                    console.log(" updating  response ", resp.payload);
                                     if (resp.payload){
                                         details[updateIndex] = resp.payload;
                                         thiss.setState({ details });
@@ -328,18 +328,13 @@ class CONSUL_LoginForm extends React.Component {
                                         thiss.notify("Some technical glitch!");
                                     }
                                 }
-                            }
-                            else {
-                                thiss.abortUpdateAgentAction();
-                                // thiss.notify(resp.message);
-                            }
                         }
                         else {
                             console.error("Invalid status code")
                             thiss.abortUpdateAgentAction();
                         }
                     } else {
-                        console.error("Invalid response structure")
+                        console.error("Invalid response strcture")
                         thiss.abortUpdateAgentAction();
                     }
                 }
