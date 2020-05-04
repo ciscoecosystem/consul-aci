@@ -290,8 +290,8 @@ class App extends React.Component {
         let { treedata, treeApiLoading, initialTreeRender, treeTranslate, treeScale } = this.state;
       loadingBoxHide();
       let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
-      let title = " | View"
-
+      let title = " | Operational"
+      
         return (
             <div>
                 <Header text={title} applinktext={apptext} instanceName={headerInstanceName}/>
