@@ -1,7 +1,6 @@
 import React from 'react'
 import './style.css'
-import {Dropdown,Icon,Table} from "blueprint-react"
-import Modal from "./Modal"
+import {Dropdown} from "blueprint-react"
 
 
 class Header extends React.Component {
@@ -9,34 +8,22 @@ class Header extends React.Component {
         super(props)
 
         this.handleLogoutClick = this.handleLogoutClick.bind(this);
-        this.closeModal = this.closeModal.bind(this);
-        this.openModal = this.openModal.bind(this);
-	
+
         this.state = {
-            showModal : false,
             items : [
-              { label: "Set Polling Interval", action:this.openModal},
               { label: "Logout", action:this.handleLogoutClick}
             ]
         }
-  
-    }
-    openModal(){
-        this.setState({showModal:true})
-    }
-	
-    closeModal(){
-        this.setState({showModal:false})
+
     }
     handleLogoutClick() {
         window.location.href = "index.html?reset=1"; //TEMPORARY change to login.html
     }
 
     render() {
-   
+
         return (
             <div className="clearfix">
-                {this.state.showModal ? <Modal close={this.closeModal}></Modal> : null}
                 {/* TEMPORARY CHANGE TO index.html */}
                 <a href="index.html" className="sub-header floal">{this.props.applinktext}</a>
                 <div className="sub-header floal">{this.props.text}</div>
