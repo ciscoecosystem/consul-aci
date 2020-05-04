@@ -286,16 +286,15 @@ class CONSUL_LoginForm extends React.Component {
                                 }
                             }
                         }
-                    }
-                    else if (resp.status_code == 300) {
+                        else if (resp.status_code == 300) {
                             thiss.abortUpdateAgentAction();
                             try {
                             thiss.notify(resp.message)
                             } catch(e){
                                 console.log("message error", e)
                             }
-                    }
-                    else if (resp.status_code == 301) { // detail updated but some server error
+                        }
+                        else if (resp.status_code == 301) { // detail updated but some server error
                             if (isNewAgentAdded){ // new agent added
                                 console.log("In 301 write response ", resp);
 
@@ -329,12 +328,19 @@ class CONSUL_LoginForm extends React.Component {
                                         thiss.notify("Some technical glitch!");
                                     }
                                 }
-
+                            }
+                            else {
+                                thiss.abortUpdateAgentAction();
+                                // thiss.notify(resp.message);
+                            }
                         }
                         else {
+                            console.error("Invalid status code")
                             thiss.abortUpdateAgentAction();
-                            // thiss.notify(resp.message);
                         }
+                    } else {
+                        console.error("Invalid response structure")
+                        thiss.abortUpdateAgentAction();
                     }
                 }
                 else {
