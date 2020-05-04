@@ -286,13 +286,28 @@ class CONSUL_LoginForm extends React.Component {
                                 }
                             }
                         }
-                        else if (resp.status_code == 300) {
+                    }
+                    else if (resp.status_code == 300 && 'UpdateCreds' in json.data) {
                             thiss.abortUpdateAgentAction();
                             try {
                             thiss.notify(resp.message)
                             } catch(e){
                                 console.log("message error", e)
                             }
+                    }
+                    else if (resp.status_code == 301 && 'WriteCreds' in json.data) { // detail updated but some server error
+                            if (isNewAgentAdded){ // new agent added
+                                console.log("In 301 write response ", resp);
+
+                                thiss.notify(resp.message); // error message
+                                if (resp.payload && resp.payload.length > 0){
+                                    details[updateIndex] = resp.payload[0];
+                                    thiss.setState({ details });
+                                } else {
+                                    thiss.abortUpdateAgentAction();
+                                    thiss.notify("Some technical glitch!");
+                                }
+
                         }
                         else {
                             thiss.abortUpdateAgentAction();
