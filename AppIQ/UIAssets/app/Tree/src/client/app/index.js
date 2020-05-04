@@ -530,7 +530,7 @@ class App extends React.Component {
       loadingBoxHide();
 
       let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
-      let title = " | View"
+      let title = " | Operational"
       
         return (
             <div>
