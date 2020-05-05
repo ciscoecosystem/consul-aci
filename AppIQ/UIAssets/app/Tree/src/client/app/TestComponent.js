@@ -1,7 +1,6 @@
 import React from 'react';
 import Tree from './Tree.js';
 import Legend from './Legend.js'
-// import { dummyData } from './dummydata.js';
 import './style.css';
 
 let treeNumber = 0
@@ -12,7 +11,7 @@ export default class TestComponent extends React.Component {
     }
 
     render() {
-        let nodeData = (this.props.data === undefined) ? [] : this.props.data
+        let nodeData = (this.props.data === undefined) ? [] : this.props.data;
         // let nodeData = dummyData;
         let totApps = nodeData.length;
         /*
@@ -21,7 +20,7 @@ export default class TestComponent extends React.Component {
 
         let nodeWrapper = (totApps === 0) ? [] : [{
             "name": "allNodes",
-            "children": nodeData
+            "children": [...nodeData]
         }]
 
         return (
@@ -36,6 +35,10 @@ export default class TestComponent extends React.Component {
                         orientation='vertical'
                         textLayout={{ textAnchor: "middle", y: 0 }}
                         nodeSvgShape={{ shape: 'circle', shapeProps: { r: 20 } }}
+                        detailsPage={this.props.detailsPage}
+                        detailsPane={this.props.detailsPane}
+                        toggleeDetailsPage={this.props.toggleeDetailsPage}
+                        toggleDetailsPane={this.props.toggleDetailsPane}
                         styles={{
                             nodes: {
                                 node: {
@@ -45,7 +48,11 @@ export default class TestComponent extends React.Component {
                                 leafNode: { circle: { fill: "#DFF" } }
                             }
                         }}
-                        translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
+                        transitionDuration={(this.props.initialTreeRender > 1) ?  0 : 500}
+                        // translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
+                        translate={this.props.treeTranslate}
+                        scale={this.props.treeScale}
+                        handleTransitionTree={this.props.handleTransitionTree}
                     />
 
                 </div >

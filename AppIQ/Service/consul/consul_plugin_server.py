@@ -62,57 +62,6 @@ def get_agent_list(data_center):
         end_time = datetime.datetime.now()
         logger.info("time for get agent list : " + str(end_time - start_time))
 
-# this is not required now
-def get_datacenter_list():
-    """Returns all the datacenters
-    
-    return: {
-        agentIP: string
-        payload: { # TODO This should be list, not a dict of a list
-            datacenters: string list
-        } or {}
-        status_code: string: 200/300 
-        message: string
-    }
-    """
-    
-    logger.info('Get Datacenter List')
-    start_time = datetime.datetime.now()
-    datacenter_set = set()
-    datacenter_list = []
-
-    try:        
-        # get list of all agents
-        agent_list = get_agent_list('all')
-
-        for agent in agent_list:
-            consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol')) # TODO: all the 3 keys expected
-            
-            agent_datacenter = consul_obj.datacenter()
-            datacenter_set.add(agent_datacenter)
-
-        logger.debug("Final datacenters set : {}".format(datacenter_set))
-
-        datacenter_list = [{"datacenterName" : dc, "isViewEnabled" : True} for dc in datacenter_set]
-
-        return json.dumps({ # TODO: what to return here
-            "payload": { # TODO This should be list, not a dict of a list
-                'datacenters': datacenter_list
-            },
-            "status_code": "200", 
-            "message": "OK"
-            })
-    except Exception as e:
-        logger.exception("Could not fetch datacenter list, Error: {}".format(str(e)))
-        return json.dumps({
-            "payload": {}, 
-            "status_code": "300", 
-            "message": "Could not fetch datacenter list"
-            })
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.debug("Time for get_datacenter_list: " + str(end_time - start_time))
-
 
 def mapping(tenant, datacenter):
     """
@@ -299,11 +248,6 @@ def tree(tenant, datacenter):
 
         merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
 
-        # parse interface data
-        for ep_data in merged_data:
-            interface_list = [ get_iface_name(iface_name) for iface_name in ep_data['Interfaces']]
-            ep_data['Interfaces'] = interface_list
-
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
         response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
@@ -362,15 +306,15 @@ def details(tenant, datacenter):
         details_list = []
         for each in merged_data:
             epg_health = aci_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
-            ep_info = get_eps_info(each.get('dn'), each.get('IP'))
+            # ep_info = get_eps_info(each.get('dn'), each.get('IP'))
             details_list.append({
-                    'interface': ep_info.get('interface'),
+                    'interface': each.get('Interfaces'),
                     'endPointName': each.get('VM-Name'),
                     'ip': each.get('IP'),
                     'mac': each.get('CEP-Mac'),
-                    'learningSource': ep_info.get('learningSource'),
-                    'hostingServer': ep_info.get('hostingServer'),
-                    'reportingController': ep_info.get('reportingController'),
+                    'learningSource': each.get('learningSource'),
+                    'hostingServer': each.get('hostingServerName'),
+                    'reportingController': each.get('controllerName'),
                     'vrf': each.get('VRF'),
                     'bd': each.get('BD'),
                     'ap': each.get('AppProfile'),
@@ -430,37 +374,6 @@ def change_key(services):
                 'serviceChecks': service.get('service_checks')
             })
     return final_list
-
-
-def get_eps_info(dn, ip):
-    """Returns individual CEp's data
-    
-    TODO: this should go in APIC layer
-
-    return: {
-            interface: string
-            learningSource: string
-            hostingServer: string
-            reportingController: string
-        }
-    """
-
-    logger.info("EP detailed info for: {}, {}".format(dn, ip))
-    try:
-        aci_util_obj = aci_utils.ACI_Utils()
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(eq(fvCEp.ip,"'+ip+'"))&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
-        ep = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
-        ep_info = get_ep_info(ep[0].get("fvCEp").get("children"), aci_util_obj)
-        ep_attr = ep[0].get("fvCEp").get("attributes")
-
-        return {
-            'interface': ep_info.get('iface_name'),
-            'learningSource':ep_attr.get("lcC"),
-            'hostingServer': ep_info.get('hosting_server_name'),
-            'reportingController': ep_info.get('ctrlr_name')
-        }
-    except Exception as e:
-        logger.exception("Error in get_eps_info: "+str(e))
 
 
 def get_service_check(service_name, service_id, datacenter):
@@ -741,7 +654,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
 
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + mac_query_filter +')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
     elif mo_type == "epg":
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
+        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
     ep_info_list = []
@@ -750,7 +663,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
             ep_info_dict = dict()
 
             ep_children = ep.get("fvCEp").get("children")
-            ep_info = get_ep_info(ep_children, aci_util_obj)
+            ep_info = aci_util_obj.get_ep_info(ep_children)
             ep_attr = ep.get("fvCEp").get("attributes")
 
             mcast_addr = ep_attr.get("mcastAddr")
@@ -763,10 +676,10 @@ def get_children_ep_info(dn, mo_type, mac_list):
                 "mcast_addr" : mcast_addr,
                 "learning_source" : ep_attr.get("lcC"),
                 "encap" : ep_attr.get("encap"),
-                "ep_name" : ep_info.get("ep_name"),
-                "hosting_server_name" : ep_info.get("hosting_server_name"),
-                "iface_name" : ep_info.get("iface_name"),
-                "ctrlr_name" : ep_info.get("ctrlr_name")
+                "ep_name" : ep_info.get("VM-Name"),
+                "hosting_server_name" : ep_info.get("hostingServerName"),
+                "iface_name" : ep_info.get("Interfaces"),
+                "ctrlr_name" : ep_info.get("controllerName")
             }
             ep_info_list.append(ep_info_dict)
         return json.dumps({
@@ -785,83 +698,6 @@ def get_children_ep_info(dn, mo_type, mac_list):
         end_time =  datetime.datetime.now()
         logger.info("Time for get_children_ep_info: " + str(end_time - start_time))
     
-
-def get_ep_info(ep_children_list, aci_util_obj):
-
-    ep_info = {
-        "ctrlr_name" : "",
-        "hosting_server_name" : "",
-        "iface_name" : "",
-        "ep_name" : ""
-    }
-    
-    for ep_child in ep_children_list:
-        for child_name in ep_child:
-            if child_name == "fvRsHyper":
-                hyper_dn = ep_child["fvRsHyper"]["attributes"]["tDn"]
-                try:
-                    ctrlr_name = re.compile("\/ctrlr-\[.*\]-").split(hyper_dn)[1].split("/")[0]
-                except Exception as e:
-                    logger.exception("Exception in EpInfo: " + str(e))
-                    ctrlr_name = ""
-
-                hyper_query_string = 'query-target-filter=eq(compHv.dn,"' + hyper_dn + '")'
-                hyper_resp = aci_util_obj.get_all_mo_instances("compHv", hyper_query_string)
-
-                if hyper_resp.get("status"):
-                    if hyper_resp.get("payload"):
-                        hyper_name = hyper_resp["payload"][0]["compHv"]["attributes"]["name"]
-                    else:
-                        logger.error("Could not get Hosting Server Name using Hypervisor info")
-                        hyper_name = ""
-                else:
-                    hyper_name = ""
-                ep_info["ctrlr_name"] = ctrlr_name
-                ep_info["hosting_server_name"] = hyper_name
-
-            elif child_name == "fvRsCEpToPathEp":
-                name = ep_child["fvRsCEpToPathEp"]["attributes"]["tDn"]
-                if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    #The ethernet name is NOT available
-                    eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
-                    iface_name = eth_name
-                    ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    eth_name = name.split("/pathep-[")[1][0:-1]
-                    iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-                    ep_info["iface_name"] = iface_name
-                elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
-                    pod_number = name.split("/pod-")[1].split("/")[0]
-                    node_number = get_node_from_interface(name)
-                    eth_name = name.split("/pathep-[")[1][0:-1]
-                    iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-                    ep_info["iface_name"] = iface_name
-                else:
-                    logger.error("Different format of interface is found: {}".format(name))
-                    raise Exception("Different format of interface is found: {}".format(name))
-
-            elif child_name == "fvRsVm":
-                vm_dn = ep_child["fvRsVm"]["attributes"]["tDn"]
-
-                vm_query_string = 'query-target-filter=eq(compVm.dn,"' + vm_dn + '")'
-                vm_resp = aci_util_obj.get_all_mo_instances("compVm", vm_query_string)
-
-                if vm_resp.get("status"):
-                    if vm_resp.get("payload"):
-                        vm_name = vm_resp["payload"][0]["compVm"]["attributes"]["name"]
-                    else:
-                        logger.error("Could not get Name of EP using VM info")
-                        vm_name = ""
-                else:
-                    vm_name = ""
-                ep_info["ep_name"] = vm_name
-        
-    return ep_info
-
 
 def get_configured_access_policies(tn, ap, epg):
     start_time = datetime.datetime.now()
@@ -919,7 +755,7 @@ def get_configured_access_policies(tn, ap, epg):
             else:
                 logger.error("Attribute {} not found".format("accBndlGrp"))
                 raise Exception("Attribute {} not found".format("accBndlGrp"))
-            cap_dict["node"] = get_node_from_interface(cap_attr["pathEp"])
+            cap_dict["node"] = aci_util_obj.get_node_from_interface(cap_attr["pathEp"])
             if not cap_dict["node"]:
                 logger.error("Attribute {} not found".format("node"))
                 raise Exception("attribute node not found")
@@ -1195,59 +1031,6 @@ def get_filter_list(flt_dn, aci_util_obj):
     return flt_list
 
 
-def get_node_from_interface(interfaces):
-    """
-    This function extracts the node number from interface
-    """
-    node_number = ''
-    if isinstance(interfaces, list):
-        node_number = ''
-        for interface in interfaces:
-            if (interface.find("/protpaths") != -1):
-                if node_number != '':
-                    node_number += str(', ' + interface.split("/protpaths-")[1].split("/")[0])
-                else:
-                    node_number += str(interface.split("/protpaths-")[1].split("/")[0])
-            elif(interface.find("/paths-") != -1):
-                if node_number != '':
-                    node_number += str(', ' + interface.split("/paths-")[1].split("/")[0])
-                else:
-                    node_number += str(interface.split("/paths-")[1].split("/")[0])
-            elif(interface.find("/pathgrp-") != -1):
-                if node_number != '':
-                    node_number += str(', ' + interface.split("/pathgrp-")[1].split("/")[0])
-                else:
-                    node_number += str(interface.split("/pathgrp-")[1].split("/")[0])
-            else:
-                try:
-                    if re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface):
-                        if node_number != '':
-                            node_number += str(',' + re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface))
-                        else:
-                            node_number += str(re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interface))
-                    else:
-                        raise Exception("interface" + str(interface))
-                except Exception as e:
-                    node_number += ''
-                    logger.exception("Exception in get_node_from_interface:"+str(e))
-    elif isinstance(interfaces, str) or isinstance(interfaces, unicode):
-        node_number = ''
-        if (interfaces.find("/protpaths") != -1):
-            node_number += str(interfaces.split("/protpaths-")[1].split("/")[0])
-        elif(interfaces.find("/paths-") != -1):
-            node_number += str(interfaces.split("/paths-")[1].split("/")[0])
-        elif(interfaces.find("/pathgrp-") != -1):
-            node_number += str(interfaces.split("/pathgrp-")[1].split("/")[0])
-        else:
-            try:
-                if re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interfaces):
-                    node_number += str(re.search(r'\/[a-zA-Z]*path[a-zA-Z]*-(.*)',interfaces))
-                else:
-                    raise Exception("interface" + str(interfaces))
-            except Exception as e:
-                node_number += ''
-                logger.exception("Exception in get_node_from_interface:"+str(e))
-    return node_number
 
 
 def get_all_interfaces(interfaces):
@@ -1269,31 +1052,6 @@ def get_all_interfaces(interfaces):
     return interface_list
 
 
-def get_iface_name(name):
-    if re.match('topology\/pod-+\d+\/pathgrp-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        #The ethernet name is NOT available
-        eth_name = str(name.split("/pathgrp-[")[1].split("]")[0]) + "(vmm)"
-        iface_name = eth_name
-        return iface_name
-    elif re.match('topology\/pod-+\d+\/paths(-\d+)+?\/pathep-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        eth_name = name.split("/pathep-[")[1][0:-1]
-        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-        return iface_name
-    elif re.match('topology\/pod-+\d+\/protpaths(-\d+)+?\/pathep-.*',name):
-        pod_number = name.split("/pod-")[1].split("/")[0]
-        node_number = get_node_from_interface(name)
-        eth_name = name.split("/pathep-[")[1][0:-1]
-        iface_name = "Pod-" + pod_number + "/Node-" + str(node_number) + "/" + eth_name
-        return iface_name
-    else:
-        logger.error("Different format of interface is found: {}".format(name))
-        raise Exception("Different format of interface is found: {}".format(name))
-
-
 def read_creds():
     try:
         start_time = datetime.datetime.now()
@@ -1309,7 +1067,7 @@ def read_creds():
 
                 for agent in creds:
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                    status = consul_obj.check_connection()
+                    status, message = consul_obj.check_connection()
                     agent['status'] = status
                     if status:
                         datacenter_name = consul_obj.datacenter()
@@ -1328,7 +1086,7 @@ def read_creds():
                 return json.dumps({"payload": creds, "status_code": "200", "message": "OK"})
         else:
             logger.debug("credential file not found.")
-            return json.dumps({"payload": [], "status_code": "200", "message": "OK"})
+            return json.dumps({"payload": [], "status_code": "500", "message": "Internal Server Error"})
     except Exception as e:
         logger.exception("Error in read credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
@@ -1356,7 +1114,7 @@ def write_creds(agent_list):
         for agent in agent_list:
             agent['timestamp'] = int(time.time())
             consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-            status = consul_obj.check_connection()
+            status, message = consul_obj.check_connection()
             agent['status'] = status
             if status:
                 datacenter_name = consul_obj.datacenter()
@@ -1366,6 +1124,8 @@ def write_creds(agent_list):
                     agent['datacenter'] = "-"
             else:
                 agent['datacenter'] = "-"
+                agent['message'] = message
+
         logger.debug("New agent data: " + str(agent_list))
 
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
@@ -1375,8 +1135,13 @@ def write_creds(agent_list):
             creds += new_agent_list
 
             with open(consul_credential_file_path, 'w') as fwrite:
-                json.dump(creds, fwrite)      
-            return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
+                json.dump(creds, fwrite)
+
+            if not [x.get('message', '') for x in new_agent_list if x.get('message', '')]:
+                return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
+            else:
+                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": str(new_agent_list[0].get('message', ''))})
+
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
             return json.dumps({"payload": new_agent_list, "status_code": "300", "message": "Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists."})
@@ -1412,6 +1177,7 @@ def update_creds(update_input):
         ip_port_list = [(agent.get('ip'), agent.get('port')) for agent in creds]
         ip_port_list.remove((old_data.get('ip'), old_data.get('port')))
 
+        message = None
         if (new_data.get('ip'), new_data.get('port')) not in ip_port_list:
             for agent in creds:
                 if old_data.get("protocol") == agent.get("protocol") and old_data.get("ip") == agent.get("ip") and old_data.get("port") == agent.get("port"):
@@ -1422,7 +1188,7 @@ def update_creds(update_input):
                     agent['timestamp'] = int(time.time())
                     response.update(agent)
                     consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-                    status = consul_obj.check_connection()
+                    status, message = consul_obj.check_connection()
                     response["status"] = status
                     if status:
                         datacenter_name = consul_obj.datacenter()
@@ -1441,7 +1207,12 @@ def update_creds(update_input):
 
             with open(consul_credential_file_path, 'w') as fwrite:
                 json.dump(creds, fwrite)
-            return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
+
+            if not message:
+                return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
+            else:
+                return json.dumps({"payload": response, "status_code": "300", "message": message})
+
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
             return json.dumps({"payload": response, "status_code": "300", "message": "Agent " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists."})
