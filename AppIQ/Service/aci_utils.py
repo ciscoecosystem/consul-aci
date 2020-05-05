@@ -341,18 +341,23 @@ class ACI_Utils(object):
 
             for ep in ep_resp:
                 ep_attr = ep['fvCEp']['attributes']
-                fviplist = []
+                ip_set = set()
+                mac_set = set()
                 is_ip_list = False
                 for eachip in ep['fvCEp']['children']:
                     # If first key is 'fvIp' than add IP to list otherwise add mac address
                     if eachip.keys()[0] == 'fvIp':
                         is_ip_list = True
-                        fviplist.append(str(eachip['fvIp']['attributes']['addr']))
+                        ip_set.add(str(eachip['fvIp']['attributes']['addr']))
 
-                if not is_ip_list:
-                    fviplist.append(str(ep['fvCEp']['attributes']['ip']))
+                # Below if condition adds all valit ip and mac to the list 
+                cep_ip = str(ep['fvCEp']['attributes']['ip'])
+                if cep_ip != '0.0.0.0' and not is_ip_list:
+                    ip_set.add(cep_ip)
+                else:
+                    mac_set.add(ep['fvCEp']['attributes']['mac'])
 
-                if fviplist: 
+                if ip_set or mac_set:
                     dn_str = str(ep_attr['dn'])
                     dn_split = dn_str.split("/", 5)
                     bd_str = dn_split[0] + '/' + dn_split[1] + '/' + dn_split[2] + '/' + dn_split[3]
@@ -363,7 +368,7 @@ class ACI_Utils(object):
                     ct_data_list = self.apic_fetchContract(bd_str, apic_token=apic_token)
                     ct_data_list = self.parse_contracts(ct_data_list)
 
-                    for ip in fviplist:
+                    for ip_mac in list(ip_set) + list(mac_set):
                         
                         ep_dict = {
                             "AppProfile": '',
@@ -382,8 +387,8 @@ class ACI_Utils(object):
                             'learningSource': ep.get('fvCEp',{}).get('attributes',{}).get('lcC')
                         }
 
-                        if "." in ip:
-                            ep_dict.update({"IP": str(ip)})
+                        if "." in ip_mac:
+                            ep_dict.update({"IP": str(ip_mac)})
 
                         splitString = dn_str.split("/")
                         for eachSplit in splitString:
