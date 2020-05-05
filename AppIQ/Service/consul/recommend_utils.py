@@ -73,6 +73,12 @@ def determine_recommendation(extract_ap_epgs, common_eps):
                 # Compare count of 'EPG' for an 'AP'
                 main_count = extract_ap_epgs[ap_main][epg_main]
                 dup_count = extract_ap_epgs[ap_dup][epg_dup]
+                # recommendation logic
+                #     first compare the number of EPG in an application profile in which the EP belong
+                #     recommend the EP with highest EPG count
+                #     if the count is same then consider the count of EP in EPG in which the EP belong
+                #     recommend the EP with highest EP count
+                #     If both of the counts are same then the EP with fvIP is given priority
                 
                 if main_count > dup_count:
                     recommendation_list.append([each[key],each['dn'],'Yes',key])
