@@ -354,7 +354,7 @@ class ACI_Utils(object):
                 cep_ip = str(ep['fvCEp']['attributes']['ip'])
                 if cep_ip != '0.0.0.0' and not is_ip_list:
                     ip_set.add(cep_ip)
-                else:
+                elif not is_ip_list:
                     mac_set.add(ep['fvCEp']['attributes']['mac'])
 
                 if ip_set or mac_set:
