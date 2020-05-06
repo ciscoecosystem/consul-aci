@@ -648,9 +648,6 @@ class ACI_Utils(object):
                     if not vm_name:
                         vm_name = 'EP-'+ default_ep_name
                     ep_info.update({'VM-Name': str(vm_name)})
-                else:
-                    ep_info.update({'VMM-Domain':'None'})
-                    ep_info.update({'VM-Name':'EP-'+ default_ep_name})
         ep_info.update({"Interfaces": path_list})
         return ep_info
 
