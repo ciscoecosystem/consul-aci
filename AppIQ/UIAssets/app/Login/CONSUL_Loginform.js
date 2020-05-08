@@ -1,26 +1,24 @@
 import React from 'react';
-import './style.css';
 import {Table,Button, Icon, Input, Label, Loader, IconButton} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
-import { PROFILE_NAME } from '../../../../../constants.js';
+import { PROFILE_NAME, QUERY_URL } from '../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
-
+import './style.css';
 
 // Error messages
-const FILL_DETAILS = 'Please fill the details';
 const CANT_DELETE_AGENT_AS_SOME_BEEN_WRITTEN = "An agent is being written, can't process this!";
-// const QUERY_URL="http://127.0.0.1:5000/graphql.json";
-const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
 
 const ipRegex = RegExp('((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))');
 const dnsRegex = RegExp('^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$');
 const portRegex = RegExp('^[0-9]*$')
 
+/* for dummy listing
 const dummylist = [
     {"protocol" : "http", "ip" : "10.0.0.0", "port" : 8050, "token" : "lnfeialilsacirvjlnlaial", "status" : true, "datacenter" : "datacenter1"},
     {"protocol" : "https", "ip" : "10.0.0.1", "port" : 8051, "token" : "lnfeialilsacirvjlglaial", "status" : false, "datacenter" : "datacenter1"},
     {"protocol" : "http", "ip" : "10.0.0.2", "port" : 8051, "token" : "lnfeialilsacirvjhnlaial", "status" : true, "datacenter" : "datacenter2"}
 ]
+*/
 
 function getCookieVal(offset) {
     var endstr = document.cookie.indexOf(";", offset);
@@ -56,7 +54,6 @@ function getCookie(name) {
 * @return {string} The response received from portal
 */
 function httpGet(theUrl, payload) {
-        console.log("In httpget request.......");
     window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
     window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
     var xmlHttp = new XMLHttpRequest();
@@ -102,7 +99,6 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     componentDidMount() {
-        console.log("Component Did mount loginform");
         this.loadAgentList();
     }
 
@@ -154,7 +150,6 @@ class CONSUL_LoginForm extends React.Component {
         let isDetail = false;
         try {
             let checkData = httpGet(QUERY_URL, payload);
-            console.log("== > data", checkData );
 
             let credsData = JSON.parse(JSON.parse(checkData).data.ReadCreds.creds);
             if(credsData.status_code == "200") {
@@ -188,7 +183,6 @@ class CONSUL_LoginForm extends React.Component {
 
     // make sure everytim it updates
     shouldComponentUpdate(nextProps, nextState){
-        console.log("Shouldcomponentupdate ", nextProps, nextState);
         return true;
     }
 
@@ -197,12 +191,10 @@ class CONSUL_LoginForm extends React.Component {
             console.log("no change");
             return;
         }
-        console.log("updateIndex = ", updateIndex );
         let { isNewAgentAdded, details } = this.state;
 
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
-        console.log("agentDetail", agentDetail);
 
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
@@ -239,7 +231,6 @@ class CONSUL_LoginForm extends React.Component {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     let json = JSON.parse(xhr.responseText);
-                    console.log("response json ", json);
 
                     if ('errors' in json) {
                         thiss.notify("Could not Fetch. The query may be invalid.");
@@ -248,12 +239,10 @@ class CONSUL_LoginForm extends React.Component {
                                 ('UpdateCreds' in json.data && 'creds' in json.data.UpdateCreds )
                     ) {
                         let resp = (isNewAgentAdded) ? JSON.parse(json.data.WriteCreds.creds) : JSON.parse(json.data.UpdateCreds.creds) ;
-                        console.log("Reading data");
+
                         if(resp.status_code == 200) {
-                            console.log("Its 200; alling readagentCalls");
 
                             if (isNewAgentAdded){ // new agent added
-                                console.log("In write response ", resp);
                                 if (resp.payload && resp.payload.length > 0){
                                     details[updateIndex] = resp.payload[0];
                                     thiss.setState({ details });
@@ -269,8 +258,6 @@ class CONSUL_LoginForm extends React.Component {
                                 }
 
                             } else { // updated an agent
-                                // thiss.notify("Agent updated successfully", true);
-
                                 if (resp.payload){
                                     details[updateIndex] = resp.payload;
                                     thiss.setState({ details });
@@ -287,7 +274,7 @@ class CONSUL_LoginForm extends React.Component {
                             }
                         }
                         else if (resp.status_code == 300) {
-                            console.log("Its 300 and error");
+
                             thiss.abortUpdateAgentAction();
                             try {
                             thiss.notify(resp.message)
@@ -296,24 +283,20 @@ class CONSUL_LoginForm extends React.Component {
                             }
                         }
                         else if (resp.status_code == 301) { // detail updated but some server error 
-                                console.log("In 301 write response ", resp);
-                                
+
                                 thiss.notify(resp.message); // error message
 
                                 if (isNewAgentAdded){ // new agent added
-                                    console.log(" writing  response ", resp.payload);
                                     if (resp.payload && resp.payload.length > 0){
                                         details[updateIndex] = resp.payload[0];
                                         thiss.setState({ details });
-    
+
                                     } else {
                                         thiss.abortUpdateAgentAction();
                                         thiss.notify("Some technical glitch!");
                                     }
-    
+
                                 } else { // updated an agent
-                                    // thiss.notify("Agent updated successfully", true);
-                                    console.log(" updating  response ", resp.payload);
                                     if (resp.payload){
                                         details[updateIndex] = resp.payload;
                                         thiss.setState({ details });
@@ -359,7 +342,6 @@ class CONSUL_LoginForm extends React.Component {
     removeAgentCall(agentDetail, deleteIndex) {
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
-        console.log("agentDetail", agentDetail);
 
         let { details } = this.state;
 
@@ -369,10 +351,8 @@ class CONSUL_LoginForm extends React.Component {
         let payload = { query: `query{
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
-        console.log("==> patload ", payload);
 
         let xhr = new XMLHttpRequest();
-        // let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, false);
@@ -382,7 +362,6 @@ class CONSUL_LoginForm extends React.Component {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     let json = JSON.parse(xhr.responseText);
-                    console.log("response json ", json);
 
                     if ('errors' in json) {
                         thiss.notify("Could not Fetch. The query may be invalid.");
@@ -390,9 +369,6 @@ class CONSUL_LoginForm extends React.Component {
                     else if ('message' in json.data.DeleteCreds) {
                         let resp = JSON.parse(json.data.DeleteCreds.message)
                         if(resp.status_code == 200) {
-                            console.log("Its 200; working delete call");
-                            // thiss.notify("Agent "+agentDetail.ip+" removed successfully", true);
-
                             details.splice(deleteIndex, 1);
                             thiss.setState({ details });
                         }
@@ -402,7 +378,7 @@ class CONSUL_LoginForm extends React.Component {
                     }
                     else {
                         thiss.notify("Something went wrong!")
-                        console.log("DelCrefs: response structure invalid")
+                        console.error("DeleteCreds: response structure invalid")
                     }
                 }
                 else {
@@ -445,7 +421,6 @@ class CONSUL_LoginForm extends React.Component {
 
     // edit an Agent
     editAgent(editAgentIndex) {
-        console.log("editeagent");
         this.setState({
             editAgentIndex,
             editDetailCopy: Object.assign({}, this.state.details[editAgentIndex])
@@ -475,11 +450,10 @@ class CONSUL_LoginForm extends React.Component {
         let { details } = this.state;
         let updatingAgentDetail = details[index];
         let { ip, port } = updatingAgentDetail
-        console.log("update agent", updatingAgentDetail);
 
         if (!updatingAgentDetail.protocol) { this.notify("Protocol required."); return; }
         if (!updatingAgentDetail.ip) { this.notify("IP / DNS required."); return; }
-        // if doesnt match ip or dns, return 
+        // if doesnt match ip or dns, return
         if (!(ipRegex.test(ip) || dnsRegex.test(ip))){
             this.notify("IP / DNS invalid."); return;
         }
@@ -493,7 +467,6 @@ class CONSUL_LoginForm extends React.Component {
         for (let ind=0; ind < details.length; ind++) {
             if (index === ind) continue;
             if (details[ind].ip === updatingAgentDetail.ip && parseInt(details[ind].port) === parseInt(updatingAgentDetail.port) ){
-                console.log("same as @", ind);
                 this.notify("Agent already exists.")
                 return;
             }
@@ -515,7 +488,6 @@ class CONSUL_LoginForm extends React.Component {
     }
 
     addAgent() {
-        console.log("Add agent");
         // Scroll to top
         resetScrollInsideTable(0);
 

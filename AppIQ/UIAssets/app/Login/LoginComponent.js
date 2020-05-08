@@ -15,17 +15,17 @@ class LoginComponent extends React.Component {
             const rx = /Tenants:(.*)\|/g;
             const topUrl = window.top.location;
             const tenantNames = rx.exec(topUrl);
-                 
+
             this.tenantName = tenantNames[1];
-        } catch(err) {
+        } catch (err) {
             console.error("error in getting tenants ", err);
         }
     }
 
     render() {
         return (
-            <div> 
-                <CONSUL_LoginForm tenantName={this.tenantName}/>
+            <div>
+                <CONSUL_LoginForm tenantName={this.tenantName} />
             </div>
         )
     }
