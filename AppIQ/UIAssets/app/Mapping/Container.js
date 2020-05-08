@@ -1,7 +1,7 @@
 import React from 'react'
 import Header from '../Header'
 import ClusterList from './ClusterList'
-import { PROFILE_NAME } from '../../constants.js';
+import { PROFILE_NAME, QUERY_URL } from '../../constants.js';
 import './style.css'
 
 function getCookieVal(offset) {
@@ -53,29 +53,29 @@ class Container extends React.Component {
         let payload = { query: 'query{Mapping(tn:"' + result['tn'] + '",datacenter:"' + result[PROFILE_NAME] + '"){mappings}}' }
 
         let mappings_json_data = {
-            target_cluster : [],
-            source_cluster : []
+            target_cluster: [],
+            source_cluster: []
         }
 
         try {
-            let main_data_raw = this.httpGet(document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json", payload);
+            let main_data_raw = this.httpGet(QUERY_URL, payload);
 
             let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.Mapping.mappings)
 
-            if('errors' in JSON.parse(main_data_raw)) {
+            if ('errors' in JSON.parse(main_data_raw)) {
                 // Error related to query
                 localStorage.setItem('message', JSON.stringify(JSON.parse(main_data_raw).errors));
-                const message_set = true;
                 window.location.href = "index.html?gqlerror=1";
             }
             else {
-                if(rawJsonData.status_code != "200") {
+                if (rawJsonData.status_code != "200") {
                     // Problem with backend fetching data
-                    const message = {"errors": [{
-                        "message": rawJsonData.message
-                    }]}
+                    const message = {
+                        "errors": [{
+                            "message": rawJsonData.message
+                        }]
+                    }
                     localStorage.setItem('message', JSON.stringify(message.errors));
-                    const message_set = true;
                     window.location.href = "index.html?gqlerror=1";
                 }
                 else {
@@ -85,20 +85,22 @@ class Container extends React.Component {
                 }
             }
         }
-        catch(e) {
+        catch (e) {
             // Problem fetching data
-            if(typeof message_set == 'undefined') {
-                const message = {"errors": [{
+            if (typeof message_set == 'undefined') {
+                const message = {
+                    "errors": [{
                         "message": "Error while fetching data for Mappings."
-                      }]}
+                    }]
+                }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
             window.location.href = "index.html?gqlerror=1";
-        };
+        }
 
         let sourceJsonData = mappings_json_data.source_cluster;
         let targetJsonData = mappings_json_data.target_cluster;
-        
+
         sourceJsonData.forEach(item => {
             if ("ipaddress" in item) {
                 item["macaddress"] = "";
@@ -129,7 +131,7 @@ class Container extends React.Component {
 
             return newObject
         });
-        
+
         targetJsonData = newTargetJsonData;
 
         this.state = {
@@ -137,7 +139,7 @@ class Container extends React.Component {
             "targetClusterList": targetJsonData,
             "sourceSelected": null,
             "targetSelected": null,
-            datacenterName : result[PROFILE_NAME]
+            datacenterName: result[PROFILE_NAME]
         };
 
         this.insertIntoTarget = this.insertIntoTarget.bind(this);
@@ -176,11 +178,11 @@ class Container extends React.Component {
             return;
         }
 
-        let newIPaddress = newItem.ipaddress? newItem.ipaddress: '';
+        let newIPaddress = newItem.ipaddress ? newItem.ipaddress : '';
         let newDomainName = newItem.domainName;
-        let newMacaddress = newItem.macaddress? newItem.macaddress: '';
+        let newMacaddress = newItem.macaddress ? newItem.macaddress : '';
 
-        let newObjectString = '{"ipaddress" : "' + newIPaddress + '","macaddress" : "'+ newMacaddress +'" ,"domains" : [{"domainName" : "' + newDomainName + '","recommended" : true}]}'
+        let newObjectString = '{"ipaddress" : "' + newIPaddress + '","macaddress" : "' + newMacaddress + '" ,"domains" : [{"domainName" : "' + newDomainName + '","recommended" : true}]}'
         const newObject = JSON.parse(newObjectString);
 
         //check if element already exist
@@ -271,13 +273,11 @@ class Container extends React.Component {
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
         let xhr = new XMLHttpRequest();
+
         let mappingList = JSON.stringify(this.state.targetClusterList);
-        // let url = document.location.origin + "/appcenter/Cisco/AppIQ/saveMapping.json?appId=" + encodeURIComponent(this.props.appId) + "&data=" + encodeURIComponent(mappingList);
-        let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json"
-        let payload = { query: 'query{SaveMapping(datacenter:"' + this.state.datacenterName + '",tn:"' + this.props.tenantName + '",data:"' + mappingList.replace(/"/g, '\'') + '"){savemapping}}'}
-        console.log("Payload");
-        console.log(payload);
-        xhr.open("POST", url, false);
+        let payload = { query: 'query{SaveMapping(datacenter:"' + this.state.datacenterName + '",tn:"' + this.props.tenantName + '",data:"' + mappingList.replace(/"/g, '\'') + '"){savemapping}}' }
+
+        xhr.open("POST", QUERY_URL, false);
         xhr.setRequestHeader("Content-type", "application/json");
         xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
         xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
@@ -307,39 +307,39 @@ class Container extends React.Component {
 
         return (
             <div>
-                <Header text={this.props.headertext} applinktext={this.props.applinktext} instanceName={headerInstanceName}/>
-            <div className="container">
-                <div className="cluster-list">
-                    <ClusterList type="source" listData={this.state.sourceClusterList} targetList={existingTargetList} onSelectionChanged={this.sourceSelectionChanged} selectedItem={this.state.sourceSelected} />
-                </div>
+                <Header text={this.props.headertext} applinktext={this.props.applinktext} instanceName={headerInstanceName} />
+                <div className="container">
+                    <div className="cluster-list">
+                        <ClusterList type="source" listData={this.state.sourceClusterList} targetList={existingTargetList} onSelectionChanged={this.sourceSelectionChanged} selectedItem={this.state.sourceSelected} />
+                    </div>
 
-                <div className="control-button-panel">
-                    <button onClick={this.insertIntoTarget} className={addEnabled} style={{ "backgroundColor": "#6ABE45", "display": "inline-block", "height": "2em", "line-height": "1.5em", "padding-top": "0.1em", "padding-left": "1%", "border-radius": "15px" }}>Add <svg class="svg-icon" viewBox="0 -3 20 20">
+                    <div className="control-button-panel">
+                        <button onClick={this.insertIntoTarget} className={addEnabled} style={{ "backgroundColor": "#6ABE45", "display": "inline-block", "height": "2em", "line-height": "1.5em", "padding-top": "0.1em", "padding-left": "1%", "border-radius": "15px" }}>Add <svg class="svg-icon" viewBox="0 -3 20 20">
                             <path fill="none" d="M1.729,9.212h14.656l-4.184-4.184c-0.307-0.306-0.307-0.801,0-1.107c0.305-0.306,0.801-0.306,1.106,0
                             l5.481,5.482c0.018,0.014,0.037,0.019,0.053,0.034c0.181,0.181,0.242,0.425,0.209,0.66c-0.004,0.038-0.012,0.071-0.021,0.109
                             c-0.028,0.098-0.075,0.188-0.143,0.271c-0.021,0.026-0.021,0.061-0.045,0.085c-0.015,0.016-0.034,0.02-0.051,0.033l-5.483,5.483
                             c-0.306,0.307-0.802,0.307-1.106,0c-0.307-0.305-0.307-0.801,0-1.105l4.184-4.185H1.729c-0.436,0-0.788-0.353-0.788-0.788
                             S1.293,9.212,1.729,9.212z"></path>
                         </svg>
-                    </button>
-                    <br /> <br />
-                    <button onClick={this.removeFromTarget} className={removeEnabled} style={{ "backgroundColor": "Transparent", "color": "#5092fb", "whiteSpace": "nowrap", "display": "inline-block", "height": "2em", "line-height": "1.5em", "padding-top": "0.1em", "padding-left": "1%", "border-radius": "15px" }}><svg class="svg-iconr" viewBox="0 -3 20 20">
+                        </button>
+                        <br /> <br />
+                        <button onClick={this.removeFromTarget} className={removeEnabled} style={{ "backgroundColor": "Transparent", "color": "#5092fb", "whiteSpace": "nowrap", "display": "inline-block", "height": "2em", "line-height": "1.5em", "padding-top": "0.1em", "padding-left": "1%", "border-radius": "15px" }}><svg class="svg-iconr" viewBox="0 -3 20 20">
                             <path fill="none" d="M18.271,9.212H3.615l4.184-4.184c0.306-0.306,0.306-0.801,0-1.107c-0.306-0.306-0.801-0.306-1.107,0
                             L1.21,9.403C1.194,9.417,1.174,9.421,1.158,9.437c-0.181,0.181-0.242,0.425-0.209,0.66c0.005,0.038,0.012,0.071,0.022,0.109
                             c0.028,0.098,0.075,0.188,0.142,0.271c0.021,0.026,0.021,0.061,0.045,0.085c0.015,0.016,0.034,0.02,0.05,0.033l5.484,5.483
                             c0.306,0.307,0.801,0.307,1.107,0c0.306-0.305,0.306-0.801,0-1.105l-4.184-4.185h14.656c0.436,0,0.788-0.353,0.788-0.788
                             S18.707,9.212,18.271,9.212z"></path>
-                    </svg> Remove
+                        </svg> Remove
                     </button>
-                </div>
+                    </div>
 
-                <div className="cluster-list">
-                    <ClusterList type="target" listData={this.state.targetClusterList} onSelectionChanged={this.targetSelectionChanged} selectedItem={this.state.targetSelected} />
-                    <div>
-                        <button className="submit-button" onClick={this.saveMapping}>Save</button>
+                    <div className="cluster-list">
+                        <ClusterList type="target" listData={this.state.targetClusterList} onSelectionChanged={this.targetSelectionChanged} selectedItem={this.state.targetSelected} />
+                        <div>
+                            <button className="submit-button" onClick={this.saveMapping}>Save</button>
+                        </div>
                     </div>
                 </div>
-            </div>
             </div>
         )
     }
