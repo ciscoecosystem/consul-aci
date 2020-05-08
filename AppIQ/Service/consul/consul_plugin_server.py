@@ -652,7 +652,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
             mac_query_filter_list.append('eq(fvCEp.mac,"' + mac + '")')
         mac_query_filter = ",".join(mac_query_filter_list)
 
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + mac_query_filter +')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsVm'
+        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + mac_query_filter +')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
     elif mo_type == "epg":
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
 
@@ -1140,7 +1140,7 @@ def write_creds(agent_list):
             if not [x.get('message', '') for x in new_agent_list if x.get('message', '')]:
                 return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
             else:
-                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": str(new_agent_list[0].get('message', ''))})
+                return json.dumps({"payload": new_agent_list, "status_code": "301", "message": str(new_agent_list[0].get('message', ''))})
 
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
@@ -1211,7 +1211,7 @@ def update_creds(update_input):
             if not message:
                 return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
             else:
-                return json.dumps({"payload": response, "status_code": "300", "message": message})
+                return json.dumps({"payload": response, "status_code": "301", "message": message})
 
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")

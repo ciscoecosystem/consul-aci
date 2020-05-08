@@ -95,6 +95,9 @@ class Cosnul(object):
         except requests.exceptions.ConnectTimeout as e:
             logger.exception('ConnectTimeout Exception in Consul check connection: {}'.format(str(e)))
             return self.connected, "Connection Timeout Error"
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException in Consul check connection: {}'.format(str(e)))
+            return self.connected, "Connection failed! Please verify IP/DNS:Port."
         except Exception as e:
             logger.exception('Exception in Consul check connection: {}'.format(str(e)))
             return self.connected, None
