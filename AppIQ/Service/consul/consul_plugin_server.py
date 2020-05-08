@@ -1140,7 +1140,7 @@ def write_creds(agent_list):
             if not [x.get('message', '') for x in new_agent_list if x.get('message', '')]:
                 return json.dumps({"payload": new_agent_list, "status_code": "200", "message": "OK"})
             else:
-                return json.dumps({"payload": new_agent_list, "status_code": "300", "message": str(new_agent_list[0].get('message', ''))})
+                return json.dumps({"payload": new_agent_list, "status_code": "301", "message": str(new_agent_list[0].get('message', ''))})
 
         else:
             logger.error("Agent " + agent_list[0].get('ip') + ":" + str(agent_list[0].get('port')) + " already exists.")
@@ -1211,7 +1211,7 @@ def update_creds(update_input):
             if not message:
                 return json.dumps({"payload": response, "status_code": "200", "message": "OK"})
             else:
-                return json.dumps({"payload": response, "status_code": "300", "message": message})
+                return json.dumps({"payload": response, "status_code": "301", "message": message})
 
         else:
             logger.error("Agent with " + new_data.get('ip') + ":" + str(new_data.get('port')) + " already exists.")
