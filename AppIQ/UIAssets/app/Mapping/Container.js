@@ -1,5 +1,5 @@
 import React from 'react'
-import Header from '../Header'
+import Header from './Header'
 import ClusterList from './ClusterList'
 import { PROFILE_NAME, QUERY_URL } from '../../constants.js';
 import './style.css'
