@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import Header from './Header'
-import DetailsTable from './DetailsTable'
-import './style.css'
 import DataTable from "./DataTable"
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD } from "../../constants.js";
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL } from "../../constants.js";
+import './style.css'
 
 function getCookieVal(offset) {
     var endstr = document.cookie.indexOf(";", offset);
@@ -32,7 +31,6 @@ function getCookie(name) {
     return null;
 }
 
-var params_appid;
 var params_tn;
 var details_raw;
 
@@ -55,10 +53,8 @@ class Container extends Component {
         this.getData = this.getData.bind(this);
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
-    
+
         params_tn = result['tn'];
-
-
 
         this.state = {
             "data": [],
@@ -70,7 +66,7 @@ class Container extends Component {
         this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
         this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
 
-        let reloader = setInterval(this.reload, 30000);
+        setInterval(this.reload, 30000);
     }
     componentDidMount() {
         this.fetchData();
@@ -80,10 +76,7 @@ class Container extends Component {
         /**
         * Use this.httpGet to get data from REST API
         */
-       let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
-        // let payload = {
-        //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
-        // }
+        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
 
         details_raw = "[]";
         try {
@@ -94,7 +87,6 @@ class Container extends Component {
             if ('errors' in main_data_json) {
                 // Error related to query
                 localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                const message_set = true;
                 window.location.href = "index.html?gqlerror=1";
             }
             else {
@@ -106,7 +98,6 @@ class Container extends Component {
                         }]
                     }
                     localStorage.setItem('message', JSON.stringify(message.errors));
-                    const message_set = true;
                     window.location.href = "index.html?gqlerror=1";
                 }
                 else {
@@ -154,77 +145,68 @@ class Container extends Component {
     }
 
     fetchData() {
-    
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
-        // let payload = {
-        //     query: 'query{Details(tn:"' + result['tn'] + '",appId:"' + result['appId'] + '"){details}}'
-        // }
-        console.log(payload);
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
-    
-        let xhr = new XMLHttpRequest();
-        let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
-        try {
-          xhr.open("POST", url, true);
-    
-          xhr.setRequestHeader("Content-type", "application/json");
-          xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-          xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-    
-          xhr.onreadystatechange = () => {
-            
-            console.log("Sending req");
-            if (xhr.readyState == 4) {
-              if (xhr.status == 200) {
-                let json = JSON.parse(xhr.responseText);
 
-                console.log(json);
-                if ("errors" in json) {
-                  // Error related to query
-                  localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                  const message_set = true;
-                  window.location.href = "index.html?gqlerror=1";
-                } else {
-                  // Response successful
-                  let response = JSON.parse(json.data.Details.details)
-    
-                  if (response.status_code != "200") {
-                    // Problem with backend fetching data
-                    const message = {
-                        "errors": [{
-                            "message": response.message
-                        }]
+        let xhr = new XMLHttpRequest();
+        try {
+            xhr.open("POST", QUERY_URL, true);
+
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+            xhr.onreadystatechange = () => {
+
+                console.log("Sending req");
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        let json = JSON.parse(xhr.responseText);
+
+                        console.log(json);
+                        if ("errors" in json) {
+                            // Error related to query
+                            localStorage.setItem('message', JSON.stringify(main_data_json.errors));
+                            window.location.href = "index.html?gqlerror=1";
+                        } else {
+                            // Response successful
+                            let response = JSON.parse(json.data.Details.details)
+
+                            if (response.status_code != "200") {
+                                // Problem with backend fetching data
+                                const message = {
+                                    "errors": [{
+                                        "message": response.message
+                                    }]
+                                }
+                                localStorage.setItem('message', JSON.stringify(message.errors));
+                                window.location.href = "index.html?gqlerror=1";
+                            } else {
+                                // Success
+                                headerInstanceName = response.instanceName;
+
+                                this.setState({
+                                    "data": response.payload
+                                });
+                                this.setState({ loading: false })
+                            }
+                        }
+                    } else {
+                        // Status code of XHR request not 200
+                        if (typeof message_set == 'undefined') {
+                            const message = {
+                                "errors": [{
+                                    "message": "Error while fetching data for details."
+                                }]
+                            }
+                            localStorage.setItem('message', JSON.stringify(message.errors));
+                        }
+                        window.location.href = "index.html?gqlerror=1";
                     }
-                    localStorage.setItem('message', JSON.stringify(message.errors));
-                    const message_set = true;
-                    window.location.href = "index.html?gqlerror=1";
-                  } else {
-                    // Success
-                    headerInstanceName = response.instanceName;
-                  
-                    
-                    this.setState({
-                        "data": response.payload
-                    });
-                    this.setState({ loading: false })
-                  }
                 }
-              } else {
-                // Status code of XHR request not 200
-                  if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for details."
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
-            window.location.href = "index.html?gqlerror=1";
-              }
-            }
-          };
-          xhr.send(JSON.stringify(payload));
+            };
+            xhr.send(JSON.stringify(payload));
         } catch (except) {
             if (typeof message_set == 'undefined') {
                 const message = {
@@ -236,16 +218,15 @@ class Container extends Component {
             }
             window.location.href = "index.html?gqlerror=1";
         }
-        
-      }
+    }
 
     handleBackClick() {
         window.location.href = "index.html";
     }
 
-    CONSUL_setExpand(index) {    
+    CONSUL_setExpand(index) {
         let { expanded } = this.state;
-        let newExpanded = Object.assign( expanded, { [ index ]: (expanded[index] === true) ? false : true} )
+        let newExpanded = Object.assign(expanded, { [index]: (expanded[index] === true) ? false : true })
         this.setState({ expanded: newExpanded })
     }
 
@@ -254,40 +235,29 @@ class Container extends Component {
     }
 
     reload(loading) {
-        if(!this.state.loading){
-        if(loading){
-            this.setState({loading:true})
-        }
-        this.fetchData();
+        if (!this.state.loading) {
+            if (loading) {
+                this.setState({ loading: true })
+            }
+            this.fetchData();
         }
     }
 
     render() {
-        console.log("[render] Container"  );
+        console.log("[render] Container");
         let title = " | Details";
         let apptext = " " + result[PROFILE_NAME];
-
-        let noEndpointsElement = null;
-        if (this.state.data.length) {
-            noEndpointsElement = <div></div>
-        } else {
-            noEndpointsElement = <div className="no-element-found">No endpoints found for the given Application in the given Tenant.</div>
-        }
-
 
         return (
             <div>
                 <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} />
                 <div className="scroll">
-                    {/* <DetailsTable data={this.state.data} appId={params_appid} tn={params_tn} onReload={this.reload} /> */}
-                    {/* <button className="button view-button" onClick={this.handleBackClick}> Back </button> */}
-                    {/* {noEndpointsElement} */}
-                    <DataTable 
-                        expanded={this.state.expanded} 
-                        setExpand={this.CONSUL_setExpand} 
-                        resetExpanded={this.CONSUL_resetExpanded} 
-                        loading={this.state.loading} 
-                        data={this.state.data} 
+                    <DataTable
+                        expanded={this.state.expanded}
+                        setExpand={this.CONSUL_setExpand}
+                        resetExpanded={this.CONSUL_resetExpanded}
+                        loading={this.state.loading}
+                        data={this.state.data}
                         onReload={this.reload}>
                     </DataTable>
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react'
+import { Dropdown } from "blueprint-react"
 import './hstyle.css'
-import {Dropdown} from "blueprint-react"
 
 class Header extends React.Component {
     constructor(props) {
@@ -9,8 +9,8 @@ class Header extends React.Component {
         this.handleLogoutClick = this.handleLogoutClick.bind(this);
 
         this.state = {
-            items : [
-              { label: "Logout", action:this.handleLogoutClick}
+            items: [
+                { label: "Logout", action: this.handleLogoutClick }
             ]
         }
 
@@ -26,24 +26,22 @@ class Header extends React.Component {
                 {/* TEMPORARY change to index.html */}
                 <a href="index.html" className="sub-header floal">{this.props.applinktext}</a>
                 <div className="sub-header floal">{this.props.text}</div>
-             
-			
+
                 <div className="floar">
-               
-                <div className="instancetext">{this.props.instanceName}</div>
-                <div className="dropdown-setting pull-right">
- 
-                <Dropdown 
-                label={<span class="icon-cog icon-small"></span>}
-                  style={{overflow:"visible"}}
-                   size="btn--small"  items={this.state.items}></Dropdown>
+
+                    <div className="instancetext">{this.props.instanceName}</div>
+                    <div className="dropdown-setting pull-right">
+
+                        <Dropdown
+                            label={<span class="icon-cog icon-small"></span>}
+                            style={{ overflow: "visible" }}
+                            size="btn--small" items={this.state.items}></Dropdown>
+                    </div>
                 </div>
-                </div>
-					</div>
-           
+            </div>
+
         )
     }
 }
-
 
 export default Header
