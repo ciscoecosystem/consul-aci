@@ -29,7 +29,7 @@ function CONSUL_EPCard(props) {
 
   let attributeOrder = ["IP", "Interfaces", "VMM-Domain"];
   let nodeDetailOrder = ["Node", "Node Checks", "Reporting Node IP"];
-  let serviceOrder = ["Service", "Address", "Service Checks", , "Namespace"]
+  let serviceOrder = ["Service", "Address", "Service Checks", "Namespace"]
 
   return (<React.Fragment>
     {CardData(props, attributeOrder)}
