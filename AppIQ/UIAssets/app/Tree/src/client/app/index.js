@@ -3,38 +3,12 @@ import { render } from 'react-dom';
 import { Loader } from "blueprint-react"
 import TestComponent from './TestComponent.js';
 import Header from './Header.js'
-import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL } from "../../../../../constants.js"
+import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie } from "../../../../../constants.js"
 
 var key = 0;
-function getCookieVal(offset) {
-    var endstr = document.cookie.indexOf(";", offset);
-    if (endstr == -1) {
-        endstr = document.cookie.length;
-    }
-    return unescape(document.cookie.substring(offset, endstr));
-}
 
-function getCookie(name) {
-    var arg = name + "=";
-    var alen = arg.length;
-    var clen = document.cookie.length;
-    var i = 0;
-    var j = 0;
-    while (i < clen) {
-        j = i + alen;
-        if (document.cookie.substring(i, j) == arg) {
-            return getCookieVal(j);
-        }
-        i = document.cookie.indexOf(" ", i) + 1;
-        if (i === 0) {
-            break;
-        }
-    }
-    return null;
-}
-
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for operational
+window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for operational
 
 var headerInstanceName;
 

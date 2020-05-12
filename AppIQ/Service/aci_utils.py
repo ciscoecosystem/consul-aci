@@ -18,6 +18,8 @@ except:
     print "=== could not import openssl crypto ==="
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
+APIC_IP   = '172.17.0.1'
+STATIC_IP = '0.0.0.0'
 
 def create_cert_session():
     """
@@ -46,7 +48,7 @@ class ACI_Utils(object):
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(ACI_Utils, cls).__new__(cls)
-            cls.apic_ip = '172.17.0.1'
+            cls.apic_ip = APIC_IP
             cls.session = requests.Session()
             cls.proto = 'https://'
             cls.apic_token = cls.__instance.login()
@@ -352,7 +354,7 @@ class ACI_Utils(object):
 
                 # Below if condition adds all valit ip and mac to the list 
                 cep_ip = str(ep['fvCEp']['attributes']['ip'])
-                if cep_ip != '0.0.0.0' and not is_ip_list:
+                if cep_ip != STATIC_IP and not is_ip_list:
                     ip_set.add(cep_ip)
                 elif not is_ip_list:
                     mac_set.add(ep['fvCEp']['attributes']['mac'])

@@ -10,38 +10,12 @@ import {
   TABLE_TOEPG,
   TABLE_SUBNETS
 } from "./tableHeaders.js";
-import { INTERVAL_API_CALL, QUERY_URL } from '../../../../../../constants.js';
+import { INTERVAL_API_CALL, QUERY_URL, getCookie } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
-function getCookieVal(offset) {
-  var endstr = document.cookie.indexOf(";", offset);
-  if (endstr == -1) {
-    endstr = document.cookie.length;
-  }
-  return unescape(document.cookie.substring(offset, endstr));
-}
-
-function getCookie(name) {
-  var arg = name + "=";
-  var alen = arg.length;
-  var clen = document.cookie.length;
-  var i = 0;
-  var j = 0;
-  while (i < clen) {
-    j = i + alen;
-    if (document.cookie.substring(i, j) == arg) {
-      return getCookieVal(j);
-    }
-    i = document.cookie.indexOf(" ", i) + 1;
-    if (i === 0) {
-      break;
-    }
-  }
-  return null;
-}
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for expansion view
+window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for expansion view
 
 export default class DataTable extends Component {
   constructor(props) {
@@ -142,21 +116,21 @@ export default class DataTable extends Component {
             "}"
         }
       }
-      let xhr = new XMLHttpRequest();
+      let xhrDataTable = new XMLHttpRequest();
       try {
-        xhr.open("POST", QUERY_URL, true);
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
-        xhr.setRequestHeader("Content-type", "application/json");
-        xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-        xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+        xhrDataTable.open("POST", QUERY_URL, true);
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for expansion
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for expansion
+        xhrDataTable.setRequestHeader("Content-type", "application/json");
+        xhrDataTable.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+        xhrDataTable.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
-        xhr.onreadystatechange = () => {
+        xhrDataTable.onreadystatechange = () => {
 
           console.log("Sending req");
-          if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-              let json = JSON.parse(xhr.responseText);
+          if (xhrDataTable.readyState == 4) {
+            if (xhrDataTable.status == 200) {
+              let json = JSON.parse(xhrDataTable.responseText);
               if ("errors" in json) {
                 // Error related to query
                 this.handleError(json.errors[0]["message"] || "Error while fetching data");
@@ -177,14 +151,14 @@ export default class DataTable extends Component {
               }
             } else {
               // Status code of XHR request not 200
-              let jsonError = JSON.parse(xhr.responseText);
+              let jsonError = JSON.parse(xhrDataTable.responseText);
               this.handleError(jsonError.errors[0]["message"]);
             }
           }
         };
-        xhr.send(JSON.stringify(payload));
+        xhrDataTable.send(JSON.stringify(payload));
       } catch (except) {
-        this.handleError("Error in API request please check configuration");
+        this.handleError("[Expansion] Error in API request please check configuration");
         console.log(except);
       }
     }
