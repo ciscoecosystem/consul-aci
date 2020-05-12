@@ -1,7 +1,7 @@
 import React from 'react';
 import {Table,Button, Icon, Input, Label, Loader, IconButton} from "blueprint-react"
 import { ToastContainer, toast } from 'react-toastify';
-import { PROFILE_NAME, QUERY_URL } from '../../constants.js';
+import { PROFILE_NAME, QUERY_URL, getCookie } from '../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
 
@@ -20,33 +20,6 @@ const dummylist = [
 ]
 */
 
-function getCookieVal(offset) {
-    var endstr = document.cookie.indexOf(";", offset);
-    if (endstr == -1) {
-        endstr = document.cookie.length;
-    }
-    return unescape(document.cookie.substring(offset, endstr));
-}
-
-function getCookie(name) {
-    var arg = name + "=";
-    var alen = arg.length;
-    var clen = document.cookie.length;
-    var i = 0;
-    var j = 0;
-    while (i < clen) {
-        j = i + alen;
-        if (document.cookie.substring(i, j) == arg) {
-            return getCookieVal(j);
-        }
-        i = document.cookie.indexOf(" ", i) + 1;
-        if (i === 0) {
-            break;
-        }
-    }
-    return null;
-}
-
 
 /**
 * @param {string} theUrl The URL of the REST API
@@ -54,8 +27,8 @@ function getCookie(name) {
 * @return {string} The response received from portal
 */
 function httpGet(theUrl, payload) {
-    window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-    window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+    window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+    window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.open("POST", theUrl, false); // false for synchronous request
@@ -196,8 +169,8 @@ class CONSUL_LoginForm extends React.Component {
         delete agentDetail.status;
         agentDetail.port = parseInt(agentDetail.port);
 
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
 
         let payload = {};
 
@@ -345,8 +318,8 @@ class CONSUL_LoginForm extends React.Component {
 
         let { details } = this.state;
 
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
 
         let payload = { query: `query{
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}

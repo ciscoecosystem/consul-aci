@@ -1,35 +1,8 @@
 import React, { Component } from 'react'
 import Header from './Header'
 import DataTable from "./DataTable"
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL } from "../../constants.js";
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie } from "../../constants.js";
 import './style.css'
-
-function getCookieVal(offset) {
-    var endstr = document.cookie.indexOf(";", offset);
-    if (endstr == -1) {
-        endstr = document.cookie.length;
-    }
-    return unescape(document.cookie.substring(offset, endstr));
-}
-
-function getCookie(name) {
-    var arg = name + "=";
-    var alen = arg.length;
-    var clen = document.cookie.length;
-    var i = 0;
-    var j = 0;
-    while (i < clen) {
-        j = i + alen;
-        if (document.cookie.substring(i, j) == arg) {
-            return getCookieVal(j);
-        }
-        i = document.cookie.indexOf(" ", i) + 1;
-        if (i === 0) {
-            break;
-        }
-    }
-    return null;
-}
 
 var params_tn;
 var details_raw;
@@ -132,8 +105,8 @@ class Container extends Component {
     * @return {string} The response received from portal
     */
     httpGet(theUrl, payload) {
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
         var xmlHttp = new XMLHttpRequest();
 
         xmlHttp.open("POST", theUrl, true); // false for synchronous request
@@ -146,8 +119,8 @@ class Container extends Component {
 
     fetchData() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
 
         let xhr = new XMLHttpRequest();
         try {
