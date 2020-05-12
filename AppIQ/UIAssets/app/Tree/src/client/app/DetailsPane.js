@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tags", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Namespace", "Service Tags", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
@@ -29,7 +29,7 @@ function CONSUL_EPCard(props) {
 
   let attributeOrder = ["IP", "Interfaces", "VMM-Domain"];
   let nodeDetailOrder = ["Node", "Node Checks", "Reporting Node IP"];
-  let serviceOrder = ["Service", "Address", "Service Checks", "Namespace"]
+  let serviceOrder = ["Service", "Address", "Service Checks"]
 
   return (<React.Fragment>
     {CardData(props, attributeOrder)}
