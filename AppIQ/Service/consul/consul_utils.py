@@ -298,7 +298,7 @@ class Cosnul(object):
         return: tupple(tag_list, kind, namespace)
                     tag_list: string list
                     kind: string
-                    namespace: string
+                    namespace/NA: string
         """
 
         logger.info('Service tag and kind info for service: {}'.format(service_name))
@@ -315,7 +315,10 @@ class Cosnul(object):
                 tags_set.add(val)
             tag_list = list(tags_set)
             service_kind = service_resp[0].get('ServiceKind', '')
-            service_namespace = service_resp[0].get('Namespace', '')
+
+            # In case of OSS cluster, no key named Namespace is returned, 
+            # thus NA will be returned. 
+            service_namespace = service_resp[0].get('Namespace', 'NA')
         except Exception as e:
             logger.exception('Exception in Service Details: {}'.format(str(e)))
 
