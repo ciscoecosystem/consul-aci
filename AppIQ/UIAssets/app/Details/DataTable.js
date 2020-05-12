@@ -6,7 +6,6 @@ const successColor = "#6ebe4a";
 const failColor = "#e2231a";
 const warningColor = "#f49141";
 
-
 export default class DataTable extends Component {
   constructor(props) {
     super(props);
@@ -17,14 +16,14 @@ export default class DataTable extends Component {
         width: 190,
         Cell: row => {
           return (<div>
-            {row.value.map(function(val) {
+            {row.value.map(function (val) {
               return <React.Fragment>
                 {val}
-                <br/>
+                <br />
               </React.Fragment>
-             } )}
+            })}
           </div>)
-        } 
+        }
       },
       {
         Header: "Endpoint",
@@ -117,6 +116,10 @@ export default class DataTable extends Component {
         accessor: "serviceKind"
       },
       {
+        Header: "Namespace",
+        accessor: "serviceNamespace"
+      },
+      {
         Header: "Service Tags",
         accessor: "serviceTags",
         Cell: row => {
@@ -136,7 +139,6 @@ export default class DataTable extends Component {
       }
     ]
 
-
     this.state = {
       row: this.props.data,
       columns: HEADER_DETAILS,
@@ -144,6 +146,7 @@ export default class DataTable extends Component {
       serviceColumn: SERVICE_TABLE_HEADER
     }
   }
+
   componentWillReceiveProps(newprops) {
     this.setState({ loading: newprops.loading })
     this.setState({ row: newprops.data })
@@ -153,7 +156,7 @@ export default class DataTable extends Component {
     // we override newExpanded, keeping only current selected row expanded
     this.props.setExpand(index[0])
   }
-  
+
   render() {
     return (
       <div>
@@ -181,7 +184,5 @@ export default class DataTable extends Component {
         </Table>
       </div>
     )
-
-
   }
 }

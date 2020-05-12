@@ -15,7 +15,7 @@ function NoInformation() {
 }
 
 function CONSUL_ServiceCard(props) {
-  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Service Tags", "Service Kind"]
+  let attributeOrder = ["Service", "Address", "Service Instance", "Service Checks", "Namespace", "Service Tags", "Service Kind"]
 
   return CardData(props, attributeOrder);
 }
@@ -134,10 +134,10 @@ function CardData(props, attributeOrder = undefined) {
           return (
             <tr>
               <td width="30%"> {key} </td>
-              <td width="70%">{attributes[key].map(val =>{
+              <td width="70%">{attributes[key].map(val => {
                 return <React.Fragment>
                   {val}
-                  <br/>
+                  <br />
                 </React.Fragment>
               })}</td>
             </tr>
@@ -169,19 +169,19 @@ function ContractDetails(props) {
     //  { "provider": ["aaa", "bbb"], "consumer": ["hhhh","eeee", "trerereqr"] }; // format
     let contractData = props.attributes;
     let contractsKey = Object.keys(contractData);
-    
+
     return (
       <table className="info-table">
-          {contractsKey.map(key => {
-            let list = contractData[ key ];
+        {contractsKey.map(key => {
+          let list = contractData[key];
 
-            return list.map((data,index) => {
-              return (<tr>
-                {(index===0) && <td rowspan={list.length}>{key}</td>}
-                <td>{data}</td>
-              </tr>)
-            })
+          return list.map((data, index) => {
+            return (<tr>
+              {(index === 0) && <td rowspan={list.length}>{key}</td>}
+              <td>{data}</td>
+            </tr>)
           })
+        })
         }
       </table>
     );
@@ -238,7 +238,7 @@ class DetailsPane extends React.Component {
           return (
             <React.Fragment>
               {data.name} Information
-            <CONSUL_EPCard
+              <CONSUL_EPCard
                 name={(data.level === "grey") ? undefined : (data.sub_label || false)}
                 level={data.level || false}
                 attributes={data.attributes}
@@ -260,7 +260,7 @@ class DetailsPane extends React.Component {
           return (
             <React.Fragment>
               {data.name} Information
-             <CardData
+              <CardData
                 name={data.sub_label || false}
                 level={data.level || false}
                 attributes={data.attributes}

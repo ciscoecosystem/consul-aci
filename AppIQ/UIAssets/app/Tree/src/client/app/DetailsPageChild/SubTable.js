@@ -12,7 +12,7 @@ export default class SubTable extends Component {
                     Header: 'Violation Id',
                     accessor: 'Violation Id'
                 },
-{
+                {
                     Header: 'Status',
                     accessor: 'Status'
                 },
@@ -24,7 +24,7 @@ export default class SubTable extends Component {
                     Header: 'Affected Object',
                     accessor: 'Affected Object'
                 },
-                
+
                 {
                     Header: 'Start Time',
                     accessor: 'Start Time'
@@ -44,7 +44,6 @@ export default class SubTable extends Component {
                 }
             ],
             subColumns: [
-
                 {
                     Header: 'Severity',
                     accessor: 'Severity'
@@ -60,7 +59,7 @@ export default class SubTable extends Component {
                 {
                     Header: 'Summary',
                     accessor: 'Summary',
-					 key: 'summ',
+                    key: 'summ',
                     Cell: row => {
                         return <div dangerouslySetInnerHTML={{ __html: row.value }}></div>
                     }

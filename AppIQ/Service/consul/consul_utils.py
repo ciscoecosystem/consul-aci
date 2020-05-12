@@ -161,7 +161,7 @@ class Cosnul(object):
                         service_name:     string: name
                         service_ip:       string: ip
                         service_port:     string: port
-                        service_address:  string: service ip,if exists, else parent node ip + port
+                        service_address:  string: service ip(if exists)/node ip : port
                     }, ...
                 ]
         """
@@ -290,34 +290,40 @@ class Cosnul(object):
         return check_dict
 
 
-    def service_tags_kind(self, service_name):
+    def service_info(self, service_name):
         """Get tag and kind info from details of a service
         
         service_name: name of the service for checks
 
-        return: tupple(tag_list, kind)
+        return: tupple(tag_list, kind, namespace)
                     tag_list: string list
                     kind: string
+                    namespace/NA: string
         """
 
         logger.info('Service tag and kind info for service: {}'.format(service_name))
         tag_list = []
         service_kind = ''
+        service_namespace = ''
         try:
             service_resp = self.session.get(urls.SERVICE_INFO.format(self.base_url, service_name))
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Details API data: {}'.format(service_resp))
 
             tags_set = set()
-            for val in service_resp[0].get('ServiceTags'):
+            for val in service_resp[0].get('ServiceTags', []):
                 tags_set.add(val)
             tag_list = list(tags_set)
-            service_kind = service_resp[0].get('ServiceKind')
+            service_kind = service_resp[0].get('ServiceKind', '')
+
+            # In case of OSS cluster, no key named Namespace is returned, 
+            # thus NA will be returned. 
+            service_namespace = service_resp[0].get('Namespace', 'NA')
         except Exception as e:
             logger.exception('Exception in Service Details: {}'.format(str(e)))
 
-        logger.debug('service_tags_kind return: {}'.format(tag_list, service_kind))
-        return tag_list, service_kind
+        logger.debug('service_info return: {}'.format(tag_list, service_kind))
+        return tag_list, service_kind, service_namespace
 
 
     def datacenter(self):
@@ -455,13 +461,14 @@ class Cosnul(object):
                             }
                         node_services: [
                                 {
-                                    service_id:       string: id
-                                    service_name:     string: name
-                                    service_ip:       string: ip
-                                    service_port:     string: port
-                                    service_address:  string: service ip,if exists, else parent node ip + port
-                                    service_tags:     string list: tags
-                                    service_kind:     string: kind
+                                    service_id:        string: id
+                                    service_name:      string: name
+                                    service_ip:        string: ip
+                                    service_port:      string: port
+                                    service_address:   string: service ip(if exists)/node ip : port
+                                    service_tags:      string list: tags
+                                    service_kind:      string: kind
+                                    service_namespace: string: namespace
                                     service_checks: {
                                                     passing: int: if val > 0
                                                     warning: int: if val > 0
@@ -491,7 +498,7 @@ class Cosnul(object):
                     # get service check, tags and kind using service name
                     service_name = service.get('service_name') # This may fail
                     service_check = self.service_checks(service_name)
-                    service_tags, service_kind = self.service_tags_kind(service_name)
+                    service_tags, service_kind, service_ns = self.service_info(service_name)
 
                     # Form final dict
                     final_service_list.append({
@@ -503,6 +510,7 @@ class Cosnul(object):
                         'service_checks': service_check,
                         'service_tags': service_tags,
                         'service_kind': service_kind,
+                        'service_namespace': service_ns
                     })
 
                 consul_data.append({

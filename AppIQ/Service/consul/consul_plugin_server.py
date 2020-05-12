@@ -371,7 +371,8 @@ def change_key(services):
                 'port': service.get('service_port'),
                 'serviceTags': service.get('service_tags'),
                 'serviceKind': service.get('service_kind'),
-                'serviceChecks': service.get('service_checks')
+                'serviceChecks': service.get('service_checks'),
+                'serviceNamespace': service.get('service_namespace')
             })
     return final_list
 

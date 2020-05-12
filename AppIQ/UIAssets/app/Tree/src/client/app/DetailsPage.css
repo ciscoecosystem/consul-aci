@@ -1,4 +1,4 @@
-.close{
+.close {
   cursor: pointer;
   font-size: 42px;
   margin-top: -10px;
@@ -7,27 +7,29 @@
   color: #f0f8ff;
   float: right;
 }
-.tab__heading{
+
+.tab__heading {
   font-size: 15px;
 }
-.tab{
+
+.tab {
   margin: 1px 8px 0px 11px!important;
 }
 
-.events-tab a div{
+.events-tab a div {
   /* background: #00BCEB!important;
   color: white!important; */
- 
- text-align: left !important;
- width: 100% !important;
+  text-align: left !important;
+  width: 100% !important;
 }
-.panel-header{
+
+.panel-header {
   font-size: 2em;
   background-color: #005073;
   color: aliceblue;
- 
   padding: 1% 1%;
 }
+
 .page-overlay {
   height: 100%;
   width: 100%;
@@ -35,7 +37,7 @@
   z-index: 10;
   top: 0;
   left: 0;
-  background : #f2f2f2;
+  background: #f2f2f2;
   overflow-x: hidden;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -50,8 +52,8 @@
 .topnav {
   width: 100%;
   overflow: hidden;
-  background : #f2f2f2;
-  border-bottom: 1px solid rgb(207, 207, 204); 
+  background: #f2f2f2;
+  border-bottom: 1px solid rgb(207, 207, 204);
 }
 
 .topnav span {
@@ -68,7 +70,7 @@
   color: black;
 }
 
-.topnav span.active {  
-  border-bottom: 3px solid #1dc0e9; 
-  color: #1a768d  ;
-} 
+.topnav span.active {
+  border-bottom: 3px solid #1dc0e9;
+  color: #1a768d;
+}
