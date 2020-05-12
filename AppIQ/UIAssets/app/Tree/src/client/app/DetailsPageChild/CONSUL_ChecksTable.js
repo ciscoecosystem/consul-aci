@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Table, Panel, Icon, Label } from "blueprint-react";
 
 import { ToastContainer, toast } from 'react-toastify';
-import { INTERVAL_API_CALL } from '../../../../../../constants.js';
+import { INTERVAL_API_CALL, QUERY_URL } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
@@ -49,7 +49,7 @@ export default class CONSUL_ChecksTable extends Component {
             rows: [],
             loading: true,
             expanded: {},
-            intervalId : undefined
+            intervalId: undefined
         };
     }
     handleError(error) {
@@ -74,23 +74,20 @@ export default class CONSUL_ChecksTable extends Component {
         }
         else {
             this.fetchData();
-            let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL );
+            let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL);
             this.setState({ intervalId })
         }
     }
-    componentWillUnmount(){
-        console.log("Component will unount checktable", this.state.intervalId)
+    componentWillUnmount() {
         clearInterval(this.state.intervalId)
-      }
+    }
     fetchData() {
         let query = this.props.query;
         let payload = query
 
-        console.log("payload", payload);
         let xhr = new XMLHttpRequest();
-        let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
         try {
-            xhr.open("POST", url, true);
+            xhr.open("POST", QUERY_URL, true);
             window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
             window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
             xhr.setRequestHeader("Content-type", "application/json");
@@ -103,7 +100,6 @@ export default class CONSUL_ChecksTable extends Component {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
                         let json = JSON.parse(xhr.responseText);
-                        console.log("response json ", json);
                         if ("errors" in json) {
                             // Error related to query
                             this.handleError(json.errors[0]["message"] || "Error while fetching data");
@@ -150,7 +146,7 @@ export default class CONSUL_ChecksTable extends Component {
         const headerColumns = [
             {
                 Header: 'Name',
-                accessor:"Name", // key for table header
+                accessor: "Name", // key for table header
                 Cell: row => {
                     let { Name, Status } = row.original;
                     return <div>
@@ -181,8 +177,8 @@ export default class CONSUL_ChecksTable extends Component {
             }
         ]
 
-        if (extraColumn){
-            headerColumns.splice(extraColumn.index, 0, extraColumn.value ); // adding extra column at spicified index
+        if (extraColumn) {
+            headerColumns.splice(extraColumn.index, 0, extraColumn.value); // adding extra column at spicified index
         }
 
         return (

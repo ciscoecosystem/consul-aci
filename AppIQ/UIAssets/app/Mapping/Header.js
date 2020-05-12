@@ -1,29 +1,26 @@
-import React from 'react'
-import { Dropdown } from "blueprint-react"
-import './hstyle.css'
+import React from 'react';
+import { Dropdown } from "blueprint-react";
+import './style.css';
 
 class Header extends React.Component {
     constructor(props) {
-        super(props)
-
+        super(props);
         this.handleLogoutClick = this.handleLogoutClick.bind(this);
-
         this.state = {
             items: [
                 { label: "Logout", action: this.handleLogoutClick }
             ]
         }
-
     }
+
     handleLogoutClick() {
-        window.location.href = "index.html?reset=1"; //TEMPORARY change to login.html
+        window.location.href = "index.html?reset=1";
     }
 
     render() {
 
         return (
             <div className="clearfix">
-                {/* TEMPORARY change to index.html */}
                 <a href="index.html" className="sub-header floal">{this.props.applinktext}</a>
                 <div className="sub-header floal">{this.props.text}</div>
 

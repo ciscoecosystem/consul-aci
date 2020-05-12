@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import "./DetailsPage.css";
-import EventAnalytics from "./DetailsPageChild/EventAnalytics";
 import { Loader, Tab, Screen } from "blueprint-react";
 import clone from "clone";
 import DataTable from "./DetailsPageChild/DataTable.js";
@@ -8,6 +6,8 @@ import Operational from "./DetailsPageChild/Operational";
 import SubTable from "./DetailsPageChild/SubTable";
 import CONSUL_ChecksTable from "./DetailsPageChild/CONSUL_ChecksTable";
 import CONSUL_ConsulTab from "./DetailsPageChild/CONSUL_ConsulTab";
+import EventAnalytics from "./DetailsPageChild/EventAnalytics";
+import "./DetailsPage.css";
 
 export default class DetailePage extends Component {
   constructor(props) {
@@ -37,8 +37,6 @@ export default class DetailePage extends Component {
   }
   getQueryParams() {
     var query = false;
-    console.log("with data");
-    console.log(this.state.data);
     if (this.state.data.name === "AppProf") {
       query = "ap-" + this.state.data.sub_label
     } else if (this.state.data.name === "EPG") {
@@ -55,8 +53,6 @@ export default class DetailePage extends Component {
     return query;
   }
   getCustomQuery() {
-    var query = false
-
     return {
       ap: this.state.data.parent.sub_label,
       epg: this.state.data.sub_label
@@ -93,7 +89,6 @@ export default class DetailePage extends Component {
     }
     if (data.name == "AppProf") {
       clonedObj.splice(0, 1);
-      console.log(clonedObj);
 
       this.setState({ tabs: clonedObj });
     }
@@ -144,8 +139,8 @@ export default class DetailePage extends Component {
         console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{MultiNodeChecks(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + ', datacenter:"' + datacenterName + '"){response}}'};
-      let ServiceCheckQuery = {"query":  'query{MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let NodeCheckQuery = { "query": 'query{MultiNodeChecks(nodeList:' + JSON.stringify(JSON.stringify(nodeList)) + ', datacenter:"' + datacenterName + '"){response}}' };
+      let ServiceCheckQuery = { "query": 'query{MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(finalServiceList)) + ', datacenter:"' + datacenterName + '"){response}}' };
 
       clonedObj.push({
         label: "Consul",
@@ -157,8 +152,6 @@ export default class DetailePage extends Component {
     }
     // for EP detail view expansion ; Tabs are [Operational, Health Check, Node check, Service Check]
     if (data.name == "EP") {
-      console.log("SEttting tab in EP");
-      // clonedObj.splice(1, 1);
       let moType = data.name.toLowerCase();
       let macList = this.getMacList();
 
@@ -169,31 +162,30 @@ export default class DetailePage extends Component {
       }
 
       // Setting query ...
-
       let nodeName = "";
       let serviceList = [];
 
       try {
         nodeName = data.attributes['Node'];
         let epServices = data.children;
-        console.log("epServies ", epServices);
 
-        if (epServices && epServices.length > 0){
+        if (epServices && epServices.length > 0) {
           serviceList = epServices.map(inData => {
             return Object.assign({},
-              { 'Service': inData.attributes['Service'],
-                'ServiceID':inData.attributes['Service Instance']
+              {
+                'Service': inData.attributes['Service'],
+                'ServiceID': inData.attributes['Service Instance']
               })
-            })
+          })
         } else {
           serviceList = [];
         }
       } catch (error) {
-        console.log("error in setting quert", error);
+        console.log("error in setting query", error);
       }
 
-      let NodeCheckQuery = {"query": 'query{NodeChecks(nodeName:"' + nodeName + '", datacenter:"' + datacenterName + '"){response}}'};
-      let ServiceCheckQuery = {"query": 'query{ MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}'};
+      let NodeCheckQuery = { "query": 'query{NodeChecks(nodeName:"' + nodeName + '", datacenter:"' + datacenterName + '"){response}}' };
+      let ServiceCheckQuery = { "query": 'query{ MultiServiceChecks(serviceList:' + JSON.stringify(JSON.stringify(serviceList)) + ', datacenter:"' + datacenterName + '"){response}}' };
 
       let tabsObj = [
         {
@@ -203,18 +195,18 @@ export default class DetailePage extends Component {
         }
       ]
       // show consul tab when EP is not Non service Endpoint 
-      if (data.type !== "grey"){ 
+      if (data.type !== "grey") {
         tabsObj.push({
-            label: "Consul",
-            key: "Consul",
-            content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
-          })
+          label: "Consul",
+          key: "Consul",
+          content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+        })
       }
 
       this.setState({
         tabs: tabsObj
       }, () => {
-        console.log("Settin tab for ", this.state.tabs);
+        console.log("Setting tab for ", this.state.tabs);
       })
     }
 
@@ -224,7 +216,7 @@ export default class DetailePage extends Component {
       let serviceName = data.attributes['Service'];
       let query = "";
       try {
-        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '", datacenter:"' + datacenterName + '"){response}}'};
+        query = { "query": 'query{ServiceChecks(serviceName:"' + serviceName + '", serviceId:"' + serviceInstance + '", datacenter:"' + datacenterName + '"){response}}' };
       } catch (err) {
         console.log("error in query:- ", err);
       }

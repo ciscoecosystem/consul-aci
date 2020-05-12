@@ -8,7 +8,9 @@
 <body>
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
     <script type="text/javascript">
+    console.log(" --------- IN Login.html ------------", window.location.href);
         window.addEventListener('message', function (e) {
+            console.log("--------MESSAGE ", e)
             if (e.source === window.parent) {
                 var tokenObj = Ext.decode(e.data, true);
                 if (tokenObj) {

@@ -8,7 +8,9 @@
 <body style="overflow: unset !important">
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
     <script type="text/javascript">
+    console.log(" --------- IN index.html ------------", window.location.href);
         window.addEventListener('message', function (e) {
+            console.log("------message ", e);
             if (e.source === window.parent) {
                 var tokenObj = Ext.decode(e.data, true);
                 if (tokenObj) {
