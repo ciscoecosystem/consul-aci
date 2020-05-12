@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import uuid from "uuid";
 import { select } from "d3";
 import { Icon } from "blueprint-react";
 import "./style.css";
@@ -8,7 +7,6 @@ import "react-tippy/dist/tippy.css";
 import d3Tip from "d3-tip";
 d3.tip = d3Tip;
 
-// var qtip;
 var d;
 
 const successColor = "#6ebe4a";
@@ -79,7 +77,7 @@ export default class Node extends React.Component {
       : `translate(${x},${y})`;
   }
 
-  applyTransform(transform, transitionDuration, opacity = 1, done = () => {}) {
+  applyTransform(transform, transitionDuration, opacity = 1, done = () => { }) {
     if (transitionDuration === 0) {
       select(this.node)
         .attr("transform", transform)
@@ -111,7 +109,7 @@ export default class Node extends React.Component {
       .tip()
       .attr("class", "d3-tip")
       .direction("se")
-      .html(function() {
+      .html(function () {
         var title =
           "<strong>" + titleMap[d.name] + " Information</strong></br>";
         var htmlstring = "<table>";
@@ -126,7 +124,7 @@ export default class Node extends React.Component {
             d.sub_label +
             "</div></td></tr>";
         }
-        Object.keys(d.attributes).map(function(key, index) {
+        Object.keys(d.attributes).map(function (key) {
           if (
             key != "ServiceEndpoints" &&
             key != "HealthRuleViolations" &&
@@ -140,17 +138,17 @@ export default class Node extends React.Component {
               d.attributes[key] +
               "</div></td></tr>";
           }
+          return null;
         });
-        var htmlstring = htmlstring + "</table>";
+        htmlstring = htmlstring + "</table>";
         if (d.attributes.hasOwnProperty("ServiceEndpoints")) {
           htmlstring =
             htmlstring +
             "<table></br></br><strong>Service Endpoints:</strong></br>";
           var i;
           for (i = 0; i < d.attributes.ServiceEndpoints.length; ++i) {
-            Object.keys(d.attributes.ServiceEndpoints[i]).map(function(
-              key,
-              index
+            Object.keys(d.attributes.ServiceEndpoints[i]).map(function (
+              key
             ) {
               if (key != "Service Endpoints:") {
                 htmlstring =
@@ -161,19 +159,19 @@ export default class Node extends React.Component {
                   d.attributes.ServiceEndpoints[i][key] +
                   "</div></td></tr>";
               }
+              return null;
             });
           }
         }
-        var htmlstring = htmlstring + "</table>";
+        htmlstring = htmlstring + "</table>";
         if (d.attributes.hasOwnProperty("HealthRuleViolations")) {
           htmlstring =
             htmlstring +
             "<table></br></br><strong>Health Rule Violations:</strong></br>";
-          var i;
-          for (i = 0; i < d.attributes.HealthRuleViolations.length; ++i) {
-            Object.keys(d.attributes.HealthRuleViolations[i]).map(function(
-              key,
-              index
+
+          for (let i = 0; i < d.attributes.HealthRuleViolations.length; ++i) {
+            Object.keys(d.attributes.HealthRuleViolations[i]).map(function (
+              key
             ) {
               if (key != "HealthRuleViolations:") {
                 htmlstring =
@@ -184,16 +182,17 @@ export default class Node extends React.Component {
                   d.attributes.HealthRuleViolations[i][key] +
                   "</div></td></tr>";
               }
+              return null;
             });
           }
         }
-        var htmlstring = htmlstring + "</table>";
+        htmlstring = htmlstring + "</table>";
         if (d.attributes.hasOwnProperty("Contracts")) {
           htmlstring =
             htmlstring + "<table></br></br><strong>Contracts:</strong></br>";
-          var i;
-          for (i = 0; i < d.attributes.Contracts.length; ++i) {
-            Object.keys(d.attributes.Contracts[i]).map(function(key, index) {
+
+          for (let i = 0; i < d.attributes.Contracts.length; ++i) {
+            Object.keys(d.attributes.Contracts[i]).map(function (key) {
               if (key != "Contracts:") {
                 htmlstring =
                   htmlstring +
@@ -203,10 +202,11 @@ export default class Node extends React.Component {
                   d.attributes.Contracts[i][key] +
                   "</div></td></tr>";
               }
+              return null;
             });
           }
         }
-        var htmlstring = htmlstring + "</table>";
+        htmlstring = htmlstring + "</table>";
         return title + htmlstring;
       });
     var svg = select(this.node).call(this.qtip);
@@ -260,7 +260,7 @@ export default class Node extends React.Component {
         className={nodeData._children ? "nodeBase" : "leafNodeBase"}
         transform={this.state.transform}
         onClick={this.handleClick}
-      
+
       >
         {(nodeStyle.circle.stroke = nodeData.level)}
         {(nodeStyle.circle.fill = nodeData.type)}
@@ -268,11 +268,11 @@ export default class Node extends React.Component {
         {this.props.circleRadius ? (
           <circle r={this.props.circleRadius} style={nodeStyle.circle} />
         ) : (
-          React.createElement(nodeSvgShape.shape, {
-            ...nodeSvgShape.shapeProps,
-            ...nodeStyle.circle
-          })
-        )}
+            React.createElement(nodeSvgShape.shape, {
+              ...nodeSvgShape.shapeProps,
+              ...nodeStyle.circle
+            })
+          )}
 
         <text
           className="nodeNameBase"
@@ -285,18 +285,6 @@ export default class Node extends React.Component {
         >
           {this.props.name == "EP" ? "EP" : this.props.name.charAt(0)}
         </text>
-
-        {/* <text
-          className="nodeNameBase"
-          style={{fontSize : "10px"}}
-          textAnchor={textLayout.textAnchor}
-          x={textLayout.x}
-          y={textLayout.y}
-          transform={textLayout.transform}
-          dy="1.3em"
-        >
-          {this.props.fraction ? this.props.fraction :  ""}
-        </text> */}
 
         <text
           className="nodeNameBase"
@@ -319,11 +307,11 @@ export default class Node extends React.Component {
             //style={nodeStyle.attributes}
             dy="10"
           >
-            {"(" + this.props.label +")"}
+            {"(" + this.props.label + ")"}
           </text>
         ) : (
-          ""
-        )}
+            ""
+          )}
         {this.props.sub_label ? (
           <text
             className="nodeAttributesBase"
@@ -338,19 +326,19 @@ export default class Node extends React.Component {
               " " +
               (this.props.sub_label.split(",").length > 1
                 ? this.props.sub_label.split(",").length - 1
-                : "") }
+                : "")}
           </text>
         ) : (
-          ""
-        )}
-       
-       {/* checks part */}
+            ""
+          )}
+
+        {/* checks part */}
         {(checks !== undefined) && <foreignObject x="-47" y="45" width="100" height="30" className="node-icon">
-            <span>
-                {(checks.passing !== undefined ) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{checks.passing}&nbsp;&nbsp;</span>}
-                {(checks.warning !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{checks.warning}&nbsp;&nbsp;</span>}
-                {(checks.failing !== undefined ) &&<span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>}
-            </span>
+          <span>
+            {(checks.passing !== undefined) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{checks.passing}&nbsp;&nbsp;</span>}
+            {(checks.warning !== undefined) && <span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{checks.warning}&nbsp;&nbsp;</span>}
+            {(checks.failing !== undefined) && <span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>}
+          </span>
         </foreignObject>}
 
       </g>

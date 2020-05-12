@@ -1,6 +1,6 @@
 import React from 'react'
-import './hstyle.css'
 import {Dropdown} from "blueprint-react";
+import './hstyle.css'
 
 class Header extends React.Component {
     constructor(props) {
@@ -9,7 +9,6 @@ class Header extends React.Component {
         this.handleLogoutClick = this.handleLogoutClick.bind(this);
 
         this.state = {
-            showModal : false,
             items : [
               { label: "Logout", action:this.handleLogoutClick}
             ]

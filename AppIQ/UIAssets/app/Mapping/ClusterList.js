@@ -2,13 +2,9 @@ import React from 'react'
 import SearchBar from './SearchBar.js'
 import './style.css'
 
-
 class ClusterList extends React.Component {
     constructor(props) {
         super(props);
-        if (props.selectedItem != null) {
-            // console.log(props.selectedItem);
-        }
         this.searchValueChanged = this.searchValueChanged.bind(this);
         this.filterList = this.filterList.bind(this);
     }
@@ -64,7 +60,7 @@ class ClusterList extends React.Component {
             } else {
                 if (item.macaddress.indexOf(this.searchValue) > -1) {
                     filteredList.push(item);
-                }                
+                }               
             }
         });
 

@@ -10,19 +10,19 @@
     <script type="text/javascript">
         window.addEventListener('message', function (e) {
             if (e.source === window.parent) {
-                var tokenObj = Ext.decode(e.data, true);
-                if (tokenObj) {
+                var tokenObjIndex = Ext.decode(e.data, true);
+                if (tokenObjIndex) {
                     // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObj.urlToken);
-                    console.log('Tokens set')
+                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObjIndex.token);
+                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObjIndex.urlToken);
+                    console.log('Tokens set Index')
                 }
             }
         });
     </script>
-    <center>
+     <div style="text-align: center;">
         <img src="hashicorp-consul.png" alt="Consul Logo" style="margin-top: 5%;margin-bottom: 2.5%;">
-    </center>
+    </div>
     <div id="app" />
     <script src="public/login.js" type="text/javascript"></script>
 </body>

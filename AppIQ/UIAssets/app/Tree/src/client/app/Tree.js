@@ -9,67 +9,9 @@ import uuid from "uuid";
 
 import Node from "./Node.js";
 import Link from "./Link.js";
-import "./style.css";
-
 import DetailsPane from "./DetailsPane";
 import DetailsPage from "./DetailsPage";
-
-const svgSquare = {
-  shape: "rect",
-  shapeProps: {
-    width: 20,
-    height: 7,
-    x: -10,
-    y: -10
-  }
-};
-
-const svgSquareButton = {
-  shape: "rect",
-  shapeProps: {
-    width: 40,
-    height: 20,
-    x: -10,
-    y: -10
-  }
-};
-
-const svgCircle = { shape: "circle", shapeProps: { r: 20 } };
-
-var legend = [
-  {
-    name: "",
-    level: "seagreen",
-    type: "seagreen",
-    label: "Normal",
-    trans: 8,
-    shape: svgSquare
-  },
-  {
-    name: "",
-    level: "orange",
-    type: "orange",
-    label: "Warning",
-    trans: 9,
-    shape: svgSquare
-  },
-  {
-    name: "",
-    level: "red",
-    type: "red",
-    label: "Critical",
-    trans: 10,
-    shape: svgSquare
-  }
-];
-
-var legendButton = {
-  name: "",
-  level: "grey",
-  type: "grey",
-  trans: 8,
-  shape: svgSquare
-};
+import "./style.css";
 
 var boundEvent;
 
@@ -83,9 +25,7 @@ export default class Tree extends React.Component {
     };
     this.findNodesById = this.findNodesById.bind(this);
     this.collapseNode = this.collapseNode.bind(this);
-    this.handleNodeToggle = this.handleNodeToggle.bind(this);
     this.handleOnClickCb = this.handleOnClickCb.bind(this);
-    this.handleMouseOver = this.handleMouseOver.bind(this);
 
     this.handleNodeClick = this.handleNodeClick.bind(this);
     this.openDetailsPane = this.openDetailsPane.bind(this);
@@ -99,7 +39,6 @@ export default class Tree extends React.Component {
 
   zoomOutTree() {
     const svg = select(".rd3t-svg");
-    const g = select(".rd3t-g");
     svg.call(boundEvent.event);
     boundEvent.scale(boundEvent.scale() - 0.2);
     svg
@@ -110,7 +49,6 @@ export default class Tree extends React.Component {
 
   zoomInTree() {
     const svg = select(".rd3t-svg");
-    const g = select(".rd3t-g");
     svg.call(boundEvent.event);
     boundEvent.scale(boundEvent.scale() + 0.2);
     svg
@@ -278,59 +216,6 @@ export default class Tree extends React.Component {
   expandNode(node) {
     node._collapsed = false;
   }
-
-  /**
-   * TODO: Remove this function
-   * handleNodeToggle - Finds the node matching `nodeId` and
-   * expands/collapses it, depending on the current state of
-   * its `_collapsed` property.
-   * `setState` callback receives targetNode and handles
-   * `props.onClick` if defined.
-   *
-   * @param {string} nodeId A node object's `id` field.
-   *
-   * @return {void}
-   */
-  handleNodeToggle(nodeId) {
-    const data = clone(this.state.data);
-    const matches = this.findNodesById(nodeId, data, []);
-    const targetNode = matches[0];
-
-    window.tipAvailable = false;
-    let tipPermission = setTimeout(() => {
-      window.tipAvailable = true;
-    }, 700);
-
-    if (this.props.collapsible) {
-      targetNode._collapsed
-        ? this.expandNode(targetNode)
-        : this.collapseNode(targetNode);
-      this.setState({ data }, () => this.handleOnClickCb(targetNode));
-    } else {
-      this.handleOnClickCb(targetNode);
-    }
-  }
-
-  handleMouseOver(attrs) {
-    const data = clone(this.state.data);
-    const matches = this.findNodesById(nodeId, data, []);
-    const targetNode = matches[0];
-    tip = d3
-      .tip()
-      .attr("class", "d3-tip")
-      .html(function(d) {
-        return (
-          d.attributes &&
-          Object.keys(this.props.attributes).map(labelKey => (
-            <tspan x={textLayout.x} key={uuid.v4()}>
-              {labelKey + " : " + this.props.attributes[labelKey]}
-            </tspan>
-          ))
-        );
-      });
-  }
-
-  handleMouseOut(attrs) {}
 
   /**
    * handleOnClickCb - Handles the user-defined `onClick` function
@@ -546,7 +431,6 @@ export default class Tree extends React.Component {
                   totalUnmapped={nodeData.totalUnmapped}
                   label={nodeData.label}
                   attributes={nodeData.attributes}
-                  // onClick={this.handleNodeToggle}
                   onClick={this.handleNodeClick}
                   closeDetailsPane={this.closeDetailsPane}
                   textLayout={textLayout}

@@ -69,15 +69,15 @@ const TABLE_TOEPG = [
 
 ]
 const TABLE_SUBNETS = [
-	{
+    {
         Header: 'IP',
         accessor: 'ip'
     },
-	 {
+    {
         Header: 'To EPG',
         accessor: 'to_epg'
     },
-	 {
+    {
         Header: 'EPG Alias',
         accessor: 'epg_alias'
     },
@@ -113,14 +113,14 @@ const TABLE_OPERATIONAL = [
         width: 190,
         Cell: row => {
             return (<div>
-              {row.value.map(function(val) {
-                return <React.Fragment>
-                  {val}
-                  <br/>
-                </React.Fragment>
-               } )}
+                {row.value.map(function (val) {
+                    return <React.Fragment>
+                        {val}
+                        <br />
+                    </React.Fragment>
+                })}
             </div>)
-          } 
+        }
     },
     {
         Header: "Multicast Address",
@@ -245,4 +245,4 @@ const TABLE_COLUMNS_AUDIT_LOG = [
         accessor: 'created'
     }];
 
-export {TABLE_SUBNETS, TABLE_TOEPG, TABLE_POLICIES, ROWS_FAULTS, TABLE_COLUMNS_FAULTS, TABLE_COLUMNS_AUDIT_LOG, TABLE_COLUMNS_EVENTS, TABLE_OPERATIONAL }
+export { TABLE_SUBNETS, TABLE_TOEPG, TABLE_POLICIES, ROWS_FAULTS, TABLE_COLUMNS_FAULTS, TABLE_COLUMNS_AUDIT_LOG, TABLE_COLUMNS_EVENTS, TABLE_OPERATIONAL }

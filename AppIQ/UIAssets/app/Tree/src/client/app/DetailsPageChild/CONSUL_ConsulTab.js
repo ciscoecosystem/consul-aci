@@ -5,29 +5,29 @@ import "../DetailsPage.css";
 
 // Containes subtabs: nodechecks and service checks
 export default class CONSUL_ConsulTab extends React.Component {
-    constructor(props) {
-        super(props);
-        let { NodeCheckQuery, ServiceCheckQuery  } = props;
+  constructor(props) {
+    super(props);
+    let { NodeCheckQuery, ServiceCheckQuery } = props;
 
-        this.state = {
-            tabs: [
-                  {
-                    label: "Node Checks",
-                    key: "Node Checks",
-                    content: <CONSUL_ChecksTable key={"nodeChecks"} 
-                                extraColumn={{index: 1, value: { Header: 'NodeName', accessor: 'NodeName'}}}
-                                query={NodeCheckQuery} />
-                  },
-                  {
-                    label: "Service Checks",
-                    key: "Service Checks",
-                    content: <CONSUL_ChecksTable key={"serviceChecks"} query={ServiceCheckQuery} />
-                  }
-                ]
+    this.state = {
+      tabs: [
+        {
+          label: "Node Checks",
+          key: "Node Checks",
+          content: <CONSUL_ChecksTable key={"nodeChecks"}
+            extraColumn={{ index: 1, value: { Header: 'NodeName', accessor: 'NodeName' } }}
+            query={NodeCheckQuery} />
+        },
+        {
+          label: "Service Checks",
+          key: "Service Checks",
+          content: <CONSUL_ChecksTable key={"serviceChecks"} query={ServiceCheckQuery} />
         }
+      ]
     }
-    render() {
-        return (
-            <Tab type="secondary-tabs" tabs={this.state.tabs} />)
-    }
+  }
+  render() {
+    return (
+      <Tab type="secondary-tabs" tabs={this.state.tabs} />)
+  }
 }

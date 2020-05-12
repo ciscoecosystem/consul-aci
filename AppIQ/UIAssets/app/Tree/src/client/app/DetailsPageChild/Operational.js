@@ -1,9 +1,8 @@
 import React from "react";
-import { Tab } from "blueprint-react";
-import "../DetailsPage.css";
-
 import clone from "clone";
+import { Tab } from "blueprint-react";
 import DataTable from "./DataTable.js";
+import "../DetailsPage.css";
 
 export default class Operational extends React.Component {
     constructor(props) {
@@ -73,13 +72,13 @@ export default class Operational extends React.Component {
             type: nestedTemp[0]['gqlCall'],
             list: nestedTemp[0]['list']
         }
-		let querySubnets = {
-			param: this.props.nomo,
+        let querySubnets = {
+            param: this.props.nomo,
             type: nestedTemp[1]['gqlCall'],
             list: nestedTemp[1]['list']
-		}
-        nestedTemp[0]['content'] = <DataTable key='toepg' defaultSorted={[{id:"to_epg"}]} query={queryToEPG} index="5"></DataTable>
-		nestedTemp[1]['content'] = <DataTable key='subnets' query={querySubnets} index="6"></DataTable>
+        }
+        nestedTemp[0]['content'] = <DataTable key='toepg' defaultSorted={[{ id: "to_epg" }]} query={queryToEPG} index="5"></DataTable>
+        nestedTemp[1]['content'] = <DataTable key='subnets' query={querySubnets} index="6"></DataTable>
         this.setState({ nestedTabs: nestedTemp })
 
         temp[0]['content'] = <DataTable key="cep" query={query} index="3"></DataTable>

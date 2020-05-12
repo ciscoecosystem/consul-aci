@@ -8,9 +8,13 @@
 
 	<script type="text/javascript">
 		function onBodyLoad() {
+			console.log("-------[ IN - APP START - -----------------");
+
 			var arr, url, newUrl = "login.html", myMask = new Ext.LoadMask(Ext.getBody(), {msg:"Please wait..."});
 			myMask.show();
 			window.addEventListener('message', function (e) {
+				console.log("-------[IN - APP MESSAGE LISTEINIG --------------]]", e)
+				console.log("------ Location ", window.location.href);
 				myMask.hide();
 				myMask.destroy();
 				if (e.source === window.parent) {

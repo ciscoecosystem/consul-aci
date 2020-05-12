@@ -1,17 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import uuid from 'uuid';
-import { select } from 'd3';
 import './style.css';
-
 
 export default class LegendNode extends React.Component {
     constructor(props) {
         super(props);
-        const { nodeData: { parent }, orientation } = props;
-        const originX = parent ? parent.x : 0;
-        const originY = parent ? parent.y : 0;
-
+        // const { nodeData: { parent } } = props;
         this.state = {
             initialStyle: {
                 opacity: 1,
@@ -31,7 +24,7 @@ export default class LegendNode extends React.Component {
                 style={this.state.initialStyle}
                 className={'leafNodeBase1'}
                 onClick={this.props.onClick}
-                transform={"translate(" + this.props.translate.x + "," + this.props.translate.y +")"}
+                transform={"translate(" + this.props.translate.x + "," + this.props.translate.y + ")"}
             >
 
                 {nodeStyle.circle.stroke = nodeData.level}
@@ -80,7 +73,7 @@ export default class LegendNode extends React.Component {
                         //style={nodeStyle.attributes}
                         dy='10'
                     >
-                        {this.props.nodeData.sub_label }
+                        {this.props.nodeData.sub_label}
                     </text> : ""}
 
             </g>
