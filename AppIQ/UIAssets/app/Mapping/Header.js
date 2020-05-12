@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dropdown } from "blueprint-react";
-import './style.css';
+import './hstyle.css';
 
 class Header extends React.Component {
     constructor(props) {
