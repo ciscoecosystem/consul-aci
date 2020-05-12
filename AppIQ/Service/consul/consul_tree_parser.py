@@ -137,7 +137,8 @@ def consul_tree_dict(data):
                                 'Address' : service_address,
                                 'Service Kind' : service['service_kind'],
                                 'Service Tags' : service['service_tags'],
-                                'Service Checks' : service['service_checks']
+                                'Service Checks' : service['service_checks'],
+                                'Namespace': service['service_namespace']
                             },
                             'checks': service['service_checks']
                         }
