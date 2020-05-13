@@ -12,12 +12,11 @@ export default class TestComponent extends React.Component {
 
     render() {
         let nodeData = (this.props.data === undefined) ? [] : this.props.data;
-        // let nodeData = dummyData;
         let totApps = nodeData.length;
+
         /*
         nodeWrapper act as a root node and under it would be all nodes, but the root node (ie nodewrapper) is avoided tobe shown
         */
-
         let nodeWrapper = (totApps === 0) ? [] : [{
             "name": "allNodes",
             "children": [...nodeData]
@@ -48,7 +47,7 @@ export default class TestComponent extends React.Component {
                                 leafNode: { circle: { fill: "#DFF" } }
                             }
                         }}
-                        transitionDuration={(this.props.initialTreeRender > 1) ?  0 : 500}
+                        transitionDuration={(this.props.initialTreeRender > 1) ? 0 : 500}
                         // translate={{ x: 400, y: -60 }}  // as root node wont be show (alignment fix)
                         translate={this.props.treeTranslate}
                         scale={this.props.treeScale}

@@ -2,9 +2,7 @@
 
 <head>
     <Title>AppD</Title>
-    <!-- <link rel="stylesheet" id="champion-fontawesome-css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" media="all"> -->
     <link rel="stylesheet" href="icomoon/demo-files/demo.css" />
-    <!-- <link rel="stylesheet" href="icomoon/style.css" /> -->
 </head>
 
 <body>
@@ -12,24 +10,18 @@
     <script type="text/javascript">
         window.addEventListener('message', function (e) {
             if (e.source === window.parent) {
-                var tokenObj = Ext.decode(e.data, true);
-                if (tokenObj) {
+                var mappingTokenObj = Ext.decode(e.data, true);
+                if (mappingTokenObj) {
                     // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObj.urlToken);
-                    console.log('Tokens set')
+                    Ext.util.Cookies.set('app_Cisco_Consul_token', mappingTokenObj.token);
+                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', mappingTokenObj.urlToken);
+                    console.log('Tokens set : mapping')
                 }
             }
         });
-                var url = window.location.href;
-                var arr = url.split("?");
-                var tenantName = arr[1].split("tn=")[1];
-                console.log('tenantName');
 
     </script>
-    <div id="root">
-    </div>
-
+    <div id="root">  </div>
     <script src="public/mapping.js"> </script>
 </body>
 

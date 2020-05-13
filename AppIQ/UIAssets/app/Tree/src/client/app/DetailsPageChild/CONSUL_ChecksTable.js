@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Table, Panel, Icon, Label } from "blueprint-react";
 
 import { ToastContainer, toast } from 'react-toastify';
-import { INTERVAL_API_CALL } from '../../../../../../constants.js';
+import { INTERVAL_API_CALL, QUERY_URL, getCookie } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
@@ -10,34 +10,9 @@ const successColor = "#6ebe4a";
 const failColor = "#e2231a";
 const warningColor = "#f49141";
 
-function getCookieVal(offset) {
-    var endstr = document.cookie.indexOf(";", offset);
-    if (endstr == -1) {
-        endstr = document.cookie.length;
-    }
-    return unescape(document.cookie.substring(offset, endstr));
-}
+window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for checktab
+window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for checktab
 
-function getCookie(name) {
-    var arg = name + "=";
-    var alen = arg.length;
-    var clen = document.cookie.length;
-    var i = 0;
-    var j = 0;
-    while (i < clen) {
-        j = i + alen;
-        if (document.cookie.substring(i, j) == arg) {
-            return getCookieVal(j);
-        }
-        i = document.cookie.indexOf(" ", i) + 1;
-        if (i === 0) {
-            break;
-        }
-    }
-    return null;
-}
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
 
 export default class CONSUL_ChecksTable extends Component {
     constructor(props) {
@@ -49,7 +24,7 @@ export default class CONSUL_ChecksTable extends Component {
             rows: [],
             loading: true,
             expanded: {},
-            intervalId : undefined
+            intervalId: undefined
         };
     }
     handleError(error) {
@@ -74,36 +49,32 @@ export default class CONSUL_ChecksTable extends Component {
         }
         else {
             this.fetchData();
-            let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL );
+            let intervalId = setInterval(this.fetchData, INTERVAL_API_CALL);
             this.setState({ intervalId })
         }
     }
-    componentWillUnmount(){
-        console.log("Component will unount checktable", this.state.intervalId)
+    componentWillUnmount() {
         clearInterval(this.state.intervalId)
-      }
+    }
     fetchData() {
         let query = this.props.query;
         let payload = query
 
-        console.log("payload", payload);
-        let xhr = new XMLHttpRequest();
-        let url = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json";
+        let xhrCheck = new XMLHttpRequest();
         try {
-            xhr.open("POST", url, true);
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token");
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");
-            xhr.setRequestHeader("Content-type", "application/json");
-            xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-            xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            xhrCheck.open("POST", QUERY_URL, true);
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // checktable fetch dev cookie
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");  // checktable fetch  cookie
+            xhrCheck.setRequestHeader("Content-type", "application/json");
+            xhrCheck.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrCheck.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
-            xhr.onreadystatechange = () => {
+            xhrCheck.onreadystatechange = () => {
 
                 console.log("Sending req");
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        let json = JSON.parse(xhr.responseText);
-                        console.log("response json ", json);
+                if (xhrCheck.readyState == 4) {
+                    if (xhrCheck.status == 200) {
+                        let json = JSON.parse(xhrCheck.responseText);
                         if ("errors" in json) {
                             // Error related to query
                             this.handleError(json.errors[0]["message"] || "Error while fetching data");
@@ -124,12 +95,12 @@ export default class CONSUL_ChecksTable extends Component {
                         }
                     } else {
                         // Status code of XHR request not 200
-                        let jsonError = JSON.parse(xhr.responseText);
+                        let jsonError = JSON.parse(xhrCheck.responseText);
                         this.handleError(jsonError.errors[0]["message"]);
                     }
                 }
             };
-            xhr.send(JSON.stringify(payload));
+            xhrCheck.send(JSON.stringify(payload));
         } catch (except) {
             this.handleError("Error in API request please check configuration");
             console.log(except);
@@ -150,7 +121,7 @@ export default class CONSUL_ChecksTable extends Component {
         const headerColumns = [
             {
                 Header: 'Name',
-                accessor:"Name", // key for table header
+                accessor: "Name", // key for table header
                 Cell: row => {
                     let { Name, Status } = row.original;
                     return <div>
@@ -181,8 +152,8 @@ export default class CONSUL_ChecksTable extends Component {
             }
         ]
 
-        if (extraColumn){
-            headerColumns.splice(extraColumn.index, 0, extraColumn.value ); // adding extra column at spicified index
+        if (extraColumn) {
+            headerColumns.splice(extraColumn.index, 0, extraColumn.value); // adding extra column at spicified index
         }
 
         return (

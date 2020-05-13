@@ -23,7 +23,7 @@ def consul_tree_dict(data):
     # Final list of ap(application profile)
     ap_list = []
 
-    
+
     # distinct APs
     ap_set= set([node['AppProfile'] for node in data])
 
@@ -34,6 +34,11 @@ def consul_tree_dict(data):
 
         # Extract all AP EPs
         ap_eps = [ep for ep in data if ep['AppProfile'] == ap]
+
+        # List for maintaining unique ep ips,
+        # and service addresses
+        ap_node_ip_list = []
+        ap_service_addr_list=[]
 
         # Top level node in Tree
         # TODO: lable not sent because not needed in Consul: Try send ''
@@ -72,6 +77,11 @@ def consul_tree_dict(data):
                 'children': [],
                 'checks': {}
             }
+
+            # List for maintaining unique ep ips,
+            # and service addresses
+            epg_node_ip_list = []
+            epg_service_addr_list=[]
 
             # distinct ips in current EPg
             epg_ip_set = set([ep['IP'] for ep in epg_eps])
@@ -113,6 +123,9 @@ def consul_tree_dict(data):
                         'checks': ep_node['node_check']
                     }
 
+                    # List for maintaining unique service addresses
+                    ep_service_addr_list = []
+
                     # Iterating for each Service in EP
                     for service in ep_node['node_services']:
 
@@ -137,16 +150,14 @@ def consul_tree_dict(data):
                                 'Address' : service_address,
                                 'Service Kind' : service['service_kind'],
                                 'Service Tags' : service['service_tags'],
-                                'Service Checks' : service['service_checks']
+                                'Service Checks' : service['service_checks'],
+                                'Namespace': service['service_namespace']
                             },
                             'checks': service['service_checks']
                         }
 
                         # Add Service to EP
                         ep_dict['children'].append(service_dict)
-
-                        # Add Service checks to EP checks
-                        ep_dict['checks'] = add_checks(ep_dict['checks'], service_dict['checks'])
 
 
                         # Now adding the service info in EP and EPG attributes
@@ -164,9 +175,23 @@ def consul_tree_dict(data):
                         if service_side_pane not in ep_dict['attributes']['Services_List']:
                             ep_dict['attributes']['Services_List'].append(service_side_pane)
 
+                        # Add service checks to EP checks, only if
+                        # the check for that service has not been
+                        # added before.
+                        if service_address not in ep_service_addr_list:
+                            ep_dict['checks'] = add_checks(ep_dict['checks'], service_dict['checks'])
+                            ep_service_addr_list.append(service_address)
+
                         # Adding services to EPG attributes
                         if service_side_pane not in epg_dict['attributes']['Services_List']:
                             epg_dict['attributes']['Services_List'].append(service_side_pane)
+
+                        # Add service checks to EPG checks, only if
+                        # the check for that service has not been
+                        # added before.
+                        if service_address not in epg_service_addr_list:
+                            epg_dict['checks'] = add_checks(epg_dict['checks'], service_dict['checks'])
+                            epg_service_addr_list.append(service_address)
 
                         # Add lable to EPG if not there, a EPG can have more then one services in 
                         # the EPs, But as it is difficult to show all of those in the tree view 
@@ -175,12 +200,16 @@ def consul_tree_dict(data):
                             epg_dict['label'] = service['service_id'] + ', ...'
 
 
+                        # Add service checks to EPG checks, only if
+                        # the check for that service has not been
+                        # added before.
+                        if service_address not in ap_service_addr_list:
+                            ap_dict['checks'] = add_checks(ap_dict['checks'], service_dict['checks'])
+                            ap_service_addr_list.append(service_address)
+
+
                     # Add EP to EPG
                     epg_dict['children'].append(ep_dict)
-
-                    # Add EP checks to EPG checks
-                    epg_dict['checks'] = add_checks(epg_dict['checks'], ep_dict['checks'])
-
 
                     # Now adding the Node info in the EPG Side Pane 
                     # if it does not exist
@@ -196,6 +225,19 @@ def consul_tree_dict(data):
                     if ep_side_pane not in epg_dict['attributes']['Nodes']:
                         epg_dict['attributes']['Nodes'].append(ep_side_pane)
 
+                    # Add Consul Node checks to EPG checks, only
+                    # if the check for that nodes has not been
+                    # added before.
+                    if ep_node['node_ips'][0] not in epg_node_ip_list:
+                        epg_dict['checks'] = add_checks(epg_dict['checks'], ep_node['node_check'])
+                        epg_node_ip_list.append(ep_node['node_ips'][0])
+
+                    # Add Consul Node checks to AP checks, only
+                    # if the check for that nodes has not been
+                    # added before.
+                    if ep_node['node_ips'][0] not in ap_node_ip_list:
+                        ap_dict['checks'] = add_checks(ap_dict['checks'], ep_node['node_check'])
+                        ap_node_ip_list.append(ep_node['node_ips'][0])
 
             # 3rd layer nodes in Tree (EP)
             #  Iterating for each Non service end point in EPG
@@ -212,9 +254,6 @@ def consul_tree_dict(data):
 
             # Add EPG to AP
             ap_dict['children'].append(epg_dict)
-
-            # Add EPG checks to AP checks
-            ap_dict['checks'] = add_checks(ap_dict['checks'], epg_dict['checks'])
 
         # Add AP to responce list
         ap_list.append(ap_dict)

@@ -3,30 +3,24 @@
 <head>
     <meta charset="utf-8">
     <title>AppD React Tree</title>
- <!--   <link rel="stylesheet" href="/insieme/stromboli/resources/css/insieme-ext-theme-custom.css" />
-    <link rel="stylesheet" href="icomoon/demo-files/demo.css" />
-    <link rel="stylesheet" href="icomoon/style.css" /> -->
 </head>
 
 <body>
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
 
     <script type="text/javascript">
+
         window.addEventListener('message', function (e) {
             if (e.source === window.parent) {
-                var tokenObj = Ext.decode(e.data, true);
-                if (tokenObj) {
-                    // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObj.urlToken);
-                    console.log('Tokens set')
+                var treeViewtokenObj = Ext.decode(e.data, true);
+                if (treeViewtokenObj) {
+                    // Setting the cookie received by the APIC
+                    Ext.util.Cookies.set('app_Cisco_Consul_token', treeViewtokenObj.token);
+                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', treeViewtokenObj.urlToken);
+                    console.log('treeview Tokens set')
                 }
             }
         });
-                var url = window.location.href;
-                var arr = url.split("?");
-                var tenantName = arr[1].split("tn=")[1];
-                console.log('tenantName');
 
     </script>
 

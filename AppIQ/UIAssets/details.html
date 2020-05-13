@@ -2,29 +2,25 @@
 
 <head>
     <Title>AppD</Title>
-    <!-- <link rel="stylesheet" id="champion-fontawesome-css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" media="all"> -->
-    
 </head>
 
 <body>
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
     <script type="text/javascript">
-        window.addEventListener('message', function (e) {
+        window.addEventListener('message', function (e) { 
             if (e.source === window.parent) {
-                var tokenObj = Ext.decode(e.data, true);
-                if (tokenObj) {
+                var tokenObjDetails = Ext.decode(e.data, true);
+                if (tokenObjDetails) {
                     // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObj.urlToken);
-                    console.log('Tokens set')
+                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObjDetails.token);
+                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObjDetails.urlToken);
+                    console.log('details Token set')
                 }
             }
         });
     </script>
 
-    <div id="root">
-
-    </div>
+    <div id="root"></div>
 
     <script src="public/details.js"> </script>
 </body>
