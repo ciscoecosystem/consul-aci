@@ -1,0 +1,44 @@
+.dialog-content {
+    padding: 15px;
+}
+
+.dialog-content .panel {
+    padding: 16px;
+    border: 1px solid #dfdfdf;
+    background-color: #FFFFFF
+}
+
+.panel-with-header .panel-header {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    min-height: 44px;
+}
+
+.health-bullet {
+    border-radius: 50%;
+    width: 1px;
+    height: 1px;
+    padding: 4px;
+    display: inline-block;
+    background-color: #c6c7ca;
+}
+
+.health-status {
+    margin-left: 10px;
+}
+
+.health-bullet.healthy {
+    background-color: #6cc04a;
+}
+
+.health-bullet.dead {
+    background-color: red;
+}
+
+/* .modal-layer-1 {
+    z-index: 2000;
+} */
