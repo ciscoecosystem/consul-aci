@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-import { Sidebar, Dropdown, Screen } from 'blueprint-react';
+import { Sidebar, Dropdown } from 'blueprint-react';
 import Agent from "./Agent/index.js"
 import Iframe from 'react-iframe';
 import './style.css'
@@ -15,7 +15,6 @@ const sidebarItems = [
     {
         id: 'Operational',
         icon: "icon-diagnostics",
-        path: '/',
         title: 'Operational',
         subItems: [
             {
@@ -25,7 +24,7 @@ const sidebarItems = [
             },
             {
                 id: 'dc2',
-                path: '',
+                path: '/tree',
                 title: '10.54.22.11'
             }
         ]
@@ -33,8 +32,19 @@ const sidebarItems = [
     {
         id: 'mapping',
         icon: "icon-popup-dialogue",
-        path: '/mapping',
         title: 'Mapping',
+        subItems: [
+            {
+                id: 'dc12',
+                path:'/tree',
+                title: '10.111.222.12'
+            },
+            {
+                id: 'dc12',
+                path:'/tree',
+                title: '10.54.22.11'
+            }
+        ]
     },
     {
         id: 'Agent',
@@ -51,7 +61,7 @@ export default class AppB extends React.Component {
         this.state = {
             agentPopup: false,
             items: [
-                { label: "Agent", action: this.handleAgent }
+                { label: "Agents", action: this.handleAgent }
             ]
         }
     }
@@ -69,6 +79,7 @@ export default class AppB extends React.Component {
                         <Sidebar title={'Consul'}
                             items={sidebarItems}
                             theme={Sidebar.THEMES.THEME_TYPE}
+                            compressed={true}
                         />
 
                         <div className="main-content-wrapper">
@@ -79,8 +90,13 @@ export default class AppB extends React.Component {
                                     <div className="right-menu-icons ">
 
                                         <Dropdown
+                                            label={<span class="icon-help icon-small"></span>}
+                                            size="btn--small"
+                                            disabled={true}
+                                            items={[]}>
+                                        </Dropdown>
+                                        <Dropdown
                                             label={<span class="icon-cog icon-small"></span>}
-                                            style={{ overflow: "visible" }}
                                             size="btn--small"
                                             items={this.state.items}>
                                         </Dropdown>

@@ -46,6 +46,10 @@
     padding-right: 10px;
 }
 
+.right-menu-icons .dropdown {
+    margin-right: 13px;
+}
+
 .right-menu-icons .dropdown__menu {
     right: 0px !important;
 }
