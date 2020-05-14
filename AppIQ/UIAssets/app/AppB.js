@@ -2,13 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { Sidebar, Dropdown, Screen } from 'blueprint-react';
 import Agent from "./Agent/index.js"
+import Iframe from 'react-iframe';
 import './style.css'
 
 const sidebarItems = [
     {
         id: 'dash',
         icon: "icon-call-rate",
-        path: '/dashboard',
+        path: '/',
         title: 'Dashboard'
     },
     {
@@ -19,7 +20,7 @@ const sidebarItems = [
         subItems: [
             {
                 id: 'dc1',
-                path: '',
+                path: '/tree',
                 title: '10.111.222.12'
             },
             {
@@ -45,7 +46,6 @@ const sidebarItems = [
 
 export default class AppB extends React.Component {
     constructor(props) {
-        console.log("Appb");
         super(props)
         this.handleAgent = this.handleAgent.bind(this)
         this.state = {
@@ -61,11 +61,10 @@ export default class AppB extends React.Component {
     }
 
     render() {
-        console.log("Render ", this.state, Dropdown);
         return (
             <Router>
                 <div>
-                {this.state.agentPopup && <Redirect to="/agent"/> }
+                    {this.state.agentPopup && <Redirect to="/agent" />}
                     <div className="app-container">
                         <Sidebar title={'Consul'}
                             items={sidebarItems}
@@ -92,16 +91,27 @@ export default class AppB extends React.Component {
                                 <div className="routed-content">
 
                                     <Switch>
-                                    
+
                                         <Route exact path="/" >
                                             <div>
-                                                Here details goes
+                                                Here Goes Dashboard
+                                            </div>
+                                        </Route>
+                                        <Route exact path="/tree" >
+                                            <div>
+                                                <Iframe url="tree.html"
+                                                    width="450px"
+                                                    height="80vh"
+                                                    id="myId"
+                                                    className="myClassname"
+                                                    display="initial"
+                                                    position="relative" styles={{ height: "max-content" }} />
                                             </div>
                                         </Route>
 
                                         <Route exact path="/agent"><div>
-                                            
-                                            <Agent handleAgent={this.handleAgent}/>
+
+                                            <Agent handleAgent={this.handleAgent} />
                                         </div>
                                         </Route>
                                     </Switch>
