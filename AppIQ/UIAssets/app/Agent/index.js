@@ -1,18 +1,21 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { Screen, Table, Button, Dropdown, Input, Select } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
+import { QUERY_URL } from "../../constants.js"
 import "./index.css";
 
-const dummylist = [
-    { "protocol": "http", "ip": "10.0.0.0", "port": 8050, "token": "lnfeialilsacirvjlnlaial", "status": true, "datacenter": "datacenter1" },
-    { "protocol": "https", "ip": "10.0.0.1", "port": 8051, "token": "lnfeialilsacirvjlglaial", "status": false, "datacenter": "datacenter1" },
-    { "protocol": "http", "ip": "10.0.0.2", "port": 8051, "token": "lnfeialilsacirvjhnlaial", "status": true, "datacenter": "datacenter2" }
-]
+// const dummylist = [
+//     { "protocol": "http", "ip": "10.0.0.0", "port": 8050, "token": "lnfeialilsacirvjlnlaial", "status": true, "datacenter": "datacenter1" },
+//     { "protocol": "https", "ip": "10.0.0.1", "port": 8051, "token": "lnfeialilsacirvjlglaial", "status": false, "datacenter": "datacenter1" },
+//     { "protocol": "http", "ip": "10.0.0.2", "port": 8051, "token": "lnfeialilsacirvjhnlaial", "status": true, "datacenter": "datacenter2" }
+// ]
 
 export default class Agent extends React.Component {
     constructor(props) {
         super(props)
+        this.xhrReadCred = new XMLHttpRequest();
         this.closeAgent = this.closeAgent.bind(this);
         this.handleModal = this.handleModal.bind(this);
         this.actionEvent = this.actionEvent.bind(this);
@@ -20,8 +23,12 @@ export default class Agent extends React.Component {
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.validateField = this.validateField.bind(this);
         this.submitAgent = this.submitAgent.bind(this);
+        this.readAgentsCall = this.readAgentsCall.bind(this);
+        this.notify = this.notify.bind(this);
 
         this.state = {
+            details: [],
+            readAgentLoading: true,
             redirectToMain: false,
             addAgentModalIsOpen: false,
             actionItems: [
@@ -46,6 +53,19 @@ export default class Agent extends React.Component {
                 Port: null
             }
         }
+    }
+
+    componentDidMount() {
+        let thiss = this;
+        this.setState({ readAgentLoading: true }, function () {
+            console.log("LOading----")
+            thiss.readAgentsCall();
+        })
+
+    }
+
+    componentWillUnmount() {
+        this.xhrReadCred.abort(); // cancel all apis
     }
 
     componentDidCatch(error, info) {
@@ -86,7 +106,6 @@ export default class Agent extends React.Component {
 
     handleFieldChange(e) {
         console.log("handlefieldchange ", e.target);
-        debugger
         let { name, value } = e.target;
         let validationStatus = this.validateField(name, value);
 
@@ -111,10 +130,68 @@ export default class Agent extends React.Component {
         console.log("Submit agent: ", this.state);
     }
 
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ? toast.warn(message, {
+            position: toast.POSITION.BOTTOM_CENTER
+        }) :
+            isSuccess ? toast.success(message, {
+                position: toast.POSITION.BOTTOM_CENTER
+            }) :
+                toast.error(message, {
+                    position: toast.POSITION.BOTTOM_CENTER
+                });
+    }
+
+    readAgentsCall() {
+        let thiss = this;
+        const payload = {
+            query: `query{
+            ReadCreds{creds}
+        }`}
+        let xhrReadCred = this.xhrReadCred;
+        try {
+            xhrReadCred.open("POST", QUERY_URL, true);
+            xhrReadCred.setRequestHeader("Content-type", "application/json");
+            xhrReadCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrReadCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            xhrReadCred.onreadystatechange = function () {
+                console.log("chr== state ", xhrReadCred.readyState);
+
+                if (xhrReadCred.readyState == 4 && xhrReadCred.status == 200) {
+                    let checkData = JSON.parse(xhrReadCred.responseText);
+                    let credsData = JSON.parse(checkData.data.ReadCreds.creds);
+
+                    if (parseInt(credsData.status_code) === 200) {
+                        thiss.setState({ details: credsData.payload })
+                    } else if (parseInt(credsData.status_code) === 300) {
+                        try {
+                            thiss.notify(credsData.message)
+                        } catch (e) {
+                            console.log("message error", e)
+                        }
+                    }
+                }
+                else {
+                    console.log("Not fetching");
+                }
+                thiss.setState({ readAgentLoading: false });
+            }
+            xhrReadCred.send(JSON.stringify(payload));
+        }
+        catch (e) {
+            thiss.notify("Error while fetching agent information please refresh")
+            console.error('Error getting agents', e);
+        }
+        finally {
+            // thiss.setState({ readAgentLoading: false });
+        }
+
+    }
+
     render() {
         let thiss = this;
         console.log("Render ", this.state);
-        let { addAgentModalIsOpen, redirectToMain, agentFields, protocolOptions, errormsg, Port, FQDNS } = this.state;
+        let { addAgentModalIsOpen, redirectToMain, agentFields, protocolOptions, errormsg, readAgentLoading, Port, FQDNS } = this.state;
 
         const tableColumns = [{
             Header: 'Protocol',
@@ -159,7 +236,7 @@ export default class Agent extends React.Component {
                     <Dropdown
                         label={<span className="icon-more btn--xsmall"></span>}
                         size="btn--xsmall"
-                        preferredPlacements={["left", "right"]}
+                        preferredPlacements={"left"}
                         items={this.state.actionItems}>
                     </Dropdown>
                 </div>
@@ -235,7 +312,7 @@ export default class Agent extends React.Component {
                                 <div className="config-group">
 
                                     <Button key={"reddetail"}
-                                        className="half-margin-left"
+                                        className={`half-margin-left ${readAgentLoading && 'disabled'}`}
                                         size="btn--small"
                                         type="btn--primary-ghost"
                                         onClick={() => { this.handleModal(true) }}>Add Agent</Button>
@@ -243,10 +320,10 @@ export default class Agent extends React.Component {
                             </div>
                             <div className="panel-body ">
                                 <Table key={"agentTable"}
-                                    loading={false}
+                                    loading={this.state.readAgentLoading}
                                     className="-striped -highlight"
                                     noDataText="No Agent Found."
-                                    data={dummylist}
+                                    data={this.state.details}
                                     columns={tableColumns}
                                 />
                             </div>

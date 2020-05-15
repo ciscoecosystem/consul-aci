@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { Sidebar, Dropdown } from 'blueprint-react';
+import { ToastContainer } from 'react-toastify';
 import Agent from "./Agent/index.js"
 import Iframe from 'react-iframe';
+import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
 
 const sidebarItems = [
@@ -36,12 +38,12 @@ const sidebarItems = [
         subItems: [
             {
                 id: 'dc12',
-                path:'/tree',
+                path: '/tree',
                 title: '10.111.222.12'
             },
             {
                 id: 'dc12',
-                path:'/tree',
+                path: '/tree',
                 title: '10.54.22.11'
             }
         ]
@@ -74,6 +76,7 @@ export default class AppB extends React.Component {
         return (
             <Router>
                 <div>
+                    <ToastContainer />
                     {this.state.agentPopup && <Redirect to="/agent" />}
                     <div className="app-container">
                         <Sidebar title={'Consul'}
