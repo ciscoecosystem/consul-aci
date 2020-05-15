@@ -1,6 +1,6 @@
 import datetime
 import time, json
-from sqlalchemy import Column, Integer, Long, String, ForeignKey, PickleType, update, Boolean, func, DateTime, and_
+from sqlalchemy import Column, Integer, String, ForeignKey, PickleType, update, Boolean, func, DateTime, and_
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, mapper, sessionmaker, relationship
@@ -19,7 +19,7 @@ class Login(Base):
     token = Column(String)
     status = Column(Boolean)
     datacenter = Column(String)
-    timestamp = Column(Long)
+    timestamp = Column(Integer)
 
     def __init__(self, ip, port, protocol, token, status, datacenter, timestamp):
         self.ip = ip
@@ -52,9 +52,9 @@ class Node(Base):
     node_ips = Column(PickleType)
 
     def __init__(self, node_id, node_name, node_ips):
-        self.node_id
-        self.node_name
-        self.node_ips
+        self.node_id = node_id
+        self.node_name = node_name
+        self.node_ips = node_ips
 
 
 class Service(Base):
@@ -272,8 +272,12 @@ class Database():
                 ...
             ]
         """
-        node_list = [Node(entry[0], entry[1], entry[3]) for entry in data]
-        self.session.add_all(node_list)
+        node_list = []
+        for entry in data:
+            # node_list.append(Node(entry[0], entry[1], entry[2]))
+            self.session.add(Node(entry[0], entry[1], entry[2]))
+        # node_list = [Node(entry[0], entry[1], entry[2]) for entry in data]
+        # self.session.add_all(node_list)
 
     @decorator_edit
     def update_node(self, old_node_id, data):
@@ -367,7 +371,7 @@ class Database():
         return self.session.query(ServiceChecks).all()
 
     @decorator_edit
-    def insert_into_service(self, data):
+    def insert_into_service_checks(self, data):
         """
         Arguments:
             data {List of Tuple} -- [
