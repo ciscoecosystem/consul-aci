@@ -1,0 +1,79 @@
+.cui .dropdown-setting .dropdown__menu:after {
+    left: auto !important;
+    right: 10px !important;
+}
+.cui .dropdown-setting .dropdown__menu {
+
+    right: 0px !important;
+}
+
+
+.cui .dropdown-setting  .dropdown>.btn:after, .cui .dropdown>a:after {
+    content: none;
+}
+
+.cui .dropdown-setting .btn.btn--small {
+    padding: 0px;
+    min-width: 30px;
+}
+
+.sub-header {
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    font-size: 22px;
+    white-space: pre;
+    padding-top: 7px;
+    position: relative;
+    margin-bottom : 0.8em;
+}
+
+.dropdown-setting{
+    padding: 3px; 
+    padding-right: 10px;
+}
+
+/* .app-name */
+.app-name {
+    padding : 0.3em;
+    padding-left : 0.8em;
+    padding-top : 0.6em;
+    padding-bottom : 0.6em;
+    padding-right : 4em;
+    color : #58585b;
+}
+
+.toolbar {
+    padding : 0.5em;
+    text-align : right;
+    background-color : rgb(223,223,223);
+}
+
+.clearfix {
+    overflow: visible;
+}
+
+/* float right */
+.floar { float: right; }
+/* float left */
+.floal { float: left; }
+
+/* button layout */
+.button-logout {
+    border-radius: 20px;
+    margin-top: 0.2em;
+    margin-right: 0.5em;
+    color : #f0f0f0;
+    border: none;
+    padding: 7px 30px;
+    cursor: pointer;
+}
+
+/* .instancetext */
+.instancetext {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    background-color: transparent;
+    margin-right: 0.3em;
+    padding-top: 9px; 
+    display: inline-block
+}
