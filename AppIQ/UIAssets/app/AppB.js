@@ -4,8 +4,13 @@ import { Sidebar, Dropdown } from 'blueprint-react';
 import { ToastContainer } from 'react-toastify';
 import Agent from "./Agent/index.js"
 import Iframe from 'react-iframe';
+import { PROFILE_NAME } from "../constants.js";
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
+
+const treeRedirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-wordpress") + "&tn=" + encodeURIComponent("AppDynamics");
+const detailRedirect = `/details.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-wordpress") + "&tn=" + encodeURIComponent("AppDynamics");
+const mappingRedirect = `/mapping.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-wordpress") + "&tn=" + encodeURIComponent("AppDynamics");
 
 const sidebarItems = [
     {
@@ -21,12 +26,12 @@ const sidebarItems = [
         subItems: [
             {
                 id: 'dc1',
-                path: '/tree',
+                path: treeRedirect,
                 title: '10.111.222.12'
             },
             {
-                id: 'dc2',
-                path: '/tree',
+                id: 'dc2 details',
+                path: detailRedirect,
                 title: '10.54.22.11'
             }
         ]
@@ -38,12 +43,12 @@ const sidebarItems = [
         subItems: [
             {
                 id: 'dc12',
-                path: '/tree',
+                path: mappingRedirect,
                 title: '10.111.222.12'
             },
             {
                 id: 'dc12',
-                path: '/tree',
+                path: mappingRedirect,
                 title: '10.54.22.11'
             }
         ]
@@ -116,9 +121,34 @@ export default class AppB extends React.Component {
                                                 Here Goes Dashboard
                                             </div>
                                         </Route>
-                                        <Route exact path="/tree" >
+                                        <Route path="/tree.html" >
                                             <div>
-                                                <Iframe url="tree.html"
+                                                tree view
+                                                <Iframe url={treeRedirect}
+                                                    width="450px"
+                                                    height="80vh"
+                                                    id="myId"
+                                                    className="myClassname"
+                                                    display="initial"
+                                                    position="relative" styles={{ height: "max-content" }} />
+                                            </div>
+                                        </Route>
+                                        <Route path="/mapping.html" >
+                                            <div>
+                                                mapping view
+                                                <Iframe url={mappingRedirect}
+                                                    width="450px"
+                                                    height="80vh"
+                                                    id="myId"
+                                                    className="myClassname"
+                                                    display="initial"
+                                                    position="relative" styles={{ height: "max-content" }} />
+                                            </div>
+                                        </Route>
+                                        <Route path="/details.html" >
+                                            <div>
+                                                detail view
+                                                <Iframe url={detailRedirect}
                                                     width="450px"
                                                     height="80vh"
                                                     id="myId"
