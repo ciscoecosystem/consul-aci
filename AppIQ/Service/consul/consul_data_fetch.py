@@ -48,24 +48,25 @@ Algorithm:
 
 """
 
-# TODO: Thread pool implementation and Thread join everywhere
+# TODO: Node services and Node checks can run parallel,Servce Info and Check can run parallel
 # TODO: DB insertion everywhere
 # TODO: Testcase for this - using mock/realtime things
 
-
+import custom_logger
+from consul_utils import Cosnul
 
 import time
 import threading
-import custom_logger
-from consul_utils import Cosnul
+from itertools import repeat
 from threading_util import ThreadSafeDict
-
-
+from concurrent.futures import as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 POLL_INTERVAL = 1       # interval in minutes
 CHECK_AGENT_LIST = 3    # interval in sec
+THREAD_POOL = 10
 
 
 def data_fetch():
@@ -99,45 +100,27 @@ def data_fetch():
             # Nodes thread safe dict
             nodes_dict = ThreadSafeDict()
 
+            # Define an executor for all thread processing
+            executor = ThreadPoolExecutor(max_workers = THREAD_POOL)
+
             # Ittrate for every agent of that DC 
             # and create a unique list of nodes.
-            for agent in agents:
-                # TODO: First thread pool inplementation
-                t = threading.Thread(target=get_nodes, args=(nodes_dict, agent))
-                t.start()
-
-            # TODO: all agents thread join
+            executor.map(get_nodes, repeat(nodes_dict), agents)
 
             # Services thread safe dict
             services_dict = ThreadSafeDict()
 
-            for node_id in nodes_dict:
-                node = nodes_dict[node_id]
+            # Ittrate all nodes and get all services
+            executor.map(get_services, repeat(services_dict), nodes_dict.values())
 
-                # TODO: thread pool
-                t1 = threading.Thread(target=get_services, args=(services_dict, node))
-                t1.start()
+            # Ittrate all nodes and get node checks
+            executor.map(get_node_checks, nodes_dict.values())
 
-                # TODO: thread pool
-                t2  = threading.Thread(target=get_node_checks, args=(node))
-                t2.start()
+            # Ittrate all services and get services info
+            executor.map(get_service_info, services_dict.values())
 
-            # TODO: all node services thread join
-
-            for service_id in services_dict:
-                service = services_dict[service_id]
-
-                # TODO: thread pool
-                t1 = threading.Thread(target=get_service_info, args=(services_dict, service))
-                t1.start()
-
-                # TODO: thread pool
-                t2  = threading.Thread(target=get_service_checks, args=(service))
-                t2.start()
-
-            # TODO: all services thread join
-            # TODO: all services checks thread join
-            # TODO: all services details thread join
+            # Ittrate all services and get services checks
+            executor.map(get_service_checks, services_dict.values())
 
         current_time = time.time()
         time_to_sleep = (start_time + POLL_INTERVAL*60) - current_time
@@ -194,10 +177,9 @@ def get_node_checks(node):
     node_check = consul_obj.node_checks(node_name)
 
 
-def get_service_info(services_dict, service):
+def get_service_info(service):
     """Get Service info
     
-    services_dict: dict to store all unique services of a DC
     service: service's info to be fetched
     """
     
