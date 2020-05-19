@@ -13,7 +13,7 @@ logger = CustomLogger.get_logger("/home/app/log/app.log")
 
 class Login(Base):
     __tablename__ = 'Login'
-    ip = Column(String, primary_key=True)
+    agent_ip = Column(String, primary_key=True)
     port = Column(Integer, primary_key=True)
     protocol = Column(String)
     token = Column(String)
@@ -21,8 +21,8 @@ class Login(Base):
     datacenter = Column(String)
     timestamp = Column(Integer)
 
-    def __init__(self, ip, port, protocol, token, status, datacenter, timestamp):
-        self.ip = ip
+    def __init__(self, agent_ip, port, protocol, token, status, datacenter, timestamp):
+        self.agent_ip = agent_ip
         self.port = port
         self.protocol = protocol
         self.token = token
@@ -34,13 +34,13 @@ class Login(Base):
 class Mapping(Base):
     __tablename__ = 'Mapping'
     ip = Column(String, primary_key=True)
-    domain_name = Column(String, primary_key=True)
+    dn = Column(String, primary_key=True)
     disabled = Column(Boolean)
     datacenter = Column(String)
 
-    def __init__(self, ip, domain_name, disabled, datacenter):
+    def __init__(self, ip, dn, disabled, datacenter):
         self.ip = ip
-        self.domain_name = domain_name
+        self.dn = dn
         self.disabled = disabled
         self.datacenter = datacenter
 
@@ -50,13 +50,15 @@ class Node(Base):
     node_id = Column(String, primary_key=True)
     node_name = Column(String)
     node_ips = Column(PickleType)
+    datacenter = Column(String)
     created_ts = Column(DateTime)
     updated_ts = Column(DateTime)
 
-    def __init__(self, node_id, node_name, node_ips, created_ts=None, updated_ts=None):
+    def __init__(self, node_id, node_name, node_ips, datacenter, created_ts=None, updated_ts=None):
         self.node_id = node_id
         self.node_name = node_name
         self.node_ips = node_ips
+        self.datacenter = datacenter
         self.created_ts = created_ts
         self.updated_ts = updated_ts
 
@@ -71,11 +73,12 @@ class Service(Base):
     service_address = Column(String)
     service_tags = Column(PickleType)
     service_kind = Column(String)
-    name_space = Column(String)
+    namespace = Column(String)
+    datacenter = Column(String)
     created_ts = Column(DateTime)
     updated_ts = Column(DateTime)
 
-    def __init__(self, service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, name_space, created_ts=None, updated_ts=None):
+    def __init__(self, service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts=None, updated_ts=None):
         self.service_id = service_id
         self.node_id = node_id
         self.service_name = service_name
@@ -84,16 +87,17 @@ class Service(Base):
         self.service_address = service_address
         self.service_tags = service_tags
         self.service_kind = service_kind
-        self.name_space = name_space
+        self.name_space = namespace
+        self.datacenter = datacenter
         self.created_ts = created_ts
         self.updated_ts = updated_ts
 
 
 class NodeChecks(Base):
     __tablename__ = 'NodeChecks'
-    node_name = Column(String, primary_key=True)
+    node_id = Column(String, primary_key=True, ForeignKey('Node.node_id'))
     check_id = Column(String, primary_key=True)
-    node_id = Column(String, ForeignKey('Node.node_id'))
+    node_name = Column(String)
     check_name = Column(String)
     service_name = Column(String)
     check_type = Column(String)
@@ -103,10 +107,10 @@ class NodeChecks(Base):
     created_ts = Column(DateTime)
     updated_ts = Column(DateTime)
 
-    def __init__(self, node_name, check_id, node_id, check_name, service_name, check_type, notes, output, status, created_ts=None, updated_ts=None):
-        self.node_name = node_name
-        self.check_id = check_id
+    def __init__(self, node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts=None, updated_ts=None):
         self.node_id = node_id
+        self.check_id = check_id
+        self.node_name = node_name
         self.check_name = check_name
         self.service_name = service_name
         self.check_type = check_type
@@ -142,6 +146,48 @@ class ServiceChecks(Base):
         self.created_ts = created_ts
         self.updated_ts = updated_ts
 
+class NodeAudit(Node):
+    __tablename__ = 'NodeAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(String)
+
+    def __init__(self, node_id, node_name, node_ips, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(node_id, node_name, node_ips, datacenter, created_ts, updated_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
+
+
+class ServiceAudit(Service):
+    __tablename__ = 'ServiceAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(String)
+
+    def __init__(self, service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts, updated_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
+
+
+class NodeChecksAudit(NodeChecks):
+    __tablename__ = 'NodeChecksAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(String)
+
+    def __init__(self, node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts, updated_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
+
+
+class ServiceChecksAudit(ServiceChecks):
+    __tablename__ = 'ServiceChecksAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(String)
+
+    def __init__(self, check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts, updated_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
 
 class EP(Base):
     __tablename__ = 'EP'
@@ -195,7 +241,7 @@ class EPG(Base):
     updated_ts = Column(DateTime)
     last_checked_ts = Column(DateTime)
 
-    def __init__(self, dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts, updated_ts, last_checked_ts):
+    def __init__(self, dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts=None, updated_ts=None, last_checked_ts=None):
         self.dn = dn
         self.tenant = tenant
         self.epg = epg
@@ -208,12 +254,35 @@ class EPG(Base):
         self.updated_ts = updated_ts
         self.last_checked_ts = last_checked_ts
 
+
+class EPAudit(EP):
+    __tablename__ = 'EPAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(DateTime)
+
+    def __init__(self, mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts, updated_ts, last_checked_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
+
+
+class EPGAudit(EPG):
+    __tablename__ = 'EPGAudit'
+    audit_ts = Column(DateTime)
+    audit_category = Column(DateTime)
+
+    def __init__(self, dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
+        super().__init__(dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts, updated_ts, last_checked_ts)
+        self.audit_ts = audit_ts
+        self.audit_category = audit_category
+
+
 class Database():
     def __init__(self):
         self.engine = create_engine("sqlite:///AppD_Test.db?check_same_thread=False")
 
         self.metadata = Base.metadata
-        Session = sessionmaker(bind=self.engine)
+        session = sessionmaker(bind=self.engine)
 
         self.conn = self.engine.connect()
         self.conn = self.engine.connect()
@@ -222,9 +291,9 @@ class Database():
         except Exception as ex:
             logger.exception("Exception setting journal mode to WAL : " + str(ex))
 
-        self.session = Session(bind=self.conn)
+        self.session = session(bind=self.conn)
 
-    def createTables(self):
+    def create_tables(self):
         try:
             self.metadata.create_all(self.engine)
         except Exception as e:
@@ -273,8 +342,8 @@ class Database():
         """
         Arguments:
             data {List of Touple} -- [
-                (ip, port, protocol, token, status, datacenter),
-                (ip, port, protocol, token, status, datacenter),
+                (agent_ip, port, protocol, token, status, datacenter),
+                (agent_ip, port, protocol, token, status, datacenter),
                 ...
             ]
         """
@@ -282,28 +351,27 @@ class Database():
         for entry in data:
             self.session.add(Login(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], timestamp))
 
-        # login_list = [Login(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], timestamp) for entry in data]
-        # self.session.add_all(login_list)
 
     @decorator_edit
-    def update_login(self, old_protocol, old_ip, old_port, data):
+    def update_login(self, old_protocol, old_agent_ip, old_port, data):
         """
         Arguments:
             old_protocol {String}
             old_ip {String}
             old_port {Integer}
-            data {dict} -- {'ip': ,'port': ,'protocol': ,'token' ,'status': ,'datacenter'}
+            data {dict} -- {'agent_ip': ,'port': ,'protocol': ,'token' ,'status': ,'datacenter'}
         """
-        self.session.query(Login).filter(Login.protocol == old_protocol, Login.ip == old_ip, Login.port == old_port).update(data)
+        self.session.query(Login).filter(Login.protocol == old_protocol, Login.agent_ip == old_agent_ip, Login.port == old_port).update(data)
 
     @decorator_edit
-    def delete_entry_login(self, ip, port):
+    def delete_entry_login(self, agent_ip, port):
         """
         Arguments:
-            ip {String}
+            agent_ip {String}
             port {Integer}
         """
-        self.session.query(Login).filter(Login.ip == ip, Login.port == port).delete()
+        self.session.query(Login).filter(Login.agent_ip == agent_ip, Login.port == port).delete()
+
 
     @decorator_read
     def read_mapping(self):
@@ -314,15 +382,14 @@ class Database():
         """
         Arguments:
             data {List of Tuple} -- [
-                (ip, domain_name, disabled, datacenter),
-                (ip, domain_name, disabled, datacenter),
+                (ip, dn, disabled, datacenter),
+                (ip, dn, disabled, datacenter),
                 ...
             ]
         """
         for entry in data:
             self.session.add(Mapping(entry[0], entry[1], entry[2], entry[3]))
-        # mapping_list = [Mapping(entry[0], entry[1], entry[2], entry[3]) for entry in data]
-        # self.session.add_all(mapping_list)
+
 
     @decorator_edit
     def update_mapping(self, old_ip, old_dn, data):
@@ -330,9 +397,9 @@ class Database():
         Arguments:
             old_ip {String}
             old_dn {String}
-            data {dict} -- {'ip': ,'domain_name': ,'disabled': ,'datacenter': }
+            data {dict} -- {'ip': ,'dn': ,'disabled': ,'datacenter': }
         """
-        self.session.query(Mapping).filter(Mapping.ip == old_ip, Mapping.domain_name == old_dn).update(data)
+        self.session.query(Mapping).filter(Mapping.ip == old_ip, Mapping.dn == old_dn).update(data)
 
 
     @decorator_edit
@@ -342,7 +409,7 @@ class Database():
             ip {String}
             dn {String}
         """
-        self.session.query(Mapping).filter(Mapping.ip == ip, Mapping.domain_name == dn).delete()
+        self.session.query(Mapping).filter(Mapping.ip == ip, Mapping.dn == dn).delete()
 
     @decorator_read
     def read_node(self):
@@ -353,24 +420,21 @@ class Database():
         """
         Arguments:
             data {list of Tuple} -- [
-                (node_id, node_name, node_ips),
-                (node_id, node_name, node_ips),
+                (node_id, node_name, node_ips, datacenter),
+                (node_id, node_name, node_ips, datacenter),
                 ...
             ]
         """
-        node_list = []
         for entry in data:
-            # node_list.append(Node(entry[0], entry[1], entry[2]))
-            self.session.add(Node(entry[0], entry[1], entry[2]))
-        # node_list = [Node(entry[0], entry[1], entry[2]) for entry in data]
-        # self.session.add_all(node_list)
+            self.session.add(Node(entry[0], entry[1], entry[2], entry[3]))
+
 
     @decorator_edit
     def update_node(self, old_node_id, data):
         """
         Arguments:
             old_node_id {String}
-            data {Dict} -- {'node_id': , 'node_name': , 'node_ips': }
+            data {Dict} -- {'node_id': , 'node_name': , 'node_ips': , 'datacenter': }
         """
         self.session.filter(Node.node_id == old_node_id).update(data)
 
@@ -391,24 +455,23 @@ class Database():
         """
         Arguments:
             data {List of Tuple} -- [
-                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, name_space),
-                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, name_space),
+                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, name_space, datacenter),
+                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, name_space, datacenter),
                 ...
             ]
         """
         for entry in data:
-            self.session.add(Service(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
-        # service_list = [Service(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]) for entry in data]
-        # self.session.add_all(service_list)
+            self.session.add(Service(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
+
 
     @decorator_edit
-    def update_service(self, old_service, data):
+    def update_service(self, old_service_id, data):
         """
         Arguments:
             old_service {String}
-            data {Dict} -- {'service_id': , 'node_id': , 'service_name': , 'service_ip': , 'service_port': , 'service_address': , 'service_tags': , 'service_kind': , 'name_space': }
+            data {Dict} -- {'service_id': , 'node_id': , 'service_name': , 'service_ip': , 'service_port': , 'service_address': , 'service_tags': , 'service_kind': , 'name_space': , 'datacenter': }
         """
-        self.session.query.filter(Service.service_id == old_service).update(data)
+        self.session.query.filter(Service.service_id == old_service_id).update(data)
 
     @decorator_edit
     def delete_entry_service(self, service_id):
@@ -427,34 +490,33 @@ class Database():
         """
         Arguments:
             data {List of Tuple} -- [
-                (node_name, check_id, node_id, check_name, service_name, check_type, notes, output, status),
-                (node_name, check_id, node_id, check_name, service_name, check_type, notes, output, status),
+                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
+                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
                 ...
             ]
         """
         for entry in data:
             self.session.add(NodeChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
-        # node_checks_list = [NodeChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]) for entry in data]
-        # self.session.add_all(node_checks_list)
+
 
     @decorator_edit
-    def update_node_checks(self, old_node_name, old_check_id, data):
+    def update_node_checks(self, old_node_id, old_check_id, data):
         """
         Arguments:
             old_node_name {string}
             old_check_id {string}
-            data {dict} -- {'node_name': , 'check_id': , 'node_id': , 'check_name': , 'service_name': , 'check_type': , 'notes': , 'output': , 'status': }
+            data {dict} -- {'node_id': , 'check_id': , 'node_name': , 'check_name': , 'service_name': , 'check_type': , 'notes': , 'output': , 'status': }
         """
-        self.session.query(NodeChecks).filter(NodeChecks.node_name == old_node_name, NodeChecks.check_id == old_check_id).update(data)
+        self.session.query(NodeChecks).filter(NodeChecks.node_id == old_node_id, NodeChecks.check_id == old_check_id).update(data)
 
     @decorator_edit
-    def delete_entry_node_checks(self, node_name, node_id):
+    def delete_entry_node_checks(self, node_id, check_id):
         """
         Arguments:
-            node_name {String}
             node_id {String}
+            check_id {String}
         """
-        self.session.query(NodeChecks).filter(NodeChecks.node_name == node_name, NodeChecks.node_id == node_id).delete()
+        self.session.query(NodeChecks).filter(NodeChecks.node_id == node_id, NodeChecks.check_id == check_id).delete()
 
     @decorator_read
     def read_service_chechecks(self):
@@ -470,8 +532,7 @@ class Database():
         """
         for entry in data:
             self.session.add(ServiceChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
-        # service_checks_list = [ServiceChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]) for entry in data]
-        # self.session.add_all(service_checks_list)
+
 
     @decorator_edit
     def update_service_checks(self, old_check_id, old_service_id, data):
@@ -493,11 +554,11 @@ class Database():
         self.session.query(ServiceChecks).filter(ServiceChecks.check_id == check_id, ServiceChecks.service_id == service_id).delete()
 
     @decorator_read
-    def read_EP(self):
+    def read_ep(self):
         return self.session.query(EP).all()
 
     @decorator_edit
-    def insert_into_EP(self, data):
+    def insert_into_ep(self, data):
         """
         Arguments:
             data {List of Tuple} -- [
@@ -510,17 +571,17 @@ class Database():
             self.session.add(EP(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
 
     @decorator_edit
-    def update_EP(self, old_mac, old_ip, data):
+    def update_ep(self, old_mac, old_ip, data):
         """
         Arguments:
             old_mac {String}
             old_ip {String}
             data {Dict} -- {'mac': , 'ip': , 'tenant': , 'dn': , 'vm_name': , 'interfaces': , 'vmm_domain': , 'controller_name': , 'learning_source': , 'multicast_address': , 'encap': , 'hosting_server_name': , 'is_cep': }
         """
-        self.session.filter(EP.mac == old_mac, EP.ip == old_ip).update(data)
+        self.session.query(EP).filter(EP.mac == old_mac, EP.ip == old_ip).update(data)
 
     @decorator_edit
-    def delete_entry_EP(self, mac, ip):
+    def delete_entry_ep(self, mac, ip):
         """
         Arguments:
             mac {String}
@@ -529,11 +590,11 @@ class Database():
         self.session.query(EP).filter(EP.mac == mac, EP.ip == ip).delete()
 
     @decorator_read
-    def read_EPG(self):
+    def read_epg(self):
         return self.session.query(EPG).all()
 
     @decorator_edit
-    def insert_into_EPG(self, data):
+    def insert_into_epg(self, data):
         """
         Arguments:
             data {List of Tuple} -- [
@@ -546,18 +607,243 @@ class Database():
             self.session.add(EPG(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
     @decorator_edit
-    def update_EPG(self, old_dn, data):
+    def update_epg(self, old_dn, data):
         """
         Arguments:
             old_dn {String}
             data {Dict} -- {'dn': , 'tenant': , 'epg': , 'bd': , 'contracts': , 'vrf': , 'epg_health': , 'app_profile': }
         """
-        self.session.query(EPG.dn == old_dn).update(data)
+        self.session.query(EPG).filter(EPG.dn == old_dn).update(data)
 
     @decorator_edit
-    def delete_entry_EPG(self, dn):
+    def delete_entry_epg(self, dn):
         """
         Arguments:
             dn {String}
         """
         self.session.query(EPG).filter(EPG.dn == dn).delete()
+
+
+    @decorator_read
+    def read_node_audit(self):
+        return self.session.query(NodeAudit).all()
+
+    @decorator_edit
+    def insert_into_node_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (node_id, node_name, node_ips, datacenter),
+                (node_id, node_name, node_ips, datacenter),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(NodeAudit(entry[0], entry[1], entry[2], entry[3]))
+
+
+    @decorator_edit
+    def update_node_audit(self, old_node_id, data):
+        """
+        Arguments:
+            old_node_id {String}
+            data {Dict} -- {'node_id': , 'node_name': , 'node_ips': , 'datacenter': }
+        """
+        self.session.query(NodeAudit).filter(NodeAudit.node_id == old_node_id).update(data)
+
+    @decorator_edit
+    def delete_entry_node_audit(self, node_id):
+        """
+        Arguments:
+            node_id {String}
+        """
+        self.session.query(NodeAudit).filter(NodeAudit.node_id == node_id).delete()
+
+    @decorator_read
+    def read_service_audit(self):
+        return self.session.query(ServiceAudit).all()
+
+
+    @decorator_edit
+    def insert_into_service_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
+                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(ServiceAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
+
+
+    @decorator_edit
+    def update_service_audit(self, old_service_id, data):
+        """
+        Arguments:
+            old_service_id {String}
+            data {Dict} -- {'service_id': , 'node_id':, 'service_name': , 'service_ip': , 'service_port': , 'service_address': , 'service_tags': , 'service_kind': , 'namespace': , 'datacenter': }
+        """
+        self.session.query(ServiceAudit).filter(ServiceAudit.service_id == old_service_id).update(data)
+
+
+    @decorator_edit
+    def delete_entry_service_audit(self, service_id):
+        """
+        Arguments:
+            service_id {String}
+        """
+        self.session.query(ServiceAudit).filter(ServiceAudit.service_id == service_id).delete()
+
+    @decorator_read
+    def read_node_checks_audit(self):
+        return self.session.query(NodeChecksAudit).all()
+
+
+    @decorator_edit
+    def insert_into_node_checks_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
+                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(NodeChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
+
+    
+    @decorator_edit
+    def update_node_checks_audit(self, old_node_id, old_check_id, data):
+        """
+        Arguments:
+            old_node_id {String}
+            old_check_id {String}
+            data {Dict} -- {'node_id': , 'check_id': , 'node_name': , 'check_name': , 'service_name': , 'check_type': , 'notes': , 'output': , 'status': }
+        """
+        self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == old_node_id, NodeChecksAudit.check_id == old_check_id)
+
+
+    @decorator_edit
+    def delete_entry_node_checks_audit(self, node_id, check_id):
+        """
+        Arguments:
+            node_id {String}
+            check_id {String}
+        """
+        self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == node_id, NodeChecksAudit.check_id == check_id).delete()
+
+
+    @decorator_read
+    def read_service_checks_audit(self):
+        return self.session.query(ServiceChecksAudit).all()
+
+
+    @decorator_edit
+    def insert_into_service_checks_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (check_id, service_id, service_name, check_name, check_type, notes, output, status),
+                (check_id, service_id, service_name, check_name, check_type, notes, output, status),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(ServiceChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
+
+    
+    @decorator_edit
+    def update_service_checks_audit(self, old_check_id, old_service_id, data):
+        """
+        Arguments:
+            old_check_id {String}
+            old_service_id {String}
+            data {Dict} -- {'check_id': , 'service_id': , 'service_name': , 'check_name': , 'check_type': , 'notes': , 'output': , 'status': }
+        """
+        self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == old_check_id, ServiceChecksAudit.service_id == old_service_id).update(data)
+
+    
+    @decorator_edit
+    def delete_entry_service_checks_audit(self, check_id, service_id):
+        """
+        Arguments:
+            check_id {String}
+            service_id {String}
+        """
+        self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == check_id, ServiceChecksAudit.service_id == service_id).delete()
+
+
+    @decorator_read
+    def read_ep_audit(self):
+        return self.session.query(EPAudit).all()
+
+
+    @decorator_edit
+    def insert_into_ep_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
+                (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(EPAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
+
+    @decorator_edit
+    def update_ep_audit(self, old_mac, old_ip, data):
+        """
+        Arguments:
+            old_mac {String}
+            old_ip {String}
+            data {Dict} -- {'mac': , 'ip': , 'tenant': , 'dn': , 'vm_name': , 'interfaces': , 'vmm_domain': , 'controller_name': , 'learning_source': , 'multicast_address': , 'encap': , 'hosting_server_name': , 'is_cep': }
+        """
+        self.session.query(EPAudit).filter(EPAudit.mac == old_mac, EPAudit.ip == old_ip).update(data)
+
+    @decorator_edit
+    def delete_entry_ep_audit(self, mac, ip):
+        """
+        Arguments:
+            mac {String}
+            ip {String}
+        """
+        self.session.query(EPAudit).filter(EPAudit.mac == mac, EPAudit.ip == ip).delete()
+
+    @decorator_read
+    def read_epg_audit(self):
+        return self.session.query(EPGAudit).all()
+
+
+    @decorator_edit
+    def insert_into_epg_audit(self, data):
+        """
+        Arguments:
+            data {List of Tuple} -- [
+                (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
+                (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
+                ...
+            ]
+        """
+        for entry in data:
+            self.session.add(EPGAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
+
+    @decorator_edit
+    def update_epg_audit(self, old_dn, data):
+        """
+        Arguments:
+            old_dn {String}
+            data {Dict} -- {'dn': , 'tenant': , 'epg': , 'bd': , 'contracts': , 'vrf': , 'epg_health': , 'app_profile': }
+        """
+        self.session.query(EPGAudit).filter(EPGAudit.dn == old_dn).update(data)
+
+    @decorator_edit
+    def delete_entry_epg_audit(self, dn):
+        """
+        Arguments:
+            dn {String}
+        """
+        self.session.query(EPGAudit).filter(EPGAudit.dn == dn).delete()

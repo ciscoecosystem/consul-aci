@@ -16,7 +16,7 @@ app.debug = True
 app.add_url_rule('/graphql.json', view_func=GraphQLView.as_view('graphql', schema=schema, graphiql=True))
 
 database_object = Database.Database()
-database_object.createTables()
+database_object.create_tables()
 
 path = "/home/app/data/credentials.json"
 file_exists = os.path.isfile(path)
