@@ -7,7 +7,7 @@ from sqlalchemy.orm import backref, mapper, sessionmaker, relationship
 from sqlalchemy import exists
 
 from custom_logger import CustomLogger
-from decorator import alchemy_edit
+from decorator import alchemy_commit_session
 from decorator import alchemy_read
 
 
@@ -320,12 +320,12 @@ class Database():
             self.flush_session()
 
 
-    @decorator_read
+    @alchemy_read
     def read_login(self):
         return self.session.query(Login).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_login(self, data):
         """
         Arguments:
@@ -340,7 +340,7 @@ class Database():
             self.session.add(Login(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], timestamp))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_login(self, old_protocol, old_agent_ip, old_port, data):
         """
         Arguments:
@@ -352,7 +352,7 @@ class Database():
         self.session.query(Login).filter(Login.protocol == old_protocol, Login.agent_ip == old_agent_ip, Login.port == old_port).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_login(self, agent_ip, port):
         """
         Arguments:
@@ -362,12 +362,12 @@ class Database():
         self.session.query(Login).filter(Login.agent_ip == agent_ip, Login.port == port).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_mapping(self):
         return self.session.query(Mapping).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_mapping(self, data):
         """
         Arguments:
@@ -381,7 +381,7 @@ class Database():
             self.session.add(Mapping(entry[0], entry[1], entry[2], entry[3]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_mapping(self, old_ip, old_dn, data):
         """
         Arguments:
@@ -392,7 +392,7 @@ class Database():
         self.session.query(Mapping).filter(Mapping.ip == old_ip, Mapping.dn == old_dn).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_mapping(self, ip, dn):
         """
         Arguments:
@@ -402,12 +402,12 @@ class Database():
         self.session.query(Mapping).filter(Mapping.ip == ip, Mapping.dn == dn).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_node(self):
         return self.session.query(Node).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_node(self, data):
         """
         Arguments:
@@ -421,7 +421,7 @@ class Database():
             self.session.add(Node(entry[0], entry[1], entry[2], entry[3]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_node(self, old_node_id, data):
         """
         Arguments:
@@ -431,7 +431,7 @@ class Database():
         self.session.filter(Node.node_id == old_node_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_node(self, node_id):
         """
         Arguments:
@@ -440,12 +440,12 @@ class Database():
         self.session.query(Node).filter(Node.node_id == node_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_service(self):
         self.session.query(Service).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_service(self, data):
         """
         Arguments:
@@ -459,7 +459,7 @@ class Database():
             self.session.add(Service(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_service(self, old_service_id, data):
         """
         Arguments:
@@ -469,7 +469,7 @@ class Database():
         self.session.query.filter(Service.service_id == old_service_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_service(self, service_id):
         """
         Arguments:
@@ -478,12 +478,12 @@ class Database():
         self.session.query(Service).filter(Service.service_id == service_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_nodechecks(self):
         return self.session.query(NodeChecks).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_node_checks(self, data):
         """
         Arguments:
@@ -497,7 +497,7 @@ class Database():
             self.session.add(NodeChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_node_checks(self, old_node_id, old_check_id, data):
         """
         Arguments:
@@ -508,7 +508,7 @@ class Database():
         self.session.query(NodeChecks).filter(NodeChecks.node_id == old_node_id, NodeChecks.check_id == old_check_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_node_checks(self, node_id, check_id):
         """
         Arguments:
@@ -518,12 +518,12 @@ class Database():
         self.session.query(NodeChecks).filter(NodeChecks.node_id == node_id, NodeChecks.check_id == check_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_service_chechecks(self):
         return self.session.query(ServiceChecks).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_service_checks(self, data):
         """
         Arguments:
@@ -535,7 +535,7 @@ class Database():
             self.session.add(ServiceChecks(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_service_checks(self, old_check_id, old_service_id, data):
         """
         Arguments:
@@ -546,7 +546,7 @@ class Database():
         self.session.query(ServiceChecks).filter(ServiceChecks.check_id == old_check_id, ServiceChecks.service_id == old_service_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_service_checks(self, check_id, service_id):
         """
         Arguments:
@@ -556,12 +556,12 @@ class Database():
         self.session.query(ServiceChecks).filter(ServiceChecks.check_id == check_id, ServiceChecks.service_id == service_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_ep(self):
         return self.session.query(EP).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_ep(self, data):
         """
         Arguments:
@@ -575,7 +575,7 @@ class Database():
             self.session.add(EP(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_ep(self, old_mac, old_ip, data):
         """
         Arguments:
@@ -586,7 +586,7 @@ class Database():
         self.session.query(EP).filter(EP.mac == old_mac, EP.ip == old_ip).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_ep(self, mac, ip):
         """
         Arguments:
@@ -596,12 +596,12 @@ class Database():
         self.session.query(EP).filter(EP.mac == mac, EP.ip == ip).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_epg(self):
         return self.session.query(EPG).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_epg(self, data):
         """
         Arguments:
@@ -615,7 +615,7 @@ class Database():
             self.session.add(EPG(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_epg(self, old_dn, data):
         """
         Arguments:
@@ -625,7 +625,7 @@ class Database():
         self.session.query(EPG).filter(EPG.dn == old_dn).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_epg(self, dn):
         """
         Arguments:
@@ -634,12 +634,12 @@ class Database():
         self.session.query(EPG).filter(EPG.dn == dn).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_node_audit(self):
         return self.session.query(NodeAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_node_audit(self, data):
         """
         Arguments:
@@ -653,7 +653,7 @@ class Database():
             self.session.add(NodeAudit(entry[0], entry[1], entry[2], entry[3]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_node_audit(self, old_node_id, data):
         """
         Arguments:
@@ -663,7 +663,7 @@ class Database():
         self.session.query(NodeAudit).filter(NodeAudit.node_id == old_node_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_node_audit(self, node_id):
         """
         Arguments:
@@ -672,12 +672,12 @@ class Database():
         self.session.query(NodeAudit).filter(NodeAudit.node_id == node_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_service_audit(self):
         return self.session.query(ServiceAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_service_audit(self, data):
         """
         Arguments:
@@ -691,7 +691,7 @@ class Database():
             self.session.add(ServiceAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_service_audit(self, old_service_id, data):
         """
         Arguments:
@@ -701,7 +701,7 @@ class Database():
         self.session.query(ServiceAudit).filter(ServiceAudit.service_id == old_service_id).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_service_audit(self, service_id):
         """
         Arguments:
@@ -710,12 +710,12 @@ class Database():
         self.session.query(ServiceAudit).filter(ServiceAudit.service_id == service_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_node_checks_audit(self):
         return self.session.query(NodeChecksAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_node_checks_audit(self, data):
         """
         Arguments:
@@ -729,7 +729,7 @@ class Database():
             self.session.add(NodeChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
 
     
-    @decorator_edit
+    @alchemy_commit_session
     def update_node_checks_audit(self, old_node_id, old_check_id, data):
         """
         Arguments:
@@ -740,7 +740,7 @@ class Database():
         self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == old_node_id, NodeChecksAudit.check_id == old_check_id)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_node_checks_audit(self, node_id, check_id):
         """
         Arguments:
@@ -750,12 +750,12 @@ class Database():
         self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == node_id, NodeChecksAudit.check_id == check_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_service_checks_audit(self):
         return self.session.query(ServiceChecksAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_service_checks_audit(self, data):
         """
         Arguments:
@@ -769,7 +769,7 @@ class Database():
             self.session.add(ServiceChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
     
-    @decorator_edit
+    @alchemy_commit_session
     def update_service_checks_audit(self, old_check_id, old_service_id, data):
         """
         Arguments:
@@ -780,7 +780,7 @@ class Database():
         self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == old_check_id, ServiceChecksAudit.service_id == old_service_id).update(data)
 
     
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_service_checks_audit(self, check_id, service_id):
         """
         Arguments:
@@ -790,12 +790,12 @@ class Database():
         self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == check_id, ServiceChecksAudit.service_id == service_id).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_ep_audit(self):
         return self.session.query(EPAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_ep_audit(self, data):
         """
         Arguments:
@@ -809,7 +809,7 @@ class Database():
             self.session.add(EPAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_ep_audit(self, old_mac, old_ip, data):
         """
         Arguments:
@@ -820,7 +820,7 @@ class Database():
         self.session.query(EPAudit).filter(EPAudit.mac == old_mac, EPAudit.ip == old_ip).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_ep_audit(self, mac, ip):
         """
         Arguments:
@@ -830,12 +830,12 @@ class Database():
         self.session.query(EPAudit).filter(EPAudit.mac == mac, EPAudit.ip == ip).delete()
 
 
-    @decorator_read
+    @alchemy_read
     def read_epg_audit(self):
         return self.session.query(EPGAudit).all()
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def insert_into_epg_audit(self, data):
         """
         Arguments:
@@ -849,7 +849,7 @@ class Database():
             self.session.add(EPGAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def update_epg_audit(self, old_dn, data):
         """
         Arguments:
@@ -859,7 +859,7 @@ class Database():
         self.session.query(EPGAudit).filter(EPGAudit.dn == old_dn).update(data)
 
 
-    @decorator_edit
+    @alchemy_commit_session
     def delete_entry_epg_audit(self, dn):
         """
         Arguments:

@@ -25,7 +25,7 @@ def time_it(method):
 
 # Decorators used in alchemy
 
-def alchemy_edit(method):
+def alchemy_commit_session(method):
     def wrapper(*args):
         try:
             method(*args)
