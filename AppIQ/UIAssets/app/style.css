@@ -147,6 +147,11 @@ main {
     padding: 12px;
 }
 
+
+.sidebar .health-bullet {
+    margin-right: 16px;
+}
+
 /* .cui.blueprint .sidebar.sidebar--collapsed {
     width: 50px!important;
 }

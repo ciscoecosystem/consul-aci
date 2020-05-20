@@ -21,7 +21,8 @@ window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for logi
 export default class Agent extends React.Component {
     constructor(props) {
         super(props)
-        this.xhrReadCred = new XMLHttpRequest();
+        // this.xhrReadCred = new XMLHttpRequest();
+        this.xhrCred = new XMLHttpRequest();
         this.closeAgent = this.closeAgent.bind(this);
         this.handleModal = this.handleModal.bind(this);
         this.actionEvent = this.actionEvent.bind(this);
@@ -29,16 +30,16 @@ export default class Agent extends React.Component {
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.validateField = this.validateField.bind(this);
         this.submitAgent = this.submitAgent.bind(this);
-        this.readAgentsCall = this.readAgentsCall.bind(this);
+        // this.readAgentsCall = this.readAgentsCall.bind(this);
         this.notify = this.notify.bind(this);
         this.addAgentCall = this.addAgentCall.bind(this);
         this.removeAgent = this.removeAgent.bind(this);
         this.removeAgentCall = this.removeAgentCall.bind(this);
         this.editAgent = this.editAgent.bind(this);
-
+        console.log("Agent index props", props);
         this.state = {
-            details: [],
-            readAgentLoading: true,
+            details: props.details,
+            readAgentLoading: props.readAgentLoading,
             redirectToMain: false,
             addAgentModalIsOpen: false,
             loadingText: "Loading agents...",
@@ -70,14 +71,14 @@ export default class Agent extends React.Component {
 
     componentDidMount() {
         let thiss = this;
-        this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
-            console.log("LOading----")
-            thiss.readAgentsCall();
-        })
+        // this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
+        //     console.log("LOading----")
+        //     thiss.readAgentsCall();
+        // })
     }
 
     componentWillUnmount() {
-        this.xhrReadCred.abort(); // cancel all apis
+        this.xhrCred.abort(); // cancel all apis
     }
 
     componentDidCatch(error, info) {
@@ -161,60 +162,60 @@ export default class Agent extends React.Component {
                 });
     }
 
-    readAgentsCall() {
-        let thiss = this;
-        const payload = {
-            query: `query{
-            ReadCreds{creds}
-        }`}
-        let xhrReadCred = this.xhrReadCred;
-        try {
-            xhrReadCred.open("POST", QUERY_URL, true);
-            xhrReadCred.setRequestHeader("Content-type", "application/json");
-            xhrReadCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-            xhrReadCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-            xhrReadCred.onreadystatechange = function () {
-                console.log("chr== state ", xhrReadCred.readyState);
+    // readAgentsCall() {
+    //     let thiss = this;
+    //     const payload = {
+    //         query: `query{
+    //         ReadCreds{creds}
+    //     }`}
+    //     let xhrReadCred = this.xhrReadCred;
+    //     try {
+    //         xhrReadCred.open("POST", QUERY_URL, true);
+    //         xhrReadCred.setRequestHeader("Content-type", "application/json");
+    //         xhrReadCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+    //         xhrReadCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+    //         xhrReadCred.onreadystatechange = function () {
+    //             console.log("chr== state ", xhrReadCred.readyState);
 
-                if (xhrReadCred.readyState == 4 && xhrReadCred.status == 200) {
-                    let checkData = JSON.parse(xhrReadCred.responseText);
-                    let credsData = JSON.parse(checkData.data.ReadCreds.creds);
+    //             if (xhrReadCred.readyState == 4 && xhrReadCred.status == 200) {
+    //                 let checkData = JSON.parse(xhrReadCred.responseText);
+    //                 let credsData = JSON.parse(checkData.data.ReadCreds.creds);
 
-                    if (parseInt(credsData.status_code) === 200) {
-                        thiss.setState({ details: credsData.payload })
-                    } else if (parseInt(credsData.status_code) === 300) {
-                        try {
-                            thiss.notify(credsData.message)
-                        } catch (e) {
-                            console.log("message error", e)
-                        }
-                    }
-                }
-                else {
-                    console.log("Not fetching");
-                }
-                thiss.setState({ readAgentLoading: false });
-            }
-            xhrReadCred.send(JSON.stringify(payload));
-        }
-        catch (e) {
-            thiss.notify("Error while fetching agent information please refresh")
-            console.error('Error getting agents', e);
-        }
-        finally {
-            // thiss.setState({ readAgentLoading: false });
-        }
-    }
+    //                 if (parseInt(credsData.status_code) === 200) {
+    //                     thiss.setState({ details: credsData.payload })
+    //                 } else if (parseInt(credsData.status_code) === 300) {
+    //                     try {
+    //                         thiss.notify(credsData.message)
+    //                     } catch (e) {
+    //                         console.log("message error", e)
+    //                     }
+    //                 }
+    //             }
+    //             else {
+    //                 console.log("Not fetching");
+    //             }
+    //             thiss.setState({ readAgentLoading: false });
+    //         }
+    //         xhrReadCred.send(JSON.stringify(payload));
+    //     }
+    //     catch (e) {
+    //         thiss.notify("Error while fetching agent information please refresh")
+    //         console.error('Error getting agents', e);
+    //     }
+    //     finally {
+    //         // thiss.setState({ readAgentLoading: false });
+    //     }
+    // }
 
     submitAgent(event) {
         event.preventDefault();
         let thiss = this;
-        let { details, Address, Port, isNewAgentAdded } = this.state;
+        let { details, Address, Port, Protocol, isNewAgentAdded } = this.state;
         console.log("Submit agent; detaios ", details);
         console.log("Address and port ", Address, Port);
         // check if Details in Index is not same as others in [...Details] as per port and ip
         for (let ind = 0; ind < details.length; ind++) {
-            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port)) {
+            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port) && details[ind].protocol === Protocol ) {
                 this.notify("Agent already exists.")
                 return;
             }
@@ -273,7 +274,8 @@ export default class Agent extends React.Component {
         }
 
 
-        let xhr = new XMLHttpRequest();
+        let xhr = this.xhrCred;
+        //  new XMLHttpRequest();
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, true);
@@ -302,7 +304,8 @@ export default class Agent extends React.Component {
                                 if (resp.payload && resp.payload.length > 0) {
                                     // details[updateIndex] = resp.payload[0];
                                     details.unshift(resp.payload[0]);
-                                    thiss.setState({ details });
+                                    // thiss.setState({ details });
+                                    thiss.props.setDetails(details);
 
                                     // connection is not true
                                     if (resp.payload.status !== true && resp.message) {
@@ -317,7 +320,8 @@ export default class Agent extends React.Component {
                             } else { // updated an agent
                                 if (resp.payload) {
                                     details[editAgentIndex] = resp.payload;
-                                    thiss.setState({ details });
+                                    // thiss.setState({ details });
+                                    thiss.props.setDetails(details);
 
                                     // connection is not true
                                     if (resp.payload.status !== true && resp.message) {
@@ -347,7 +351,8 @@ export default class Agent extends React.Component {
                             if (isNewAgentAdded) { // new agent added
                                 if (resp.payload && resp.payload.length > 0) {
                                     details.unshift(resp.payload[0]);
-                                    thiss.setState({ details });
+                                    // thiss.setState({ details });
+                                    thiss.props.setDetails(details);
 
                                 } else {
                                     thiss.notify("Some technical glitch!");
@@ -356,7 +361,9 @@ export default class Agent extends React.Component {
                             } else { // updated an agent
                                 if (resp.payload) {
                                     details[editAgentIndex] = resp.payload;
-                                    thiss.setState({ details });
+                                    // thiss.setState({ details });
+                                    // thiss.setDetails(details);
+                                    thiss.props.setDetails(details);
                                 } else {
                                     thiss.notify("Some technical glitch!");
                                 }
@@ -422,7 +429,8 @@ export default class Agent extends React.Component {
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
 
-        let xhr = new XMLHttpRequest();
+        let xhr = this.xhrCred;
+        // new XMLHttpRequest();
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, true);
@@ -444,7 +452,8 @@ export default class Agent extends React.Component {
 
                         if (resp.status_code == 200) {
                             details.splice(deleteIndex, 1);
-                            thiss.setState({ details });
+                            // thiss.setState({ details });
+                            thiss.props.setDetails(details);
                         }
                         else {
                             thiss.notify(resp.message);
