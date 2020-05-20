@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Screen, Table, Button, Dropdown, Input, Select, FilterableTable } from 'blueprint-react';
+import { Screen, Table, Button, Dropdown, Input, Select, Icon, FilterableTable } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
 import { QUERY_URL, getCookie } from "../../constants.js"
 import "./index.css";
@@ -14,6 +14,9 @@ import "./index.css";
 const ipRegex = RegExp('((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))');
 const dnsRegex = RegExp('^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$');
 const portRegex = RegExp('^[0-9]*$')
+
+window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
 
 export default class Agent extends React.Component {
     constructor(props) {
@@ -201,7 +204,6 @@ export default class Agent extends React.Component {
         finally {
             // thiss.setState({ readAgentLoading: false });
         }
-
     }
 
     submitAgent(event) {
@@ -229,12 +231,11 @@ export default class Agent extends React.Component {
     }
 
     addAgentCall() {
-
-        // if (JSON.stringify(this.state.editDetailCopy) === JSON.stringify(agentDetail)) { // no change in copy
-        //     console.log("no change");
-        //     return;
-        // }
         let { details, isNewAgentAdded, editAgentIndex } = this.state;
+
+        console.log(" ====================== Addagent call;  ");
+        console.log(" IisNewAgentAdded ", isNewAgentAdded);
+
         let agentDetail = {
             protocol: this.state.Protocol,
             port: this.state.Port,
@@ -292,17 +293,17 @@ export default class Agent extends React.Component {
                     else if (('WriteCreds' in json.data && 'creds' in json.data.WriteCreds) ||
                         ('UpdateCreds' in json.data && 'creds' in json.data.UpdateCreds)
                     ) {
-                        let resp = JSON.parse(json.data.WriteCreds.creds);
+                        let resp = (isNewAgentAdded) ? JSON.parse(json.data.WriteCreds.creds) : JSON.parse(json.data.UpdateCreds.creds);
                         console.log("Add agentresponse ", resp);
 
                         if (resp.status_code == 200) {
 
-                            if (isNewAgentAdded){ // new agent added
+                            if (isNewAgentAdded) { // new agent added
                                 if (resp.payload && resp.payload.length > 0) {
                                     // details[updateIndex] = resp.payload[0];
                                     details.unshift(resp.payload[0]);
                                     thiss.setState({ details });
-    
+
                                     // connection is not true
                                     if (resp.payload.status !== true && resp.message) {
                                         thiss.notify(resp.message, false, true);
@@ -314,13 +315,13 @@ export default class Agent extends React.Component {
                                 }
 
                             } else { // updated an agent
-                                if (resp.payload){
+                                if (resp.payload) {
                                     details[editAgentIndex] = resp.payload;
                                     thiss.setState({ details });
 
                                     // connection is not true
-                                    if (resp.payload.status !== true && resp.message){
-                                        this.notify(resp.message, true);
+                                    if (resp.payload.status !== true && resp.message) {
+                                        thiss.notify(resp.message, false, true)
                                         // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
                                     }
                                 } else {
@@ -340,54 +341,40 @@ export default class Agent extends React.Component {
                             }
                         }
                         else if (resp.status_code == 301) { // detail updated but some server error 
-
+                            console.log("Response 301 ", resp.payload);
                             thiss.notify(resp.message); // error message
 
-
-                            if (isNewAgentAdded){ // new agent added
+                            if (isNewAgentAdded) { // new agent added
                                 if (resp.payload && resp.payload.length > 0) {
                                     details.unshift(resp.payload[0]);
                                     thiss.setState({ details });
-    
+
                                 } else {
-                                    console.log("ERROR Revert changes----");
-                                    // thiss.abortUpdateAgentAction();
                                     thiss.notify("Some technical glitch!");
                                 }
 
                             } else { // updated an agent
-                                if (resp.payload){
+                                if (resp.payload) {
                                     details[editAgentIndex] = resp.payload;
                                     thiss.setState({ details });
-
-                                    // connection is not true
-                                    if (resp.payload.status !== true && resp.message){
-                                        this.notify(resp.message, true);
-                                        // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
-                                    }
                                 } else {
-                                    // thiss.abortUpdateAgentAction();
                                     thiss.notify("Some technical glitch!");
                                 }
                             }
 
-                        
                         }
                         else {
                             console.log("ERROR Revert changes----");
-                            console.error("Invalid status code")
-                            // thiss.abortUpdateAgentAction();
+                            console.error("Invalid status code");
                         }
                     } else {
                         console.log("ERROR Revert changes----");
                         console.error("Invalid response strcture")
-                        // thiss.abortUpdateAgentAction();
+
                     }
                 }
                 else {
                     console.log("ERROR Revert changes----");
-                    // thiss.abortUpdateAgentAction();
-                    // thiss.notify("Error while reaching the container.")
                 }
 
                 thiss.setState({ readAgentLoading: false });
@@ -395,10 +382,7 @@ export default class Agent extends React.Component {
             xhr.send(JSON.stringify(payload));
         }
         catch (e) {
-
             console.error("Error api addAgentCall", e);
-            // this.notify("Error while logging in.");
-            // this.abortUpdateAgentAction();
         }
         finally {
             this.setState({
@@ -488,6 +472,7 @@ export default class Agent extends React.Component {
 
     // edit an Agent
     editAgent(editAgentIndex) {
+        let thiss = this;
         // get required detail and put in Port, Protocol ,etc
         let agentDetail = this.state.details[editAgentIndex];
 
@@ -499,9 +484,10 @@ export default class Agent extends React.Component {
             Protocol: agentDetail.protocol,
             Address: agentDetail.ip,
             Token: agentDetail.token
+        }, function () {
+            thiss.handleModal(true);
         })
 
-        this.handleModal(true);
     }
 
     render() {
@@ -549,23 +535,11 @@ export default class Agent extends React.Component {
             accessor: '',
             Cell: row => {
                 return <div className="right-menu-icons action-btn">
-                    <Dropdown
-                        label={<span className="icon-more btn--xsmall"></span>}
-                        size="btn--xsmall"
-                        preferredPlacements={"left"}
-                        items={this.state.actionItems}>
-                    </Dropdown>
-                    <Button key={"dell"}
-                        size="btn--small"
-                        type="btn--primary"
-                        onClick={() => this.removeAgent(row.index)}
-                    >Del</Button>
-                    <Button key={"dell"}
-                        size="btn--small"
-                        type="btn--primary"
-                        onClick={() => this.editAgent(row.index)}
-                    >Up</Button>
 
+                    <Icon key={"editagent"} className="no-link toggle" size="icon-small" type="icon-edit" style={{ marginRight: "18px", marginLeft: "11px" }}
+                        onClick={() => this.editAgent(row.index)}></Icon>
+                    <Icon key={"removeagent2"} className="no-link toggle" size="icon-small" type="icon-delete"
+                        onClick={() => this.removeAgent(row.index)}></Icon>
                 </div>
             }
         }
