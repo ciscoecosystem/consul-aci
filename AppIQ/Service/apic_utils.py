@@ -114,6 +114,7 @@ class AciUtils(object):
 
         Arguments:
             url str -- URL of API to make request
+            retry int -- retry count to retry if API fails in first call
 
         Returns:
             response dict -- JSON response from APIC API call
@@ -135,7 +136,15 @@ class AciUtils(object):
 
     @time_it
     def apic_fetch_ep_data(self, tenant):
+        """Function to fetch and parse ep data and return list
+        of parsed data.
 
+        Arguments:
+            tenant {str} -- Name of tenant to fetch EP data
+
+        Returns:
+            list -- list of parsed EP data
+        """
         try:
             url = urls.FETCH_EP_DATA_URL.format(self.epg_url, str(tenant))
             response_json = self.aci_get(url)
@@ -151,33 +160,36 @@ class AciUtils(object):
 
 
     def parse_ep_data(self, ep_resp):
-        
+        """Funtion to parse EP data
+
+        Arguments:
+            ep_resp {list} -- List of EP response from API
+
+        Returns:
+            list -- list of dictionary with parsed EP data
+        """
         try:
             logger.info('Parsing APIC EP Data!')
             ep_list = []
 
             for item in ep_resp:
+                data = {}
                 ep_attr = item['fvCEp']['attributes']
-                ip_mac_list, is_cep = AciUtils.get_ip_mac_list(item)
-                dn_str = ep_attr.get('dn')
-                learning_src = ep_attr.get("lcC")
-                tenant_name = dn_str.split('tn-')[1].split('/')[0]
-                mac = ep_attr.get("mac")
-                encap = ep_attr.get("encap")
-                multi_cast_addr = ep_attr.get("mcastAddr")
-                if multi_cast_addr == "not-applicable":
-                    multi_cast_addr = "---"
+                ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
+                data['dn'] = ep_attr.get('dn')
+                data['learning_src'] = ep_attr.get("lcC")
+                data['tenant'] = data['dn'].split('tn-')[1].split('/')[0]
+                data['mac'] = ep_attr.get("mac")
+                data['encap'] = ep_attr.get("encap")
+                data['multi_cast_addr'] = ep_attr.get("mcastAddr")
+                if data['multi_cast_addr']  == "not-applicable":
+                    data['multi_cast_addr']  = "---"
                 for ip_mac in ip_mac_list:
-                    ip = ip_mac
+                    data['ip'] = ip_mac
                     ep_child_attr = ep_attr['fvCEp']['children']
                     ep_info = self.get_ep_info(ep_child_attr)
-                    vm_name = ep_info.get("VM-Name")
-                    interfaces = ep_info.get("Interfaces")
-                    vmm_domain = ep_info.get("VMM-Domain")
-                    controller_name = ep_info.get("controllerName")
-                    hosting_servername = ep_info.get("controllerName")
-                    ep_data = (mac, ip, tenant_name, dn_str, vm_name, interfaces, vmm_domain, controller_name, learning_src, multi_cast_addr, encap, hosting_servername, is_cep)
-                    ep_list.append(ep_data)
+                    data.update(ep_info)
+                    ep_list.append(data)
             return ep_list
         except Exception as e:
             logger.exception('Exception in Parsing EP Data API call, Error: {}'.format(str(e)))
@@ -185,12 +197,13 @@ class AciUtils(object):
 
 
     def get_ep_info(self, ep_children_list):
+
         ep_info = {
-            "controllerName" : "",
-            "hostingServerName" : "",
-            "Interfaces" : "",
-            "VM-Name" : "",
-            "VMM-Domain": ""
+            "controller" : "",
+            "hosting_servername" : "",
+            "interfaces" : "",
+            "vm_name" : "",
+            "vmm_domain": ""
         }
         path_list = []
         for ep_child in ep_children_list:
@@ -214,8 +227,8 @@ class AciUtils(object):
                             hyper_name = ""
                     else:
                         hyper_name = ""
-                    ep_info["controllerName"] = ctrlr_name
-                    ep_info["hostingServerName"] = hyper_name
+                    ep_info["controller"] = ctrlr_name
+                    ep_info["hosting_servername"] = hyper_name
 
                 if child_name == "fvRsCEpToPathEp":
                     interface = ep_child["fvRsCEpToPathEp"]["attributes"]["tDn"]
@@ -239,7 +252,7 @@ class AciUtils(object):
                 if child_name == 'fvRsToVm':
                     tDn_dom = str(ep_child['fvRsToVm']['attributes']['tDn'])
                     vmmDom = str(tDn_dom.split("ctrlr-[")[1].split(']-')[0])
-                    ep_info.update({'VMM-Domain': vmmDom})
+                    ep_info.update({'vmm_domain': vmmDom})
                     tDn = str(ep_child['fvRsToVm']['attributes']['tDn'])
                     vm_url = self.proto + self.apic_ip + '/api/mo/' + tDn + '.json'
                     vm_response = self.aci_get(vm_url)
@@ -248,17 +261,28 @@ class AciUtils(object):
 
                     if not vm_name:
                         vm_name = '---'
-                    ep_info.update({'VM-Name': str(vm_name)})
-        ep_info.update({"Interfaces": path_list})
+                    ep_info.update({'vm_name': str(vm_name)})
+        ep_info.update({"interfaces": path_list})
         return ep_info
 
 
     def get_all_mo_instances(self, mo_class, query_string):
+        """Function to return All mo instances
+
+        Arguments:
+            mo_class {str} -- Name of Mo class
+            query_string {str} -- Query String
+
+        Returns:
+            dict -- API response of MO Instance API
+        """
         try:
+            instance_list = []
             url = urls.MO_INSTANCE_URL.format(self.proto, self.apic_ip, mo_class)
             url += "?" + query_string
             response_json = self.aci_get(url)
-            instance_list = response_json['imdata']
+            if response_json and response_json['imdata']:
+                instance_list = response_json['imdata']
             return instance_list
         except Exception as ex:
             logger.exception('Exception while fetching MO: ' + mo_class + ', Error:' + str(ex))
@@ -347,7 +371,14 @@ class AciUtils(object):
 
     @time_it
     def apic_fetch_bd(self, dn):
+        """Function to fetch BD data
 
+        Arguments:
+            dn {str} -- dn string
+
+        Returns:
+            str -- bd_data from response of FETCH_BD_URL
+        """
         try:
             url = urls.FETCH_BD_URL.format(self.proto, self.apic_ip, dn)
             response_json = self.aci_get(url)
@@ -363,7 +394,14 @@ class AciUtils(object):
 
     @time_it
     def apic_fetch_vrf(self, dn):
+        """Function to fetch VRF detail from dn
 
+        Arguments:
+            dn {str} -- dn string
+
+        Returns:
+            str -- Vrf data from Response of FETCH_VRF_URL
+        """
         try:
             url = urls.FETCH_VRF_URL.format(self.proto, self.apic_ip, dn)
             response_json = self.aci_get(url)
@@ -379,6 +417,14 @@ class AciUtils(object):
 
     @time_it
     def apic_fetch_contract(self, dn):
+        """Fetch Contracts for EPG from dn
+
+        Arguments:
+            dn {str} -- dn string
+
+        Returns:
+            dict -- contract's dictionary
+        """
         try:
             url = urls.FETCH_CONTRACT_URL.format(self.proto, self.apic_ip, dn)
             response_json = self.aci_get(url)
@@ -414,6 +460,14 @@ class AciUtils(object):
 
 
     def get_epg_health(self, dn):
+        """Funtion to get health of EPG from dn
+
+        Arguments:
+            dn {str} -- dn string
+
+        Returns:
+            str -- Health of EPG
+        """
         try:
             url = urls.EPG_HEALTH_URL.format(self.proto, self.apic_ip, dn)
             response = self.aci_get(url)
@@ -429,24 +483,32 @@ class AciUtils(object):
             
 
     def parse_epg_data(self, epg_resp):
+        """Funtion to parse API response of EPG data
+        and return parsed data.
 
+        Arguments:
+            epg_resp {list} -- List of EPG data from API
+
+        Returns:
+            list -- List of dictionary of parsed EPG data
+        """
         logger.info('Stared Parsing APIC EPG Data!')
         parsed_data = []
         
         for item in epg_resp:
-            epg_attr = item.get('fvAEPg').get('attributes')
-            dn_str = epg_attr.get('dn')
-            app_profile =  dn_str.split('ap-')[1].split('/')[0]
-            tenant_name = dn_str.split('tn-')[1].split('/')[0]
-            epg_name = epg_attr.get("name")
-            dn_split = dn_str.split("/", 4)
-            bd_data = self.apic_fetch_bd(dn_str)
-            vrf_str = dn_split[0] + '/' + dn_split[1] + '/BD-' + bd_data
+            data = {}
+            epg_attr = item.get('fvAEPg', {}).get('attributes', {})
+            data['dn'] = epg_attr.get('dn')
+            data['tenant'] = data['dn'].split('tn-')[1].split('/')[0]
+            data['bd'] = self.apic_fetch_bd(data['dn'])
+            dn_split = data['dn'].split("/", 4)
+            vrf_str = dn_split[0] + '/' + dn_split[1] + '/BD-' + data['bd']
             vrf_data = self.apic_fetch_vrf(vrf_str)
-            vrf_name =  tenant_name + "/" + vrf_data
-            contract_data_list = self.apic_fetch_contract(dn_str)
-            epg_health = self.get_epg_health(dn_str)
-            data = (dn_str, tenant_name, epg_name, bd_data, contract_data_list, vrf_name, epg_health, app_profile)
+            data['app_profile'] =  data['dn'].split('ap-')[1].split('/')[0]
+            data['epg'] = epg_attr.get("name")
+            data['vrf'] =  data['tenant'] + "/" + vrf_data
+            data['contracts'] = self.apic_fetch_contract(data['dn'])
+            data['epg_health'] = self.get_epg_health(data['dn'])
             parsed_data.append(data)
 
         return parsed_data
@@ -454,7 +516,14 @@ class AciUtils(object):
 
     @staticmethod
     def get_ip_mac_list(item):
+        """Return IP and MAC list from data of EP
 
+        Arguments:
+            item {dict} -- data of EP
+
+        Returns:
+            list -- list of IP and MAC
+        """
         is_cep = False
         ip_set = set()
         mac_set = set()
@@ -471,7 +540,6 @@ class AciUtils(object):
             ip_set.add(cep_ip)
         elif not is_ip_list:
             mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
-
 
         return (list(ip_set) + list(mac_set)), is_cep
 
