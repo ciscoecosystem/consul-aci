@@ -4,7 +4,7 @@ from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
 from consul.consul_schema import schema
-import alchemy as Database
+import alchemy_new as Database
 import os
 import requests
 

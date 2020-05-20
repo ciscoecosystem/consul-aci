@@ -1,11 +1,13 @@
-import requests
-import json
-import base64
-import datetime
 import re
+import json
+import yaml
+import base64
+import requests
+import datetime
 from collections import defaultdict
 
 import urls
+from decorator import time_it
 from custom_logger import CustomLogger
 
 from cobra.model.pol import Uni as PolUni
@@ -17,7 +19,9 @@ try:
 except:
     print("=== could not import openssl crypto ===")
 
+
 logger = CustomLogger.get_logger("/home/app/log/app.log")
+
 APIC_IP = '172.17.0.1'
 STATIC_IP = '0.0.0.0'
 
@@ -38,22 +42,6 @@ def create_cert_session():
         plugin_key = file.read()
 
     return (aaa_user_cert, plugin_key)
-
-
-def time_it(method):
-    """Decorator function to log time taken by function
-
-    Arguments:
-        method function -- function for which we want to measure time
-    """
-
-    def timed(*args, **kw):
-        start_time = datetime.datetime.now()
-        result = method(*args, **kw)
-        end_time = datetime.datetime.now()
-        logger.info("Time for ACI {} is {}: ".format(method.__name__, str(end_time - start_time)))
-        return result
-    return timed
 
 
 class AciUtils(object):
@@ -81,6 +69,7 @@ class AciUtils(object):
             else:
                 logger.error('Could not connect to APIC. Please verify your APIC connection.')
         return cls.__instance
+
 
     @time_it
     def login(self):
@@ -117,6 +106,7 @@ class AciUtils(object):
             logger.exception('Unable to connect with APIC. Exception: '+str(e))
             self.apic_token = None
 
+
     @time_it
     def aci_get(self, url, retry=1):
         """Funtion to  make API call to APIC API
@@ -142,6 +132,7 @@ class AciUtils(object):
             logger.exception('ACI call exception: {}, URL: {}'.format(str(e), str(url)))
             return None
 
+
     @time_it
     def apic_fetch_ep_data(self, tenant):
 
@@ -157,6 +148,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception('Exception in EP Data API call, Error: {}'.format(str(e)))
             return None
+
 
     def parse_ep_data(self, ep_resp):
         
@@ -260,6 +252,7 @@ class AciUtils(object):
         ep_info.update({"Interfaces": path_list})
         return ep_info
 
+
     def get_all_mo_instances(self, mo_class, query_string):
         try:
             url = urls.MO_INSTANCE_URL.format(self.proto, self.apic_ip, mo_class)
@@ -351,6 +344,7 @@ class AciUtils(object):
             logger.exception('Exception in EPG Data API call, Error: {}'.format(str(e)))
             return None
 
+
     @time_it
     def apic_fetch_bd(self, dn):
 
@@ -366,6 +360,7 @@ class AciUtils(object):
             logger.exception('Exception in BD API call, Error: {}'.format(str(e)))
             return None
 
+
     @time_it
     def apic_fetch_vrf(self, dn):
 
@@ -380,6 +375,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception('Exception in VRF API call, Error: {}'.format(str(e)))
             return None
+
 
     @time_it
     def apic_fetch_contract(self, dn):
@@ -415,6 +411,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception('Exception in Contracts API call,  Error: {}'.format(str(e)))
             return None
+
 
     def get_epg_health(self, dn):
         try:
@@ -453,6 +450,7 @@ class AciUtils(object):
             parsed_data.append(data)
 
         return parsed_data
+
 
     @staticmethod
     def get_ip_mac_list(item):
