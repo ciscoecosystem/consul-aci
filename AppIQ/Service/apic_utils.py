@@ -6,13 +6,12 @@ import re
 from collections import defaultdict
 
 import urls
+from custom_logger import CustomLogger
+
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
 from cobra.model.aaa import AppUser as AaaAppUser
 from cobra.model.aaa import UserCert as AaaUserCert
-from custom_logger import CustomLogger
-
-
 try:
     from OpenSSL.crypto import FILETYPE_PEM, load_privatekey, sign
 except:
