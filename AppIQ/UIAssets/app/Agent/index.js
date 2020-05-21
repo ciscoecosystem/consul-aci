@@ -385,6 +385,12 @@ export default class Agent extends React.Component {
                 }
 
                 thiss.setState({ readAgentLoading: false });
+                thiss.setState({
+                    Protocol: "https",
+                    Address: null,
+                    Port: null,
+                    Token: null
+                })
             }
             xhr.send(JSON.stringify(payload));
         }
@@ -484,6 +490,11 @@ export default class Agent extends React.Component {
         let thiss = this;
         // get required detail and put in Port, Protocol ,etc
         let agentDetail = this.state.details[editAgentIndex];
+        let { protocolOptions } = this.state;
+
+        let protocolOptionsNew = protocolOptions.map(function(elem){
+            return Object.assign(elem, { selected: (elem.value === agentDetail.protocol) })
+        })
 
         // open Modal box and show the same
         this.setState({
@@ -491,6 +502,7 @@ export default class Agent extends React.Component {
             isNewAgentAdded: false,
             Port: agentDetail.port,
             Protocol: agentDetail.protocol,
+            protocolOptions: protocolOptionsNew,
             Address: agentDetail.ip,
             Token: agentDetail.token
         }, function () {

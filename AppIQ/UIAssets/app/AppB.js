@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect, Link } from 'react-router-dom';
 import { Sidebar, Dropdown, Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Agent from "./Agent/index.js"
@@ -17,6 +17,9 @@ function detailRedirect(dc, tn) {
 function mappingRedirect(dc, tn) {
     return `mapping.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
 }
+
+const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
+
 window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
 window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
 console.log("Cookie token dev cookie ", window.APIC_DEV_COOKIE)
@@ -39,26 +42,6 @@ export default class AppB extends React.Component {
         }
 
 
-
-        // {
-        //     id: 'dc1',
-        //     content: <li class="sidebar__item" >
-        //         <a class="" aria-current="false" href="javascript:void(0)" onClick={()=> window.location.href = treeRedirect}>
-        //             <span class="qtr-margin-left">-</span>
-        //         </a>
-        //     </li>,
-        //     title: '10.111.222.12'
-        // },
-        // {
-        //     id: 'dc2',
-        //     content: <li class="sidebar__item" >
-        //         <a class="" aria-current="false" href="javascript:void(0)" onClick={()=> window.location.href = detailRedirect}> 
-        //             <span class="qtr-margin-left">2</span>
-        //         </a>
-        //     </li>,
-        //     title: '10.54.22.11'
-        // }
-
         this.notify = this.notify.bind(this);
         this.setDetails = this.setDetails.bind(this);
         this.readAgentsCall = this.readAgentsCall.bind(this);
@@ -67,7 +50,8 @@ export default class AppB extends React.Component {
         this.state = {
             agentPopup: false,
             items: [
-                { label: "Agents", action: this.handleAgent }
+                { label: "Agents", action: this.handleAgent },
+                { label: "Polling interval", action: function(){ console.log("polling interval")} }
             ],
             details: [],
             sidebarItems: [
@@ -124,7 +108,7 @@ export default class AppB extends React.Component {
     setSidebar(details = this.state.details) {
         let thiss = this;
         let sidebarItems = [...this.state.sidebarItems];
-        
+
         // filter out and show 
         function datacenterSubitem(pageind) {
             return details.filter(function (elem) {
@@ -137,10 +121,12 @@ export default class AppB extends React.Component {
                 let toLocation = (pageind === 1) ? treeRedirect(elem["datacenter"], thiss.tenantName) : mappingRedirect(elem["datacenter"], thiss.tenantName);
                 return {
                     id: 'dc1' + ind,
-                    content: <li className={"sidebar__item"} >
+                    content: <li className={"sidebar__item dc-item"} >
+                        {/* <Link to={toLocation}> */}
                         <a className="" aria-current="false" href="javascript:void(0)" onClick={() => window.location.href = toLocation}>
                             <span className={`health-bullet ${elem.status ? 'healthy' : 'dead'}`}></span>
                             <span className="qtr-margin-left">{elem["datacenter"]}</span>
+                        {/* </Link> */}
                         </a>
                     </li>,
                     title: elem["datacenter"]
@@ -239,15 +225,10 @@ export default class AppB extends React.Component {
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
                     {this.state.agentPopup && <Agent details={this.state.details} readAgentLoading={this.state.readAgentLoading} setDetails={this.setDetails} handleAgent={this.handleAgent} />}
                     <div className="app-container">
-                        <span className="sidebar">
-                            <Sidebar title={'Consul'}
-                                items={this.state.sidebarItems}
-                                theme={Sidebar.THEMES.THEME_TYPE}
-                                expanded={true}
-                                compressed={false}
-                                locked={true}
-                            />
-                        </span>
+                        <Sidebar title={'Consul'}
+                            items={this.state.sidebarItems}
+                            theme={Sidebar.THEMES.THEME_TYPE}
+                        />
 
 
                         <div className="main-content-wrapper">
@@ -274,55 +255,18 @@ export default class AppB extends React.Component {
                             <main>
                                 <div className="routed-content">
 
-                                    {/* <Switch>
+                                    <Switch>
 
                                         <Route exact path="/" >
-                                            <div>
+                                            <div style={{height: "10%"}}>
                                                 Here Goes Dashboard
                                             </div>
                                         </Route>
-                                        <Route path="/tree.html" >
-                                            <div>
-                                                tree view
-                                                <Iframe url={treeRedirect}
-                                                    width="450px"
-                                                    height="80vh"
-                                                    id="myId"
-                                                    className="myClassname"
-                                                    display="initial"
-                                                    position="relative" styles={{ height: "max-content" }} />
-                                            </div>
-                                        </Route>
-                                        <Route path="/mapping.html" >
-                                            <div>
-                                                mapping view
-                                                <Iframe url={mappingRedirect}
-                                                    width="450px"
-                                                    height="80vh"
-                                                    id="myId"
-                                                    className="myClassname"
-                                                    display="initial"
-                                                    position="relative" styles={{ height: "max-content" }} />
-                                            </div>
-                                        </Route>
-                                        <Route path="/details.html" >
-                                            <div>
-                                                detail view
-                                                <Iframe url={detailRedirect}
-                                                    width="450px"
-                                                    height="80vh"
-                                                    id="myId"
-                                                    className="myClassname"
-                                                    display="initial"
-                                                    position="relative" styles={{ height: "max-content" }} />
-                                            </div>
-                                        </Route> */}
-                                    {/* 
-                                        <Route exact path="/agent"><div>
-                                            <Agent handleAgent={this.handleAgent} />
-                                        </div>
-                                        </Route> */}
-                                    {/* </Switch> */}
+                                        <Route path="/tree.html" component={TreeViewComponent} />
+                                        <Route path="/mapping.html" component={MappingViewComponent} />
+                                        <Route path="/details.html" component={TreeViewComponent} />
+
+                                    </Switch>
 
                                 </div>
                             </main>
@@ -334,4 +278,31 @@ export default class AppB extends React.Component {
             </Router>
         );
     }
+}
+
+
+function TreeViewComponent(props) {
+    console.log("View tree view ", props.location)
+    return (<div>
+        <Iframe url={"/tree.html" + props.location.search}
+            width="450px"
+            height="80vh"
+            id="myId"
+            className="myClassname"
+            display="initial"
+            position="relative" styles={{ height: "max-content" }} />
+    </div>)
+}
+
+function MappingViewComponent(props) {
+    console.log("View Mapping view ", props.location)
+    return (<div>
+        <Iframe url={"/mapping.html" + props.location.search}
+            width="450px"
+            height="80vh"
+            id="myId"
+            className="myClassname"
+            display="initial"
+            position="relative" styles={{ height: "max-content" }} />
+    </div>)
 }
