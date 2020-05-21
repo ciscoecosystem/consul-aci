@@ -98,7 +98,7 @@ class Service(Base):
 
 class NodeChecks(Base):
     __tablename__ = 'NodeChecks'
-    node_id = Column(String, primary_key=True, ForeignKey('Node.node_id'))
+    node_id = Column(String, ForeignKey('Node.node_id'), primary_key=True)
     check_id = Column(String, primary_key=True)
     node_name = Column(String)
     check_name = Column(String)
@@ -149,48 +149,48 @@ class ServiceChecks(Base):
         self.created_ts = created_ts
         self.updated_ts = updated_ts
 
-class NodeAudit(Node):
-    __tablename__ = 'NodeAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(String)
+# class NodeAudit(Node):
+#     __tablename__ = 'NodeAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(String)
 
-    def __init__(self, node_id, node_name, node_ips, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(node_id, node_name, node_ips, datacenter, created_ts, updated_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
-
-
-class ServiceAudit(Service):
-    __tablename__ = 'ServiceAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(String)
-
-    def __init__(self, service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts, updated_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
+#     def __init__(self, node_id, node_name, node_ips, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(node_id, node_name, node_ips, datacenter, created_ts, updated_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
 
 
-class NodeChecksAudit(NodeChecks):
-    __tablename__ = 'NodeChecksAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(String)
+# class ServiceAudit(Service):
+#     __tablename__ = 'ServiceAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(String)
 
-    def __init__(self, node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts, updated_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
+#     def __init__(self, service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter, created_ts, updated_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
 
 
-class ServiceChecksAudit(ServiceChecks):
-    __tablename__ = 'ServiceChecksAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(String)
+# class NodeChecksAudit(NodeChecks):
+#     __tablename__ = 'NodeChecksAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(String)
 
-    def __init__(self, check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts, updated_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
+#     def __init__(self, node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status, created_ts, updated_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
+
+
+# class ServiceChecksAudit(ServiceChecks):
+#     __tablename__ = 'ServiceChecksAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(String)
+
+#     def __init__(self, check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts=None, updated_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(check_id, service_id, service_name, check_name, check_type, notes, output, status, created_ts, updated_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
 
 class EP(Base):
     __tablename__ = 'EP'
@@ -258,26 +258,26 @@ class EPG(Base):
         self.last_checked_ts = last_checked_ts
 
 
-class EPAudit(EP):
-    __tablename__ = 'EPAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(DateTime)
+# class EPAudit(EP):
+#     __tablename__ = 'EPAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(DateTime)
 
-    def __init__(self, mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts, updated_ts, last_checked_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
+#     def __init__(self, mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep, created_ts, updated_ts, last_checked_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
 
 
-class EPGAudit(EPG):
-    __tablename__ = 'EPGAudit'
-    audit_ts = Column(DateTime)
-    audit_category = Column(DateTime)
+# class EPGAudit(EPG):
+#     __tablename__ = 'EPGAudit'
+#     audit_ts = Column(DateTime)
+#     audit_category = Column(DateTime)
 
-    def __init__(self, dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
-        super().__init__(dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts, updated_ts, last_checked_ts)
-        self.audit_ts = audit_ts
-        self.audit_category = audit_category
+#     def __init__(self, dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts=None, updated_ts=None, last_checked_ts=None, audit_ts=None, audit_category=None):
+#         super().__init__(dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile, created_ts, updated_ts, last_checked_ts)
+#         self.audit_ts = audit_ts
+#         self.audit_category = audit_category
 
 
 class Database():
@@ -428,7 +428,7 @@ class Database():
             old_node_id {String}
             data {Dict} -- {'node_id': , 'node_name': , 'node_ips': , 'datacenter': }
         """
-        self.session.filter(Node.node_id == old_node_id).update(data)
+        self.session.query(Node).filter(Node.node_id == old_node_id).update(data)
 
 
     @alchemy_commit_session
@@ -634,235 +634,235 @@ class Database():
         self.session.query(EPG).filter(EPG.dn == dn).delete()
 
 
-    @alchemy_read
-    def read_node_audit(self):
-        return self.session.query(NodeAudit).all()
+    # @alchemy_read
+    # def read_node_audit(self):
+    #     return self.session.query(NodeAudit).all()
 
 
-    @alchemy_commit_session
-    def insert_into_node_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (node_id, node_name, node_ips, datacenter),
-                (node_id, node_name, node_ips, datacenter),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(NodeAudit(entry[0], entry[1], entry[2], entry[3]))
+    # @alchemy_commit_session
+    # def insert_into_node_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (node_id, node_name, node_ips, datacenter),
+    #             (node_id, node_name, node_ips, datacenter),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(NodeAudit(entry[0], entry[1], entry[2], entry[3]))
 
 
-    @alchemy_commit_session
-    def update_node_audit(self, old_node_id, data):
-        """
-        Arguments:
-            old_node_id {String}
-            data {Dict} -- {'node_id': , 'node_name': , 'node_ips': , 'datacenter': }
-        """
-        self.session.query(NodeAudit).filter(NodeAudit.node_id == old_node_id).update(data)
+    # @alchemy_commit_session
+    # def update_node_audit(self, old_node_id, data):
+    #     """
+    #     Arguments:
+    #         old_node_id {String}
+    #         data {Dict} -- {'node_id': , 'node_name': , 'node_ips': , 'datacenter': }
+    #     """
+    #     self.session.query(NodeAudit).filter(NodeAudit.node_id == old_node_id).update(data)
 
 
-    @alchemy_commit_session
-    def delete_entry_node_audit(self, node_id):
-        """
-        Arguments:
-            node_id {String}
-        """
-        self.session.query(NodeAudit).filter(NodeAudit.node_id == node_id).delete()
+    # @alchemy_commit_session
+    # def delete_entry_node_audit(self, node_id):
+    #     """
+    #     Arguments:
+    #         node_id {String}
+    #     """
+    #     self.session.query(NodeAudit).filter(NodeAudit.node_id == node_id).delete()
 
 
-    @alchemy_read
-    def read_service_audit(self):
-        return self.session.query(ServiceAudit).all()
+    # @alchemy_read
+    # def read_service_audit(self):
+    #     return self.session.query(ServiceAudit).all()
 
 
-    @alchemy_commit_session
-    def insert_into_service_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
-                (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(ServiceAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
+    # @alchemy_commit_session
+    # def insert_into_service_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
+    #             (service_id, node_id, service_name, service_ip, service_port, service_address, service_tags, service_kind, namespace, datacenter),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(ServiceAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9]))
 
 
-    @alchemy_commit_session
-    def update_service_audit(self, old_service_id, data):
-        """
-        Arguments:
-            old_service_id {String}
-            data {Dict} -- {'service_id': , 'node_id':, 'service_name': , 'service_ip': , 'service_port': , 'service_address': , 'service_tags': , 'service_kind': , 'namespace': , 'datacenter': }
-        """
-        self.session.query(ServiceAudit).filter(ServiceAudit.service_id == old_service_id).update(data)
+    # @alchemy_commit_session
+    # def update_service_audit(self, old_service_id, data):
+    #     """
+    #     Arguments:
+    #         old_service_id {String}
+    #         data {Dict} -- {'service_id': , 'node_id':, 'service_name': , 'service_ip': , 'service_port': , 'service_address': , 'service_tags': , 'service_kind': , 'namespace': , 'datacenter': }
+    #     """
+    #     self.session.query(ServiceAudit).filter(ServiceAudit.service_id == old_service_id).update(data)
 
 
-    @alchemy_commit_session
-    def delete_entry_service_audit(self, service_id):
-        """
-        Arguments:
-            service_id {String}
-        """
-        self.session.query(ServiceAudit).filter(ServiceAudit.service_id == service_id).delete()
+    # @alchemy_commit_session
+    # def delete_entry_service_audit(self, service_id):
+    #     """
+    #     Arguments:
+    #         service_id {String}
+    #     """
+    #     self.session.query(ServiceAudit).filter(ServiceAudit.service_id == service_id).delete()
 
 
-    @alchemy_read
-    def read_node_checks_audit(self):
-        return self.session.query(NodeChecksAudit).all()
+    # @alchemy_read
+    # def read_node_checks_audit(self):
+    #     return self.session.query(NodeChecksAudit).all()
 
 
-    @alchemy_commit_session
-    def insert_into_node_checks_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
-                (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(NodeChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
-
-    
-    @alchemy_commit_session
-    def update_node_checks_audit(self, old_node_id, old_check_id, data):
-        """
-        Arguments:
-            old_node_id {String}
-            old_check_id {String}
-            data {Dict} -- {'node_id': , 'check_id': , 'node_name': , 'check_name': , 'service_name': , 'check_type': , 'notes': , 'output': , 'status': }
-        """
-        self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == old_node_id, NodeChecksAudit.check_id == old_check_id)
-
-
-    @alchemy_commit_session
-    def delete_entry_node_checks_audit(self, node_id, check_id):
-        """
-        Arguments:
-            node_id {String}
-            check_id {String}
-        """
-        self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == node_id, NodeChecksAudit.check_id == check_id).delete()
-
-
-    @alchemy_read
-    def read_service_checks_audit(self):
-        return self.session.query(ServiceChecksAudit).all()
-
-
-    @alchemy_commit_session
-    def insert_into_service_checks_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (check_id, service_id, service_name, check_name, check_type, notes, output, status),
-                (check_id, service_id, service_name, check_name, check_type, notes, output, status),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(ServiceChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
+    # @alchemy_commit_session
+    # def insert_into_node_checks_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
+    #             (node_id, check_id, node_name, check_name, service_name, check_type, notes, output, status),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(NodeChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8]))
 
     
-    @alchemy_commit_session
-    def update_service_checks_audit(self, old_check_id, old_service_id, data):
-        """
-        Arguments:
-            old_check_id {String}
-            old_service_id {String}
-            data {Dict} -- {'check_id': , 'service_id': , 'service_name': , 'check_name': , 'check_type': , 'notes': , 'output': , 'status': }
-        """
-        self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == old_check_id, ServiceChecksAudit.service_id == old_service_id).update(data)
+    # @alchemy_commit_session
+    # def update_node_checks_audit(self, old_node_id, old_check_id, data):
+    #     """
+    #     Arguments:
+    #         old_node_id {String}
+    #         old_check_id {String}
+    #         data {Dict} -- {'node_id': , 'check_id': , 'node_name': , 'check_name': , 'service_name': , 'check_type': , 'notes': , 'output': , 'status': }
+    #     """
+    #     self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == old_node_id, NodeChecksAudit.check_id == old_check_id)
+
+
+    # @alchemy_commit_session
+    # def delete_entry_node_checks_audit(self, node_id, check_id):
+    #     """
+    #     Arguments:
+    #         node_id {String}
+    #         check_id {String}
+    #     """
+    #     self.session.query(NodeChecksAudit).filter(NodeChecksAudit.node_id == node_id, NodeChecksAudit.check_id == check_id).delete()
+
+
+    # @alchemy_read
+    # def read_service_checks_audit(self):
+    #     return self.session.query(ServiceChecksAudit).all()
+
+
+    # @alchemy_commit_session
+    # def insert_into_service_checks_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (check_id, service_id, service_name, check_name, check_type, notes, output, status),
+    #             (check_id, service_id, service_name, check_name, check_type, notes, output, status),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(ServiceChecksAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
     
-    @alchemy_commit_session
-    def delete_entry_service_checks_audit(self, check_id, service_id):
-        """
-        Arguments:
-            check_id {String}
-            service_id {String}
-        """
-        self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == check_id, ServiceChecksAudit.service_id == service_id).delete()
+    # @alchemy_commit_session
+    # def update_service_checks_audit(self, old_check_id, old_service_id, data):
+    #     """
+    #     Arguments:
+    #         old_check_id {String}
+    #         old_service_id {String}
+    #         data {Dict} -- {'check_id': , 'service_id': , 'service_name': , 'check_name': , 'check_type': , 'notes': , 'output': , 'status': }
+    #     """
+    #     self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == old_check_id, ServiceChecksAudit.service_id == old_service_id).update(data)
+
+    
+    # @alchemy_commit_session
+    # def delete_entry_service_checks_audit(self, check_id, service_id):
+    #     """
+    #     Arguments:
+    #         check_id {String}
+    #         service_id {String}
+    #     """
+    #     self.session.query(ServiceChecksAudit).filter(ServiceChecksAudit.check_id == check_id, ServiceChecksAudit.service_id == service_id).delete()
 
 
-    @alchemy_read
-    def read_ep_audit(self):
-        return self.session.query(EPAudit).all()
+    # @alchemy_read
+    # def read_ep_audit(self):
+    #     return self.session.query(EPAudit).all()
 
 
-    @alchemy_commit_session
-    def insert_into_ep_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
-                (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(EPAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
+    # @alchemy_commit_session
+    # def insert_into_ep_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
+    #             (mac, ip, tenant, dn, vm_name, interfaces, vmm_domain, controller_name, learning_source, multicast_address, encap, hosting_server_name, is_cep),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(EPAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10], entry[11], entry[12]))
 
 
-    @alchemy_commit_session
-    def update_ep_audit(self, old_mac, old_ip, data):
-        """
-        Arguments:
-            old_mac {String}
-            old_ip {String}
-            data {Dict} -- {'mac': , 'ip': , 'tenant': , 'dn': , 'vm_name': , 'interfaces': , 'vmm_domain': , 'controller_name': , 'learning_source': , 'multicast_address': , 'encap': , 'hosting_server_name': , 'is_cep': }
-        """
-        self.session.query(EPAudit).filter(EPAudit.mac == old_mac, EPAudit.ip == old_ip).update(data)
+    # @alchemy_commit_session
+    # def update_ep_audit(self, old_mac, old_ip, data):
+    #     """
+    #     Arguments:
+    #         old_mac {String}
+    #         old_ip {String}
+    #         data {Dict} -- {'mac': , 'ip': , 'tenant': , 'dn': , 'vm_name': , 'interfaces': , 'vmm_domain': , 'controller_name': , 'learning_source': , 'multicast_address': , 'encap': , 'hosting_server_name': , 'is_cep': }
+    #     """
+    #     self.session.query(EPAudit).filter(EPAudit.mac == old_mac, EPAudit.ip == old_ip).update(data)
 
 
-    @alchemy_commit_session
-    def delete_entry_ep_audit(self, mac, ip):
-        """
-        Arguments:
-            mac {String}
-            ip {String}
-        """
-        self.session.query(EPAudit).filter(EPAudit.mac == mac, EPAudit.ip == ip).delete()
+    # @alchemy_commit_session
+    # def delete_entry_ep_audit(self, mac, ip):
+    #     """
+    #     Arguments:
+    #         mac {String}
+    #         ip {String}
+    #     """
+    #     self.session.query(EPAudit).filter(EPAudit.mac == mac, EPAudit.ip == ip).delete()
 
 
-    @alchemy_read
-    def read_epg_audit(self):
-        return self.session.query(EPGAudit).all()
+    # @alchemy_read
+    # def read_epg_audit(self):
+    #     return self.session.query(EPGAudit).all()
 
 
-    @alchemy_commit_session
-    def insert_into_epg_audit(self, data):
-        """
-        Arguments:
-            data {List of Tuple} -- [
-                (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
-                (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
-                ...
-            ]
-        """
-        for entry in data:
-            self.session.add(EPGAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
+    # @alchemy_commit_session
+    # def insert_into_epg_audit(self, data):
+    #     """
+    #     Arguments:
+    #         data {List of Tuple} -- [
+    #             (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
+    #             (dn, tenant, epg, bd, contracts, vrf, epg_health, app_profile),
+    #             ...
+    #         ]
+    #     """
+    #     for entry in data:
+    #         self.session.add(EPGAudit(entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]))
 
 
-    @alchemy_commit_session
-    def update_epg_audit(self, old_dn, data):
-        """
-        Arguments:
-            old_dn {String}
-            data {Dict} -- {'dn': , 'tenant': , 'epg': , 'bd': , 'contracts': , 'vrf': , 'epg_health': , 'app_profile': }
-        """
-        self.session.query(EPGAudit).filter(EPGAudit.dn == old_dn).update(data)
+    # @alchemy_commit_session
+    # def update_epg_audit(self, old_dn, data):
+    #     """
+    #     Arguments:
+    #         old_dn {String}
+    #         data {Dict} -- {'dn': , 'tenant': , 'epg': , 'bd': , 'contracts': , 'vrf': , 'epg_health': , 'app_profile': }
+    #     """
+    #     self.session.query(EPGAudit).filter(EPGAudit.dn == old_dn).update(data)
 
 
-    @alchemy_commit_session
-    def delete_entry_epg_audit(self, dn):
-        """
-        Arguments:
-            dn {String}
-        """
-        self.session.query(EPGAudit).filter(EPGAudit.dn == dn).delete()
+    # @alchemy_commit_session
+    # def delete_entry_epg_audit(self, dn):
+    #     """
+    #     Arguments:
+    #         dn {String}
+    #     """
+    #     self.session.query(EPGAudit).filter(EPGAudit.dn == dn).delete()
