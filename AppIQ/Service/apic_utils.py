@@ -99,9 +99,11 @@ class AciUtils(object):
                 auth = response.json()
                 auth_token = auth['imdata'][0]['aaaLogin']['attributes']['token']
                 self.apic_token = auth_token
+                return auth_token
             else:
                 logger.error("Login Failed for APIC. Status code {}".format(status_code))
                 self.apic_token = None
+                return None
         except Exception as e:
             logger.exception('Unable to connect with APIC. Exception: '+str(e))
             self.apic_token = None
