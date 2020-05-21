@@ -103,6 +103,8 @@ def get_services(services_dict, node):
     node: node's service to be fetched
     """
 
+    logger.info("Services for node: {}".format(str(node.get('node_name'))))
+
     consul_obj = node.get('agent_consul_obj')
     node_name = node.get('node_name')
     service_list = consul_obj.nodes_services(node_name)
@@ -118,24 +120,27 @@ def get_services(services_dict, node):
                 active_service[service_id] = service
     
 
-def get_node_checks(node, node_checks_dict):
+def get_node_checks(node_checks_dict, node):
     """Get node checks
     
     node: node's checks to be fetched
     """
 
+    logger.info("Node check for: {}".format(str(node.get('node_name'))))
+
     consul_obj = node.get('agent_consul_obj')
     node_name = node.get('node_name')
-    node_check = consul_obj.detailed_node_check(node_name)
+    node_checks = consul_obj.detailed_node_check(node_name)
 
-    check_key = node_check.get('CheckID') + node.get('node_id')
-    if not node_checks_dict.has_key(check_key):
-        node_check.update({
-            'node_id': node.get('node_id'),
-            'node_name': node_name
-        })
-        with node_checks_dict as active_service:
-            node_checks_dict[check_key] = node_check
+    for node_check in node_checks:
+        check_key = node_check.get('CheckID') + node.get('node_id')
+        if not node_checks_dict.has_key(check_key):
+            node_check.update({
+                'node_id': node.get('node_id'),
+                'node_name': node_name
+            })
+            with node_checks_dict as active_service:
+                node_checks_dict[check_key] = node_check
 
 
 def get_service_info(service):
@@ -144,6 +149,8 @@ def get_service_info(service):
     service: service's info to be fetched
     """
     
+    logger.info("Services info for: {}".format(str(service.get('node_name'))))
+
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
     service_tags, service_kind, service_ns = consul_obj.service_info(service_name)
@@ -155,23 +162,27 @@ def get_service_info(service):
     })
 
 
-def get_service_checks(service, service_checks_dict):
+def get_service_checks(service_checks_dict, service):
     """Get service checks
     
     service: service's checks to be fetched
     """
 
+    logger.info("Services checks for: {}".format(str(service.get('node_name'))))
+
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
-    service_check = consul_obj.detailed_service_check(service_name)
+    service_id = service.get('service_id')
+    service_checks = consul_obj.detailed_service_check(service_name, service_id)
 
-    check_key = service_check.get('CheckID') + service.get('service_id')
-    if not service_checks_dict.has_key(check_key):
-        service_check.update({
-            'service_id': service.get('service_name')
-        })
-        with service_checks_dict as active_service:
-            service_checks_dict[check_key] = service_check
+    for service_check in service_checks:
+        check_key = service_check.get('CheckID') + service_id
+        if not service_checks_dict.has_key(check_key):
+            service_check.update({
+                'service_id': service_id
+            })
+            with service_checks_dict as active_service:
+                service_checks_dict[check_key] = service_check
 
 
 def data_fetch():
@@ -243,10 +254,14 @@ def data_fetch():
                     )
                 db_obj.insert_into_node(nodes_list)
 
+                logger.info("Nodes dict: {}".format(str(nodes_dict)))
+
                 # Ittrate all nodes and get all services
                 # executor.map(get_services, repeat(services_dict), nodes_dict.values())
                 for node in nodes_dict.values():
                     get_services(services_dict, node)
+
+                logger.info("Nodes dict: {}".format(str(nodes_dict)))
 
                 # Ittrate all nodes and get node checks
                 # executor.map(get_node_checks, repeat(node_checks_dict), nodes_dict.values())
@@ -255,7 +270,7 @@ def data_fetch():
 
                 # Inserting Nodes checks data in DB
                 node_checks_list = []
-                for node in node_checks_dict:
+                for node in node_checks_dict.values():
                     node_checks_list.append(
                         (
                             node.get('node_id'),
@@ -288,7 +303,7 @@ def data_fetch():
                             service.get('service_ip'),
                             int(service.get('service_port')),
                             service.get('service_address'),
-                            service.get('service_tags'),
+                            [str(service.get('service_tags'))],
                             service.get('service_kind'),
                             service.get('service_namespace'),
                             datacenter
@@ -318,8 +333,10 @@ def data_fetch():
                     )
                 db_obj.insert_into_service_checks(service_check_list)
 
+                logger.info("END")
+
         except Exception as e:
-            logger.info("================Error: {}".format(str(e)))
+            logger.info("Error in data fetch: {}".format(str(e)))
 
         current_time = time.time()
         time_to_sleep = (start_time + POLL_INTERVAL*60) - current_time
