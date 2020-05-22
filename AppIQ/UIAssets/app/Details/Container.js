@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
 import Header from './Header'
 import DataTable from "./DataTable"
+import DetailPanel from "./DetailPanel";
 import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie } from "../../constants.js";
+
+// import { dummyData } from "./dummyData.js";
 import './style.css'
 
 var params_tn;
@@ -27,12 +30,17 @@ class Container extends Component {
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
 
+        this.setSummaryDetail = this.setSummaryDetail.bind(this);
+        this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
+
         params_tn = result['tn'];
 
         this.state = {
             "data": [],
             loading: true,
-            expanded: {}
+            expanded: {},
+            summaryPaneIsOpen: false,
+            summaryDetail: {}
         };
 
         this.handleBackClick = this.handleBackClick.bind(this);
@@ -43,6 +51,18 @@ class Container extends Component {
     }
     componentDidMount() {
         this.fetchData();
+    }
+
+    setSummaryIsOpen(summaryPaneIsOpen = false) {
+        this.setState({ summaryPaneIsOpen })
+    }
+
+    setSummaryDetail(summaryDetail) {
+        this.setState({
+            summaryDetail,
+            summaryPaneIsOpen: true
+        })
+
     }
 
     getData() {
@@ -60,7 +80,7 @@ class Container extends Component {
             if ('errors' in main_data_json) {
                 // Error related to query
                 localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                window.location.href = "index.html?gqlerror=1";
+                // window.location.href = "index.html?gqlerror=1";
             }
             else {
                 if (rawJsonData.status_code != "200") {
@@ -71,7 +91,7 @@ class Container extends Component {
                         }]
                     }
                     localStorage.setItem('message', JSON.stringify(message.errors));
-                    window.location.href = "index.html?gqlerror=1";
+                    // window.location.href = "index.html?gqlerror=1";
                 }
                 else {
                     // Success
@@ -94,7 +114,7 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "index.html?gqlerror=1";
+            // window.location.href = "index.html?gqlerror=1";
         }
     }
 
@@ -141,7 +161,7 @@ class Container extends Component {
                         if ("errors" in json) {
                             // Error related to query
                             localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                            window.location.href = "index.html?gqlerror=1";
+                            // window.location.href = "index.html?gqlerror=1";
                         } else {
                             // Response successful
                             let response = JSON.parse(json.data.Details.details)
@@ -154,7 +174,7 @@ class Container extends Component {
                                     }]
                                 }
                                 localStorage.setItem('message', JSON.stringify(message.errors));
-                                window.location.href = "index.html?gqlerror=1";
+                                // window.location.href = "index.html?gqlerror=1";
                             } else {
                                 // Success
                                 headerInstanceName = response.instanceName;
@@ -175,7 +195,7 @@ class Container extends Component {
                             }
                             localStorage.setItem('message', JSON.stringify(message.errors));
                         }
-                        window.location.href = "index.html?gqlerror=1";
+                        // window.location.href = "index.html?gqlerror=1";
                     }
                 }
             };
@@ -189,12 +209,12 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "index.html?gqlerror=1";
+            // window.location.href = "index.html?gqlerror=1";
         }
     }
 
     handleBackClick() {
-        window.location.href = "index.html";
+        // window.location.href = "index.html";
     }
 
     CONSUL_setExpand(index) {
@@ -217,21 +237,40 @@ class Container extends Component {
     }
 
     render() {
-        console.log("[render] Container");
+        let { summaryPaneIsOpen, summaryDetail } = this.state;
+
+        console.log("[render] Container", this.state);
+
         let title = " | Details";
         let apptext = " " + result[PROFILE_NAME];
 
+        let properties = [{
+            label: "label", value: "val"
+        }, {
+            label: "label", value: "val"
+        }, {
+            label: "label", value: "val"
+        },]
+
         return (
             <div>
-                <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} />
-                <div className="scroll">
+                <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
+                    summaryDetail={summaryDetail}
+                    title={summaryDetail["ap"]}
+                    setSummaryIsOpen={this.setSummaryIsOpen}
+                />
+
+                {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
+                <div className="scroll" style={{ padding: "0px 14px" }}>
                     <DataTable
                         expanded={this.state.expanded}
                         setExpand={this.CONSUL_setExpand}
                         resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
+                        // data={dummyData}
                         data={this.state.data}
-                        onReload={this.reload}>
+                        onReload={this.reload}
+                        setSummaryDetail={this.setSummaryDetail}>
                     </DataTable>
                 </div>
             </div>

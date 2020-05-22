@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+
 import { Table, Button, Label, Icon } from "blueprint-react"
 import ToolBar from "./ToolBar"
 
@@ -9,22 +10,65 @@ const warningColor = "#f49141";
 export default class DataTable extends Component {
   constructor(props) {
     super(props);
-    const HEADER_DETAILS = [
+
+    const SERVICE_TABLE_HEADER = [
       {
-        Header: "Interface",
-        accessor: "interface",
-        width: 190,
+        Header: "Service",
+        accessor: "service"
+      },
+      {
+        Header: "Service Instance",
+        accessor: "serviceInstance"
+      },
+      {
+        Header: "Port",
+        accessor: "port"
+      },
+      {
+        Header: "Service Kind",
+        accessor: "serviceKind"
+      },
+      {
+        Header: "Service Tags",
+        accessor: "serviceTags",
         Cell: row => {
-          return (<div>
-            {row.value.map(function (val) {
-              return <React.Fragment>
-                {val}
-                <br />
-              </React.Fragment>
-            })}
-          </div>)
+          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
         }
       },
+      {
+        Header: "Service Checks",
+        accessor: "serviceChecks",
+        Cell: row => {
+          return (<span>
+            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
+            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
+            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
+          </span>)
+        }
+      },
+      {
+        Header: "Namespace",
+        accessor: "serviceNamespace"
+      }
+    ]
+
+
+    const HEADER_DETAILS = [
+      // {
+      //   Header: "Interface",
+      //   accessor: "interface",
+      //   width: 190,
+      //   Cell: row => {
+      //     return (<div>
+      //       {row.value.map(function (val) {
+      //         return <React.Fragment>
+      //           {val}
+      //           <br />
+      //         </React.Fragment>
+      //       })}
+      //     </div>)
+      //   }
+      // },
       {
         Header: "Endpoint",
         accessor: "endPointName"
@@ -33,30 +77,30 @@ export default class DataTable extends Component {
         Header: "IP",
         accessor: "ip"
       },
-      {
-        Header: "MAC",
-        accessor: "mac"
-      },
-      {
-        Header: "Learning Source",
-        accessor: "learningSource"
-      },
-      {
-        Header: "Hosting Server",
-        accessor: "hostingServer"
-      },
-      {
-        Header: "Reporting Controller",
-        accessor: "reportingController"
-      },
-      {
-        Header: "VRF",
-        accessor: "vrf"
-      },
-      {
-        Header: "BD",
-        accessor: "bd"
-      },
+      // {
+      //   Header: "MAC",
+      //   accessor: "mac"
+      // },
+      // {
+      //   Header: "Learning Source",
+      //   accessor: "learningSource"
+      // },
+      // {
+      //   Header: "Hosting Server",
+      //   accessor: "hostingServer"
+      // },
+      // {
+      //   Header: "Reporting Controller",
+      //   accessor: "reportingController"
+      // },
+      // {
+      //   Header: "VRF",
+      //   accessor: "vrf"
+      // },
+      // {
+      //   Header: "BD",
+      //   accessor: "bd"
+      // },
       {
         Header: "Application Profile",
         accessor: "ap"
@@ -95,49 +139,11 @@ export default class DataTable extends Component {
             {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
           </span>)
         }
-      }
+      },
+      ...SERVICE_TABLE_HEADER
     ]
 
-    const SERVICE_TABLE_HEADER = [
-      {
-        Header: "Service",
-        accessor: "service"
-      },
-      {
-        Header: "Service Instance",
-        accessor: "serviceInstance"
-      },
-      {
-        Header: "Port",
-        accessor: "port"
-      },
-      {
-        Header: "Service Kind",
-        accessor: "serviceKind"
-      },
-      {
-        Header: "Namespace",
-        accessor: "serviceNamespace"
-      },
-      {
-        Header: "Service Tags",
-        accessor: "serviceTags",
-        Cell: row => {
-          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
-        }
-      },
-      {
-        Header: "Service Checks",
-        accessor: "serviceChecks",
-        Cell: row => {
-          return (<span>
-            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
-            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
-            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
-          </span>)
-        }
-      }
-    ]
+   
 
     this.state = {
       row: this.props.data,
@@ -158,6 +164,7 @@ export default class DataTable extends Component {
   }
 
   render() {
+    let thiss = this;
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
@@ -168,18 +175,32 @@ export default class DataTable extends Component {
           columns={this.state.columns}
           onPageChange={() => this.props.resetExpanded()}
           expanded={this.props.expanded}
-          onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
-          SubComponent={row => {
-            return (
-              <Table
-                data={row.original.services}
-                columns={this.state.serviceColumn}
-                noDataText={"No services found"}
-                defaultPageSize={100}
-                minRows={0}
-                showPagination={false} />
-            )
-          }}>
+          onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)} 
+          getTrProps={(state, rowInfo) => {
+            if (rowInfo && rowInfo.row) {
+              return {
+                onClick: (e) => {
+                  thiss.props.setSummaryDetail(rowInfo.row)
+                  // console.log("Select row on click ", rowInfo );
+                }
+              }
+            }else{
+              return {}
+            }
+          }} >
+            
+          {/* // SubComponent={row => {
+          //   return (
+          //     <Table
+          //       data={row.original.services}
+          //       columns={this.state.serviceColumn}
+          //       noDataText={"No services found"}
+          //       defaultPageSize={100}
+          //       minRows={0}
+          //       showPagination={false} />
+          //   )
+          // }} */}
+         
 
         </Table>
       </div>
