@@ -55,6 +55,7 @@ Algorithm:
 import custom_logger
 import alchemy_new as database
 from consul_utils import Cosnul
+from apic_utils import AciUtils
 
 import time
 import json
@@ -71,6 +72,7 @@ db_obj.create_tables()
 POLL_INTERVAL = 1       # interval in minutes
 CHECK_AGENT_LIST = 3    # interval in sec
 THREAD_POOL = 10        # Pool size for all thread pools
+TENANT = 'AppDynamics'
 
 
 def get_nodes(nodes_dict, agent):
@@ -333,7 +335,50 @@ def data_fetch():
                     )
                 db_obj.insert_into_service_checks(service_check_list)
 
-                logger.info("END")
+                aci_obj = AciUtils()
+
+                ep_data = aci_obj.apic_fetch_ep_data(TENANT)
+
+                ep_list = []
+                for ep in ep_data:
+                    ep_list.append(
+                        (
+                            ep.get('mac'),
+                            ep.get('ip'),
+                            ep.get('tenant'),
+                            ep.get('dn'),
+                            ep.get('vm_name'),
+                            [str(ep.get('interfaces'))],
+                            ep.get('vmm_domain'),
+                            ep.get('controller'),
+                            ep.get('learning_src'),
+                            ep.get('multi_cast_addr'),
+                            ep.get('encap'),
+                            ep.get('hosting_servername'),
+                            ep.get('is_cep'),
+                        )
+                    )
+                db_obj.insert_into_ep(ep_list)
+
+                epg_data = aci_obj.apic_fetch_epg_data(TENANT)
+
+                epg_list = []
+                for epg in epg_data:
+                    epg_list.append(
+                        (
+                            epg.get('dn'),
+                            epg.get('tenant'),
+                            epg.get('epg'),
+                            epg.get('bd'),
+                            [str(epg.get('contracts'))],
+                            epg.get('vrf'),
+                            epg.get('epg_health'),
+                            epg.get('app_profile'),
+                        )
+                    )
+                db_obj.insert_into_epg(epg_list)
+
+                logger.info("Data fetch complete:")
 
         except Exception as e:
             logger.info("Error in data fetch: {}".format(str(e)))

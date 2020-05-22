@@ -152,7 +152,7 @@ class AciUtils(object):
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
                 data = response_json.get("imdata")
-                logger.debug('Total EPs fetched for Tenant: {} - {} EPGs'.format(str(tenant), str(len(data))))
+                logger.debug('Total EPs fetched for Tenant: {} - {} EPs'.format(str(tenant), str(len(data))))
                 parsed_ep_data = self.parse_ep_data(data)
                 return parsed_ep_data
             return []
@@ -176,7 +176,7 @@ class AciUtils(object):
 
             for item in ep_resp:
                 data = {}
-                ep_attr = item['fvCEp']['attributes']
+                ep_attr = item.get('fvCEp').get('attributes')
                 ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
                 data['dn'] = ep_attr.get('dn')
                 data['learning_src'] = ep_attr.get("lcC")
@@ -186,10 +186,11 @@ class AciUtils(object):
                 data['multi_cast_addr'] = ep_attr.get("mcastAddr")
                 if data['multi_cast_addr']  == "not-applicable":
                     data['multi_cast_addr']  = "---"
+
+                ep_child_attr = item.get('fvCEp').get('children')
+                ep_info = self.get_ep_info(ep_child_attr)
                 for ip_mac in ip_mac_list:
                     data['ip'] = ip_mac
-                    ep_child_attr = ep_attr['fvCEp']['children']
-                    ep_info = self.get_ep_info(ep_child_attr)
                     data.update(ep_info)
                     ep_list.append(data)
             return ep_list
@@ -220,9 +221,9 @@ class AciUtils(object):
 
                     hyper_query_string = 'query-target-filter=eq(compHv.dn,"' + hyper_dn + '")'
                     hyper_resp = self.get_all_mo_instances("compHv", hyper_query_string)
-
-                    if hyper_resp.get("status"):
-                        if hyper_resp.get("payload"):
+                    hyper_resp = hyper_resp[0]
+                    if hyper_resp.get("status", {}):
+                        if hyper_resp.get("payload", {}):
                             hyper_name = hyper_resp["payload"][0]["compHv"]["attributes"]["name"]
                         else:
                             logger.error("Could not get Hosting Server Name using Hypervisor info")
@@ -358,7 +359,7 @@ class AciUtils(object):
             dict -- data of EPGs from APIC API call
         """
         try:
-            url = url.FETCH_EPG_DATA_URL.format(self.epg_url, str(tenant))
+            url = urls.FETCH_EPG_DATA_URL.format(self.epg_url, str(tenant))
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
                 data = response_json.get("imdata")
@@ -411,10 +412,10 @@ class AciUtils(object):
                 data = response_json.get("imdata")
                 vrf_data = data[0]['fvRsCtx']['attributes']['tnFvCtxName']
                 return vrf_data
-            return None
+            return ''
         except Exception as e:
             logger.exception('Exception in VRF API call, Error: {}'.format(str(e)))
-            return None
+            return ''
 
 
     @time_it
@@ -431,7 +432,8 @@ class AciUtils(object):
             url = urls.FETCH_CONTRACT_URL.format(self.proto, self.apic_ip, dn)
             response_json = self.aci_get(url)
             contract_list = []
-            mapping_dict = { 'fvRsCon': "Consumer", 
+            mapping_dict = {
+                'fvRsCon': "Consumer",
                 'fvRsIntraEpg': "IntraEpg",
                 'fvRsProv': "Provider",
                 'fvRsConsIf': "Consumer Interface",
@@ -473,7 +475,7 @@ class AciUtils(object):
         try:
             url = urls.EPG_HEALTH_URL.format(self.proto, self.apic_ip, dn)
             response = self.aci_get(url)
-            health = (json.loads(response.text)['imdata'])
+            health = response['imdata']
             for each in health:
                 for key, value in each.iteritems():
                     if str(key) == 'healthInst':
@@ -503,11 +505,11 @@ class AciUtils(object):
             data['dn'] = epg_attr.get('dn')
             data['tenant'] = data['dn'].split('tn-')[1].split('/')[0]
             data['bd'] = self.apic_fetch_bd(data['dn'])
+            data['app_profile'] =  data['dn'].split('ap-')[1].split('/')[0]
+            data['epg'] = epg_attr.get("name")
             dn_split = data['dn'].split("/", 4)
             vrf_str = dn_split[0] + '/' + dn_split[1] + '/BD-' + data['bd']
             vrf_data = self.apic_fetch_vrf(vrf_str)
-            data['app_profile'] =  data['dn'].split('ap-')[1].split('/')[0]
-            data['epg'] = epg_attr.get("name")
             data['vrf'] =  data['tenant'] + "/" + vrf_data
             data['contracts'] = self.apic_fetch_contract(data['dn'])
             data['epg_health'] = self.get_epg_health(data['dn'])
@@ -527,6 +529,7 @@ class AciUtils(object):
             list -- list of IP and MAC
         """
         is_cep = False
+        is_ip_list = False
         ip_set = set()
         mac_set = set()
         for eachip in item.get('fvCEp').get('children'):
@@ -544,13 +547,3 @@ class AciUtils(object):
             mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
 
         return (list(ip_set) + list(mac_set)), is_cep
-
-        
-
-
-
-
-
-
-
-
