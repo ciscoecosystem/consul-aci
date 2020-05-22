@@ -1255,3 +1255,82 @@ def delete_creds(agent_data):
     finally:
         end_time =  datetime.datetime.now()
         logger.info("Time for delete_creds: " + str(end_time - start_time))
+
+
+def details_flattened(tenant, datacenter):
+    """Get correlated Details view data
+    
+    return: {
+        agentIP: string
+        payload: list of dict/{}
+        status_code: string: 200/300 
+        message: string
+    }
+    """
+
+    logger.info("Details view for tenant: {}".format(tenant))
+    start_time = datetime.datetime.now()
+    try:
+        mapping(tenant, datacenter)
+        all_datacenter_mapping = {}
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    aci_consul_mappings = all_datacenter_mapping.get(datacenter)
+        aci_obj = aci_utils.ACI_Utils()
+        aci_data = aci_obj.main(tenant)
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+        consul_data = consul_obj.get_consul_data()
+
+        merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
+
+        details_list = []
+        for each in merged_data:
+            epg_health = aci_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
+            ep = {
+                    'interface': each.get('Interfaces'),
+                    'endPointName': each.get('VM-Name'),
+                    'ip': each.get('IP'),
+                    'mac': each.get('CEP-Mac'),
+                    'learningSource': each.get('learningSource'),
+                    'hostingServer': each.get('hostingServerName'),
+                    'reportingController': each.get('controllerName'),
+                    'vrf': each.get('VRF'),
+                    'bd': each.get('BD'),
+                    'ap': each.get('AppProfile'),
+                    'epgName': each.get('EPG'),
+                    'epgHealth': epg_health,
+                    'consulNode': each.get('node_name'),
+                    'nodeChecks': each.get('node_check'),
+                }
+
+            services = change_key(each.get('node_services'))
+            for service in services:
+                record = {}
+                record.update(ep)
+                record.update(service)
+                details_list.append(record)
+        logger.debug("Details final data ended: " + str(details_list))
+        
+        # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
+        return json.dumps({
+            "agentIP": agent.get('ip'),
+            "payload": details_list,
+            "status_code": "200",
+            "message": "OK"
+            })
+    except Exception as e:
+        logger.exception("Could not load the Details. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the Details."
+            })
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.debug("Time for DETAILS: " + str(end_time - start_time))
