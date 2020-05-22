@@ -1,34 +1,31 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect, Link } from 'react-router-dom';
-import { Sidebar, Dropdown, Loader } from 'blueprint-react';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { Sidebar, Dropdown, Loader, ButtonGroup, Icon } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Agent from "./Agent/index.js"
 import Iframe from 'react-iframe';
-import { PROFILE_NAME, getCookie, QUERY_URL } from "../constants.js";
+import { PROFILE_NAME, getCookie, QUERY_URL, getParamObject } from "../constants.js";
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
 
 function treeRedirect(dc, tn) {
-    return `tree.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
+    return `/tree.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
 }
 function detailRedirect(dc, tn) {
-    return `details.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
+    return `/details.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
 }
 function mappingRedirect(dc, tn) {
-    return `mapping.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
+    return `/mapping.html?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
 }
 
-const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
+// const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
 
 window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
 window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
-console.log("Cookie token dev cookie ", window.APIC_DEV_COOKIE)
-console.log("Cookie token url cookie ", window.APIC_URL_TOKEN)
 
 export default class AppB extends React.Component {
     constructor(props) {
-        super(props)
-
+        super(props);
         // // Fetching TenantName 'tn' from url
         this.tenantName = null;
         try {
@@ -41,6 +38,12 @@ export default class AppB extends React.Component {
             console.error("error in getting tenants ", err);
         }
 
+        console.log("Pathname ", window.location);
+        // getting pathname for route
+        let pathname = window.location.pathname;
+        pathname = pathname.split("/");
+        pathname.pop();
+        this.pathname = pathname.join("/");
 
         this.notify = this.notify.bind(this);
         this.setDetails = this.setDetails.bind(this);
@@ -51,7 +54,7 @@ export default class AppB extends React.Component {
             agentPopup: false,
             items: [
                 { label: "Agents", action: this.handleAgent },
-                { label: "Polling interval", action: function(){ console.log("polling interval")} }
+                { label: "Polling interval", action: function () { console.log("polling interval") } }
             ],
             details: [],
             sidebarItems: [
@@ -122,12 +125,12 @@ export default class AppB extends React.Component {
                 return {
                     id: 'dc1' + ind,
                     content: <li className={"sidebar__item dc-item"} >
-                        {/* <Link to={toLocation}> */}
-                        <a className="" aria-current="false" href="javascript:void(0)" onClick={() => window.location.href = toLocation}>
+                        <Link to={thiss.pathname + toLocation}>
+                            {/* <a className="" aria-current="false" href="javascript:void(0)" onClick={() => window.location.href = toLocation}> */}
                             <span className={`health-bullet ${elem.status ? 'healthy' : 'dead'}`}></span>
                             <span className="qtr-margin-left">{elem["datacenter"]}</span>
-                        {/* </Link> */}
-                        </a>
+                        </Link>
+                        {/* </a> */}
                     </li>,
                     title: elem["datacenter"]
                 }
@@ -216,8 +219,8 @@ export default class AppB extends React.Component {
     }
 
     render() {
+        let thiss = this;
         console.log("Appb Render state ", this.state);
-        console.log("sidebarItems", typeof (this.state.sidebarItems), Array.isArray(this.state.sidebarItems))
         return (
             <Router>
                 <div>
@@ -229,7 +232,6 @@ export default class AppB extends React.Component {
                             items={this.state.sidebarItems}
                             theme={Sidebar.THEMES.THEME_TYPE}
                         />
-
 
                         <div className="main-content-wrapper">
                             <header className="global-header">
@@ -258,13 +260,18 @@ export default class AppB extends React.Component {
                                     <Switch>
 
                                         <Route exact path="/" >
-                                            <div style={{height: "10%"}}>
-                                                Here Goes Dashboard
+                                            <div style={{ height: "10%" }}>
+                                                Here Goes Dashboard Under construction
                                             </div>
                                         </Route>
-                                        <Route path="/tree.html" component={TreeViewComponent} />
-                                        <Route path="/mapping.html" component={MappingViewComponent} />
-                                        <Route path="/details.html" component={TreeViewComponent} />
+
+                                        <Route path={this.pathname + "/tree.html"} component={function () {
+                                            return <ViewComponent pathname={thiss.pathname} />
+                                        }} />
+                                        <Route path={this.pathname + "/details.html"} component={function () {
+                                            return <ViewComponent pathname={thiss.pathname} />
+                                        }} />
+                                        <Route path={this.pathname + "/mapping.html"} component={MappingViewComponent} />
 
                                     </Switch>
 
@@ -281,28 +288,82 @@ export default class AppB extends React.Component {
 }
 
 
-function TreeViewComponent(props) {
-    console.log("View tree view ", props.location)
-    return (<div>
-        <Iframe url={"/tree.html" + props.location.search}
-            width="450px"
-            height="80vh"
-            id="myId"
-            className="myClassname"
-            display="initial"
-            position="relative" styles={{ height: "max-content" }} />
-    </div>)
+class ViewComponent extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        let { search } = window.location;
+        let pathname = props.pathname;
+
+        this.paramsObject = getParamObject(window.location); // query string as object
+
+        console.log("extracted paramsObject ", this.paramsObject);
+
+        this.handleIsListView = this.handleIsListView.bind(this);
+        this.state = {
+            isListView: true, // True signifies detailview and False for Treeview
+            treeViewLocation: pathname + "/treeno.html" + search,
+            detailViewLocation: pathname + "/details.html" + search,
+        }
+    }
+
+    handleIsListView(selectedView) {
+        this.setState({
+            isListView: (selectedView.value === "detail")
+        })
+    }
+
+    render() {
+        let { isListView, treeViewLocation, detailViewLocation } = this.state;
+        let toLocation = isListView ? detailViewLocation : treeViewLocation;
+
+        let dcName = this.paramsObject[PROFILE_NAME];
+
+        console.log("Operational view Render", this.state);
+
+        return (<div>
+            <div className="page-container-header ">
+                <h4>Operational | <span className="dc-title"> {dcName.toUpperCase()} </span> </h4>
+                <div className="page-actions">
+                    <ButtonGroup type={"btn--primary-ghost"}
+                        buttons={[
+                            { value: "detail", contents: <Icon type="icon-list-view" /> },
+                            { value: "tree", contents: <Icon type="icon-graph" /> }
+                        ]}
+                        size={"btn--small"}
+                        selectedIndex={0}
+                        onChange={this.handleIsListView} />
+                </div>
+            </div>
+            <FrameComponent toLocation={toLocation} />}
+
+        </div>)
+    }
+}
+
+function FrameComponent(props) {
+    return <Iframe url={props.toLocation}
+        width="450px"
+        height="80vh"
+        id="myId"
+        className="myClassname"
+        display="initial"
+        position="relative" styles={{ height: "max-content" }} />
 }
 
 function MappingViewComponent(props) {
-    console.log("View Mapping view ", props.location)
+    // let { pathname, search } = props.location;
+    // let toLocation = pathname + search;
+    // console.log("View tree view ", props.location)
     return (<div>
-        <Iframe url={"/mapping.html" + props.location.search}
+        Mapping under construction
+        {/* <Iframe url={toLocation}
             width="450px"
             height="80vh"
             id="myId"
             className="myClassname"
             display="initial"
-            position="relative" styles={{ height: "max-content" }} />
+            position="relative" styles={{ height: "max-content" }} /> */}
     </div>)
 }

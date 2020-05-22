@@ -144,7 +144,7 @@ main {
     height: 88vh;
     overflow-y: hidden;
     flex: 1;
-    padding: 12px;
+    /* padding: 12px; */
 }
 
 
@@ -152,6 +152,27 @@ main {
     margin-right: 16px;
 }
 
+.page-container-header {
+    padding: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+.page-container-header  .form-group {
+    display: inline-block;
+}
+
+.page-container-header .dc-title {
+    color: #005073
+}
 /* .cui.blueprint .sidebar.sidebar--collapsed {
     width: 50px!important;
 }
