@@ -13,6 +13,13 @@ function renderLabels(count = 0) {
     );
 };
 
+function FormatToLabel(label) {
+    if (label && typeof (label) === "string" && label.length > 1) {
+        return label[0].toUpperCase() + label.slice(1);
+    }
+    return label;
+}
+
 export default function PieChartAndCounter(props) {
     let { data, totalCount } = props;
 
@@ -44,7 +51,7 @@ export default function PieChartAndCounter(props) {
                 return (<div class="info-container  zero-values NORMAL">
                     <div class="info-title">
                         <span class="info-bullet NORMAL" style={{ backgroundColor: `${elem.color}` }}></span>
-                        <span class="info-label NORMAL">{elem.label[0].toUpperCase() + elem.slice(1)}</span>
+                        <span class="info-label NORMAL"> {FormatToLabel(elem.label)} </span>
                     </div>
                     <div class="info-count">({elem.value})</div>
                 </div>)

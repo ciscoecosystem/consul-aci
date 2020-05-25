@@ -10,6 +10,7 @@
     transition: 0.5s;
     box-shadow: 1px 1px 17px 0px;
     border-left: 3px solid #017cad;
+    z-index: 150;
 }
 
 .bold-font {
@@ -128,6 +129,10 @@
     overscroll-behavior: none;
     -ms-scroll-chaining: none;
     background-color: #fff;
+}
+
+.summary-pane main .collapsible-pane{
+    margin-bottom: 16px;
 }
 
 /* .summary-pane main .collapsible-pane, .summary-pane main .property-list-item:not(:last-child) {

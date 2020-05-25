@@ -180,7 +180,7 @@ export default class DataTable extends Component {
             if (rowInfo && rowInfo.row) {
               return {
                 onClick: (e) => {
-                  thiss.props.setSummaryDetail(rowInfo.row)
+                  thiss.props.setSummaryDetail(rowInfo.original)
                   // console.log("Select row on click ", rowInfo );
                 }
               }
@@ -188,20 +188,6 @@ export default class DataTable extends Component {
               return {}
             }
           }} >
-            
-          {/* // SubComponent={row => {
-          //   return (
-          //     <Table
-          //       data={row.original.services}
-          //       columns={this.state.serviceColumn}
-          //       noDataText={"No services found"}
-          //       defaultPageSize={100}
-          //       minRows={0}
-          //       showPagination={false} />
-          //   )
-          // }} */}
-         
-
         </Table>
       </div>
     )

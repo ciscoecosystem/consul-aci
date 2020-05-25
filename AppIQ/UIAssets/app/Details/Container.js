@@ -74,7 +74,7 @@ class Container extends Component {
         details_raw = "[]";
         try {
             let main_data_raw = this.httpGet(document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json", payload);
-            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.Details.details)
+            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.DetailsFlattened.details)
             let main_data_json = JSON.parse(main_data_raw);
 
             if ('errors' in main_data_json) {
@@ -97,7 +97,7 @@ class Container extends Component {
                     // Success
                     headerInstanceName = rawJsonData.agentIP; // CONSUL change :replacing instanceName with agent ip
                     this.setState({ loading: false })
-                    details_raw = JSON.parse(main_data_raw).data.Details.details;
+                    details_raw = JSON.parse(main_data_raw).data.DetailsFlattened.details;
                     this.setState({
                         "data": JSON.parse(details_raw).payload
                     });
@@ -157,14 +157,14 @@ class Container extends Component {
                     if (xhr.status == 200) {
                         let json = JSON.parse(xhr.responseText);
 
-                        console.log(json);
+                        console.log("DETAILS REPOSNSE ", json);
                         if ("errors" in json) {
                             // Error related to query
                             localStorage.setItem('message', JSON.stringify(main_data_json.errors));
                             // window.location.href = "index.html?gqlerror=1";
                         } else {
                             // Response successful
-                            let response = JSON.parse(json.data.Details.details)
+                            let response = JSON.parse(json.data.DetailsFlattened.details)
 
                             if (response.status_code != "200") {
                                 // Problem with backend fetching data
