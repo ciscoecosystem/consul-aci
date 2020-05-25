@@ -267,11 +267,11 @@ class Database:
             pass
             print "Error in table creation:", e
 
-    def insert_into_table(self, table_name, *args):
+    def insert_into_table(self, table_name, field_values):
         try:
             ins = None
             table_name = table_name.lower()
-            ins = self.table_obj_meta[table_name].insert().values(args)
+            ins = self.table_obj_meta[table_name].insert().values(field_values)
             if ins != None:
                 self.conn.execute(ins)
                 return True
@@ -356,9 +356,9 @@ class Database:
                     self.update_into_table(
                         table_name, primary_key, new_record_dict)
                 else:
-                    self.insert_into_table(table_name, *new_record)
+                    self.insert_into_table(table_name, new_record)
             else:
                 return False
         else:
-            self.insert_into_table(table_name, *new_record)
+            self.insert_into_table(table_name, new_record)
         return True
