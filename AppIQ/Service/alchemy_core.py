@@ -1,11 +1,24 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, MetaData, PickleType, Boolean, DateTime,exists
+from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime
 from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.sql import select, text
 
 
 class Database:
+    table_field_meta = {
+        'login': ['agent_ip', 'port', 'protocol', 'token', 'status', 'datacenter'],
+        'mapping': ['ip', 'dn', 'disabled', 'datacenter'],
+        'node': ['node_id', 'node_name', 'node_ips', 'datacenter', 'created_ts', 'updated_ts', 'last_checked_ts'],
+        'service': ['service_id', 'node_id', 'service_name', 'service_ip', 'service_port', 'service_address', 'service_tags', 'service_kind', 'namespace', 'datacenter', 'created_ts', 'updated_ts', 'last_checked_ts'],
+        'nodechecks': ['check_id', 'node_id', 'node_name', 'check_name', 'service_name', 'check_type', 'notes', 'output', 'status', 'created_ts', 'updated_ts', 'last_checked_ts'],
+        'servicechecks': ['check_id', 'service_id', 'service_name', 'check_name', 'check_type', 'notes', 'output', 'status', 'created_ts', 'updated_ts', 'last_checked_ts'],
+        'ep': ['mac', 'ip', 'tenant',  'dn', 'vm_name', 'interfaces', 'vmm_domain', 'controller_name', 'learning_source', 'multicast_address', 'encap', 'hosting_server_name', 'is_cep', 'created_ts', 'updated_ts', 'last_checked_ts'],
+        'epg': ['dn', 'tenant',  'epg', 'bd', 'contracts', 'vrf', 'epg_health', 'app_profile', 'created_ts', 'updated_ts', 'last_checked_ts']
+    }
+    table_obj_meta = dict()
+    table_pkey_meta = dict()
+
     def __init__(self, database_name):
         try:
             self.engine = create_engine(database_name)
@@ -224,6 +237,32 @@ class Database:
 
         try:
             metadata.create_all(self.engine)
+            self.table_obj_meta.update({
+                'login': self.login,
+                'mapping': self.mapping,
+                'node': self.node,
+                'service': self.service,
+                'nodechecks': self.nodechecks,
+                'servicechecks': self.servicechecks,
+                'ep': self.ep,
+                'epg': self.epg,
+                'nodeaudit': self.nodeaudit,
+                'serviceaudit': self.serviceaudit,
+                'nodechecksaudit': self.nodechecksaudit,
+                'servicechecksaudit': self.servicechecksaudit,
+                'epaudit': self.epaudit,
+                'epgaudit': self.epgaudit
+            })
+            self.table_pkey_meta.update({
+                'login': {'agent_ip': self.login.c.agent_ip, 'port': self.login.c.port},
+                'mapping': {'ip': self.mapping.c.ip, 'dn': self.mapping.c.dn},
+                'node': {'node_id': self.node.c.node_id},
+                'service': {'service_id': self.service.c.service_id},
+                'nodechecks': {'check_id': self.nodechecks.c.check_id, 'node_id': self.nodechecks.c.node_id},
+                'servicechecks': {'check_id': self.servicechecks.c.check_id, 'service_id': self.servicechecks.c.service_id},
+                'ep': {'mac': self.ep.c.mac, 'ip': self.ep.c.ip},
+                'epg': {'dn': self.epg.c.dn}
+            })
         except Exception as e:
             pass
             print "Error in table creation:", e
@@ -232,34 +271,7 @@ class Database:
         try:
             ins = None
             table_name = table_name.lower()
-            if table_name == "login":
-                ins = self.login.insert().values(args)
-            elif table_name == "mapping":
-                ins = self.mapping.insert().values(args)
-            elif table_name == "node":
-                ins = self.node.insert().values(args)
-            elif table_name == "service":
-                ins = self.service.insert().values(args)
-            elif table_name == "nodechecks":
-                ins = self.nodechecks.insert().values(args)
-            elif table_name == "servicechecks":
-                ins = self.servicechecks.insert().values(args)
-            elif table_name == "ep":
-                ins = self.ep.insert().values(args)
-            elif table_name == "epg":
-                ins = self.epg.insert().values(args)
-            elif table_name == "nodeaudit":
-                ins = self.nodeaudit.insert().values(args)
-            elif table_name == "serviceaudit":
-                ins = self.serviceaudit.insert().values(args)
-            elif table_name == "nodechecksaudit":
-                ins = self.nodechecksaudit.insert().values(args)
-            elif table_name == "servicechecksaudit":
-                ins = self.servicechecksaudit.insert().values(args)
-            elif table_name == "epaudit":
-                ins = self.epaudit.insert().values(args)
-            elif table_name == "epgaudit":
-                ins = self.epgaudit.insert().values(args)
+            ins = self.table_obj_meta[table_name].insert().values(args)
             if ins != None:
                 self.conn.execute(ins)
                 return True
@@ -273,59 +285,14 @@ class Database:
             select_query = None
             table_name = table_name.lower()
             if primary_key:
-                if table_name == "login":
-                    select_query = self.login.select().where(self.login.c.agent_ip ==
-                                                             primary_key['agent_ip']).where(self.login.c.port == primary_key['port'])
-                elif table_name == "mapping":
-                    select_query = self.mapping.select().where(
-                        self.mapping.c.ip == primary_key['ip']).where(self.mapping.c.dn == primary_key['dn'])
-                elif table_name == "node":
-                    select_query = self.node.select().where(
-                        self.node.c.node_id == primary_key['node_id'])
-                elif table_name == "service":
-                    select_query = self.service.select().where(
-                        self.service.c.service_id == primary_key['service_id'])
-                elif table_name == "nodechecks":
-                    select_query = self.nodechecks.select().where(self.nodechecks.c.check_id ==
-                                                                  primary_key['check_id']).where(self.nodechecks.c.node_id == primary_key['node_id'])
-                elif table_name == "servicechecks":
-                    select_query = self.servicechecks.select().where(self.servicechecks.c.check_id ==
-                                                                     primary_key['check_id']).where(self.servicechecks.c.service_id == primary_key['service_id'])
-                elif table_name == "ep":
-                    select_query = self.ep.select().where(
-                        self.ep.c.mac == primary_key['mac']).where(self.ep.c.ip == primary_key['ip'])
-                elif table_name == "epg":
-                    select_query = self.epg.select().where(
-                        self.epg.c.dn == primary_key['dn'])
+                table_obj = self.table_obj_meta[table_name]
+                select_query = table_obj.select()
+                for key in primary_key:
+                    select_query = select_query.where(
+                        self.table_pkey_meta[table_name][key] == primary_key[key])
             else:
-                if table_name == "login":
-                    select_query = self.login.select()
-                elif table_name == "mapping":
-                    select_query = self.mapping.select()
-                elif table_name == "node":
-                    select_query = self.node.select()
-                elif table_name == "service":
-                    select_query = self.service.select()
-                elif table_name == "nodechecks":
-                    select_query = self.nodechecks.select()
-                elif table_name == "servicechecks":
-                    select_query = self.servicechecks.select()
-                elif table_name == "ep":
-                    select_query = self.ep.select()
-                elif table_name == "epg":
-                    select_query = self.epg.select()
-                elif table_name == "nodeaudit":
-                    select_query = self.nodeaudit.select()
-                elif table_name == "serviceaudit":
-                    select_query = self.serviceaudit.select()
-                elif table_name == "nodechecksaudit":
-                    select_query = self.nodechecksaudit.select()
-                elif table_name == "servicechecksaudit":
-                    select_query = self.servicechecksaudit.select()
-                elif table_name == "epaudit":
-                    select_query = self.epaudit.select()
-                elif table_name == "epgaudit":
-                    select_query = self.epgaudit.select()
+                select_query = self.table_obj_meta[table_name].select()
+
             if select_query != None:
                 result = self.conn.execute(select_query)
                 return result
@@ -336,35 +303,15 @@ class Database:
 
     def update_into_table(self, table_name, primary_key, new_record_dict):
         try:
-            update_query = None
             table_name = table_name.lower()
-            if table_name == "login":
-                update_query = self.login.update().where(self.login.c.agent_ip ==
-                                                         primary_key['agent_ip']).where(self.login.c.port == primary_key['port']).values(new_record_dict)
-            elif table_name == "mapping":
-                update_query = self.mapping.update().where(
-                    self.mapping.c.ip == primary_key['ip']).where(self.mapping.c.dn == primary_key['dn']).values(new_record_dict)
-            elif table_name == "node":
-                update_query = self.node.update().where(
-                    self.node.c.node_id == primary_key['node_id']).values(new_record_dict)
-            elif table_name == "service":
-                update_query = self.service.update().where(
-                    self.service.c.service_id == primary_key['service_id']).values(new_record_dict)
-            elif table_name == "nodechecks":
-                update_query = self.nodechecks.update().where(self.nodechecks.c.check_id ==
-                                                              primary_key['check_id']).where(self.nodechecks.c.node_id == primary_key['node_id']).values(new_record_dict)
-            elif table_name == "servicechecks":
-                update_query = self.servicechecks.update().where(self.servicechecks.c.check_id ==
-                                                                 primary_key['check_id']).where(self.servicechecks.c.service_id == primary_key['service_id']).values(new_record_dict)
-            elif table_name == "ep":
-                update_query = self.ep.update().where(
-                    self.ep.c.mac == primary_key['mac']).where(self.ep.c.ip == primary_key['ip']).values(new_record_dict)
-            elif table_name == "epg":
-                update_query = self.epg.update().where(
-                    self.epg.c.dn == primary_key['dn']).values(new_record_dict)
-            if update_query != None:
-                self.conn.execute(update_query)
-                return True
+            table_obj = self.table_obj_meta[table_name]
+            update_query = table_obj.update()
+            for key in primary_key:
+                update_query = update_query.where(
+                    self.table_pkey_meta[table_name][key] == primary_key[key])
+            update_query = update_query.values(new_record_dict)
+            self.conn.execute(update_query)
+            return True
         except Exception as e:
             pass
             print "Error in update:", e
@@ -372,64 +319,46 @@ class Database:
 
     def delete_from_table(self, table_name, primary_key={}):
         try:
-            delete_query = None
             table_name = table_name.lower()
             if primary_key:
-                if table_name == "login":
-                    delete_query = self.login.delete().where(self.login.c.agent_ip ==
-                                                             primary_key['agent_ip']).where(self.login.c.port == primary_key['port'])
-                elif table_name == "mapping":
-                    delete_query = self.mapping.delete().where(
-                        self.mapping.c.ip == primary_key['ip']).where(self.mapping.c.dn == primary_key['dn'])
-                elif table_name == "node":
-                    delete_query = self.node.delete().where(
-                        self.node.c.node_id == primary_key['node_id'])
-                elif table_name == "service":
-                    delete_query = self.service.delete().where(
-                        self.service.c.service_id == primary_key['service_id'])
-                elif table_name == "nodechecks":
-                    delete_query = self.nodechecks.delete().where(self.nodechecks.c.check_id ==
-                                                                  primary_key['check_id']).where(self.nodechecks.c.node_id == primary_key['node_id'])
-                elif table_name == "servicechecks":
-                    delete_query = self.servicechecks.delete().where(self.servicechecks.c.check_id ==
-                                                                     primary_key['check_id']).where(self.servicechecks.c.service_id == primary_key['service_id'])
-                elif table_name == "ep":
-                    delete_query = self.ep.delete().where(
-                        self.ep.c.mac == primary_key['mac']).where(self.ep.c.ip == primary_key['ip'])
-                elif table_name == "epg":
-                    delete_query = self.epg.delete().where(
-                        self.epg.c.dn == primary_key['dn'])
+                table_obj = self.table_obj_meta[table_name]
+                delete_query = table_obj.delete()
+                for key in primary_key:
+                    delete_query = delete_query.where(
+                        self.table_pkey_meta[table_name][key] == primary_key[key])
             else:
-                if table_name == "login":
-                    delete_query = self.login.delete()
-                elif table_name == "mapping":
-                    delete_query = self.mapping.delete()
-                elif table_name == "node":
-                    delete_query = self.node.delete()
-                elif table_name == "service":
-                    delete_query = self.service.delete()
-                elif table_name == "nodechecks":
-                    delete_query = self.nodechecks.delete()
-                elif table_name == "servicechecks":
-                    delete_query = self.servicechecks.delete()
-                elif table_name == "ep":
-                    delete_query = self.ep.delete()
-                elif table_name == "epg":
-                    delete_query = self.epg.delete()
-            if delete_query != None:
-                self.conn.execute(delete_query)
-                return True
+                delete_query = self.table_obj_meta[table_name].delete()
+            self.conn.execute(delete_query)
+            return True
         except Exception as e:
             pass
             print "Error in delete:", e
         return False
 
     def insert_and_update(self, table_name, new_record, primary_key={}):
+        table_name = table_name.lower()
         if primary_key:
             old_data = self.select_from_table(table_name, primary_key)
             if old_data:
-                pass
+                old_data = old_data.fetchone()
+                if old_data:
+                    new_record_dict = dict()
+                    index = []
+                    for i in range(len(old_data)):
+                        if old_data[i] != new_record[i]:
+                            index.append(i)
+                    field_names = [self.table_field_meta[table_name][i]
+                                   for i in index]
+                    new_record_dict = dict()
+                    for i in range(len(field_names)):
+                        new_record_dict[field_names[i]] = new_record[index[i]]
+                    # TODO: call audit
+                    self.update_into_table(
+                        table_name, primary_key, new_record_dict)
+                else:
+                    self.insert_into_table(table_name, *new_record)
             else:
-                self.insert_int_table(table_name,*new_record)
+                return False
         else:
             self.insert_into_table(table_name, *new_record)
+        return True
