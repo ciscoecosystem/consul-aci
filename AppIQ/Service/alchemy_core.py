@@ -4,32 +4,134 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.sql import select, text
 
+from custom_logger import CustomLogger
+
+logger = CustomLogger.get_logger("/home/app/log/app.log")
+
+DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
+
 
 class Database:
-    table_field_meta = {
-        'login': ['agent_ip', 'port', 'protocol', 'token', 'status', 'datacenter'],
-        'mapping': ['ip', 'dn', 'disabled', 'datacenter'],
-        'node': ['node_id', 'node_name', 'node_ips', 'datacenter', 'created_ts', 'updated_ts', 'last_checked_ts'],
-        'service': ['service_id', 'node_id', 'service_name', 'service_ip', 'service_port', 'service_address', 'service_tags', 'service_kind', 'namespace', 'datacenter', 'created_ts', 'updated_ts', 'last_checked_ts'],
-        'nodechecks': ['check_id', 'node_id', 'node_name', 'check_name', 'service_name', 'check_type', 'notes', 'output', 'status', 'created_ts', 'updated_ts', 'last_checked_ts'],
-        'servicechecks': ['check_id', 'service_id', 'service_name', 'check_name', 'check_type', 'notes', 'output', 'status', 'created_ts', 'updated_ts', 'last_checked_ts'],
-        'ep': ['mac', 'ip', 'tenant',  'dn', 'vm_name', 'interfaces', 'vmm_domain', 'controller_name', 'learning_source', 'multicast_address', 'encap', 'hosting_server_name', 'is_cep', 'created_ts', 'updated_ts', 'last_checked_ts'],
-        'epg': ['dn', 'tenant',  'epg', 'bd', 'contracts', 'vrf', 'epg_health', 'app_profile', 'created_ts', 'updated_ts', 'last_checked_ts']
-    }
-    table_obj_meta = dict()
-    table_pkey_meta = dict()
+    LOGIN_TABLE_NAME = 'login'
+    MAPPING_TABLE_NAME = 'mapping'
+    NODE_TABLE_NAME = 'node'
+    SERVICE_TABLE_NAME = 'service'
+    NODECHECKS_TABLE_NAME = 'nodechecks'
+    SERVICECHECKS_TABLE_NAME = 'servicechecks'
+    EP_TABLE_NAME = 'ep'
+    EPG_TABLE_NAME = 'epg'
+    NODEAUDIT_TABLE_NAME = 'nodeaudit'
+    SERVICEAUDIT_TABLE_NAME = 'serviceaudit'
+    NODECHECKSAUDIT_TABLE_NAME = 'nodechecksaudit'
+    SERVICECHECKSAUDIT_TABLE_NAME = 'servicechecksaudit'
+    EPAUDIT_TABLE_NAME = 'epaudit'
+    EPGAUDIT_TABLE_NAME = 'epgaudit'
 
-    def __init__(self, database_name):
+    SCHEMA_DICT = {
+        'login': [
+            'agent_ip',
+            'port',
+            'protocol',
+            'token',
+            'status',
+            'datacenter'
+        ],
+        'mapping': ['ip',
+                    'dn',
+                    'disabled',
+                    'datacenter'
+                    ],
+        'node': ['node_id',
+                 'node_name',
+                 'node_ips',
+                 'datacenter',
+                 'created_ts',
+                 'updated_ts',
+                 'last_checked_ts'
+                 ],
+        'service': ['service_id',
+                    'node_id',
+                    'service_name',
+                    'service_ip',
+                    'service_port',
+                    'service_address',
+                    'service_tags',
+                    'service_kind',
+                    'namespace',
+                    'datacenter',
+                    'created_ts',
+                    'updated_ts',
+                    'last_checked_ts'
+                    ],
+        'nodechecks': ['check_id',
+                       'node_id',
+                       'node_name',
+                       'check_name',
+                       'service_name',
+                       'check_type',
+                       'notes',
+                       'output',
+                       'status',
+                       'created_ts',
+                       'updated_ts',
+                       'last_checked_ts'
+                       ],
+        'servicechecks': ['check_id',
+                          'service_id',
+                          'service_name',
+                          'check_name',
+                          'check_type',
+                          'notes',
+                          'output',
+                          'status',
+                          'created_ts',
+                          'updated_ts',
+                          'last_checked_ts'
+                          ],
+        'ep': ['mac',
+               'ip',
+               'tenant',
+               'dn',
+               'vm_name',
+               'interfaces',
+               'vmm_domain',
+               'controller_name',
+               'learning_source',
+               'multicast_address',
+               'encap',
+               'hosting_server_name',
+               'is_cep',
+               'created_ts',
+               'updated_ts',
+               'last_checked_ts'
+               ],
+        'epg': ['dn',
+                'tenant',
+                'epg',
+                'bd',
+                'contracts',
+                'vrf',
+                'epg_health',
+                'app_profile',
+                'created_ts',
+                'updated_ts',
+                'last_checked_ts']
+    }
+
+    def __init__(self):
         try:
-            self.engine = create_engine(database_name)
+            self.engine = create_engine(DATABASE_NAME)
             self.conn = self.engine.connect()
+            self.table_obj_meta = dict()
+            self.table_pkey_meta = dict()
         except Exception as e:
-            print "Error in database connection:", e
+            logger.exception(
+                "Exception in {} Error:{}".format('__init__', str(e)))
 
     def create_tables(self):
         metadata = MetaData()
 
-        self.login = Table('Login', metadata,
+        self.login = Table(self.LOGIN_TABLE_NAME, metadata,
                            Column('agent_ip', String, primary_key=True),
                            Column('port', String, primary_key=True),
                            Column('protocol', String),
@@ -37,14 +139,14 @@ class Database:
                            Column('status', String),
                            Column('datacenter', String)
                            )
-        self.mapping = Table('Mapping', metadata,
+        self.mapping = Table(self.MAPPING_TABLE_NAME, metadata,
                              Column('ip', String, primary_key=True),
                              Column('dn', String, primary_key=True),
                              Column('disabled', String),
                              Column('datacenter', String)
                              )
 
-        self.node = Table('Node', metadata,
+        self.node = Table(self.NODE_TABLE_NAME, metadata,
                           Column('node_id', String, primary_key=True),
                           Column('node_name', String),
                           Column('node_ips', PickleType),
@@ -54,7 +156,7 @@ class Database:
                           Column('last_checked_ts', DateTime)
                           )
 
-        self.service = Table('Service', metadata,
+        self.service = Table(self.SERVICE_TABLE_NAME, metadata,
                              Column('service_id', String, primary_key=True),
                              Column('node_id', String),
                              Column('service_name', String),
@@ -70,7 +172,7 @@ class Database:
                              Column('last_checked_ts', DateTime)
                              )
 
-        self.nodechecks = Table('NodeChecks', metadata,
+        self.nodechecks = Table(self.NODECHECKS_TABLE_NAME, metadata,
                                 Column('check_id', String, primary_key=True),
                                 Column('node_id', String, ForeignKey(
                                     self.node.c.node_id), primary_key=True),
@@ -86,7 +188,7 @@ class Database:
                                 Column('last_checked_ts', DateTime)
                                 )
 
-        self.servicechecks = Table('ServiceChecks', metadata,
+        self.servicechecks = Table(self.SERVICECHECKS_TABLE_NAME, metadata,
                                    Column('check_id', String,
                                           primary_key=True),
                                    Column('service_id', String, ForeignKey(
@@ -102,7 +204,7 @@ class Database:
                                    Column('last_checked_ts', DateTime)
                                    )
 
-        self.ep = Table('EP', metadata,
+        self.ep = Table(self.EP_TABLE_NAME, metadata,
                         Column('tenant_id', String),
                         Column('mac', String, primary_key=True),
                         Column('ip', String, primary_key=True),
@@ -121,7 +223,7 @@ class Database:
                         Column('last_checked_ts', DateTime)
                         )
 
-        self.epg = Table('EPG', metadata,
+        self.epg = Table(self.EPG_TABLE_NAME, metadata,
                          Column('tenant_id', String),
                          Column('dn', String, primary_key=True),
                          Column('EPG', String),
@@ -134,8 +236,8 @@ class Database:
                          Column('updated_ts', DateTime),
                          Column('last_checked_ts', DateTime)
                          )
-        #####################################################
-        self.nodeaudit = Table('NodeAudit', metadata,
+
+        self.nodeaudit = Table(self.NODEAUDIT_TABLE_NAME, metadata,
                                Column('node_id', String),
                                Column('node_name', String),
                                Column('node_ips', PickleType),
@@ -147,7 +249,7 @@ class Database:
                                Column('audit_category', PickleType)
                                )
 
-        self.serviceaudit = Table('ServiceAudit', metadata,
+        self.serviceaudit = Table(self.SERVICEAUDIT_TABLE_NAME, metadata,
                                   Column('service_id', String),
                                   Column('node_id', String),
                                   Column('service_name', String),
@@ -165,7 +267,7 @@ class Database:
                                   Column('audit_category', PickleType)
                                   )
 
-        self.nodechecksaudit = Table('NodeChecksAudit', metadata,
+        self.nodechecksaudit = Table(self.NODECHECKSAUDIT_TABLE_NAME, metadata,
                                      Column('check_id', String),
                                      Column('node_id', String),
                                      Column('node_name', String),
@@ -182,7 +284,7 @@ class Database:
                                      Column('audit_category', PickleType)
                                      )
 
-        self.servicechecksaudit = Table('ServiceChecksAudit', metadata,
+        self.servicechecksaudit = Table(self.SERVICECHECKSAUDIT_TABLE_NAME, metadata,
                                         Column('check_id', String),
                                         Column('service_id', String),
                                         Column('service_name', String),
@@ -198,7 +300,7 @@ class Database:
                                         Column('audit_category', PickleType)
                                         )
 
-        self.epaudit = Table('EPAudit', metadata,
+        self.epaudit = Table(self.EPAUDIT_TABLE_NAME, metadata,
                              Column('tenant_id', String),
                              Column('mac', String),
                              Column('ip', String),
@@ -219,7 +321,7 @@ class Database:
                              Column('audit_category', PickleType)
                              )
 
-        self.epgaudit = Table('EPGAudit', metadata,
+        self.epgaudit = Table(self.EPGAUDIT_TABLE_NAME, metadata,
                               Column('tenant_id', String),
                               Column('dn', String, primary_key=True),
                               Column('EPG', String),
@@ -238,34 +340,55 @@ class Database:
         try:
             metadata.create_all(self.engine)
             self.table_obj_meta.update({
-                'login': self.login,
-                'mapping': self.mapping,
-                'node': self.node,
-                'service': self.service,
-                'nodechecks': self.nodechecks,
-                'servicechecks': self.servicechecks,
-                'ep': self.ep,
-                'epg': self.epg,
-                'nodeaudit': self.nodeaudit,
-                'serviceaudit': self.serviceaudit,
-                'nodechecksaudit': self.nodechecksaudit,
-                'servicechecksaudit': self.servicechecksaudit,
-                'epaudit': self.epaudit,
-                'epgaudit': self.epgaudit
+                self.LOGIN_TABLE_NAME: self.login,
+                self.MAPPING_TABLE_NAME: self.mapping,
+                self.NODE_TABLE_NAME: self.node,
+                self.SERVICE_TABLE_NAME: self.service,
+                self.NODECHECKS_TABLE_NAME: self.nodechecks,
+                self.SERVICECHECKS_TABLE_NAME: self.servicechecks,
+                self.EP_TABLE_NAME: self.ep,
+                self.EPG_TABLE_NAME: self.epg,
+                self.NODEAUDIT_TABLE_NAME: self.nodeaudit,
+                self.SERVICEAUDIT_TABLE_NAME: self.serviceaudit,
+                self.NODECHECKSAUDIT_TABLE_NAME: self.nodechecksaudit,
+                self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
+                self.EPAUDIT_TABLE_NAME: self.epaudit,
+                self.EPGAUDIT_TABLE_NAME: self.epgaudit
             })
             self.table_pkey_meta.update({
-                'login': {'agent_ip': self.login.c.agent_ip, 'port': self.login.c.port},
-                'mapping': {'ip': self.mapping.c.ip, 'dn': self.mapping.c.dn},
-                'node': {'node_id': self.node.c.node_id},
-                'service': {'service_id': self.service.c.service_id},
-                'nodechecks': {'check_id': self.nodechecks.c.check_id, 'node_id': self.nodechecks.c.node_id},
-                'servicechecks': {'check_id': self.servicechecks.c.check_id, 'service_id': self.servicechecks.c.service_id},
-                'ep': {'mac': self.ep.c.mac, 'ip': self.ep.c.ip},
-                'epg': {'dn': self.epg.c.dn}
+                self.LOGIN_TABLE_NAME: {
+                    'agent_ip': self.login.c.agent_ip,
+                    'port': self.login.c.port
+                },
+                self.MAPPING_TABLE_NAME: {
+                    'ip': self.mapping.c.ip,
+                    'dn': self.mapping.c.dn
+                },
+                self.NODE_TABLE_NAME: {
+                    'node_id': self.node.c.node_id
+                },
+                self.SERVICE_TABLE_NAME: {
+                    'service_id': self.service.c.service_id
+                },
+                self.NODECHECKS_TABLE_NAME: {
+                    'check_id': self.nodechecks.c.check_id,
+                    'node_id': self.nodechecks.c.node_id
+                },
+                self.SERVICECHECKS_TABLE_NAME: {
+                    'check_id': self.servicechecks.c.check_id,
+                    'service_id': self.servicechecks.c.service_id
+                },
+                self.EP_TABLE_NAME: {
+                    'mac': self.ep.c.mac,
+                    'ip': self.ep.c.ip
+                },
+                self.EPG_TABLE_NAME: {
+                    'dn': self.epg.c.dn
+                }
             })
         except Exception as e:
-            pass
-            print "Error in table creation:", e
+            logger.exception("Exception in {} Error:{}".format(
+                'create_tables()', str(e)))
 
     def insert_into_table(self, table_name, field_values):
         try:
@@ -276,8 +399,8 @@ class Database:
                 self.conn.execute(ins)
                 return True
         except Exception as e:
-            pass
-            # print "Error in data insertion:",e
+            logger.exception(
+                "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
     def select_from_table(self, table_name, primary_key={}):
@@ -297,11 +420,11 @@ class Database:
                 result = self.conn.execute(select_query)
                 return result
         except Exception as e:
-            pass
-            print "Error in select:", e
+            logger.exception(
+                "Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
 
-    def update_into_table(self, table_name, primary_key, new_record_dict):
+    def update_in_table(self, table_name, primary_key, new_record_dict):
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
@@ -313,8 +436,8 @@ class Database:
             self.conn.execute(update_query)
             return True
         except Exception as e:
-            pass
-            print "Error in update:", e
+            logger.exception(
+                "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
 
     def delete_from_table(self, table_name, primary_key={}):
@@ -331,8 +454,8 @@ class Database:
             self.conn.execute(delete_query)
             return True
         except Exception as e:
-            pass
-            print "Error in delete:", e
+            logger.exception(
+                "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
 
     def insert_and_update(self, table_name, new_record, primary_key={}):
@@ -347,13 +470,13 @@ class Database:
                     for i in range(len(old_data)):
                         if old_data[i] != new_record[i]:
                             index.append(i)
-                    field_names = [self.table_field_meta[table_name][i]
+                    field_names = [self.SCHEMA_DICT[table_name][i]
                                    for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]
                     # TODO: call audit
-                    self.update_into_table(
+                    self.update_in_table(
                         table_name, primary_key, new_record_dict)
                 else:
                     self.insert_into_table(table_name, new_record)
