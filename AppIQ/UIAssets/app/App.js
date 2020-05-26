@@ -3,11 +3,10 @@ import { BrowserRouter as Router, Link } from 'react-router-dom';
 import { Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Agent from "./Agent/index.js"
-import { PROFILE_NAME, getCookie, QUERY_URL } from "../constants.js";
+import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
-
 
 function toOperationalRedirect(dc, tn) {
     return `/toOperational?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
@@ -46,8 +45,9 @@ export default class App extends React.Component {
 
         this.notify = this.notify.bind(this);
         this.setDetails = this.setDetails.bind(this);
-        this.readAgents = this.readAgents.bind(this);
-        this.readAgentsCall = this.readAgentsCall.bind(this);
+        this.readDatacenter = this.readDatacenter.bind(this);
+        this.readDcCall = this.readDcCall.bind(this);
+        this.postTenant = this.postTenant.bind(this);
         this.handleAgent = this.handleAgent.bind(this)
         this.setSidebar = this.setSidebar.bind(this);
         this.state = {
@@ -57,6 +57,7 @@ export default class App extends React.Component {
                 { label: "Polling interval", action: function () { console.log("polling interval") } }
             ],
             details: [],
+            tenantApiCallCnt: 2, // indicates no of time "PostTenant" api could be called.
             sidebarItems: [
                 {
                     id: 'dash',
@@ -96,19 +97,20 @@ export default class App extends React.Component {
                     </li>
                 }
             ],
-            readAgentLoading: true
+            readDatacenterLoading: true
         }
     }
 
     componentDidMount() {
-        this.readAgents();
+        this.postTenant();
+        this.readDatacenter();
     }
-    
-    readAgents(){
+
+    readDatacenter() {
         let thiss = this;
-        this.setState({ readAgentLoading: true }, function () {
+        this.setState({ readDatacenterLoading: true }, function () {
             console.log("LOading----")
-            thiss.readAgentsCall();
+            thiss.readDcCall();
         })
     }
 
@@ -179,42 +181,79 @@ export default class App extends React.Component {
         this.setState({ agentPopup })
     }
 
-    readAgentsCall() {
+    postTenant() {
         let thiss = this;
-        const payload = {
-            query: `query{
-            ReadCreds{creds}
-        }`}
-        let xhrReadCred = new XMLHttpRequest();
+        let { tenantApiCallCnt } = this.state;
+        if (!this.tenantName && tenantApiCallCnt <= 0) {
+            console.log("Error: didnt receive tenantname or trial already done");
+            return;
+        }
+        let payload = POST_TENANT_QUERY(this.tenantName)
+        let xhrPostTenant = new XMLHttpRequest();
         try {
-            xhrReadCred.open("POST", QUERY_URL, true);
-            xhrReadCred.setRequestHeader("Content-type", "application/json");
-            xhrReadCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-            xhrReadCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-            xhrReadCred.onreadystatechange = function () {
-                console.log("chr== state ", xhrReadCred.readyState);
+            xhrPostTenant.open("POST", QUERY_URL, true);
+            xhrPostTenant.setRequestHeader("Content-type", "application/json");
+            xhrPostTenant.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrPostTenant.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            xhrPostTenant.onreadystatechange = function () {
+                console.log("xhrPostTenant state ", xhrPostTenant.readyState);
 
-                if (xhrReadCred.readyState == 4 && xhrReadCred.status == 200) {
-                    let checkData = JSON.parse(xhrReadCred.responseText);
-                    let credsData = JSON.parse(checkData.data.ReadCreds.creds);
+                if (xhrPostTenant.readyState == 4 && xhrPostTenant.status == 200) {
+                    let responsejson = JSON.parse(xhrPostTenant.responseText);
+                    console.log("Response of dc: ", responsejson);
 
-                    if (parseInt(credsData.status_code) === 200) {
-                        // thiss.setState({ details: credsData.payload })
-                        thiss.setDetails(credsData.payload);
-                    } else if (parseInt(credsData.status_code) === 300) {
+                    let datacenterData = JSON.parse(responsejson.data.PostTenant.tenant);
+
+                    if (parseInt(datacenterData.status_code) === 200) {
+                        console.log("Tenant posted successfully")
+                    } else if (parseInt(datacenterData.status_code) === 300) {
+                        thiss.setState({ tenantApiCallCnt: tenantApiCallCnt - 1 }, function () {
+                            thiss.postTenant();
+                        })
+                    }
+                }
+            }
+            xhrPostTenant.send(JSON.stringify(payload));
+        }
+        catch (e) {
+            // thiss.notify("Error while posting tenant")
+            console.error('Error getting agents', e);
+        }
+    }
+
+    readDcCall() {
+        let thiss = this;
+        let xhrReadDc = new XMLHttpRequest();
+        try {
+            xhrReadDc.open("POST", QUERY_URL, true);
+            xhrReadDc.setRequestHeader("Content-type", "application/json");
+            xhrReadDc.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrReadDc.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            xhrReadDc.onreadystatechange = function () {
+                console.log("chr== state ", xhrReadDc.readyState);
+
+                if (xhrReadDc.readyState == 4 && xhrReadDc.status == 200) {
+                    let checkData = JSON.parse(xhrReadDc.responseText);
+                    console.log("Response of dc: ", checkData);
+                    // let datacenterData = JSON.parse(checkData.data.ReadCreds.creds);
+                    let datacenterData = JSON.parse(checkData.data.GetDatacenters.datacenters);
+
+                    if (parseInt(datacenterData.status_code) === 200) {
+                        thiss.setDetails(datacenterData.payload);
+                    } else if (parseInt(datacenterData.status_code) === 300) {
                         try {
-                            thiss.notify(credsData.message)
+                            thiss.notify(datacenterData.message)
                         } catch (e) {
                             console.log("message error", e)
                         }
                     }
-                    thiss.setState({ readAgentLoading: false });
+                    thiss.setState({ readDatacenterLoading: false });
                 }
                 else {
                     console.log("Not fetching");
                 }
             }
-            xhrReadCred.send(JSON.stringify(payload));
+            xhrReadDc.send(JSON.stringify(READ_DATACENTER_QUERY));
         }
         catch (e) {
             thiss.notify("Error while fetching agent information please refresh")
@@ -230,7 +269,7 @@ export default class App extends React.Component {
                 <div>
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
-                    {this.state.agentPopup && <Agent updateDetails={this.readAgents} handleAgent={this.handleAgent} />}
+                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
                     <Container items={this.state.items} sidebarItems={this.state.sidebarItems} />
                 </div >
             </Router>

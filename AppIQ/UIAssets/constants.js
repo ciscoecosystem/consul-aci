@@ -50,3 +50,13 @@ export function DC_DETAILS_QUERY_PAYLOAD(tn, datacenter) {
 export function TREE_VIEW_QUERY_PAYLOAD(tn, datacenter) {
     return { query: 'query{OperationalTree(tn:"' + tn + '", datacenter: "' + datacenter + '"){response}}' }
 }
+
+export const READ_DATACENTER_QUERY = {
+    query: `query{
+        GetDatacenters{datacenters}
+    }`
+};
+
+export function POST_TENANT_QUERY(tn) {
+    return { query: 'query{PostTenant(tn:"' + tn + '"){tenant}}' }
+}

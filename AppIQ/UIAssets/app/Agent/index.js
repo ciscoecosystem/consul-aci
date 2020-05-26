@@ -310,27 +310,32 @@ export default class Agent extends React.Component {
 
                         if (resp.status_code == 200) {
 
-                            if (isNewAgentAdded) { // new agent added
-                                if (resp.payload && resp.payload.length > 0) {
-                                    // details[updateIndex] = resp.payload[0];
-                                    details.unshift(resp.payload[0]);
-                                    // thiss.setState({ details });
-                                    thiss.setDetails(details);
+                            // if (isNewAgentAdded) { // new agent added
+                            //     if (resp.payload && resp.payload.length > 0) {
+                            //         // details[updateIndex] = resp.payload[0];
+                            //         details.unshift(resp.payload[0]);
+                            //         // thiss.setState({ details });
+                            //         thiss.setDetails(details);
 
-                                    // connection is not true
-                                    if (resp.payload.status !== true && resp.message) {
-                                        thiss.notify(resp.message, false, true);
-                                        // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
-                                    }
-                                } else {
-                                    // thiss.abortUpdateAgentAction();
-                                    thiss.notify("Some technical glitch!");
-                                }
+                            //         // connection is not true
+                            //         if (resp.payload.status !== true && resp.message) {
+                            //             thiss.notify(resp.message, false, true);
+                            //             // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
+                            //         }
+                            //     } else {
+                            //         // thiss.abortUpdateAgentAction();
+                            //         thiss.notify("Some technical glitch!");
+                            //     }
 
-                            } else { // updated an agent
+                            // } else { // updated an agent
                                 if (resp.payload) {
-                                    details[editAgentIndex] = resp.payload;
-                                    // thiss.setState({ details });
+
+                                    if (isNewAgentAdded) {
+                                        details.unshift(resp.payload);
+                                    } else {
+                                        details[editAgentIndex] = resp.payload;
+                                    }
+
                                     thiss.setDetails(details);
 
                                     // connection is not true
@@ -342,8 +347,7 @@ export default class Agent extends React.Component {
                                     // thiss.abortUpdateAgentAction();
                                     thiss.notify("Some technical glitch!");
                                 }
-                            }
-
+                            // }
 
                         }
                         else if (resp.status_code == 300) {
@@ -358,26 +362,29 @@ export default class Agent extends React.Component {
                             console.log("Response 301 ", resp.payload);
                             thiss.notify(resp.message); // error message
 
-                            if (isNewAgentAdded) { // new agent added
-                                if (resp.payload && resp.payload.length > 0) {
-                                    details.unshift(resp.payload[0]);
-                                    // thiss.setState({ details });
-                                    thiss.setDetails(details);
+                            // if (isNewAgentAdded) { // new agent added
+                            //     if (resp.payload && resp.payload.length > 0) {
+                            //         details.unshift(resp.payload[0]);
+                            //         // thiss.setState({ details });
+                            //         thiss.setDetails(details);
 
-                                } else {
-                                    thiss.notify("Some technical glitch!");
-                                }
+                            //     } else {
+                            //         thiss.notify("Some technical glitch!");
+                            //     }
 
-                            } else { // updated an agent
+                            // } else { // updated an agent
                                 if (resp.payload) {
-                                    details[editAgentIndex] = resp.payload;
-                                    // thiss.setState({ details });
-                                    // thiss.setDetails(details);
+                                    if (isNewAgentAdded){
+                                        details.unshift(resp.payload);
+                                    } else {
+                                        details[editAgentIndex] = resp.payload;
+                                    }
+
                                     thiss.setDetails(details);
                                 } else {
                                     thiss.notify("Some technical glitch!");
                                 }
-                            }
+                            // }
 
                         }
                         else {
