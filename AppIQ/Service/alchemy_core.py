@@ -28,6 +28,7 @@ class Database:
     SERVICECHECKSAUDIT_TABLE_NAME = 'servicechecksaudit'
     EPAUDIT_TABLE_NAME = 'epaudit'
     EPGAUDIT_TABLE_NAME = 'epgaudit'
+    TENANT_NAME = 'tenant'
 
     SCHEMA_DICT = {
         LOGIN_TABLE_NAME: [
@@ -138,6 +139,11 @@ class Database:
             'created_ts',
             'updated_ts',
             'last_checked_ts'
+        ],
+
+        TENANT_NAME: [
+            'tenant',
+            'created_ts'
         ]
     }
 
@@ -380,6 +386,12 @@ class Database:
             Column('audit_category', PickleType)
         )
 
+        self.tenant = Table(
+            self.TENANT_NAME, metadata,
+            Column('tenant', String, primary_key=True),
+            Column('created_ts', DateTime)
+        )
+
         try:
             metadata.create_all(self.engine)
             self.table_obj_meta.update({
@@ -396,7 +408,8 @@ class Database:
                 self.NODECHECKSAUDIT_TABLE_NAME: self.nodechecksaudit,
                 self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
                 self.EPAUDIT_TABLE_NAME: self.epaudit,
-                self.EPGAUDIT_TABLE_NAME: self.epgaudit
+                self.EPGAUDIT_TABLE_NAME: self.epgaudit,
+                self.TENANT_NAME: self.tenant
             })
             self.table_pkey_meta.update({
                 self.LOGIN_TABLE_NAME: {
@@ -428,6 +441,9 @@ class Database:
                 },
                 self.EPG_TABLE_NAME: {
                     'dn': self.epg.c.dn
+                },
+                self.TENANT_NAME: {
+                    'tenant': self.tenant.c.tenant
                 }
             })
         except Exception as e:

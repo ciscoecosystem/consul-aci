@@ -27,6 +27,7 @@ app.debug = True  # See use
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 db_obj = alchemy_core.Database()
+db_obj.create_tables()
 
 consul_credential_file_path = "/home/app/data/consulCredentials.json"
 mapppings_file_path = "/home/app/data/mappings.json"
@@ -1123,124 +1124,123 @@ def get_all_interfaces(interfaces):
 @time_it
 def read_creds():
     try:
-        logger.info("Reading agents.")
+        logger.info('Reading agents.')
 
         # handle db read faliure, just pass empty list from there
-        agents = db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME).fetchall()
+        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
         if not agents:
-            logger.info("Agents List Empty.")
-            return json.dumps({"payload": [], "status_code": "300", "message": "Agents not found"})
+            logger.info('Agents List Empty.')
+            return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
         payload = []
         for agent in agents:
-            # TODO: check the gets, change table name to var
-            list_agent = list(agent)
-            decoded_token = base64.b64decode(list_agent[3]).decode('ascii')
-            consul_obj = Consul(
-                list_agent[0], list_agent[1], decoded_token, list_agent[2])
+            decoded_token = base64.b64decode(agent[3]).decode('ascii')
+            consul_obj = Consul(agent[0], agent[1], decoded_token, agent[2])
             status, message = consul_obj.check_connection()
+
+            datacenter = '-'
             if status:
                 datacenter = consul_obj.datacenter()
-                if not datacenter:
-                    datacenter = '-'
 
-            list_agent['status'] = status
-            list_agent['datacenter'] = datacenter
-            if list_agent['status'] != status or list_agent['datacenter'] != datacenter:
-                # TODO: Should agent be dict?  change table name to var
-                db_obj.update_in_table(db_obj.LOGIN_TABLE_NAME, {
-                                       'ip': list_agent[0], 'port': list_agent[1]}, list_agent)
+            if agent[4] != status or agent[5] != datacenter:
+                agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
+                db_obj.update_in_table(db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent[0], 'port': agent[1]}, agent_val)
+
             payload.append({
-                "ip": list_agent[0],
-                'port': list_agent[1],
-                "protocol": list_agent[2],
-                "token": list_agent[3],
-                "status": status,
-                "datacenter": datacenter
+                'ip': agent[0],
+                'port': agent[1],
+                'protocol': agent[2],
+                'token': agent[3],
+                'status': status,
+                'datacenter': datacenter
             })
-        logger.debug("agent data: " + str(agents))
 
-        return json.dumps({"payload": payload, "status_code": "200", "message": "OK"})
+        logger.debug('agent data: ' + str(list(agents)))
+        return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
 
     except Exception as e:
-        logger.exception("Error in read credentials: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not load the credentials."})
+        logger.exception('Error in read credentials: ' + str(e))
+        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not load the credentials.'})
 
 
 @time_it
 def write_creds(new_agent):
     try:
-        logger.info("Writing agent: " + str(new_agent))
-        new_agent = json.loads(new_agent)
-        # handle db read faliure, just pass empty list from there
-        agents = db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME, {
-                                          'ip': new_agent.get('ip'), 'port': new_agent.get('port')}).fetchone()
-        # agents should be chenged to make a tupple, new_agent should be tupple(of ip and port)
-        if list(agents):
-            message = "Agent " + \
-                new_agent.get('ip') + ":" + \
-                str(new_agent.get('port')) + " already exists."
-            logger.error(message)
-            return json.dumps({"payload": new_agent, "status_code": "300", "message": message})
+        logger.info('Writing agent: ' + str(new_agent))
+        new_agent = json.loads(new_agent)[0] # TODO: UI should return single object, not list of one obj
+        agents = list(db_obj.select_from_table(
+                        db_obj.LOGIN_TABLE_NAME,
+                        {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')}))
 
-        consul_obj = Consul(new_agent.get('ip'), new_agent.get(
-            'port'), new_agent.get('token'), new_agent.get('protocol'))
+        if agents:
+            message = 'Agent ' + new_agent.get('ip') + ':' + str(new_agent.get('port')) + ' already exists.'
+            logger.error(message)
+            return json.dumps({'payload': new_agent, 'status_code': '300', 'message': message})
+
+        if not new_agent['token']:
+            new_agent['token'] = ''
+        consul_obj = Consul(new_agent.get('ip'), new_agent.get('port'), new_agent.get('token'), new_agent.get('protocol'))
         status, message = consul_obj.check_connection()
+
+        datacenter = '-'
         if status:
             datacenter = consul_obj.datacenter()
-            if not datacenter:
-                datacenter = '-'
 
-            new_agent['datacenter'] = datacenter
-            new_agent['status'] = status
-            new_agent['token'] = base64.b64encode(
-                new_agent['token'].encode('ascii')).decode('ascii')
-            db_obj.insert_into_table(db_obj.LOGIN_TABLE_NAME, [new_agent.get('ip'), new_agent.get('port'), new_agent.get(
-                'protocol'), new_agent.get('token'), new_agent.get('status'), new_agent.get('datacenter')])
+        new_agent['datacenter'] = datacenter
+        new_agent['status'] = status
+        new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
 
-            return json.dumps({"payload": new_agent, "status_code": "200", "message": "OK"})
+        db_obj.insert_into_table(db_obj.LOGIN_TABLE_NAME, 
+                        [   new_agent.get('ip'),
+                            new_agent.get('port'),
+                            new_agent.get('protocol'),
+                            new_agent.get('token'),
+                            new_agent.get('status'),
+                            new_agent.get('datacenter')
+                        ])
 
+        if status:
+            return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
         else:
-            return json.dumps({"payload": new_agent, "status_code": "301", "message": str(message)})
+            return json.dumps({'payload': new_agent, 'status_code': '301', 'message': str(message)})
 
     except Exception as e:
-        logger.exception("Error in write credentials: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not write the credentials."})
+        logger.exception('Error in write credentials: ' + str(e))
+        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not write the credentials.'})
 
 
 @time_it
 def update_creds(update_input):
     try:
-        logger.info("Updating agent: {}".format(update_input))
+        logger.info('Updating agent: {}'.format(update_input))
 
         update_input = json.loads(update_input)
         old_agent = update_input.get('oldData')
         new_agent = update_input.get('newData')
 
-        # TODO: handle db read faliure, just pass empty list from there
         agents = list(db_obj.select_from_table(
             db_obj.LOGIN_TABLE_NAME).fetchall())
-        if not agents:  # Some backend error, message may change
-            logger.info("Agents List Empty.")
-            return json.dumps({"payload": [], "status_code": "300", "message": "Agents not found"})
+        if not agents:
+            logger.info('Agents List Empty.')
+            return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
 
-        new_agent_db_data = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME, {
-                                 'ip': new_agent.get('ip'), 'port': new_agent.get('port')}).fetchone())
+        new_agent_db_data = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME,
+                                    {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')}))
         new_agent_list_db = [new_agent_db_data[0], new_agent_db_data[1],
                              new_agent_db_data[2], new_agent_db_data[3]]
         new_agent['token'] = base64.b64encode(
             new_agent['token'].encode('ascii')).decode('ascii')
-        new_agent_list_res = [new_agent.get('ip'), new_agent.get(
-            'port'), new_agent.get('protocol'), new_agent.get('token')]
+        new_agent_list_res = [new_agent.get('ip'), new_agent.get('port'),
+                        new_agent.get('protocol'), new_agent.get('token')]
 
         if new_agent_list_db == new_agent_list_res:
-            message = "Agent " + \
-                new_agent.get('ip') + ":" + \
-                str(new_agent.get('port')) + " already exists."
+            message = 'Agent ' + \
+                new_agent.get('ip') + ':' + \
+                str(new_agent.get('port')) + ' already exists.'
             logger.error(message)
-            return json.dumps({"payload": new_agent, "status_code": "300", "message": message})
+            return json.dumps({'payload': new_agent, 'status_code': '300', 'message': message})
 
         for agent in agents:
-            if old_agent.get("ip") == agent[0] and old_agent.get("port") == agent[1]:
+            if old_agent.get('ip') == agent[0] and old_agent.get('port') == agent[1]:
                 consul_obj = Consul(new_agent.get('ip'), new_agent.get(
                     'port'), new_agent.get('token'), new_agent.get('protocol'))
                 status, message = consul_obj.check_connection()
@@ -1254,46 +1254,69 @@ def update_creds(update_input):
                     db_obj.update_in_table(db_obj.LOGIN_TABLE_NAME, {'ip': old_agent.get(
                         'ip'), 'port': old_agent.get('port')}, new_agent)
 
-                    return json.dumps({"payload": new_agent, "status_code": "200", "message": "OK"})
+                    return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
                 else:
-                    return json.dumps({"payload": new_agent, "status_code": "301", "message": message})
+                    return json.dumps({'payload': new_agent, 'status_code': '301', 'message': message})
 
     except Exception as e:
-        logger.exception("Error in update credentials: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not update the credentials."})
+        logger.exception('Error in update credentials: ' + str(e))
+        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not update the credentials.'})
 
 
 @time_it
 def delete_creds(agent_data):
     try:
-        logger.info("deleting agents: " + str(agent_data))
+        logger.info('deleting agents: ' + str(agent_data))
         agent_data = json.loads(agent_data)
-        # TODO: correct call, handle faliure
-        result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME, {
-                                          'ip': agent_data.get('ip'), 'port': agent_data.get('port')})
+        result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME,
+                                        {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
         if result:
-            return json.dumps({"status_code": "200", "message": "OK"})
-        return json.dumps({"status_code": "300", "message": "Could not delete the credentials."})
+            return json.dumps({'status_code': '200', 'message': 'OK'})
+        return json.dumps({'status_code': '300', 'message': 'Could not delete the credentials.'})
     except Exception as e:
-        logger.exception("Error in delete credentials: " + str(e))
-        return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})
+        logger.exception('Error in delete credentials: ' + str(e))
+        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not delete the credentials.'})
 
 
 def get_datacenters():
-    logger.info("In get datacenters")
+    logger.info('In get datacenters')
     datacenters = []
-    datacenters.append({
-        'datacenter': 'dc1',
-        'status': True
-    })
+    try:
+        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        if agents:
+            dc_list = []
+            for agent in agents:
+                datacenter = str(agent[5])
+                status = int(agent[4])
+                if status == 1:
+                    status = True
+                else:
+                    status = False
+                if datacenter != '-' and datacenter not in dc_list:
+                    datacenters.append(
+                        {
+                            'status': status,
+                            'datacenter': datacenter
+                        }
+                    )
+                    dc_list.append(datacenter)
 
-    datacenters.append({
-        'datacenter': 'dc2',
-        'status': False
-    })
+        logger.info("Datacenters found")
+        return json.dumps({'payload': datacenters, 'status_code': '200', 'message': 'OK'})
+    except Exception as e:
+        logger.exception('Error in get datacenters: ' + str(e))
+        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Error in fetching datacenters.'})
 
-    return json.dumps({"payload": datacenters, "status_code": "200", "message": "OK"})
 
 def post_tenant(tn):
-    logger.info("Tenant received: {}".format(str(tn)))
-    return json.dumps({"status_code": "200", "message": "OK"})
+    logger.info('Tenant received: {}'.format(str(tn)))
+    try:
+        response = list(db_obj.select_from_table(db_obj.TENANT_NAME, {'tenant': tn}))
+        if not response:
+            response = db_obj.insert_into_table(db_obj.TENANT_NAME, [tn])
+            if not response:
+                return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
+        return json.dumps({'status_code': '200', 'message': 'OK'})
+    except Exception as e:
+        logger.exception('Error in post tenant: ' + str(e))
+        return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
