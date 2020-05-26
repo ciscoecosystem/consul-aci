@@ -9,7 +9,7 @@ import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
-class Cosnul(object):
+class Consul(object):
     """Consul class"""
 
     def __init__(self, agent_ip, port, token, protocol):

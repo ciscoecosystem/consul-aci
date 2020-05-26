@@ -54,7 +54,7 @@ Algorithm:
 
 import custom_logger
 import alchemy_new as database
-from consul_utils import Cosnul
+from consul_utils import Consul
 from apic_utils import AciUtils
 
 import time
@@ -84,7 +84,7 @@ def get_nodes(nodes_dict, agent):
 
     logger.info("Nodes for agent: {}".format(str(agent)))
 
-    consul_obj = Cosnul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+    consul_obj = Consul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
     # consul_obj.check_connection()
     list_of_nodes = consul_obj.nodes()
 

@@ -4,7 +4,7 @@ from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
 from consul.consul_schema import schema
-import alchemy_new as Database
+import alchemy_core as database
 import os
 import requests
 
@@ -15,7 +15,7 @@ app.debug = True
 
 app.add_url_rule('/graphql.json', view_func=GraphQLView.as_view('graphql', schema=schema, graphiql=True))
 
-database_object = Database.Database()
+database_object = database.Database()
 database_object.create_tables()
 
 path = "/home/app/data/credentials.json"
