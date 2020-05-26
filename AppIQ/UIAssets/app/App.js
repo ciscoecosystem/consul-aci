@@ -46,6 +46,7 @@ export default class App extends React.Component {
 
         this.notify = this.notify.bind(this);
         this.setDetails = this.setDetails.bind(this);
+        this.readAgents = this.readAgents.bind(this);
         this.readAgentsCall = this.readAgentsCall.bind(this);
         this.handleAgent = this.handleAgent.bind(this)
         this.setSidebar = this.setSidebar.bind(this);
@@ -100,6 +101,10 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
+        this.readAgents();
+    }
+    
+    readAgents(){
         let thiss = this;
         this.setState({ readAgentLoading: true }, function () {
             console.log("LOading----")
@@ -203,11 +208,11 @@ export default class App extends React.Component {
                             console.log("message error", e)
                         }
                     }
+                    thiss.setState({ readAgentLoading: false });
                 }
                 else {
                     console.log("Not fetching");
                 }
-                thiss.setState({ readAgentLoading: false });
             }
             xhrReadCred.send(JSON.stringify(payload));
         }
@@ -225,7 +230,7 @@ export default class App extends React.Component {
                 <div>
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
-                    {this.state.agentPopup && <Agent details={this.state.details} readAgentLoading={this.state.readAgentLoading} setDetails={this.setDetails} handleAgent={this.handleAgent} />}
+                    {this.state.agentPopup && <Agent updateDetails={this.readAgents} handleAgent={this.handleAgent} />}
                     <Container items={this.state.items} sidebarItems={this.state.sidebarItems} />
                 </div >
             </Router>
