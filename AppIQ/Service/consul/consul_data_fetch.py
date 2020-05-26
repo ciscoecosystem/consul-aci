@@ -49,11 +49,13 @@ Algorithm:
 """
 
 # TODO: Node services and Node checks can run parallel,Servce Info and Check can run parallel
-# TODO: DB insertion everywhere
 # TODO: Testcase for this - using mock/realtime things
+# TODO: multi threading
+# Run this dynamicly
+# Try catch in each functions see TODO:
 
 import custom_logger
-import alchemy_new as database
+import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
 
@@ -67,12 +69,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
-db_obj.create_tables()
+db_obj.create_tables() # TODO: remove
 
 POLL_INTERVAL = 1       # interval in minutes
 CHECK_AGENT_LIST = 3    # interval in sec
 THREAD_POOL = 10        # Pool size for all thread pools
-TENANT = 'AppDynamics'
+TENANT = 'AppDynamics' # TODO: make this dynamic
 
 
 def get_nodes(nodes_dict, agent):
@@ -109,17 +111,18 @@ def get_services(services_dict, node):
 
     consul_obj = node.get('agent_consul_obj')
     node_name = node.get('node_name')
+    node_id = node.get('node_id')
     service_list = consul_obj.nodes_services(node_name)
     
     for service in service_list:
-        service_id = service.get('service_id')
-        if not services_dict.has_key(service_id):
+        service_key = service.get('service_id') + node_id
+        if not services_dict.has_key(service_key):
             service.update({
-                'agent_consul_obj': consul_obj
+                'agent_consul_obj': consul_obj,
+                'node_id': node_id
             })
-            service['node_id'] = node.get('node_id')
             with services_dict as active_service:
-                active_service[service_id] = service
+                active_service[service_key] = service
     
 
 def get_node_checks(node_checks_dict, node):
@@ -141,8 +144,8 @@ def get_node_checks(node_checks_dict, node):
                 'node_id': node.get('node_id'),
                 'node_name': node_name
             })
-            with node_checks_dict as active_service:
-                node_checks_dict[check_key] = node_check
+            with node_checks_dict as active_node:
+                active_node[check_key] = node_check
 
 
 def get_service_info(service):
@@ -184,7 +187,7 @@ def get_service_checks(service_checks_dict, service):
                 'service_id': service_id
             })
             with service_checks_dict as active_service:
-                service_checks_dict[check_key] = service_check
+                active_service[check_key] = service_check
 
 
 def data_fetch():
@@ -202,6 +205,7 @@ def data_fetch():
 
             # get agent list from db
             # db.read_agent_list()/read_login
+            # TODO: make this tynamic
             agent_list = [
                 {
                     'datacenter': 'cisco-ecosystem-internal-new',
@@ -244,17 +248,13 @@ def data_fetch():
                     get_nodes(nodes_dict, agent)
 
                 # Inserting Nodes data in DB
-                nodes_list = []
                 for node_id, node_val in nodes_dict.items():
-                    nodes_list.append(
-                        (
+                    db_obj.insert_and_update(db_obj.NODE_TABLE_NAME ,(
                             node_val.get('node_id'),
                             node_val.get('node_name'),
-                            [str(node_val.get('node_ips'))], # This need to be only: node_val.get('node_ips')
+                            node_val.get('node_ips'),
                             datacenter
-                        )
-                    )
-                db_obj.insert_into_node(nodes_list)
+                        ))
 
                 logger.info("Nodes dict: {}".format(str(nodes_dict)))
 
@@ -271,23 +271,18 @@ def data_fetch():
                     get_node_checks(node_checks_dict, node)
 
                 # Inserting Nodes checks data in DB
-                node_checks_list = []
                 for node in node_checks_dict.values():
-                    node_checks_list.append(
-                        (
-                            node.get('node_id'),
+                    db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, (
                             node.get('CheckID'),
+                            node.get('node_id'),
                             node.get('node_name'),
                             node.get('Name'),
                             node.get('ServiceName'),
                             node.get('Type'),
                             node.get('Notes'),
                             node.get('Output'),
-                            str(node.get('Status')), # this should be a dict or json
-                            datacenter
-                        )
-                    )
-                db_obj.insert_into_node_checks(node_checks_list)
+                            node.get('Status'),
+                        ))
 
                 # Ittrate all services and get services info
                 # executor.map(get_service_info, services_dict.values())
@@ -295,23 +290,19 @@ def data_fetch():
                     get_service_info(service)
 
                 # Inserting Services into DB
-                service_list = []
                 for service in services_dict.values():
-                    service_list.append(
-                        (
+                    db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, (
                             service.get('service_id'),
                             service.get('node_id'),
                             service.get('service_name'),
                             service.get('service_ip'),
-                            int(service.get('service_port')),
+                            service.get('service_port'),
                             service.get('service_address'),
-                            [str(service.get('service_tags'))],
+                            service.get('service_tags'),
                             service.get('service_kind'),
                             service.get('service_namespace'),
                             datacenter
-                        )
-                    )
-                db_obj.insert_into_service(service_list)
+                        ))
 
                 # Ittrate all services and get services checks
                 # executor.map(get_service_checks, repeat(service_checks_dict), services_dict.values())
@@ -319,10 +310,8 @@ def data_fetch():
                     get_service_checks(service_checks_dict, service)
 
                 # Inserting Service Checks in DB
-                service_check_list = []
                 for service in service_checks_dict.values():
-                    service_check_list.append(
-                        (
+                    db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, (
                             service.get('CheckID'),
                             service.get('service_id'),
                             service.get('ServiceName'),
@@ -330,55 +319,51 @@ def data_fetch():
                             service.get('Type'),
                             service.get('Notes'),
                             service.get('Output'),
-                            str(service.get('Status'))
-                        )
-                    )
-                db_obj.insert_into_service_checks(service_check_list)
+                            service.get('Status')
+                        ))
 
-                aci_obj = AciUtils()
+                logger.info("Data fetch for datacenter {} complete.".format(datacenter))
 
-                ep_data = aci_obj.apic_fetch_ep_data(TENANT)
+            logger.info("Data fetch for Consul complete.")
 
-                ep_list = []
-                for ep in ep_data:
-                    ep_list.append(
-                        (
-                            ep.get('mac'),
-                            ep.get('ip'),
-                            ep.get('tenant'),
-                            ep.get('dn'),
-                            ep.get('vm_name'),
-                            [str(ep.get('interfaces'))],
-                            ep.get('vmm_domain'),
-                            ep.get('controller'),
-                            ep.get('learning_src'),
-                            ep.get('multi_cast_addr'),
-                            ep.get('encap'),
-                            ep.get('hosting_servername'),
-                            ep.get('is_cep'),
-                        )
-                    )
-                db_obj.insert_into_ep(ep_list)
+            logger.info("Start data fetch for APIC.")
+            aci_obj = AciUtils()
 
-                epg_data = aci_obj.apic_fetch_epg_data(TENANT)
+            # TODO: Here tenant will come from DB, and check if even a single ip match
+            # if not then both the ep storeing and epg call will not happen.
+            ep_data = aci_obj.apic_fetch_ep_data(TENANT)
+            for ep in ep_data:
+                db_obj.insert_and_update(db_obj.EP_TABLE_NAME, (
+                        ep.get('mac'),
+                        ep.get('ip'),
+                        ep.get('tenant'),
+                        ep.get('dn'),
+                        ep.get('vm_name'),
+                        ep.get('interfaces'),
+                        ep.get('vmm_domain'),
+                        ep.get('controller'),
+                        ep.get('learning_src'),
+                        ep.get('multi_cast_addr'),
+                        ep.get('encap'),
+                        ep.get('hosting_servername'),
+                        ep.get('is_cep'),
+                    ))
 
-                epg_list = []
-                for epg in epg_data:
-                    epg_list.append(
-                        (
-                            epg.get('dn'),
-                            epg.get('tenant'),
-                            epg.get('epg'),
-                            epg.get('bd'),
-                            [str(epg.get('contracts'))],
-                            epg.get('vrf'),
-                            epg.get('epg_health'),
-                            epg.get('app_profile'),
-                        )
-                    )
-                db_obj.insert_into_epg(epg_list)
 
-                logger.info("Data fetch complete:")
+            epg_data = aci_obj.apic_fetch_epg_data(TENANT)
+            for epg in epg_data:
+                db_obj.insert_and_update(db_obj.EPG_TABLE_NAME, (
+                        epg.get('dn'),
+                        epg.get('tenant'),
+                        epg.get('epg'),
+                        epg.get('bd'),
+                        epg.get('contracts'),
+                        epg.get('vrf'),
+                        epg.get('epg_health'),
+                        epg.get('app_profile'),
+                    ))
+
+            logger.info("Data fetch complete:")
 
         except Exception as e:
             logger.info("Error in data fetch: {}".format(str(e)))

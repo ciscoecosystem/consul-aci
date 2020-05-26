@@ -191,7 +191,7 @@ class Database:
         self.service = Table(
             self.SERVICE_TABLE_NAME, metadata,
             Column('service_id', String, primary_key=True),
-            Column('node_id', String),
+            Column('node_id', String, ForeignKey(self.node.c.node_id), primary_key=True),
             Column('service_name', String),
             Column('service_ip', String),
             Column('service_port', String),
@@ -411,7 +411,8 @@ class Database:
                     'node_id': self.node.c.node_id
                 },
                 self.SERVICE_TABLE_NAME: {
-                    'service_id': self.service.c.service_id
+                    'service_id': self.service.c.service_id,
+                    'node_id': self.service.c.node_id
                 },
                 self.NODECHECKS_TABLE_NAME: {
                     'check_id': self.nodechecks.c.check_id,
