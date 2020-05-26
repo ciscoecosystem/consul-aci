@@ -40,91 +40,105 @@ class Database:
             'created_ts',
             'updated_ts',
             'last_checked_ts'
-
         ],
-        MAPPING_TABLE_NAME: ['ip',
-                             'dn',
-                             'disabled',
-                             'datacenter',
-                             'created_ts',
-                             'updated_ts',
-                             'last_checked_ts'
-                             ],
-        NODE_TABLE_NAME: ['node_id',
-                          'node_name',
-                          'node_ips',
-                          'datacenter',
-                          'created_ts',
-                          'updated_ts',
-                          'last_checked_ts'
-                          ],
-        SERVICE_TABLE_NAME: ['service_id',
-                             'node_id',
-                             'service_name',
-                             'service_ip',
-                             'service_port',
-                             'service_address',
-                             'service_tags',
-                             'service_kind',
-                             'namespace',
-                             'datacenter',
-                             'created_ts',
-                             'updated_ts',
-                             'last_checked_ts'
-                             ],
-        NODECHECKS_TABLE_NAME: ['check_id',
-                                'node_id',
-                                'node_name',
-                                'check_name',
-                                'service_name',
-                                'check_type',
-                                'notes',
-                                'output',
-                                'status',
-                                'created_ts',
-                                'updated_ts',
-                                'last_checked_ts'
-                                ],
-        SERVICECHECKS_TABLE_NAME: ['check_id',
-                                   'service_id',
-                                   'service_name',
-                                   'check_name',
-                                   'check_type',
-                                   'notes',
-                                   'output',
-                                   'status',
-                                   'created_ts',
-                                   'updated_ts',
-                                   'last_checked_ts'
-                                   ],
-        EP_TABLE_NAME: ['mac',
-                        'ip',
-                        'tenant',
-                        'dn',
-                        'vm_name',
-                        'interfaces',
-                        'vmm_domain',
-                        'controller_name',
-                        'learning_source',
-                        'multicast_address',
-                        'encap',
-                        'hosting_server_name',
-                        'is_cep',
-                        'created_ts',
-                        'updated_ts',
-                        'last_checked_ts'
-                        ],
-        EPG_TABLE_NAME: ['dn',
-                         'tenant',
-                         'epg',
-                         'bd',
-                         'contracts',
-                         'vrf',
-                         'epg_health',
-                         'app_profile',
-                         'created_ts',
-                         'updated_ts',
-                         'last_checked_ts']
+
+        MAPPING_TABLE_NAME: [
+            'ip',
+            'dn',
+            'disabled',
+            'datacenter',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        NODE_TABLE_NAME: [
+            'node_id',
+            'node_name',
+            'node_ips',
+            'datacenter',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        SERVICE_TABLE_NAME: [
+            'service_id',
+            'node_id',
+            'service_name',
+            'service_ip',
+            'service_port',
+            'service_address',
+            'service_tags',
+            'service_kind',
+            'namespace',
+            'datacenter',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        NODECHECKS_TABLE_NAME: [
+            'check_id',
+            'node_id',
+            'node_name',
+            'check_name',
+            'service_name',
+            'check_type',
+            'notes',
+            'output',
+            'status',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        SERVICECHECKS_TABLE_NAME: [
+            'check_id',
+            'service_id',
+            'service_name',
+            'check_name',
+            'check_type',
+            'notes',
+            'output',
+            'status',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        EP_TABLE_NAME: [
+            'mac',
+            'ip',
+            'tenant',
+            'dn',
+            'vm_name',
+            'interfaces',
+            'vmm_domain',
+            'controller_name',
+            'learning_source',
+            'multicast_address',
+            'encap',
+            'hosting_server_name',
+            'is_cep',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
+        EPG_TABLE_NAME: [
+            'dn',
+            'tenant',
+            'epg',
+            'bd',
+            'contracts',
+            'vrf',
+            'epg_health',
+            'app_profile',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ]
     }
 
     def __init__(self):
@@ -139,217 +153,232 @@ class Database:
     def create_tables(self):
         metadata = MetaData()
 
-        self.login = Table(self.LOGIN_TABLE_NAME, metadata,
-                           Column('agent_ip', String, primary_key=True),
-                           Column('port', String, primary_key=True),
-                           Column('protocol', String),
-                           Column('token', String),
-                           Column('status', String),
-                           Column('datacenter', String),
-                           Column('created_ts', DateTime),
-                           Column('updated_ts', DateTime),
-                           Column('last_checked_ts', DateTime)
-                           )
-        self.mapping = Table(self.MAPPING_TABLE_NAME, metadata,
-                             Column('ip', String, primary_key=True),
-                             Column('dn', String, primary_key=True),
-                             Column('disabled', String),
-                             Column('datacenter', String),
-                             Column('created_ts', DateTime),
-                             Column('updated_ts', DateTime),
-                             Column('last_checked_ts', DateTime)
-                             )
+        self.login = Table(
+            self.LOGIN_TABLE_NAME, metadata,
+            Column('agent_ip', String, primary_key=True),
+            Column('port', String, primary_key=True),
+            Column('protocol', String),
+            Column('token', String),
+            Column('status', String),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.node = Table(self.NODE_TABLE_NAME, metadata,
-                          Column('node_id', String, primary_key=True),
-                          Column('node_name', String),
-                          Column('node_ips', PickleType),
-                          Column('datacenter', String),
-                          Column('created_ts', DateTime),
-                          Column('updated_ts', DateTime),
-                          Column('last_checked_ts', DateTime)
-                          )
+        self.mapping = Table(
+            self.MAPPING_TABLE_NAME, metadata,
+            Column('ip', String, primary_key=True),
+            Column('dn', String, primary_key=True),
+            Column('disabled', String),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.service = Table(self.SERVICE_TABLE_NAME, metadata,
-                             Column('service_id', String, primary_key=True),
-                             Column('node_id', String),
-                             Column('service_name', String),
-                             Column('service_ip', String),
-                             Column('service_port', String),
-                             Column('service_address', String),
-                             Column('service_tags', PickleType),
-                             Column('service_kind', String),
-                             Column('namespace', String),
-                             Column('datacenter', String),
-                             Column('created_ts', DateTime),
-                             Column('updated_ts', DateTime),
-                             Column('last_checked_ts', DateTime)
-                             )
+        self.node = Table(
+            self.NODE_TABLE_NAME, metadata,
+            Column('node_id', String, primary_key=True),
+            Column('node_name', String),
+            Column('node_ips', PickleType),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.nodechecks = Table(self.NODECHECKS_TABLE_NAME, metadata,
-                                Column('check_id', String, primary_key=True),
-                                Column('node_id', String, ForeignKey(
-                                    self.node.c.node_id), primary_key=True),
-                                Column('node_name', String),
-                                Column('check_name', String),
-                                Column('service_name', String),
-                                Column('type', String),
-                                Column('notes', String),
-                                Column('output', String),
-                                Column('status', PickleType),
-                                Column('created_ts', DateTime),
-                                Column('updated_ts', DateTime),
-                                Column('last_checked_ts', DateTime)
-                                )
+        self.service = Table(
+            self.SERVICE_TABLE_NAME, metadata,
+            Column('service_id', String, primary_key=True),
+            Column('node_id', String),
+            Column('service_name', String),
+            Column('service_ip', String),
+            Column('service_port', String),
+            Column('service_address', String),
+            Column('service_tags', PickleType),
+            Column('service_kind', String),
+            Column('namespace', String),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.servicechecks = Table(self.SERVICECHECKS_TABLE_NAME, metadata,
-                                   Column('check_id', String,
-                                          primary_key=True),
-                                   Column('service_id', String, ForeignKey(
-                                       self.service.c.service_id), primary_key=True),
-                                   Column('service_name', String),
-                                   Column('name', String),
-                                   Column('type', String),
-                                   Column('notes', String),
-                                   Column('output', String),
-                                   Column('status', PickleType),
-                                   Column('created_ts', DateTime),
-                                   Column('updated_ts', DateTime),
-                                   Column('last_checked_ts', DateTime)
-                                   )
+        self.nodechecks = Table(
+            self.NODECHECKS_TABLE_NAME, metadata,
+            Column('check_id', String, primary_key=True),
+            Column('node_id', String, ForeignKey(
+                self.node.c.node_id), primary_key=True),
+            Column('node_name', String),
+            Column('check_name', String),
+            Column('service_name', String),
+            Column('type', String),
+            Column('notes', String),
+            Column('output', String),
+            Column('status', PickleType),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.ep = Table(self.EP_TABLE_NAME, metadata,
-                        Column('mac', String, primary_key=True),
-                        Column('ip', String, primary_key=True),
-                        Column('tenant', String),
-                        Column('dn', String),
-                        Column('vm_name', String),
-                        Column('interfaces', PickleType),
-                        Column('vmm_domain', String),
-                        Column('controller_name', String),
-                        Column('learning_source', String),
-                        Column('multicast_address', String),
-                        Column('encap', String),
-                        Column('hosting_server_name', String),
-                        Column('is_cep', String),
-                        Column('created_ts', DateTime),
-                        Column('updated_ts', DateTime),
-                        Column('last_checked_ts', DateTime)
-                        )
+        self.servicechecks = Table(
+            self.SERVICECHECKS_TABLE_NAME, metadata,
+            Column('check_id', String,
+                    primary_key=True),
+            Column('service_id', String, ForeignKey(
+                self.service.c.service_id), primary_key=True),
+            Column('service_name', String),
+            Column('name', String),
+            Column('type', String),
+            Column('notes', String),
+            Column('output', String),
+            Column('status', PickleType),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.epg = Table(self.EPG_TABLE_NAME, metadata,
-                         Column('dn', String, primary_key=True),
-                         Column('tenant', String),
-                         Column('EPG', String),
-                         Column('BD', String),
-                         Column('contracts', PickleType),
-                         Column('VRF', String),
-                         Column('epg_health', String),
-                         Column('app_profile', String),
-                         Column('created_ts', DateTime),
-                         Column('updated_ts', DateTime),
-                         Column('last_checked_ts', DateTime)
-                         )
+        self.ep = Table(
+            self.EP_TABLE_NAME, metadata,
+            Column('mac', String, primary_key=True),
+            Column('ip', String, primary_key=True),
+            Column('tenant', String),
+            Column('dn', String),
+            Column('vm_name', String),
+            Column('interfaces', PickleType),
+            Column('vmm_domain', String),
+            Column('controller_name', String),
+            Column('learning_source', String),
+            Column('multicast_address', String),
+            Column('encap', String),
+            Column('hosting_server_name', String),
+            Column('is_cep', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.nodeaudit = Table(self.NODEAUDIT_TABLE_NAME, metadata,
-                               Column('node_id', String),
-                               Column('node_name', String),
-                               Column('node_ips', PickleType),
-                               Column('datacenter', String),
-                               Column('created_ts', DateTime),
-                               Column('updated_ts', DateTime),
-                               Column('last_checked_ts', DateTime),
-                               Column('audit_ts', DateTime),
-                               Column('audit_category', PickleType)
-                               )
+        self.epg = Table(
+            self.EPG_TABLE_NAME, metadata,
+            Column('dn', String, primary_key=True),
+            Column('tenant', String),
+            Column('EPG', String),
+            Column('BD', String),
+            Column('contracts', PickleType),
+            Column('VRF', String),
+            Column('epg_health', String),
+            Column('app_profile', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
 
-        self.serviceaudit = Table(self.SERVICEAUDIT_TABLE_NAME, metadata,
-                                  Column('service_id', String),
-                                  Column('node_id', String),
-                                  Column('service_name', String),
-                                  Column('service_ip', String),
-                                  Column('service_port', String),
-                                  Column('service_address', String),
-                                  Column('service_tags', PickleType),
-                                  Column('service_kind', String),
-                                  Column('namespace', String),
-                                  Column('datacenter', String),
-                                  Column('created_ts', DateTime),
-                                  Column('updated_ts', DateTime),
-                                  Column('last_checked_ts', DateTime),
-                                  Column('audit_ts', DateTime),
-                                  Column('audit_category', PickleType)
-                                  )
+        self.nodeaudit = Table(
+            self.NODEAUDIT_TABLE_NAME, metadata,
+            Column('node_id', String),
+            Column('node_name', String),
+            Column('node_ips', PickleType),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
 
-        self.nodechecksaudit = Table(self.NODECHECKSAUDIT_TABLE_NAME, metadata,
-                                     Column('check_id', String),
-                                     Column('node_id', String),
-                                     Column('node_name', String),
-                                     Column('check_name', String),
-                                     Column('service_name', String),
-                                     Column('type', String),
-                                     Column('notes', String),
-                                     Column('output', String),
-                                     Column('status', PickleType),
-                                     Column('created_ts', DateTime),
-                                     Column('updated_ts', DateTime),
-                                     Column('last_checked_ts', DateTime),
-                                     Column('audit_ts', DateTime),
-                                     Column('audit_category', PickleType)
-                                     )
+        self.serviceaudit = Table(
+            self.SERVICEAUDIT_TABLE_NAME, metadata,
+            Column('service_id', String),
+            Column('node_id', String),
+            Column('service_name', String),
+            Column('service_ip', String),
+            Column('service_port', String),
+            Column('service_address', String),
+            Column('service_tags', PickleType),
+            Column('service_kind', String),
+            Column('namespace', String),
+            Column('datacenter', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
 
-        self.servicechecksaudit = Table(self.SERVICECHECKSAUDIT_TABLE_NAME, metadata,
-                                        Column('check_id', String),
-                                        Column('service_id', String),
-                                        Column('service_name', String),
-                                        Column('name', String),
-                                        Column('type', String),
-                                        Column('notes', String),
-                                        Column('output', String),
-                                        Column('status', PickleType),
-                                        Column('created_ts', DateTime),
-                                        Column('updated_ts', DateTime),
-                                        Column('last_checked_ts', DateTime),
-                                        Column('audit_ts', DateTime),
-                                        Column('audit_category', PickleType)
-                                        )
+        self.nodechecksaudit = Table(
+            self.NODECHECKSAUDIT_TABLE_NAME, metadata,
+            Column('check_id', String),
+            Column('node_id', String),
+            Column('node_name', String),
+            Column('check_name', String),
+            Column('service_name', String),
+            Column('type', String),
+            Column('notes', String),
+            Column('output', String),
+            Column('status', PickleType),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
 
-        self.epaudit = Table(self.EPAUDIT_TABLE_NAME, metadata,
-                             Column('mac', String),
-                             Column('ip', String),
-                             Column('tenant', String),
-                             Column('dn', String),
-                             Column('vm_name', String),
-                             Column('interfaces', PickleType),
-                             Column('vmm_domain', String),
-                             Column('controller_name', String),
-                             Column('learning_source', String),
-                             Column('multicast_address', String),
-                             Column('encap', String),
-                             Column('hosting_server_name', String),
-                             Column('is_cep', String),
-                             Column('created_ts', DateTime),
-                             Column('updated_ts', DateTime),
-                             Column('last_checked_ts', DateTime),
-                             Column('audit_ts', DateTime),
-                             Column('audit_category', PickleType)
-                             )
+        self.servicechecksaudit = Table(
+            self.SERVICECHECKSAUDIT_TABLE_NAME, metadata,
+            Column('check_id', String),
+            Column('service_id', String),
+            Column('service_name', String),
+            Column('name', String),
+            Column('type', String),
+            Column('notes', String),
+            Column('output', String),
+            Column('status', PickleType),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
 
-        self.epgaudit = Table(self.EPGAUDIT_TABLE_NAME, metadata,
-                              Column('dn', String, primary_key=True),
-                              Column('tenant', String),
-                              Column('EPG', String),
-                              Column('BD', String),
-                              Column('contracts', PickleType),
-                              Column('VRF', String),
-                              Column('epg_health', String),
-                              Column('app_profile', String),
-                              Column('created_ts', DateTime),
-                              Column('updated_ts', DateTime),
-                              Column('last_checked_ts', DateTime),
-                              Column('audit_ts', DateTime),
-                              Column('audit_category', PickleType)
-                              )
+        self.epaudit = Table(
+            self.EPAUDIT_TABLE_NAME, metadata,
+            Column('mac', String),
+            Column('ip', String),
+            Column('tenant', String),
+            Column('dn', String),
+            Column('vm_name', String),
+            Column('interfaces', PickleType),
+            Column('vmm_domain', String),
+            Column('controller_name', String),
+            Column('learning_source', String),
+            Column('multicast_address', String),
+            Column('encap', String),
+            Column('hosting_server_name', String),
+            Column('is_cep', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
+
+        self.epgaudit = Table(
+            self.EPGAUDIT_TABLE_NAME, metadata,
+            Column('dn', String, primary_key=True),
+            Column('tenant', String),
+            Column('EPG', String),
+            Column('BD', String),
+            Column('contracts', PickleType),
+            Column('VRF', String),
+            Column('epg_health', String),
+            Column('app_profile', String),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+            Column('audit_ts', DateTime),
+            Column('audit_category', PickleType)
+        )
 
         try:
             metadata.create_all(self.engine)
