@@ -1277,3 +1277,23 @@ def delete_creds(agent_data):
     except Exception as e:
         logger.exception("Error in delete credentials: " + str(e))
         return json.dumps({"payload": [], "status_code": "300", "message": "Could not delete the credentials."})
+
+
+def get_datacenters():
+    logger.info("In get datacenters")
+    datacenters = []
+    datacenters.append({
+        'datacenter': 'dc1',
+        'status': True
+    })
+
+    datacenters.append({
+        'datacenter': 'dc2',
+        'status': False
+    })
+
+    return json.dumps({"payload": datacenters, "status_code": "200", "message": "OK"})
+
+def post_tenant(tn):
+    logger.info("Tenant received: {}".format(str(tn)))
+    return json.dumps({"status_code": "200", "message": "OK"})
