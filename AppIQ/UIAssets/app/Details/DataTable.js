@@ -38,6 +38,7 @@ export default class DataTable extends Component {
       {
         Header: "Service Checks",
         accessor: "serviceChecks",
+        width: 150,
         Cell: row => {
           return (<span>
             {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}

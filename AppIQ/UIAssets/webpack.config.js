@@ -1,10 +1,9 @@
 module.exports = {
 	'entry': {
-		// 'mapping': __dirname + "/mapping.js",
-		// 'details': __dirname + "/details.js",
-		// 'login': __dirname + "/login.js",
-		// 'app': __dirname + "/app.js",
-		'appB': __dirname + "/appB.js"
+		'mapping': __dirname + "/mapping.js",
+		'details': __dirname + "/details.js",
+		'login': __dirname + "/login.js",
+		'app': __dirname + "/app.js",
 	},
 	'module': {
 		'loaders': [{

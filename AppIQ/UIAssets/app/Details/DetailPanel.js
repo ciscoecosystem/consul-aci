@@ -34,34 +34,54 @@ function formateDataToChartData(data) {
 
 export default function DetailPanel(props) {
     let { summaryPaneIsOpen, summaryDetail, title } = props;
-    let apicInfoOrder = ["endPointName", "interface", "ip", "mac", "epgName", "epgHealth", "vrf", "bd", "learningSource", "reportingController", "hostingServer"];
-    let nodeInfoOrder = ["consulNode", "nodeChecks"];
-    let serviceInfoOrder = ["service", "serviceChecks", "serviceInstance", "Port", "serviceTags", "serviceKind"];
+    let apicInfoOrder = [{ name: "endPointName", label: "endPoint" },
+    { name: "interface", label: "Interface" },
+    { name: "ip", label: "ip" },
+    { name: "mac", label: "mac" },
+    { name: "epgName", label: "epg" },
+    { name: "epgHealth", label: "epg Health" },
+    { name: "vrf", label: "Vrf" },
+    { name: "bd", label: "bd" },
+    { name: "learningSource", label: "Learning Source" },
+    { name: "reportingController", label: "reporting Controller" },
+    { name: "hostingServer", label: "hosting Server" }];
+
+    let nodeInfoOrder = [{ name: "consulNode", label: "consul Node" },
+    { name: "nodeChecks", label: "node Checks" }];
+
+    let serviceInfoOrder = [{ name: "service", label: "service" },
+    { name: "serviceChecks", label: "service Checks" },
+    { name: "serviceInstance", label: "service Instance" },
+    { name: "Port", label: "port" },
+    { name: "serviceTags", label: "service Tags" },
+    { name: "serviceKind", label: "service Kind" },
+    { name: "serviceNamespace", label: "Namespace" }];
 
 
     function CollapsePane(title, infoOrder) {
         return <CollapsiblePanel id="ccpid1" key="ccpkey1" title={title}>
             {
                 infoOrder.map(function (elem) {
-                    let detailValue = summaryDetail[elem];
+                    let { name, label } = elem
+                    let detailValue = summaryDetail[name];
 
-                    if (elem === "nodeChecks" || elem === "serviceChecks") {
-                        let { formattedData, totalCnt } = formateDataToChartData(summaryDetail[elem])
+                    if (name === "nodeChecks" || name === "serviceChecks") {
+                        let { formattedData, totalCnt } = formateDataToChartData(summaryDetail[name])
                         detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                     }
-                    else if (elem === "serviceTags") {
-                        detailValue = summaryDetail[elem].map(function (tags) {
+                    else if (name === "serviceTags") {
+                        detailValue = summaryDetail[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
                         })
-                    } else if (elem === "interface") {
+                    } else if (name === "interface") {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
-                            {summaryDetail[elem].map(function (infcs) {
+                            {summaryDetail[name].map(function (infcs) {
                                 return <li>{infcs}</li>
                             })}
                         </ul>
                     }
 
-                    return <PropertyItem propertyLabel={elem} propertyValue={detailValue} />
+                    return <PropertyItem propertyLabel={label} propertyValue={detailValue} />
                 })
             }
         </CollapsiblePanel>
