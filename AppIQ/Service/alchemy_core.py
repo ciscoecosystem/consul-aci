@@ -433,6 +433,7 @@ class Database:
             logger.exception("Exception in {} Error:{}".format(
                 'create_tables()', str(e)))
 
+
     def insert_into_table(self, table_name, field_values):
         field_values = list(field_values)
         try:
@@ -447,6 +448,7 @@ class Database:
             logger.exception(
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
+
 
     def select_from_table(self, table_name, primary_key={}):
         try:
@@ -469,11 +471,11 @@ class Database:
                 "Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
 
+
     def update_in_table(self, table_name, primary_key, new_record_dict):
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
-            new_record_dict['updated_ts'] = datetime.now()
             new_record_dict['last_checked_ts'] = datetime.now()
             update_query = table_obj.update()
             for key in primary_key:
@@ -486,6 +488,7 @@ class Database:
             logger.exception(
                 "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
+
 
     def delete_from_table(self, table_name, primary_key={}):
         try:
@@ -505,6 +508,7 @@ class Database:
                 "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
 
+
     def insert_and_update(self, table_name, new_record, primary_key={}):
         table_name = table_name.lower()
         if primary_key:
@@ -523,8 +527,9 @@ class Database:
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]
                     # TODO: call audit
-                    self.update_in_table(
-                        table_name, primary_key, new_record_dict)
+                    if new_record_dict:
+                        new_record_dict['updated_ts'] = datetime.now()
+                    self.update_in_table(table_name, primary_key, new_record_dict)
                 else:
                     self.insert_into_table(table_name, new_record)
             else:
