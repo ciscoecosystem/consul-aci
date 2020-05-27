@@ -3,80 +3,35 @@
 This fetches data using consul_util on a regular 
 intercal and then puts it into the database.
 
-
-Algorithm:
-
-    1. Fetch all agent from table.
-
-    2. For all Datacenter
-
-        2.1. Fetch all the agent of that datacenter
-
-        2.2. Fetch all the dc nodes from each agent (using a thread pool)
-
-        2.3. Aggregate to get set of nodes.
-
-        2.4. Put Nodes in DB
-
-            2.4.1. Insert new records.
-
-            2.4.2. Update old records.
-
-            2.4.3. Put updated old records in Audit table.
-
-        2.5. Fetch Services, NodeChecks for every node (using a thread pool)
-
-        2.6. Put NodeChecks in DB
-
-            2.6.1. Insert new records.
-
-            2.6.2. Update old records.
-
-            2.6.3. Put updated old records in Audit table.
-
-        2.7. Aggregate to get set of services
-
-        2.8. Fetch Service info, Service Checks
-
-        2.9. Put Service and ServiceChecks in DB
-
-            2.9.1. Insert new records.
-
-            2.9.2. Update old records.
-
-            2.9.3. Put updated old records in Audit table.
-
 """
 
 # TODO: Node services and Node checks can run parallel,Servce Info and Check can run parallel
 # TODO: Testcase for this - using mock/realtime things
 # TODO: multi threading
-# Run this dynamicly
-# Try catch in each functions see TODO:
 
 import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
+from decorator import exception_handler
 
 import time
 import json
+import base64
 import threading
 from itertools import repeat
 from threading_util import ThreadSafeDict
-from concurrent.futures import as_completed
-from concurrent.futures import ThreadPoolExecutor
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
-db_obj.create_tables() # TODO: remove
+db_obj.create_tables()
 
 POLL_INTERVAL = 1       # interval in minutes
 CHECK_AGENT_LIST = 3    # interval in sec
 THREAD_POOL = 10        # Pool size for all thread pools
-TENANT = 'AppDynamics' # TODO: make this dynamic
 
 
+@exception_handler
 def get_nodes(nodes_dict, agent):
     """Get catalog nodes and put it in the dict
     
@@ -100,6 +55,7 @@ def get_nodes(nodes_dict, agent):
                 active_node[node_id] = node
 
 
+@exception_handler
 def get_services(services_dict, node):
     """Get node services and put it in the dict
     
@@ -125,6 +81,7 @@ def get_services(services_dict, node):
                 active_service[service_key] = service
     
 
+@exception_handler
 def get_node_checks(node_checks_dict, node):
     """Get node checks
     
@@ -148,6 +105,7 @@ def get_node_checks(node_checks_dict, node):
                 active_node[check_key] = node_check
 
 
+@exception_handler
 def get_service_info(service):
     """Get Service info
     
@@ -167,6 +125,7 @@ def get_service_info(service):
     })
 
 
+@exception_handler
 def get_service_checks(service_checks_dict, service):
     """Get service checks
     
@@ -203,18 +162,25 @@ def data_fetch():
             # Starting time of the thread
             start_time = time.time()
 
+            # This is the list with all ips of consul
+            consul_ip_list = set()
+
             # get agent list from db
-            # db.read_agent_list()/read_login
-            # TODO: make this tynamic
-            agent_list = [
-                {
-                    'datacenter': 'cisco-ecosystem-internal-new',
-                    'ip': '10.23.239.14',
-                    'port': '8500',
-                    'token': '',
-                    'protocol': 'http'
-                }
-            ] 
+            agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+            agent_list = []
+            for agent in agents:
+                status = int(agent[4])
+                if status == 1:
+                    decoded_token = base64.b64decode(agent[3]).decode('ascii')
+                    agent_list = [
+                        {
+                            'ip': agent[0],
+                            'port': agent[1],
+                            'protocol': agent[2],
+                            'token': decoded_token,
+                            'datacenter': agent[5],
+                        }
+                    ]
 
             # if there is no agent list on 
             # db check it evety CHECK_AGENT_LIST sec
@@ -238,12 +204,9 @@ def data_fetch():
                 node_checks_dict = ThreadSafeDict()
                 service_checks_dict = ThreadSafeDict()
 
-                # Define an executor for all thread processing
-                # executor = ThreadPoolExecutor(max_workers = THREAD_POOL)
 
                 # Ittrate for every agent of that DC 
                 # and create a unique list of nodes.
-                # executor.map(get_nodes, repeat(nodes_dict), agents)
                 for agent in agents:
                     get_nodes(nodes_dict, agent)
 
@@ -256,17 +219,17 @@ def data_fetch():
                             datacenter
                         ))
 
-                logger.info("Nodes dict: {}".format(str(nodes_dict)))
+                    # Add node ip to consul ip list
+                    for ip in node_val.get('node_ips'):
+                        consul_ip_list.add(ip)
+
+                logger.info("Data insertion in Node Complete.")
 
                 # Ittrate all nodes and get all services
-                # executor.map(get_services, repeat(services_dict), nodes_dict.values())
                 for node in nodes_dict.values():
                     get_services(services_dict, node)
 
-                logger.info("Nodes dict: {}".format(str(nodes_dict)))
-
                 # Ittrate all nodes and get node checks
-                # executor.map(get_node_checks, repeat(node_checks_dict), nodes_dict.values())
                 for node in nodes_dict.values():
                     get_node_checks(node_checks_dict, node)
 
@@ -284,8 +247,9 @@ def data_fetch():
                             node.get('Status'),
                         ))
 
+                logger.info("Data insertion in Node Checks Complete.")
+
                 # Ittrate all services and get services info
-                # executor.map(get_service_info, services_dict.values())
                 for service in services_dict.values():
                     get_service_info(service)
 
@@ -304,8 +268,12 @@ def data_fetch():
                             datacenter
                         ))
 
+                    # Add service ip to consul ip list
+                    consul_ip_list.add(service.get('service_ip'))
+
+                logger.info("Data insertion in Service Complete.")
+
                 # Ittrate all services and get services checks
-                # executor.map(get_service_checks, repeat(service_checks_dict), services_dict.values())
                 for service in services_dict.values():
                     get_service_checks(service_checks_dict, service)
 
@@ -322,46 +290,67 @@ def data_fetch():
                             service.get('Status')
                         ))
 
+                logger.info("Data insertion in Service Checks Complete.")
+
                 logger.info("Data fetch for datacenter {} complete.".format(datacenter))
 
             logger.info("Data fetch for Consul complete.")
 
+
+            # Data fetch for APIC
             logger.info("Start data fetch for APIC.")
+
+            # get tenant list from db
+            tenants = list(db_obj.select_from_table(db_obj.TENANT_NAME))
+            tenant_list = []
+            for tenant in tenants:
+                tenant_list.append(tenant[0])
+
             aci_obj = AciUtils()
 
-            # TODO: Here tenant will come from DB, and check if even a single ip match
-            # if not then both the ep storeing and epg call will not happen.
-            ep_data = aci_obj.apic_fetch_ep_data(TENANT)
-            for ep in ep_data:
-                db_obj.insert_and_update(db_obj.EP_TABLE_NAME, (
-                        ep.get('mac'),
-                        ep.get('ip'),
-                        ep.get('tenant'),
-                        ep.get('dn'),
-                        ep.get('vm_name'),
-                        ep.get('interfaces'),
-                        ep.get('vmm_domain'),
-                        ep.get('controller'),
-                        ep.get('learning_src'),
-                        ep.get('multi_cast_addr'),
-                        ep.get('encap'),
-                        ep.get('hosting_servername'),
-                        ep.get('is_cep'),
-                    ))
+            for tenant in tenant_list:
+                ep_data = aci_obj.apic_fetch_ep_data(tenant)
+
+                # check if even a single ip of ep is maped to consul
+                flag = False
+                for ep in ep_data:
+                    if ep.get('ip') in consul_ip_list:
+                        flag = True
+
+                if not flag:
+                    logger.info("NO EP in tenant {} mapped to any consul nodes or services.".format(tenant))
+                    continue
+
+                for ep in ep_data:
+                    db_obj.insert_and_update(db_obj.EP_TABLE_NAME, (
+                            ep.get('mac'),
+                            ep.get('ip'),
+                            ep.get('tenant'),
+                            ep.get('dn'),
+                            ep.get('vm_name'),
+                            ep.get('interfaces'),
+                            ep.get('vmm_domain'),
+                            ep.get('controller'),
+                            ep.get('learning_src'),
+                            ep.get('multi_cast_addr'),
+                            ep.get('encap'),
+                            ep.get('hosting_servername'),
+                            ep.get('is_cep'),
+                        ))
 
 
-            epg_data = aci_obj.apic_fetch_epg_data(TENANT)
-            for epg in epg_data:
-                db_obj.insert_and_update(db_obj.EPG_TABLE_NAME, (
-                        epg.get('dn'),
-                        epg.get('tenant'),
-                        epg.get('epg'),
-                        epg.get('bd'),
-                        epg.get('contracts'),
-                        epg.get('vrf'),
-                        epg.get('epg_health'),
-                        epg.get('app_profile'),
-                    ))
+                epg_data = aci_obj.apic_fetch_epg_data(tenant)
+                for epg in epg_data:
+                    db_obj.insert_and_update(db_obj.EPG_TABLE_NAME, (
+                            epg.get('dn'),
+                            epg.get('tenant'),
+                            epg.get('epg'),
+                            epg.get('bd'),
+                            epg.get('contracts'),
+                            epg.get('vrf'),
+                            epg.get('epg_health'),
+                            epg.get('app_profile'),
+                        ))
 
             logger.info("Data fetch complete:")
 

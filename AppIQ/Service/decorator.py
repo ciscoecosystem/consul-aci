@@ -22,6 +22,13 @@ def time_it(method):
     return timed
 
 
+def exception_handler(method):
+    def wrapper(*args):
+        try:
+            method(*args)
+        except Exception as e:
+            logger.exception('Exception in {} : {}'.format(method.__name__, str(e)))
+    return wrapper
 
 # Decorators used in alchemy
 
