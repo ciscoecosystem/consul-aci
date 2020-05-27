@@ -220,12 +220,12 @@ export default class Agent extends React.Component {
     submitAgent(event) {
         event.preventDefault();
         let thiss = this;
-        let { details, Address, Port, Protocol, isNewAgentAdded } = this.state;
+        let { details, Address, Port, Protocol, isNewAgentAdded, Token } = this.state;
         console.log("Submit agent; detaios ", details);
         console.log("Address and port ", Address, Port);
         // check if Details in Index is not same as others in [...Details] as per port and ip
         for (let ind = 0; ind < details.length; ind++) {
-            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port) && details[ind].protocol === Protocol) {
+            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port) && details[ind].protocol === Protocol && details[ind].token === Token ) {
                 this.notify("Agent already exists.")
                 return;
             }
