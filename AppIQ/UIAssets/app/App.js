@@ -23,9 +23,6 @@ function ToMappingRedirect(dc, tn) {
 // ]
 // const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
 
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
-
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -215,6 +212,8 @@ export default class App extends React.Component {
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
             xhrPostTenant.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrPostTenant.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrPostTenant.onreadystatechange = function () {
@@ -249,6 +248,8 @@ export default class App extends React.Component {
         try {
             xhrReadDc.open("POST", QUERY_URL, true);
             xhrReadDc.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
             xhrReadDc.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrReadDc.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrReadDc.onreadystatechange = function () {

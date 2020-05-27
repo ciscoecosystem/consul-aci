@@ -15,9 +15,22 @@ const ipRegex = RegExp('((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])
 const dnsRegex = RegExp('^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$');
 const portRegex = RegExp('^[0-9]*$')
 
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
-
+const defaultFieldState = {
+    protocolOptions: [
+        { label: 'HTTPS', value: 'https', selected: true },
+        { label: 'HTTP', value: 'http',  selected: false }
+    ],
+    editAgentIndex: null, // [0,1,...n] indicates row number & [-1] indicates a row is added and being written
+    isNewAgentAdded: false,
+    Protocol: "https",
+    Address: null,
+    Port: null,
+    Token: null,
+    errormsg: {
+        Address: null,
+        Port: null
+    }
+}
 export default class Agent extends React.Component {
     constructor(props) {
         super(props)
@@ -38,6 +51,7 @@ export default class Agent extends React.Component {
         this.removeAgent = this.removeAgent.bind(this);
         this.removeAgentCall = this.removeAgentCall.bind(this);
         this.editAgent = this.editAgent.bind(this);
+        this.refreshField = this.refreshField.bind(this);
         console.log("Agent index props", props);
         this.state = {
             details: [],
@@ -54,20 +68,7 @@ export default class Agent extends React.Component {
             { name: "Port", type: "number", mandatory: true },
             { name: "Token", type: "password", mandatory: false }
             ],
-            protocolOptions: [
-                { label: 'HTTPS', value: 'https', selected: true },
-                { label: 'HTTP', value: 'http' }
-            ],
-            editAgentIndex: null, // [0,1,...n] indicates row number & [-1] indicates a row is added and being written
-            isNewAgentAdded: false,
-            Protocol: "https",
-            Address: null,
-            Port: null,
-            Token: null,
-            errormsg: {
-                Address: null,
-                Port: null
-            }
+            ...defaultFieldState
         }
     }
 
@@ -82,6 +83,10 @@ export default class Agent extends React.Component {
 
     componentDidCatch(error, info) {
         console.log("ERRROR :===>> ", error, info)
+    }
+
+    refreshField() {
+        this.setState({ ...defaultFieldState })
     }
 
     setDetails(details) {
@@ -184,6 +189,8 @@ export default class Agent extends React.Component {
         try {
             xhrCred.open("POST", QUERY_URL, true);
             xhrCred.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
             xhrCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrCred.onreadystatechange = function () {
@@ -202,6 +209,7 @@ export default class Agent extends React.Component {
                             console.log("message error", e)
                         }
                     }
+                    thiss.refreshField();
                     thiss.setState({ readAgentLoading: false });
                 }
                 else {
@@ -212,7 +220,7 @@ export default class Agent extends React.Component {
             xhrCred.send(JSON.stringify(payload));
         }
         catch (e) {
-            thiss.notify("Error while fetching agent information please refresh")
+            thiss.notify("Error while fetching agent information please refresh");
             console.error('Error getting agents', e);
         }
     }
@@ -225,7 +233,7 @@ export default class Agent extends React.Component {
         console.log("Address and port ", Address, Port);
         // check if Details in Index is not same as others in [...Details] as per port and ip
         for (let ind = 0; ind < details.length; ind++) {
-            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port) && details[ind].protocol === Protocol && details[ind].token === Token ) {
+            if (details[ind].ip === Address && parseInt(details[ind].port) === parseInt(Port) && details[ind].protocol === Protocol && details[ind].token === Token) {
                 this.notify("Agent already exists.")
                 return;
             }
@@ -255,9 +263,6 @@ export default class Agent extends React.Component {
         }
 
         agentDetail.port = parseInt(agentDetail.port);
-
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
 
         let payload = {};
 
@@ -290,6 +295,8 @@ export default class Agent extends React.Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
@@ -396,18 +403,12 @@ export default class Agent extends React.Component {
                         console.error("Invalid response strcture")
 
                     }
+                    thiss.refreshField();
                     thiss.setState({ readAgentLoading: false });
                 }
                 else {
                     console.log("ERROR Revert changes----");
                 }
-
-                thiss.setState({
-                    Protocol: "https",
-                    Address: null,
-                    Port: null,
-                    Token: null
-                })
             }
             xhr.send(JSON.stringify(payload));
         }
@@ -458,6 +459,8 @@ export default class Agent extends React.Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhr.onreadystatechange = function () {
@@ -486,6 +489,7 @@ export default class Agent extends React.Component {
                         thiss.notify("Something went wrong!")
                         console.error("DeleteCreds: response structure invalid")
                     }
+                    thiss.refreshField();
                     thiss.setState({ readAgentLoading: false });
                 }
                 else {
@@ -507,7 +511,7 @@ export default class Agent extends React.Component {
         let thiss = this;
         // get required detail and put in Port, Protocol ,etc
         let agentDetail = this.state.details[editAgentIndex];
-        let { protocolOptions } = this.state;
+        let protocolOptions = JSON.parse(JSON.stringify(this.state.protocolOptions) );
 
         let protocolOptionsNew = protocolOptions.map(function (elem) {
             return Object.assign(elem, { selected: (elem.value === agentDetail.protocol) })
@@ -626,7 +630,10 @@ export default class Agent extends React.Component {
         return (<div>
             {redirectToMain && <Redirect to="/" />}
 
-            <Modal isOpen={addAgentModalIsOpen} title="Add Agent" onClose={this.handleModal}>
+            <Modal isOpen={addAgentModalIsOpen} title="Add Agent" onClose={function () {
+                thiss.refreshField();
+                thiss.handleModal()
+            }}>
                 <div>
                     <div className="panel">
                         <form onSubmit={this.submitAgent}>
