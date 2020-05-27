@@ -16,6 +16,11 @@ function ToMappingRedirect(dc, tn) {
     return `/toMapping?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
 }
 
+// const dummylist = [
+//     { "protocol": "http", "ip": "10.0.0.0", "port": 8050, "token": "lnfeialilsacirvjlnlaial", "status": true, "datacenter": "datacenter1" },
+//     { "protocol": "https", "ip": "10.0.0.1", "port": 8051, "token": "lnfeialilsacirvjlglaial", "status": false, "datacenter": "datacenter1" },
+//     { "protocol": "http", "ip": "10.0.0.2", "port": 8051, "token": "lnfeialilsacirvjhnlaial", "status": true, "datacenter": "datacenter2" }
+// ]
 // const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
 
 window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
@@ -62,7 +67,7 @@ export default class App extends React.Component {
                 {
                     id: 'dash',
                     icon: "icon-call-rate",
-                    path: '/',
+                    path: this.pathname + '/',
                     title: 'Dashboard'
                 },
                 {
@@ -120,6 +125,23 @@ export default class App extends React.Component {
 
         // filter out and show 
         function datacenterSubitem(pageind) {
+            // if no datacenters
+            if (details.length === 0) {
+                return ["No Datacenter found"].map(function (elem) {
+                    return {
+                        id: 'dc0',
+                        content:
+                            <li className={"sidebar__item dc-item"} >
+                                <a aria-current="false" href="javascript:void(0)">
+                                    <span className="qtr-margin-left">{elem}</span>
+                                </a>
+                            </li>,
+                        title: elem["datacenter"]
+                    }
+                })
+            }
+
+            // if datacenter exist
             return details.filter(function (elem) {
                 let datacenterName = elem['datacenter'];
                 if (!datacenterName || datacenterName === "-") {

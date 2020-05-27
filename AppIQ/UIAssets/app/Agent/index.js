@@ -84,12 +84,12 @@ export default class Agent extends React.Component {
         console.log("ERRROR :===>> ", error, info)
     }
 
-    setDetails(details){
+    setDetails(details) {
         this.setState({ details });
         this.props.updateDetails();
     }
 
-    readAgents(){
+    readAgents() {
         let thiss = this;
         this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
             console.log("LOading----")
@@ -207,7 +207,7 @@ export default class Agent extends React.Component {
                 else {
                     console.log("Not fetching");
                 }
-              
+
             }
             xhrCred.send(JSON.stringify(payload));
         }
@@ -328,25 +328,25 @@ export default class Agent extends React.Component {
                             //     }
 
                             // } else { // updated an agent
-                                if (resp.payload) {
+                            if (resp.payload) {
 
-                                    if (isNewAgentAdded) {
-                                        details.unshift(resp.payload);
-                                    } else {
-                                        details[editAgentIndex] = resp.payload;
-                                    }
-
-                                    thiss.setDetails(details);
-
-                                    // connection is not true
-                                    if (resp.payload.status !== true && resp.message) {
-                                        thiss.notify(resp.message, false, true)
-                                        // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
-                                    }
+                                if (isNewAgentAdded) {
+                                    details.unshift(resp.payload);
                                 } else {
-                                    // thiss.abortUpdateAgentAction();
-                                    thiss.notify("Some technical glitch!");
+                                    details[editAgentIndex] = resp.payload;
                                 }
+
+                                thiss.setDetails(details);
+
+                                // connection is not true
+                                if (resp.payload.status !== true && resp.message) {
+                                    thiss.notify(resp.message, false, true)
+                                    // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
+                                }
+                            } else {
+                                // thiss.abortUpdateAgentAction();
+                                thiss.notify("Some technical glitch!");
+                            }
                             // }
 
                         }
@@ -373,17 +373,17 @@ export default class Agent extends React.Component {
                             //     }
 
                             // } else { // updated an agent
-                                if (resp.payload) {
-                                    if (isNewAgentAdded){
-                                        details.unshift(resp.payload);
-                                    } else {
-                                        details[editAgentIndex] = resp.payload;
-                                    }
-
-                                    thiss.setDetails(details);
+                            if (resp.payload) {
+                                if (isNewAgentAdded) {
+                                    details.unshift(resp.payload);
                                 } else {
-                                    thiss.notify("Some technical glitch!");
+                                    details[editAgentIndex] = resp.payload;
                                 }
+
+                                thiss.setDetails(details);
+                            } else {
+                                thiss.notify("Some technical glitch!");
+                            }
                             // }
 
                         }
@@ -490,7 +490,7 @@ export default class Agent extends React.Component {
                 }
                 else {
                     // thiss.notify("Error while reaching the container.")
-                }     
+                }
             }
             xhr.send(JSON.stringify(payload));
         }
@@ -549,7 +549,19 @@ export default class Agent extends React.Component {
         },
         {
             Header: 'Token',
-            accessor: 'token'
+            accessor: 'token',
+            Cell: row => {
+                let { token } = row.original;
+                return <div>
+                    <Input
+                        type={"password"}
+                        key={"passtoken"}
+                        name={"passtoken"}
+                        value={token}
+                        disabled={true}
+                        className={"label-password"} /> </div>
+            }
+
         },
         {
             Header: 'Datacenter',
@@ -679,6 +691,7 @@ export default class Agent extends React.Component {
                                     loadingText={this.state.loadingText}
                                     className="-striped -highlight"
                                     noDataText="No Agent Found."
+                                    // data={dummylist}
                                     data={this.state.details}
                                     columns={tableColumns}
                                 />

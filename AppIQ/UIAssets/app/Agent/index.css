@@ -83,3 +83,8 @@ form .input-error {
 .integration-form .form-action-buttons {
     margin-top: 13px;
 }
+
+.label-password {
+    background:rgba(0,0,0,0) !important;
+    border:none !important;
+}
