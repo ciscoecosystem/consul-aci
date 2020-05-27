@@ -578,11 +578,11 @@ class Database:
             if datacenter:
                 obj1 = self.get_join_obj("node", "nodechecks", datacenter)
                 obj2 = self.get_join_obj("service", "servicechecks", datacenter)
-                join_obj = obj1.join(obj2, self.nodechecks.c.check_id == self.servicechecks.c.check_id,isouter=True)
-                smt = select([self.node,self.service,self.nodechecks,self.servicechecks]).group_by(self.node.c.datacenter).select_from(join_obj)
+                join_obj = obj1.join(obj2)
+                smt = select([self.node,self.service,self.nodechecks,self.servicechecks]).select_from(join_obj)
             elif tenant:
                 join_obj = self.get_join_obj("ep", "epg")
-                smt = select([self.ep, self.epg]).group_by(self.ep.c.tenant).select_from(join_obj)
+                smt = select([self.ep, self.epg]).select_from(join_obj)
             result = self.conn.execute(smt)
             return result
         except Exception as e:
