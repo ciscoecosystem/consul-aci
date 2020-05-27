@@ -81,25 +81,26 @@ def mapping(tenant, datacenter):
 
         mapping_dict = {"source_cluster": [], "target_cluster": []}
 
-        # below three line will be replaced with APIC SQL Query
-        aci_obj = aci_utils.ACI_Utils()
-        # TODO: handle this apis failure returned
-        end_points = aci_obj.apic_fetchEPGData(tenant)
-        # TODO: handle this apis failure returned
-        parsed_eps = aci_obj.parse_ep(end_points, tenant)
+        # Get APIC data
+        ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+        parsed_eps = []
+        for ep in ep_data:
+            parsed_eps.append(
+                {
+                    'dn': ep[3],
+                    'IP': ep[1],
+                    'tenant': ep[2],
+                    'cep_ip': ep[12],
+                }
+            )
 
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get('port'), agent.get(
-            'token'), agent.get('protocol'))  # TODO: all the 3 keys expected
-        consul_data = consul_obj.get_consul_data()
+        # GEt consul data
+        consul_data = db_obj.join(datacenter=True) # consul_obj.get_consul_data()
         ip_list = []
         for node in consul_data:
             ip_list += node.get('node_ips', [])
             # For fetching ips of services.
-            for service in node.get('node_services', []):
-                # check ip is not empty string
-                if service.get('service_ip', ''):
-                    ip_list.append(service.get('service_ip'))
+            ip_list.append(node.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(
             list(set(ip_list)), parsed_eps)  # TODO: handle empty response
@@ -107,7 +108,7 @@ def mapping(tenant, datacenter):
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
             return json.dumps({
-                "agentIP": agent.get('ip'),  # TODO: what to return here
+                "agentIP": ' ',  # TODO: Is this required in UI, if no: change call, if yes return right val
                 "payload": mapping_dict,
                 "status_code": "200",
                 "message": "OK"
@@ -1279,6 +1280,85 @@ def delete_creds(agent_data):
     except Exception as e:
         logger.exception('Error in delete credentials: ' + str(e))
         return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not delete the credentials.'})
+
+
+def details_flattened(tenant, datacenter):
+    """Get correlated Details view data
+
+    return: {
+        agentIP: string
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+
+    logger.info("Details view for tenant: {}".format(tenant))
+    start_time = datetime.datetime.now()
+    try:
+        mapping(tenant, datacenter)
+        all_datacenter_mapping = {}
+
+        file_exists = os.path.isfile(mapppings_file_path)
+        if file_exists:
+            with open(mapppings_file_path, 'r') as fread:
+                file_data = fread.read()
+                if file_data:
+                    all_datacenter_mapping = json.loads(file_data)
+                    aci_consul_mappings = all_datacenter_mapping.get(datacenter)
+        aci_obj = aci_utils.ACI_Utils()
+        aci_data = aci_obj.main(tenant)
+        agent = get_agent_list(datacenter)[0]
+        consul_obj = Consul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
+        consul_data = consul_obj.get_consul_data()
+
+        merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
+
+        details_list = []
+        for each in merged_data:
+            epg_health = aci_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
+            ep = {
+                    'interface': each.get('Interfaces'),
+                    'endPointName': each.get('VM-Name'),
+                    'ip': each.get('IP'),
+                    'mac': each.get('CEP-Mac'),
+                    'learningSource': each.get('learningSource'),
+                    'hostingServer': each.get('hostingServerName'),
+                    'reportingController': each.get('controllerName'),
+                    'vrf': each.get('VRF'),
+                    'bd': each.get('BD'),
+                    'ap': each.get('AppProfile'),
+                    'epgName': each.get('EPG'),
+                    'epgHealth': epg_health,
+                    'consulNode': each.get('node_name'),
+                    'nodeChecks': each.get('node_check'),
+                }
+
+            services = change_key(each.get('node_services'))
+            for service in services:
+                record = {}
+                record.update(ep)
+                record.update(service)
+                details_list.append(record)
+        logger.debug("Details final data ended: " + str(details_list))
+
+        # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
+        return json.dumps({
+            "agentIP": agent.get('ip'),
+            "payload": details_list,
+            "status_code": "200",
+            "message": "OK"
+            })
+    except Exception as e:
+        logger.exception("Could not load the Details. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the Details."
+            })
+    finally:
+        end_time =  datetime.datetime.now()
+        logger.debug("Time for DETAILS: " + str(end_time - start_time))
 
 
 def get_datacenters():

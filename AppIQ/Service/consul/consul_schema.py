@@ -96,6 +96,10 @@ class DeleteCreds(graphene.ObjectType):
     message = graphene.String()
 
 
+class DetailsFlattened(graphene.ObjectType):
+     details = graphene.String()
+
+
 class GetDatacenters(graphene.ObjectType):
     datacenters = graphene.String()
 
@@ -186,6 +190,8 @@ class Query(graphene.ObjectType):
     UpdateCreds = graphene.Field(UpdateCreds, update_input=graphene.String())
 
     DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
+
+    DetailsFlattened = graphene.Field(DetailsFlattened, tn=graphene.String(), datacenter=graphene.String())
 
     GetDatacenters = graphene.Field(GetDatacenters)
 
@@ -321,6 +327,11 @@ class Query(graphene.ObjectType):
         return DeleteCreds
 
 
+    def resolve_DetailsFlattened(self, info, tn, datacenter):
+         DetailsFlattened.details = app.details_flattened(tn, datacenter)
+         return DetailsFlattened
+
+
     def resolve_GetDatacenters(self, info):
         GetDatacenters.datacenters = app.get_datacenters()
         return GetDatacenters
@@ -329,5 +340,6 @@ class Query(graphene.ObjectType):
     def resolve_PostTenant(self, info, tn):
         PostTenant.tenant = app.post_tenant(tn)
         return PostTenant
+
 
 schema = graphene.Schema(query=Query)

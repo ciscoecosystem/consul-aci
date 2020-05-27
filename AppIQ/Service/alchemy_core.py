@@ -578,14 +578,10 @@ class Database:
             if datacenter:
                 obj1 = self.get_join_obj("node", "nodechecks", datacenter)
                 obj2 = self.get_join_obj("service", "servicechecks", datacenter)
-                if not obj1 or not obj2:
-                    return None
                 join_obj = obj1.join(obj2, self.nodechecks.c.check_id == self.servicechecks.c.check_id,isouter=True)
                 smt = select([self.node,self.service,self.nodechecks,self.servicechecks]).group_by(self.node.c.datacenter).select_from(join_obj)
             elif tenant:
                 join_obj = self.get_join_obj("ep", "epg")
-                if not join_obj:
-                    return None
                 smt = select([self.ep, self.epg]).group_by(self.ep.c.tenant).select_from(join_obj)
             result = self.conn.execute(smt)
             return result
@@ -600,21 +596,21 @@ class Database:
             return []
         return_list = []
         for each in result.fetchall():
-            return_list.append({
+            return_list.append(
+                {
                 'node_id':each[0],
                 'node_name':each[1],
                 'node_ips':each[2],
                 'node_check':each[28],
-                'node_services':[{
-                    'service_id':each[7],        
-                    'service_name':each[9],      
-                    'service_ip':each[10],        
-                    'service_port':each[11],      
-                    'service_address':each[12],    
-                    'service_tags':each[13],       
-                    'service_kind':each[14],      
-                    'service_namespace':each[15], 
-                    'service_checks':each[39]
-                }]
-            })
+                'service_id':each[7],
+                'service_name':each[9],
+                'service_ip':each[10],
+                'service_port':each[11],
+                'service_address':each[12],
+                'service_tags':each[13],
+                'service_kind':each[14],
+                'service_namespace':each[15],
+                'service_checks':each[39]
+                }
+            )
         return return_list

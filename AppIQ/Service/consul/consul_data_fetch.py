@@ -212,12 +212,17 @@ def data_fetch():
 
                 # Inserting Nodes data in DB
                 for node_id, node_val in nodes_dict.items():
-                    db_obj.insert_and_update(db_obj.NODE_TABLE_NAME ,(
+                    db_obj.insert_and_update(db_obj.NODE_TABLE_NAME ,
+                        (
                             node_val.get('node_id'),
                             node_val.get('node_name'),
                             node_val.get('node_ips'),
                             datacenter
-                        ))
+                        ),
+                        {
+                            'node_id': node_val.get('node_id')
+                        }
+                    )
 
                     # Add node ip to consul ip list
                     for ip in node_val.get('node_ips'):
@@ -235,7 +240,8 @@ def data_fetch():
 
                 # Inserting Nodes checks data in DB
                 for node in node_checks_dict.values():
-                    db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, (
+                    db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME,
+                        (
                             node.get('CheckID'),
                             node.get('node_id'),
                             node.get('node_name'),
@@ -245,7 +251,12 @@ def data_fetch():
                             node.get('Notes'),
                             node.get('Output'),
                             node.get('Status'),
-                        ))
+                        ),
+                        {
+                            'node_id': node.get('node_id'),
+                            'check_id': node.get('CheckID')
+                        }
+                    )
 
                 logger.info("Data insertion in Node Checks Complete.")
 
@@ -255,7 +266,8 @@ def data_fetch():
 
                 # Inserting Services into DB
                 for service in services_dict.values():
-                    db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, (
+                    db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME,
+                        (
                             service.get('service_id'),
                             service.get('node_id'),
                             service.get('service_name'),
@@ -266,7 +278,12 @@ def data_fetch():
                             service.get('service_kind'),
                             service.get('service_namespace'),
                             datacenter
-                        ))
+                        ),
+                        {
+                            'service_id': service.get('service_id'),
+                            'node_id': service.get('node_id')
+                        }
+                    )
 
                     # Add service ip to consul ip list
                     consul_ip_list.add(service.get('service_ip'))
@@ -279,7 +296,8 @@ def data_fetch():
 
                 # Inserting Service Checks in DB
                 for service in service_checks_dict.values():
-                    db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, (
+                    db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME,
+                        (
                             service.get('CheckID'),
                             service.get('service_id'),
                             service.get('ServiceName'),
@@ -288,7 +306,12 @@ def data_fetch():
                             service.get('Notes'),
                             service.get('Output'),
                             service.get('Status')
-                        ))
+                        ),
+                        {
+                            'check_id': service.get('CheckID'),
+                            'service_id': service.get('service_id')
+                        }
+                    )
 
                 logger.info("Data insertion in Service Checks Complete.")
 
@@ -322,7 +345,8 @@ def data_fetch():
                     continue
 
                 for ep in ep_data:
-                    db_obj.insert_and_update(db_obj.EP_TABLE_NAME, (
+                    db_obj.insert_and_update(db_obj.EP_TABLE_NAME,
+                        (
                             ep.get('mac'),
                             ep.get('ip'),
                             ep.get('tenant'),
@@ -336,12 +360,18 @@ def data_fetch():
                             ep.get('encap'),
                             ep.get('hosting_servername'),
                             ep.get('is_cep'),
-                        ))
+                        ),
+                        {
+                            'mac': ep.get('mac'),
+                            'ip': ep.get('ip'),
+                        }
+                    )
 
 
                 epg_data = aci_obj.apic_fetch_epg_data(tenant)
                 for epg in epg_data:
-                    db_obj.insert_and_update(db_obj.EPG_TABLE_NAME, (
+                    db_obj.insert_and_update(db_obj.EPG_TABLE_NAME,
+                        (
                             epg.get('dn'),
                             epg.get('tenant'),
                             epg.get('epg'),
@@ -350,7 +380,11 @@ def data_fetch():
                             epg.get('vrf'),
                             epg.get('epg_health'),
                             epg.get('app_profile'),
-                        ))
+                        ),
+                        {
+                            'dn': epg.get('dn')
+                        }
+                    )
 
             logger.info("Data fetch complete:")
 
