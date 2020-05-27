@@ -1143,7 +1143,7 @@ def read_creds():
 
             if agent[4] != status or agent[5] != datacenter:
                 agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
-                db_obj.update_in_table(db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent[0], 'port': agent[1]}, agent_val)
+                db_obj.insert_and_update(db_obj.LOGIN_TABLE_NAME, agent_val, {'agent_ip': agent[0], 'port': agent[1]})
 
             payload.append({
                 'ip': agent[0],
@@ -1223,37 +1223,40 @@ def update_creds(update_input):
             logger.info('Agents List Empty.')
             return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
 
-        new_agent_db_data = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME,
-                                    {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')}))
-        new_agent_list_db = [new_agent_db_data[0], new_agent_db_data[1],
-                             new_agent_db_data[2], new_agent_db_data[3]]
-        new_agent['token'] = base64.b64encode(
-            new_agent['token'].encode('ascii')).decode('ascii')
-        new_agent_list_res = [new_agent.get('ip'), new_agent.get('port'),
-                        new_agent.get('protocol'), new_agent.get('token')]
-
-        if new_agent_list_db == new_agent_list_res:
-            message = 'Agent ' + \
-                new_agent.get('ip') + ':' + \
-                str(new_agent.get('port')) + ' already exists.'
-            logger.error(message)
-            return json.dumps({'payload': new_agent, 'status_code': '300', 'message': message})
-
+        if not (old_agent.get('ip') == new_agent.get('ip') and old_agent.get('port') == new_agent.get('port')):
+            new_agent_db_data = db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME,
+                                        {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')})
+            new_agent_db_data = new_agent_db_data.fetchone()
+            if new_agent_db_data:
+                message = 'Agent ' + \
+                    new_agent.get('ip') + ':' + \
+                    str(new_agent.get('port')) + ' already exists.'
+                logger.error(message)
+                return json.dumps({'payload': new_agent, 'status_code': '300', 'message': message})
+            
         for agent in agents:
-            if old_agent.get('ip') == agent[0] and old_agent.get('port') == agent[1]:
+            if old_agent.get('ip') == agent[0] and old_agent.get('port') == int(agent[1]):
+                if new_agent.get('token') == agent[3]:
+                    new_agent['token'] = base64.b64decode(new_agent.get('token')).decode('ascii')
                 consul_obj = Consul(new_agent.get('ip'), new_agent.get(
                     'port'), new_agent.get('token'), new_agent.get('protocol'))
                 status, message = consul_obj.check_connection()
+                datacenter = '-'
                 if status:
                     datacenter = consul_obj.datacenter()
-                    if not datacenter:
-                        datacenter = '-'
+                new_agent['datacenter'] = datacenter
+                new_agent['status'] = status
+                new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
+                db_obj.insert_and_update(db_obj.LOGIN_TABLE_NAME, [new_agent.get('ip'),
+                        new_agent.get('port'),
+                        new_agent.get('protocol'),
+                        new_agent.get('token'),
+                        new_agent.get('status'),
+                        new_agent.get('datacenter')
+                    ], {'agent_ip': old_agent.get(
+                    'ip'), 'port': old_agent.get('port')})
 
-                    new_agent['datacenter'] = datacenter
-                    new_agent['status'] = status
-                    db_obj.update_in_table(db_obj.LOGIN_TABLE_NAME, {'ip': old_agent.get(
-                        'ip'), 'port': old_agent.get('port')}, new_agent)
-
+                if status:
                     return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
                 else:
                     return json.dumps({'payload': new_agent, 'status_code': '301', 'message': message})
