@@ -3,7 +3,8 @@ import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
 import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import { dummyData } from "./dummyData.js";
 import './style.css'
 
@@ -31,6 +32,7 @@ class Container extends Component {
         this.fetchDataCall = this.fetchDataCall.bind(this);
         // this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
 
+        this.notify = this.notify.bind(this);
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
@@ -76,6 +78,18 @@ class Container extends Component {
         })
     }
 
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ? toast.warn(message, {
+            position: toast.POSITION.TOP_CENTER
+        }) :
+            isSuccess ? toast.success(message, {
+                position: toast.POSITION.TOP_CENTER
+            }) :
+                toast.error(message, {
+                    position: toast.POSITION.TOP_CENTER
+                });
+    }
+
     // staticFetchDataCall() {
     //     setTimeout(() => {
     //         console.log("Got data");
@@ -88,14 +102,13 @@ class Container extends Component {
 
     fetchDataCall() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-
+        let thiss = this;
         let xhr = new XMLHttpRequest();
         try {
             xhr.open("POST", QUERY_URL, true);
-
             xhr.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
@@ -109,7 +122,7 @@ class Container extends Component {
                         console.log("DETAILS REPOSNSE ", json);
                         if ("errors" in json) {
                             // Error related to query
-                            localStorage.setItem('message', JSON.stringify(main_data_json.errors));
+                            thiss.notify("Could not Fetch. The query may be invalid.");
                             // window.location.href = "index.html?gqlerror=1";
                         } else {
                             // Response successful
@@ -117,47 +130,33 @@ class Container extends Component {
 
                             if (response.status_code != "200") {
                                 // Problem with backend fetching data
-                                const message = {
-                                    "errors": [{
-                                        "message": response.message
-                                    }]
+                                try {
+                                    thiss.notify(response.message)
+                                } catch (e) {
+                                    console.log("message error", e)
                                 }
-                                localStorage.setItem('message', JSON.stringify(message.errors));
                                 // window.location.href = "index.html?gqlerror=1";
                             } else {
                                 // Success
                                 headerInstanceName = response.instanceName;
 
-                                this.setState({
+                                thiss.setState({
                                     "data": response.payload
                                 });
-                                this.setState({ loading: false })
                             }
+                            thiss.setState({ loading: false })
                         }
                     } else {
                         // Status code of XHR request not 200
-                        if (typeof message_set == 'undefined') {
-                            const message = {
-                                "errors": [{
-                                    "message": "Error while fetching data for details."
-                                }]
-                            }
-                            localStorage.setItem('message', JSON.stringify(message.errors));
-                        }
+                        thiss.notify("Error while fetching data for details.");
                         // window.location.href = "index.html?gqlerror=1";
                     }
                 }
             };
             xhr.send(JSON.stringify(payload));
         } catch (except) {
-            if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for details."
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
+            thiss.notify("Technical glitch.");
+            console.log("Error ", except);
             // window.location.href = "index.html?gqlerror=1";
         }
     }
@@ -204,6 +203,7 @@ class Container extends Component {
 
         return (
             <div>
+                 <ToastContainer />
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
                     title={summaryDetail["endPointName"]}

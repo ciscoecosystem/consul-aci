@@ -15,6 +15,9 @@ export default class Container extends React.Component {
         pathname = pathname.split("/");
         pathname.pop();
         this.pathname = pathname.join("/");
+
+        console.log("container constructor");
+        // <Redirect to={this.pathname + "/" + window.location.search} />
     }
 
     render() {
@@ -52,11 +55,16 @@ export default class Container extends React.Component {
 
                             <Switch>
 
-                                <Route exact path="/" >
-                                    <div style={{ height: "10%" }}>
+                                <Route exact path={this.pathname + "/"} component={function () {
+                                    return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard Under construction
-                                </div>
-                                </Route>
+                                    </div>
+                                }} />
+                                   <Route exact path={this.pathname + "/index.html"} component={function () {
+                                    return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
+                                        Dashboard is Under construction
+                                    </div>
+                                }} />
 
                                 <Route path={this.pathname + "/toOperational"} component={function () {
                                     // this results into unmounting of operational view if already in place

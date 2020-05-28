@@ -11,9 +11,11 @@ MO_HEALTH_URL = '{0}{1}/api/node/class/healthRecord.json?query-target-filter=eq(
 MO_OTHER_URL = '{0}{1}/api/node/mo/uni/epp/fv-[{2}].json?{3}'
 
 MO_INSTANCE_URL = '{0}{1}/api/node/class/{2}.json'
-EPG_HEALTH_URL = '{0}{1}/api/node/mo/uni/tn-{2}/ap-{3}/epg-{4}.json?rsp-subtree-include=health,no-scoped'
-FETCH_EP_DATA_URL = '{0}?query-target-filter=wcard(fvIp.dn,"{1}/")'
-FETCH_EPG_DATA_URL = '{0}?query-target-filter=wcard(fvCEp.dn,"tn-{1}/")&query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsToVm,fvRsCEpToPathEp,fvIp,fvRsHyper'
+# EPG_HEALTH_URL = '{0}{1}/api/node/mo/uni/tn-{2}/ap-{3}/epg-{4}.json?rsp-subtree-include=health,no-scoped'
+FETCH_EP_DATA_URL = '{0}?query-target-filter=wcard(fvCEp.dn,"tn-{1}/")&query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsToVm,fvRsCEpToPathEp,fvIp,fvRsHyper'
+EPG_HEALTH_URL = '{0}{1}/api/node/mo/{2}.json?rsp-subtree-include=health,no-scoped'
+FETCH_EPG_DATA_URL = '{0}?query-target-filter=wcard(fvCEp.dn, "tn-{1}")'
+
 FETCH_BD_URL = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsBd'
 FETCH_VRF_URL = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsCtx'
 FETCH_CONTRACT_URL = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsCons,fvRsProv,fvRsConsIf,fvRsProtBy,fvRsConsIf'
