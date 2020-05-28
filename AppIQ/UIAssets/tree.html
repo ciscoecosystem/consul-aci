@@ -9,7 +9,7 @@
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
 
     <script type="text/javascript">
-
+  console.log("TREE LOcation ", window.location);
         window.addEventListener('message', function (e) {
             if (e.source === window.parent) {
                 var treeViewtokenObj = Ext.decode(e.data, true);
@@ -23,7 +23,7 @@
         });
 
     </script>
-
+      
     <div className="loading-box" id="loading-box" style="width: 100%; height:100%; background-color: #e0e0e0; line-height: 100%; text-align:center;">
         <div style="position: absolute;
         width: 200px;

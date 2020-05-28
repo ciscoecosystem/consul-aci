@@ -1,7 +1,11 @@
 import React, { Component } from 'react'
 import Header from './Header'
 import DataTable from "./DataTable"
+import DetailPanel from "./DetailPanel";
+import { ToastContainer, toast } from 'react-toastify';
 import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie } from "../../constants.js";
+import 'react-toastify/dist/ReactToastify.css';
+// import { dummyData } from "./dummyData.js";
 import './style.css'
 
 var params_tn;
@@ -26,13 +30,18 @@ class Container extends Component {
         this.getData = this.getData.bind(this);
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
+        this.notify = this.notify.bind(this);
+        this.setSummaryDetail = this.setSummaryDetail.bind(this);
+        this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
         params_tn = result['tn'];
 
         this.state = {
             "data": [],
             loading: true,
-            expanded: {}
+            expanded: {},
+            summaryPaneIsOpen: false,
+            summaryDetail: {}
         };
 
         this.handleBackClick = this.handleBackClick.bind(this);
@@ -45,6 +54,30 @@ class Container extends Component {
         this.fetchData();
     }
 
+    setSummaryIsOpen(summaryPaneIsOpen = false) {
+        this.setState({ summaryPaneIsOpen })
+    }
+
+    setSummaryDetail(summaryDetail) {
+        this.setState({
+            summaryDetail,
+            summaryPaneIsOpen: true
+        })
+
+    }
+
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ? toast.warn(message, {
+            position: toast.POSITION.TOP_CENTER
+        }) :
+            isSuccess ? toast.success(message, {
+                position: toast.POSITION.TOP_CENTER
+            }) :
+                toast.error(message, {
+                    position: toast.POSITION.TOP_CENTER
+                });
+    }
+
     getData() {
         /**
         * Use this.httpGet to get data from REST API
@@ -54,13 +87,13 @@ class Container extends Component {
         details_raw = "[]";
         try {
             let main_data_raw = this.httpGet(document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json", payload);
-            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.Details.details)
+            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.DetailsFlattened.details)
             let main_data_json = JSON.parse(main_data_raw);
 
             if ('errors' in main_data_json) {
                 // Error related to query
                 localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                window.location.href = "index.html?gqlerror=1";
+                // window.location.href = "index.html?gqlerror=1";
             }
             else {
                 if (rawJsonData.status_code != "200") {
@@ -71,13 +104,13 @@ class Container extends Component {
                         }]
                     }
                     localStorage.setItem('message', JSON.stringify(message.errors));
-                    window.location.href = "index.html?gqlerror=1";
+                    // window.location.href = "index.html?gqlerror=1";
                 }
                 else {
                     // Success
                     headerInstanceName = rawJsonData.agentIP; // CONSUL change :replacing instanceName with agent ip
                     this.setState({ loading: false })
-                    details_raw = JSON.parse(main_data_raw).data.Details.details;
+                    details_raw = JSON.parse(main_data_raw).data.DetailsFlattened.details;
                     this.setState({
                         "data": JSON.parse(details_raw).payload
                     });
@@ -94,7 +127,7 @@ class Container extends Component {
                 }
                 localStorage.setItem('message', JSON.stringify(message.errors));
             }
-            window.location.href = "index.html?gqlerror=1";
+            // window.location.href = "index.html?gqlerror=1";
         }
     }
 
@@ -105,12 +138,11 @@ class Container extends Component {
     * @return {string} The response received from portal
     */
     httpGet(theUrl, payload) {
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
         var xmlHttp = new XMLHttpRequest();
-
         xmlHttp.open("POST", theUrl, true); // false for synchronous request
         xmlHttp.setRequestHeader("Content-type", "application/json");
+        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
         xmlHttp.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
         xmlHttp.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
         xmlHttp.send(JSON.stringify(payload));
@@ -119,14 +151,13 @@ class Container extends Component {
 
     fetchData() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-
+        let thiss = this;
         let xhr = new XMLHttpRequest();
         try {
             xhr.open("POST", QUERY_URL, true);
-
             xhr.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
@@ -137,64 +168,50 @@ class Container extends Component {
                     if (xhr.status == 200) {
                         let json = JSON.parse(xhr.responseText);
 
-                        console.log(json);
+                        console.log("DETAILS REPOSNSE ", json);
                         if ("errors" in json) {
                             // Error related to query
-                            localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                            window.location.href = "index.html?gqlerror=1";
+                            thiss.notify("Could not Fetch. The query may be invalid.");
+                            // window.location.href = "index.html?gqlerror=1";
                         } else {
                             // Response successful
-                            let response = JSON.parse(json.data.Details.details)
+                            let response = JSON.parse(json.data.DetailsFlattened.details)
 
                             if (response.status_code != "200") {
                                 // Problem with backend fetching data
-                                const message = {
-                                    "errors": [{
-                                        "message": response.message
-                                    }]
+                                try {
+                                    thiss.notify(response.message)
+                                } catch (e) {
+                                    console.log("message error", e)
                                 }
-                                localStorage.setItem('message', JSON.stringify(message.errors));
-                                window.location.href = "index.html?gqlerror=1";
+                                // window.location.href = "index.html?gqlerror=1";
                             } else {
                                 // Success
                                 headerInstanceName = response.instanceName;
 
-                                this.setState({
+                                thiss.setState({
                                     "data": response.payload
                                 });
-                                this.setState({ loading: false })
                             }
+                            thiss.setState({ loading: false })
                         }
                     } else {
                         // Status code of XHR request not 200
-                        if (typeof message_set == 'undefined') {
-                            const message = {
-                                "errors": [{
-                                    "message": "Error while fetching data for details."
-                                }]
-                            }
-                            localStorage.setItem('message', JSON.stringify(message.errors));
-                        }
-                        window.location.href = "index.html?gqlerror=1";
+                        thiss.notify("Error while fetching data for details.");
+                        // window.location.href = "index.html?gqlerror=1";
                     }
                 }
             };
             xhr.send(JSON.stringify(payload));
         } catch (except) {
-            if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for details."
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
-            window.location.href = "index.html?gqlerror=1";
+            thiss.notify("Technical glitch.");
+            console.log("Error ", except);
+            // window.location.href = "index.html?gqlerror=1";
         }
     }
 
     handleBackClick() {
-        window.location.href = "index.html";
+        // window.location.href = "index.html";
     }
 
     CONSUL_setExpand(index) {
@@ -217,21 +234,41 @@ class Container extends Component {
     }
 
     render() {
-        console.log("[render] Container");
+        let { summaryPaneIsOpen, summaryDetail } = this.state;
+
+        console.log("[render] Container", this.state);
+
         let title = " | Details";
         let apptext = " " + result[PROFILE_NAME];
 
+        let properties = [{
+            label: "label", value: "val"
+        }, {
+            label: "label", value: "val"
+        }, {
+            label: "label", value: "val"
+        },]
+
         return (
             <div>
-                <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} />
-                <div className="scroll">
+                 <ToastContainer />
+                <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
+                    summaryDetail={summaryDetail}
+                    title={summaryDetail["ap"]}
+                    setSummaryIsOpen={this.setSummaryIsOpen}
+                />
+
+                {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
+                <div className="scroll" style={{ padding: "0px 14px" }}>
                     <DataTable
                         expanded={this.state.expanded}
                         setExpand={this.CONSUL_setExpand}
                         resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
+                        // data={dummyData}
                         data={this.state.data}
-                        onReload={this.reload}>
+                        onReload={this.reload}
+                        setSummaryDetail={this.setSummaryDetail}>
                     </DataTable>
                 </div>
             </div>
