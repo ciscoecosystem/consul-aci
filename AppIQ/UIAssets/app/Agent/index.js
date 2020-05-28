@@ -1,9 +1,9 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Screen, Table, Button, Input, Select, Icon, IconButton } from 'blueprint-react';
+import { Screen, Table, Button, Input, Select, Icon, IconButton, FilterableTable } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
-import { QUERY_URL, getCookie } from "../../constants.js"
+import { QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js"
 import "./index.css";
 
 // const dummylist = [
@@ -41,7 +41,7 @@ export default class Agent extends React.Component {
         console.log("Agent index props", props);
         this.state = {
             details: [],
-            readAgentLoading: true,
+            readAgentLoading: false,
             redirectToMain: false,
             addAgentModalIsOpen: false,
             loadingText: "Loading agents...",
@@ -74,6 +74,7 @@ export default class Agent extends React.Component {
     componentDidMount() {
         // let thiss = this;
         this.readAgents();
+        setInterval(() => this.readAgents(true), INTERVAL_API_CALL);
     }
 
     componentWillUnmount() {
@@ -84,17 +85,30 @@ export default class Agent extends React.Component {
         console.log("ERRROR :===>> ", error, info)
     }
 
-    setDetails(details){
+    setDetails(details) {
         this.setState({ details });
         this.props.updateDetails();
     }
 
-    readAgents(){
+    readAgents(isRepeatedCall = false) {
         let thiss = this;
-        this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
-            console.log("LOading----")
-            thiss.readAgentsCall();
-        })
+        console.log("readagent:= isrepeatcall ", isRepeatedCall);
+        if (isRepeatedCall === true) {
+            let { addAgentModalIsOpen, readAgentLoading } = this.state;
+
+            // if agent is being written or edit then dont read
+            if (addAgentModalIsOpen || readAgentLoading) {
+                console.log("Read agent abort");
+                return;
+            }
+            this.readAgentsCall();
+        } else {
+
+            this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
+                console.log("LOading----")
+                thiss.readAgentsCall();
+            })
+        }
     }
 
     actionEvent() {
@@ -207,7 +221,7 @@ export default class Agent extends React.Component {
                 else {
                     console.log("Not fetching");
                 }
-              
+
             }
             xhrCred.send(JSON.stringify(payload));
         }
@@ -328,25 +342,25 @@ export default class Agent extends React.Component {
                             //     }
 
                             // } else { // updated an agent
-                                if (resp.payload) {
+                            if (resp.payload) {
 
-                                    if (isNewAgentAdded) {
-                                        details.unshift(resp.payload);
-                                    } else {
-                                        details[editAgentIndex] = resp.payload;
-                                    }
-
-                                    thiss.setDetails(details);
-
-                                    // connection is not true
-                                    if (resp.payload.status !== true && resp.message) {
-                                        thiss.notify(resp.message, false, true)
-                                        // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
-                                    }
+                                if (isNewAgentAdded) {
+                                    details.unshift(resp.payload);
                                 } else {
-                                    // thiss.abortUpdateAgentAction();
-                                    thiss.notify("Some technical glitch!");
+                                    details[editAgentIndex] = resp.payload;
                                 }
+
+                                thiss.setDetails(details);
+
+                                // connection is not true
+                                if (resp.payload.status !== true && resp.message) {
+                                    thiss.notify(resp.message, false, true)
+                                    // thiss.notify("Connection could not be established for "+ resp.payload.ip +":" + resp.payload.port, false, true)
+                                }
+                            } else {
+                                // thiss.abortUpdateAgentAction();
+                                thiss.notify("Some technical glitch!");
+                            }
                             // }
 
                         }
@@ -373,17 +387,17 @@ export default class Agent extends React.Component {
                             //     }
 
                             // } else { // updated an agent
-                                if (resp.payload) {
-                                    if (isNewAgentAdded){
-                                        details.unshift(resp.payload);
-                                    } else {
-                                        details[editAgentIndex] = resp.payload;
-                                    }
-
-                                    thiss.setDetails(details);
+                            if (resp.payload) {
+                                if (isNewAgentAdded) {
+                                    details.unshift(resp.payload);
                                 } else {
-                                    thiss.notify("Some technical glitch!");
+                                    details[editAgentIndex] = resp.payload;
                                 }
+
+                                thiss.setDetails(details);
+                            } else {
+                                thiss.notify("Some technical glitch!");
+                            }
                             // }
 
                         }
@@ -490,7 +504,7 @@ export default class Agent extends React.Component {
                 }
                 else {
                     // thiss.notify("Error while reaching the container.")
-                }     
+                }
             }
             xhr.send(JSON.stringify(payload));
         }
@@ -563,7 +577,7 @@ export default class Agent extends React.Component {
                 return <div>
                     <span className={`health-bullet ${status ? 'healthy' : 'dead'}`}></span>
                     <span className='health-status'>
-                        {status ? "Active" : "Inactive"}
+                        {status ? "Connected" : "Disconnected"}
                     </span>
                 </div>
             }
@@ -667,14 +681,7 @@ export default class Agent extends React.Component {
                             </div>
                             <div className="panel-body ">
 
-                                {/* <FilterableTable key={"agentTable"}
-                                    loading={this.state.readAgentLoading}
-                                    className="-striped -highlight"
-                                    noDataText="No Agent Found."
-                                    data={this.state.details}
-                                    columns={tableColumns} /> */}
-
-                                <Table key={"agentTable"}
+                                <FilterableTable key={"agentTable"}
                                     loading={this.state.readAgentLoading}
                                     loadingText={this.state.loadingText}
                                     className="-striped -highlight"
@@ -682,6 +689,15 @@ export default class Agent extends React.Component {
                                     data={this.state.details}
                                     columns={tableColumns}
                                 />
+
+                                {/* <Table key={"agentTable"}
+                                    loading={this.state.readAgentLoading}
+                                    loadingText={this.state.loadingText}
+                                    className="-striped -highlight"
+                                    noDataText="No Agent Found."
+                                    data={this.state.details}
+                                    columns={tableColumns}
+                                /> */}
                             </div>
                         </div>
 
