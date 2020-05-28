@@ -7,6 +7,7 @@ date >> /home/app/log/app.log
 # pip install gunicorn >> /home/app/log/app.log
 cd /home/app/src/Service
 pip install gunicorn-19.9.0-py2.py3-none-any.whl
+pip install futures-2.2.0-py2.py3-none-any.whl
 gunicorn -b "0.0.0.0:80" -t 300 -w 4 app:app >> /home/app/log/app.log 2>> /home/app/log/app.log
 
 
