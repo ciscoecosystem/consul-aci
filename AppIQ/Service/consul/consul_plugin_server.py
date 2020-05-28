@@ -85,17 +85,22 @@ def mapping(tenant, datacenter):
         ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
         parsed_eps = []
         for ep in ep_data:
+            cep_ip = int(ep[12])
+            if cep_ip == 1:
+                cep_ip = True
+            else:
+                cep_ip = False
             parsed_eps.append(
                 {
                     'dn': ep[3],
                     'IP': ep[1],
                     'tenant': ep[2],
-                    'cep_ip': ep[12],
+                    'cep_ip': cep_ip,
                 }
             )
 
         # Get consul data
-        consul_data = get_consul_data() # db_obj.join(datacenter=True)
+        consul_data = get_consul_data(datacenter) # db_obj.join(datacenter=True)
         ip_list = []
         for node in consul_data:
             ip_list += node.get('node_ips', [])
@@ -1310,8 +1315,8 @@ def details_flattened(tenant, datacenter):
                     all_datacenter_mapping = json.loads(file_data)
                     aci_consul_mappings = all_datacenter_mapping.get(datacenter)
 
-        apic_data = get_apic_data()
-        consul_data = get_consul_data()
+        apic_data = get_apic_data(tenant)
+        consul_data = get_consul_data(datacenter)
         merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
@@ -1404,7 +1409,7 @@ def post_tenant(tn):
         return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
 
 
-def get_consul_data():
+def get_consul_data(datacenter):
     consul_data = []
     services = []
     node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
@@ -1412,6 +1417,8 @@ def get_consul_data():
     node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
     service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
     for service in service_data:
+        if service[9] != datacenter:
+            continue
         service_dict = {
             'service_id': service[0],
             'node_id': service[1],
@@ -1447,6 +1454,8 @@ def get_consul_data():
         services.append(service_dict)
 
     for node in node_data:
+        if node[3] != datacenter:
+            continue
         node_dict = {
             'node_id': node[0],
             'node_name': node[1],
@@ -1482,11 +1491,13 @@ def get_consul_data():
     return consul_data
 
 
-def get_apic_data():
+def get_apic_data(tenant):
     apic_data = []
     ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
     epg_data = list(db_obj.select_from_table(db_obj.EPG_TABLE_NAME))
     for ep in ep_data:
+        if ep[2] != tenant:
+            continue
         for epg in epg_data:
             ep_dn = '/'.join(ep[3].split('/')[:4])
             if ep_dn == epg[0]:
