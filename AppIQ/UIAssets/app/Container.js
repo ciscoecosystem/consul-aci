@@ -150,18 +150,19 @@ class OperationalViewComponent extends React.Component {
 
 
 function MappingViewComponent(props) {
-    // let { pathname, search } = props.location;
-    // let toLocation = pathname + search;
+    let { search } = window.location;
+    let pathname = props.pathname;
+
+    let paramsObject = getParamObject(window.location); // query string as object
+    let dcName = paramsObject[PROFILE_NAME];
+
+    let toLocation = pathname + "/mapping.html" + search;
     // console.log("View tree view ", props.location)
     return (<div>
-        Mapping under construction
-        {/* <Iframe url={toLocation}
-                width="450px"
-                height="80vh"
-                id="myId"
-                className="myClassname"
-                display="initial"
-                position="relative" styles={{ height: "max-content" }} /> */}
+        <div className="page-container-header ">
+            <h4>Mapping | <span className="dc-title"> {dcName.toUpperCase()}  </span> </h4>
+        </div>
+        <FrameComponent toLocation={toLocation} />
     </div>)
 }
 
