@@ -86,6 +86,10 @@ export default class Agent extends React.Component {
         console.log("ERRROR :===>> ", error, info)
     }
 
+    refreshField() {
+        this.setState({ ...defaultFieldState })
+    }
+
     setDetails(details) {
         this.setState({ details });
         this.props.updateDetails();
