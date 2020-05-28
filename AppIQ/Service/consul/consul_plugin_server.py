@@ -94,13 +94,16 @@ def mapping(tenant, datacenter):
                 }
             )
 
-        # GEt consul data
-        consul_data = db_obj.join(datacenter=True) # consul_obj.get_consul_data()
+        # Get consul data
+        consul_data = get_consul_data() # db_obj.join(datacenter=True)
         ip_list = []
         for node in consul_data:
             ip_list += node.get('node_ips', [])
             # For fetching ips of services.
-            ip_list.append(node.get('service_ip'))
+            for service in node.get('node_services', []):
+                # check ip is not empty string
+                if service.get('service_ip', ''):
+                    ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(
             list(set(ip_list)), parsed_eps)  # TODO: handle empty response
@@ -150,7 +153,7 @@ def mapping(tenant, datacenter):
             mapping_dict['source_cluster'].append(new_object)
 
         return json.dumps({
-            "agentIP": agent.get('ip'),  # TODO: what to return here
+            "agentIP": ' ',  # TODO: what to return here
             "payload": mapping_dict,
             "status_code": "200",
             "message": "OK"
@@ -397,7 +400,7 @@ def change_key(services):
             final_list.append({
                 'service': service.get('service_name'),
                 'serviceInstance': service.get('service_id'),
-                'port': service.get('service_port'),
+                'Port': service.get('service_port'),
                 'serviceTags': service.get('service_tags'),
                 'serviceKind': service.get('service_kind'),
                 'serviceChecks': service.get('service_checks'),
@@ -1306,17 +1309,13 @@ def details_flattened(tenant, datacenter):
                 if file_data:
                     all_datacenter_mapping = json.loads(file_data)
                     aci_consul_mappings = all_datacenter_mapping.get(datacenter)
-        aci_obj = aci_utils.ACI_Utils()
-        aci_data = aci_obj.main(tenant)
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
-        consul_data = consul_obj.get_consul_data()
 
-        merged_data = consul_merge.merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings)
+        apic_data = get_apic_data()
+        consul_data = get_consul_data()
+        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
-            epg_health = aci_obj.get_epg_health(str(tenant), str(each['AppProfile']), str(each['EPG']))
             ep = {
                     'interface': each.get('Interfaces'),
                     'endPointName': each.get('VM-Name'),
@@ -1329,7 +1328,7 @@ def details_flattened(tenant, datacenter):
                     'bd': each.get('BD'),
                     'ap': each.get('AppProfile'),
                     'epgName': each.get('EPG'),
-                    'epgHealth': epg_health,
+                    'epgHealth': int(each.get('epg_health')),
                     'consulNode': each.get('node_name'),
                     'nodeChecks': each.get('node_check'),
                 }
@@ -1344,7 +1343,7 @@ def details_flattened(tenant, datacenter):
 
         # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
         return json.dumps({
-            "agentIP": agent.get('ip'),
+            "agentIP": ' ', # send ip if needed
             "payload": details_list,
             "status_code": "200",
             "message": "OK"
@@ -1403,3 +1402,111 @@ def post_tenant(tn):
     except Exception as e:
         logger.exception('Error in post tenant: ' + str(e))
         return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
+
+
+def get_consul_data():
+    consul_data = []
+    services = []
+    node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+    service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
+    node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+    service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+    for service in service_data:
+        service_dict = {
+            'service_id': service[0],
+            'node_id': service[1],
+            'service_name': service[2],
+            'service_ip': service[3],
+            'service_port': service[4],
+            'service_address': service[5],
+            'service_tags': service[6],
+            'service_kind': service[7],
+            'service_namespace': service[8],
+            'service_checks': {}
+        }
+        for check in service_checks_data:
+            if check[1] == service[0]:
+                status = check[7]
+                check_dict = service_dict['service_checks']
+                if 'passing' == status.lower():
+                    if check_dict.get('passing'):
+                        check_dict['passing'] += 1
+                    else:
+                        check_dict['passing'] = 1
+                elif 'warning' == status.lower():
+                    if check_dict.get('warning'):
+                        check_dict['warning'] += 1
+                    else:
+                        check_dict['warning'] = 1
+                else:
+                    if check_dict.get('failing'):
+                        check_dict['failing'] += 1
+                    else:
+                        check_dict['failing'] = 1
+                service_dict['service_checks']  = check_dict
+        services.append(service_dict)
+
+    for node in node_data:
+        node_dict = {
+            'node_id': node[0],
+            'node_name': node[1],
+            'node_ips': node[2],
+            'node_check': {},
+            'node_services': []
+            }
+        for check in node_checks_data:
+            if check[1] == node[0]:
+                status = check[8]
+                check_dict = node_dict['node_check']
+                if 'passing' == status.lower():
+                    if check_dict.get('passing'):
+                        check_dict['passing'] += 1
+                    else:
+                        check_dict['passing'] = 1
+                elif 'warning' == status.lower():
+                    if check_dict.get('warning'):
+                        check_dict['warning'] += 1
+                    else:
+                        check_dict['warning'] = 1
+                else:
+                    if check_dict.get('failing'):
+                        check_dict['failing'] += 1
+                    else:
+                        check_dict['failing'] = 1
+                node_dict['node_check'] = check_dict
+        for service in services:
+            if service['node_id'] == node[0]:
+                node_dict['node_services'].append(service)
+        consul_data.append(node_dict)
+
+    return consul_data
+
+
+def get_apic_data():
+    apic_data = []
+    ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+    epg_data = list(db_obj.select_from_table(db_obj.EPG_TABLE_NAME))
+    for ep in ep_data:
+        for epg in epg_data:
+            ep_dn = '/'.join(ep[3].split('/')[:4])
+            if ep_dn == epg[0]:
+                apic_data.append({
+                    "AppProfile": epg[7],
+                    'EPG': epg[2],
+                    'CEP-Mac': ep[0],
+                    'IP': ep[1],
+                    'Interfaces': ep[5],
+                    'VM-Name': ep[4],
+                    'BD': epg[3],
+                    'VMM-Domain': ep[6],
+                    'Contracts': epg[4],
+                    'VRF': epg[5],
+                    'dn': ep_dn,
+                    'controllerName': ep[7],
+                    'hostingServerName': ep[11],
+                    'learningSource': ep[8],
+                    'epg_health': epg[6]
+                })
+                break
+
+    return apic_data
