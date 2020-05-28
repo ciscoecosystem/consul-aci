@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie } from "../../constants.js";
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
 
 // import { dummyData } from "./dummyData.js";
 import './style.css'
@@ -26,9 +26,10 @@ class Container extends Component {
     constructor(props) {
         super(props);
 
-        this.getData = this.getData.bind(this);
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
+        this.fetchDataCall = this.fetchDataCall.bind(this);
+        // this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
 
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
@@ -37,7 +38,7 @@ class Container extends Component {
 
         this.state = {
             "data": [],
-            loading: true,
+            loading: false,
             expanded: {},
             summaryPaneIsOpen: false,
             summaryDetail: {}
@@ -47,7 +48,7 @@ class Container extends Component {
         this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
         this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
 
-        setInterval(this.reload, 30000);
+        setInterval(() => this.fetchData(true), INTERVAL_API_CALL);
     }
     componentDidMount() {
         this.fetchData();
@@ -65,79 +66,27 @@ class Container extends Component {
 
     }
 
-    getData() {
-        /**
-        * Use this.httpGet to get data from REST API
-        */
-        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
+    fetchData(dontLoad = false) {
+        let { loading } = this.state;
+        if (loading === true) return;
 
-        details_raw = "[]";
-        try {
-            let main_data_raw = this.httpGet(document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json", payload);
-            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.DetailsFlattened.details)
-            let main_data_json = JSON.parse(main_data_raw);
-
-            if ('errors' in main_data_json) {
-                // Error related to query
-                localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                // window.location.href = "index.html?gqlerror=1";
-            }
-            else {
-                if (rawJsonData.status_code != "200") {
-                    // Problem with backend fetching data
-                    const message = {
-                        "errors": [{
-                            "message": rawJsonData.message
-                        }]
-                    }
-                    localStorage.setItem('message', JSON.stringify(message.errors));
-                    // window.location.href = "index.html?gqlerror=1";
-                }
-                else {
-                    // Success
-                    headerInstanceName = rawJsonData.agentIP; // CONSUL change :replacing instanceName with agent ip
-                    this.setState({ loading: false })
-                    details_raw = JSON.parse(main_data_raw).data.DetailsFlattened.details;
-                    this.setState({
-                        "data": JSON.parse(details_raw).payload
-                    });
-                }
-            }
-        }
-        catch (e) {
-            // Problem fetching data
-            if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for details."
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
-            // window.location.href = "index.html?gqlerror=1";
-        }
+        this.setState({ loading: !dontLoad }, () => {
+            this.fetchDataCall();
+            // this.staticFetchDataCall();
+        })
     }
 
+    // staticFetchDataCall() {
+    //     setTimeout(() => {
+    //         console.log("Got data");
+    //         this.setState({
+    //             data: dummyData,
+    //             loading: false
+    //         })
+    //     }, 2000)
+    // }
 
-    /**
-    * @param {string} theUrl The URL of the REST API
-    *
-    * @return {string} The response received from portal
-    */
-    httpGet(theUrl, payload) {
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-        var xmlHttp = new XMLHttpRequest();
-
-        xmlHttp.open("POST", theUrl, true); // false for synchronous request
-        xmlHttp.setRequestHeader("Content-type", "application/json");
-        xmlHttp.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-        xmlHttp.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-        xmlHttp.send(JSON.stringify(payload));
-        return xmlHttp.responseText;
-    }
-
-    fetchData() {
+    fetchDataCall() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
         window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
         window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
@@ -237,6 +186,7 @@ class Container extends Component {
     }
 
     render() {
+        console.log("Render container ");
         let { summaryPaneIsOpen, summaryDetail } = this.state;
 
         console.log("[render] Container", this.state);
@@ -256,7 +206,7 @@ class Container extends Component {
             <div>
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
-                    title={summaryDetail["ap"]}
+                    title={summaryDetail["endPointName"]}
                     setSummaryIsOpen={this.setSummaryIsOpen}
                 />
 
@@ -267,7 +217,6 @@ class Container extends Component {
                         setExpand={this.CONSUL_setExpand}
                         resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
-                        // data={dummyData}
                         data={this.state.data}
                         onReload={this.reload}
                         setSummaryDetail={this.setSummaryDetail}>

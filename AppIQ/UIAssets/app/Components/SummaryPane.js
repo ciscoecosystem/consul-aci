@@ -15,7 +15,7 @@ class SummaryPane extends React.Component {
             <div className="summary-pane-header">
 
               <div class="summary-pane-title-value">
-                <div class="title">Application Profile</div>
+                <div class="title">{this.props.subTitle}</div>
                 <div class="value">{this.props.title}</div>
               </div>
 
