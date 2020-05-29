@@ -125,7 +125,9 @@ export default class CONSUL_Container extends React.Component {
         super(props);
         console.log("cONSUL container; props", this.props); //datacenterName & tenantName
 
+        this.xhrMapping = new XMLHttpRequest();
         this.getStaticData = this.getStaticData.bind(this);
+        this.fetchMappingData = this.fetchMappingData.bind(this);
         this.handleSwitchChange = this.handleSwitchChange.bind(this);
         this.saveMapping = this.saveMapping.bind(this);
 
@@ -139,24 +141,93 @@ export default class CONSUL_Container extends React.Component {
     }
 
     componentDidMount() {
-        this.getStaticData();
+        // this.getStaticData();
+        this.fetchMappingData();
     }
 
-    saveMapping(){
+    saveMapping() {
         let thiss = this;
-        this.setState({loading: true, loadingText:"Saving..."}, function() {
+        this.setState({ loading: true, loadingText: "Saving..." }, function () {
 
-            setTimeout(() => {
-                thiss.setState({
-                    loading: false
-                })
-                toast.success("Saved successfully", {
-                    position: toast.POSITION.TOP_CENTER
-                });
-                thiss.props.onClose(); // close the mapping screen on successfull save
+            // setTimeout(() => {
+            //     thiss.setState({
+            //         loading: false
+            //     })
+            //     toast.success("Saved successfully", {
+            //         position: toast.POSITION.TOP_CENTER
+            //     });
+            //     thiss.props.onClose(); // close the mapping screen on successfull save
 
-            }, 2000);
+            // }, 2000);
 
+            try {
+                let xhrMapping = thiss.xhrMapping;
+
+                let mappingList = JSON.stringify(thiss.state.mappingData);
+                let payload = { query: 'query{SaveMapping(datacenter:"' + thiss.props.datacenterName + '",tn:"' + thiss.props.tenantName + '",data:"' + mappingList.replace(/"/g, '\'') + '"){savemapping}}' }
+
+                xhrMapping.open("POST", QUERY_URL, true);
+                xhrMapping.setRequestHeader("Content-type", "application/json");
+                window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+                window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+                xhrMapping.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+                xhrMapping.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+                xhrMapping.onreadystatechange = function () {
+                    if (xhrMapping.readyState == 4 && xhrMapping.status == 200) {
+
+                        let json = JSON.parse(xhrMapping.responseText);
+                        console.log("save mapping response ", json);
+
+                        if ('errors' in json) {
+                            toast.error("Could not Fetch. The query may be invalid.", {
+                                position: toast.POSITION.TOP_CENTER
+                            });
+                        }
+                        else if ('savemapping' in json.data.SaveMapping) {
+                            let resp = JSON.parse(json.data.SaveMapping.savemapping);
+                            console.log("save mapping ", resp);
+
+                            if (resp.status_code == 200) {
+                                toast.success("Saved successfully", {
+                                    position: toast.POSITION.TOP_CENTER
+                                });
+                                thiss.props.onClose(); // close the mapping screen on successfull save
+                            }
+                            else if (resp.status_code == 300) {
+                                try {
+                                    toast.error(resp.message, {
+                                        position: toast.POSITION.TOP_CENTER
+                                    });
+                                } catch (e) {
+                                    console.log("message error", e)
+                                }
+                            }
+                            else {
+                                console.log("ERROR Revert changes----");
+                                console.error("Invalid status code");
+                            }
+                        }
+                        else {
+                            toast.error("Something went wrong!", {
+                                position: toast.POSITION.TOP_CENTER
+                            });
+                            console.error("mappingsave: response structure invalid")
+                        }
+
+                        thiss.setState({
+                            loading: false
+                        })
+                    }
+                    else {
+                        console.log("ERROR Revert changes----");
+                    }
+                }
+                xhrMapping.send(JSON.stringify(payload));
+            }
+            catch (e) {
+                console.error("Error api savemapping", e);
+            }
         })
     }
 
@@ -176,10 +247,71 @@ export default class CONSUL_Container extends React.Component {
         }, 2000)
     }
 
+    fetchMappingData() {
+        let thiss = this;
+        let { tenantName, datacenterName } = this.props;
+        let payload = { query: 'query{Mapping(tn:"' + tenantName + '",datacenter:"' + datacenterName + '"){mappings}}' }
+
+        let xhrMapping = this.xhrMapping;
+        try {
+            xhrMapping.open("POST", QUERY_URL, true);
+            xhrMapping.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            xhrMapping.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrMapping.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            xhrMapping.onreadystatechange = function () {
+                console.log("chr== state ", xhrMapping.readyState);
+
+                if (xhrMapping.readyState == 4 && xhrMapping.status == 200) {
+                    let checkData = JSON.parse(xhrMapping.responseText);
+                    let mappingResonse = JSON.parse(checkData.data.Mapping.mappings);
+
+                    if (parseInt(mappingResonse.status_code) === 200) {
+
+                        if (!Array.isArray(mappingResonse.payload)) {
+                            toast.error("Payload format Invalid", {
+                                position: toast.POSITION.TOP_CENTER
+                            });
+                        } else {
+                            let totalEnabled = 0;
+                            thiss.setState({ mappingData: mappingResonse.payload })
+                            mappingResonse.payload.forEach(function (elem) {
+                                totalEnabled += elem.enabled ? 1 : 0;
+                            })
+                            thiss.setState({ totalEnabled });
+                        }
+
+                    } else if (parseInt(mappingResonse.status_code) === 300) {
+                        try {
+                            toast.error(mappingResonse.message, {
+                                position: toast.POSITION.TOP_CENTER
+                            });
+                        } catch (e) {
+                            console.log("message error", e)
+                        }
+                    } else {
+                        toast.error("Something went wrong", {
+                            position: toast.POSITION.TOP_CENTER
+                        });
+                    }
+                    thiss.setState({ loading: false });
+                }
+                else {
+                    console.log("Not fetching");
+                }
+
+            }
+            xhrMapping.send(JSON.stringify(payload));
+        }
+        catch (e) {
+            console.error('Error getting agents', e);
+        }
+    }
+
     handleSwitchChange(index) {
         // let data = this.state.mappingData;
         let { totalEnabled, mappingData } = this.state;
-        console.log("==> ", mappingData[index]);
 
         mappingData[index]["enabled"] = !mappingData[index]["enabled"];
         totalEnabled += mappingData[index]["enabled"] ? 1 : -1;
@@ -233,7 +365,7 @@ export default class CONSUL_Container extends React.Component {
                 let { enabled } = row.original;
                 return <div>
                     <Switch key={"clustr-" + row.index} checked={enabled}
-                    onChange={() => this.handleSwitchChange(row.index)} />
+                        onChange={() => this.handleSwitchChange(row.index)} />
                 </div>
             }
         }
