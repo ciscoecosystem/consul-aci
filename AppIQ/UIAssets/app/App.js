@@ -2,11 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Link } from 'react-router-dom';
 import { Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
+import Mapping from "./Mapping/Mapping.js";
 import Agent from "./Agent/index.js"
 import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
+
+const dummyItems = [{
+    'datacenter': 'dc1',
+    'status': true
+}, {
+    'datacenter': 'dc2',
+    'status': true
+}]
 
 function toOperationalRedirect(dc, tn) {
     return `/toOperational?${PROFILE_NAME}=` + encodeURIComponent(dc) + "&tn=" + encodeURIComponent(tn);
@@ -50,10 +59,12 @@ export default class App extends React.Component {
         this.readDatacenter = this.readDatacenter.bind(this);
         this.readDcCall = this.readDcCall.bind(this);
         this.postTenant = this.postTenant.bind(this);
-        this.handleAgent = this.handleAgent.bind(this)
+        this.handleAgent = this.handleAgent.bind(this);
+        this.handleMapping = this.handleMapping.bind(this)
         this.setSidebar = this.setSidebar.bind(this);
         this.state = {
             agentPopup: false,
+            mappingPopup: false,
             items: [
                 { label: "Agents", action: this.handleAgent },
                 { label: "Polling interval", action: function () { console.log("polling interval") } }
@@ -98,14 +109,14 @@ export default class App extends React.Component {
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
                 }
-            ],
-            readDatacenterLoading: true
+            ]
         }
     }
 
     componentDidMount() {
+        this.setSidebar(dummyItems);
         this.postTenant();
-        this.readDatacenter();
+        // this.readDatacenter();
     }
 
     readDatacenter() {
@@ -122,6 +133,7 @@ export default class App extends React.Component {
 
         // filter out and show 
         function datacenterSubitem(pageind) {
+            // let thiss= this;
             // if no datacenters
             if (details.length === 0) {
                 return ["No Datacenter found"].map(function (elem) {
@@ -147,16 +159,20 @@ export default class App extends React.Component {
                 return true;
             }).map(function (elem, ind) {
                 // let toLocation = (pageind === 1) ? treeRedirect(elem["datacenter"], thiss.tenantName) : mappingRedirect(elem["datacenter"], thiss.tenantName);
-                let toLocation = (pageind === 1) ? toOperationalRedirect(elem["datacenter"], thiss.tenantName) : ToMappingRedirect(elem["datacenter"], thiss.tenantName);
+                let toLocation = (pageind === 1) ? toOperationalRedirect(elem["datacenter"], thiss.tenantName) : null;
                 return {
                     id: 'dc1' + ind,
                     content: <li className={"sidebar__item dc-item"} >
-                        <Link to={thiss.pathname + toLocation}>
-                            {/* <a className="" aria-current="false" href="javascript:void(0)" onClick={() => window.location.href = toLocation}> */}
+                        {(pageind === 2) ? (
+                        <a className="" aria-current="false" href="javascript:void(0)" onClick={() => thiss.handleMapping(true) }>
                             <span className={`health-bullet ${elem.status ? 'healthy' : 'dead'}`}></span>
                             <span className="qtr-margin-left">{elem["datacenter"]}</span>
-                        </Link>
-                        {/* </a> */}
+                        </a>) : (
+                            <Link to={thiss.pathname + toLocation}>
+                                <span className={`health-bullet ${elem.status ? 'healthy' : 'dead'}`}></span>
+                                <span className="qtr-margin-left">{elem["datacenter"]}</span>
+                            </Link>) }
+                        
                     </li>,
                     title: elem["datacenter"]
                 }
@@ -181,7 +197,7 @@ export default class App extends React.Component {
         // this.setState({
         //     details
         // })
-        this.setSidebar(details);
+        this.setSidebar(dummyItems);
     }
 
     notify(message, isSuccess = false, isWarning = false) {
@@ -198,6 +214,10 @@ export default class App extends React.Component {
 
     handleAgent(agentPopup = true) {
         this.setState({ agentPopup })
+    }
+
+    handleMapping(mappingPopup = true) {
+        this.setState({ mappingPopup })
     }
 
     postTenant() {
@@ -270,7 +290,7 @@ export default class App extends React.Component {
                             console.log("message error", e)
                         }
                     }
-                    thiss.setState({ readDatacenterLoading: false });
+                    // thiss.setState({ readDatacenterLoading: false });
                 }
                 else {
                     console.log("Not fetching");
@@ -292,6 +312,7 @@ export default class App extends React.Component {
                 <div>
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
+                    {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
                     <Container items={this.state.items} sidebarItems={this.state.sidebarItems} />
                 </div >

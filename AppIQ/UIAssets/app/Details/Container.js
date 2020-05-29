@@ -5,7 +5,7 @@ import DetailPanel from "./DetailPanel";
 import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import { dummyData } from "./dummyData.js";
+import { dummyData } from "./dummyData.js";
 import './style.css'
 
 var params_tn;
@@ -30,7 +30,7 @@ class Container extends Component {
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
         this.fetchDataCall = this.fetchDataCall.bind(this);
-        // this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
+        this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
 
         this.notify = this.notify.bind(this);
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
@@ -73,8 +73,8 @@ class Container extends Component {
         if (loading === true) return;
 
         this.setState({ loading: !dontLoad }, () => {
-            this.fetchDataCall();
-            // this.staticFetchDataCall();
+            // this.fetchDataCall();
+            this.staticFetchDataCall();
         })
     }
 
@@ -90,15 +90,15 @@ class Container extends Component {
                 });
     }
 
-    // staticFetchDataCall() {
-    //     setTimeout(() => {
-    //         console.log("Got data");
-    //         this.setState({
-    //             data: dummyData,
-    //             loading: false
-    //         })
-    //     }, 2000)
-    // }
+    staticFetchDataCall() {
+        setTimeout(() => {
+            console.log("Got data");
+            this.setState({
+                data: dummyData,
+                loading: false
+            })
+        }, 2000)
+    }
 
     fetchDataCall() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
