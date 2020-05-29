@@ -117,7 +117,7 @@ export default class App extends React.Component {
     componentDidMount() {
         // this.setSidebar(dummyItems);
         this.postTenant();
-        this.readDatacenter();
+        // this.readDatacenter();
     }
 
     readDatacenter() {
@@ -134,6 +134,7 @@ export default class App extends React.Component {
 
         // filter out and show 
         function datacenterSubitem(pageind) {
+            // let thiss= this;
             // if no datacenters
             if (details.length === 0) {
                 return ["No Datacenter found"].map(function (elem) {
@@ -197,7 +198,7 @@ export default class App extends React.Component {
         // this.setState({
         //     details
         // })
-        this.setSidebar(details);
+        this.setSidebar(dummyItems);
     }
 
     notify(message, isSuccess = false, isWarning = false) {
@@ -290,7 +291,7 @@ export default class App extends React.Component {
                             console.log("message error", e)
                         }
                     }
-                    thiss.setState({ readDatacenterLoading: false });
+                    // thiss.setState({ readDatacenterLoading: false });
                 }
                 else {
                     console.log("Not fetching");
