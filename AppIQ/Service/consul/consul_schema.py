@@ -96,6 +96,18 @@ class DeleteCreds(graphene.ObjectType):
     message = graphene.String()
 
 
+class DetailsFlattened(graphene.ObjectType):
+     details = graphene.String()
+
+
+class GetDatacenters(graphene.ObjectType):
+    datacenters = graphene.String()
+
+
+class PostTenant(graphene.ObjectType):
+    tenant = graphene.String()
+
+
 class Query(graphene.ObjectType):
     """Query class which resolves all the incomming requests"""
     
@@ -178,6 +190,12 @@ class Query(graphene.ObjectType):
     UpdateCreds = graphene.Field(UpdateCreds, update_input=graphene.String())
 
     DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
+
+    DetailsFlattened = graphene.Field(DetailsFlattened, tn=graphene.String(), datacenter=graphene.String())
+
+    GetDatacenters = graphene.Field(GetDatacenters)
+
+    PostTenant = graphene.Field(PostTenant, tn=graphene.String())
 
 
     """All the resolve methods of class Query"""
@@ -307,6 +325,21 @@ class Query(graphene.ObjectType):
     def resolve_DeleteCreds(self, info, agent_data):
         DeleteCreds.message = app.delete_creds(agent_data)
         return DeleteCreds
+
+
+    def resolve_DetailsFlattened(self, info, tn, datacenter):
+         DetailsFlattened.details = app.details_flattened(tn, datacenter)
+         return DetailsFlattened
+
+
+    def resolve_GetDatacenters(self, info):
+        GetDatacenters.datacenters = app.get_datacenters()
+        return GetDatacenters
+
+
+    def resolve_PostTenant(self, info, tn):
+        PostTenant.tenant = app.post_tenant(tn)
+        return PostTenant
 
 
 schema = graphene.Schema(query=Query)

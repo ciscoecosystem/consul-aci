@@ -2,10 +2,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Appdynamics Login</title>
+    <title>Consul</title>
 </head>
 
-<body style="overflow: unset !important">
+<body >
     <script type="text/javascript" src="/extjs/ext-all-debug.js"></script>
     <script type="text/javascript">
         window.addEventListener('message', function (e) {
@@ -15,16 +15,13 @@
                     // Setting the cookie with the tokens received by the APIC
                     Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObjIndex.token);
                     Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObjIndex.urlToken);
-                    console.log('Tokens set Index')
+                    console.log('Tokens set App')
                 }
             }
         });
     </script>
-     <div style="text-align: center;">
-        <img src="hashicorp-consul.png" alt="Consul Logo" style="margin-top: 5%;margin-bottom: 2.5%;">
-    </div>
-    <div id="app" />
-    <script src="public/login.js" type="text/javascript"></script>
+    <div id="root"></div>
+    <script src="public/app.js" type="text/javascript"></script>
 </body>
 
 </html>

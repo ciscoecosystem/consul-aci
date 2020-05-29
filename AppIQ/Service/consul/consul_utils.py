@@ -9,7 +9,7 @@ import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
-class Cosnul(object):
+class Consul(object):
     """Consul class"""
 
     def __init__(self, agent_ip, port, token, protocol):
@@ -333,13 +333,12 @@ class Cosnul(object):
         """
 
         logger.info('Datacentres for agent: {}:{}'.format(self.agent_ip, self.port))
-        datacenter_name = ''
+        datacenter_name = '-'
         try:
             agent_resp = self.session.get(urls.CATALOG_DC.format(self.base_url))
             agent_resp = json.loads(agent_resp.content)
-            datacenter_name = agent_resp.get('Config', {}).get('Datacenter', '')
+            datacenter_name = agent_resp.get('Config', {}).get('Datacenter', '-')
             logger.debug('Datacenter API data: {}'.format(datacenter_name))
-
         except Exception as e:
             logger.exception("Error in Datacenter: {}".format(e))
         
