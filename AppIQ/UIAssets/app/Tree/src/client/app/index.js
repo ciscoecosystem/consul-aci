@@ -1,10 +1,11 @@
 import React from 'react';
 import { render } from 'react-dom';
+import { ToastContainer, toast } from 'react-toastify';
 import { Loader } from "blueprint-react"
 import TestComponent from './TestComponent.js';
-import Header from './Header.js'
+// import Header from './Header.js'
 import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie } from "../../../../../constants.js"
-
+import 'react-toastify/dist/ReactToastify.css';
 var key = 0;
 
 window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for operational
@@ -52,6 +53,7 @@ class App extends React.Component {
 
         this.reload = this.reload.bind(this);
         this.getData = this.getData.bind(this);
+        this.notify = this.notify.bind(this);
         // this.getStaticData = this.getStaticData.bind(this);
         this.toggleDetailsPane = this.toggleDetailsPane.bind(this);
         this.toggleeDetailsPage = this.toggleeDetailsPage.bind(this);
@@ -64,6 +66,7 @@ class App extends React.Component {
 
     componentDidMount() {
         this.getData();
+        // this.getStaticData();
         setInterval(this.getData, INTERVAL_API_CALL);
     }
 
@@ -73,7 +76,20 @@ class App extends React.Component {
         this.handleTransitionTree([400, -60], 1);
         this.setState({ initialTreeRender: 0 }, function () {
             this.getData(true);
+            // this.getStaticData(true);
         })
+    }
+
+    notify(message, isSuccess = false, isWarning = false) {
+        isWarning ? toast.warn(message, {
+            position: toast.POSITION.TOP_CENTER
+        }) :
+            isSuccess ? toast.success(message, {
+                position: toast.POSITION.TOP_CENTER
+            }) :
+                toast.error(message, {
+                    position: toast.POSITION.TOP_CENTER
+                });
     }
 
     toggleDetailsPane(nodeData = undefined) { // if no argument that means details pane to be closed
@@ -103,7 +119,7 @@ class App extends React.Component {
         })
     }
 
-    /** To run in local
+    /** To run in local 
     getStaticData(fullyReload = false) {
         let thiss = this;
         let { detailsPage, detailsPane, treeApiLoading } = this.state;
@@ -151,7 +167,7 @@ class App extends React.Component {
             console.log("Cannot fetch data to fetch Tree data.", except);
         }
     }
-    */
+*/
 
     getData(fullyReload = false) {
         let { detailsPage, detailsPane, treeApiLoading } = this.state;
@@ -191,21 +207,27 @@ class App extends React.Component {
                         let json = JSON.parse(xhr.responseText);
                         if ('errors' in json) {
                             // Error related to query
-                            localStorage.setItem('message', JSON.stringify(json.errors));
-                            window.location.href = "index.html?gqlerror=1";
+                            try {
+                            thiss.notify(JSON.stringify(json.errors));
+                            } catch(err){
+                                console.log("Error ", err);
+                            }
+                            // localStorage.setItem('message', JSON.stringify(json.errors));
+                            // window.location.href = "index.html?gqlerror=1";
                         }
                         else {
                             // Response successful
                             const response = JSON.parse(json.data.OperationalTree.response);
                             if (response.status_code != "200") {
                                 // Problem with backend fetching data
-                                const message = {
-                                    "errors": [{
-                                        "message": response.message
-                                    }]
-                                }
-                                localStorage.setItem('message', JSON.stringify(message.errors));
-                                window.location.href = "index.html?gqlerror=1";
+                                // const message = {
+                                //     "errors": [{
+                                //         "message": response.message
+                                //     }]
+                                // }
+                                thiss.notify(response.message);
+                                // localStorage.setItem('message', JSON.stringify(message.errors));
+                                // window.location.href = "index.html?gqlerror=1";
                             }
                             else {
                                 // Success
@@ -232,11 +254,11 @@ class App extends React.Component {
                     else {
                         // Status code of XHR request not 200
                         console.log("Cannot fetch data to fetch Tree data.");
-                        if (typeof message_set !== 'undefined') {
-                            const message = { "errors": [{ "message": "Error while fetching data for Tree. Status code" + xhr.status }] }
-                            localStorage.setItem('message', JSON.stringify(message.errors));
-                        }
-                        window.location.href = "index.html?gqlerror=1";
+                        // if (typeof message_set !== 'undefined') {
+                        //     const message = { "errors": [{ "message": "Error while fetching data for Tree. Status code" + xhr.status }] }
+                        //     localStorage.setItem('message', JSON.stringify(message.errors));
+                        // }
+                        // window.location.href = "index.html?gqlerror=1";
                     }
                 }
             }
@@ -245,16 +267,17 @@ class App extends React.Component {
         }
         catch (except) {
             console.error("Cannot fetch tree data", except)
-            if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for Tree"
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
+            thiss.notify("Something went wrong.");
+            // if (typeof message_set == 'undefined') {
+            //     const message = {
+            //         "errors": [{
+            //             "message": "Error while fetching data for Tree"
+            //         }]
+            //     }
+            //     localStorage.setItem('message', JSON.stringify(message.errors));
+            // }
             thiss.setState({ treeApiLoading: false })
-            window.location.href = "index.html?gqlerror=1";
+            // window.location.href = "index.html?gqlerror=1";
         }
         key = key + 1;
         return true;
@@ -268,7 +291,8 @@ class App extends React.Component {
 
         return (
             <div>
-                <Header text={title} applinktext={apptext} instanceName={headerInstanceName} />
+                <ToastContainer />
+                {/* <Header text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 {(treedata === undefined || treeApiLoading) ? <Loader> loading </Loader> : <TestComponent key={key}
                     detailsPage={this.state.detailsPage}
                     detailsPane={this.state.detailsPane}
