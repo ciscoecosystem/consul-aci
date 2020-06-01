@@ -55,12 +55,12 @@ export default class Container extends React.Component {
 
                             <Switch>
 
-                                <Route exact path={this.pathname + "/"} component={function () {
+                                {/* <Route exact path={this.pathname + "/"} component={function () {
                                     return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard Under construction
                                     </div>
-                                }} />
-                                <Route exact path={this.pathname + "/index.html"} component={function () {
+                                }} /> */}
+                                <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={function () {
                                     return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard is Under construction
                                     </div>
@@ -114,7 +114,7 @@ class OperationalViewComponent extends React.Component {
         this.handleIsListView = this.handleIsListView.bind(this);
         this.state = {
             isListView: true, // True signifies detailview and False for Treeview
-            treeViewLocation: pathname + "/treeno.html" + search,
+            treeViewLocation: pathname + "/tree.html" + search,
             detailViewLocation: pathname + "/details.html" + search,
         }
     }

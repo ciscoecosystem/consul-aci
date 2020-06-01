@@ -117,7 +117,7 @@ export default class App extends React.Component {
     componentDidMount() {
         // this.setSidebar(dummyItems);
         this.postTenant();
-        // this.readDatacenter();
+        this.readDatacenter();
     }
 
     readDatacenter() {
@@ -198,7 +198,7 @@ export default class App extends React.Component {
         // this.setState({
         //     details
         // })
-        this.setSidebar(dummyItems);
+        this.setSidebar(details);
     }
 
     notify(message, isSuccess = false, isWarning = false) {

@@ -357,7 +357,7 @@ export default class CONSUL_Container extends React.Component {
             accessor: 'tenant'
         },
         {
-            Header: 'Action',
+            Header: 'Map',
             accessor: 'enabled',
             filterable: false,
             Cell: row => {
