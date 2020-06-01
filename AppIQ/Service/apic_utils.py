@@ -619,3 +619,72 @@ class AciUtils(object):
             mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
 
         return (list(ip_set) + list(mac_set)), is_cep
+
+    @time_it
+    def get_ap_epg_faults(self, dn):
+        """
+        Get Faults from rest API.
+        """
+        faults_dict = None
+        try:
+            faults_list = self.get_mo_related_item(dn, urls.FAULTS_QUERY, "")
+            faults_dict = AciUtils.get_dict_records(faults_list, "faultRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Faults : {}".format(ex))
+        return faults_dict
+
+    @time_it
+    def get_ap_epg_events(self, dn):
+        """
+        Get Events from rest API.
+        """
+        events_dict = None
+        try:
+            events_list = self.get_mo_related_item(dn, urls.EVENTS_QUERY, "")
+            events_dict = self.get_dict_records(events_list, "eventRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Events : {}".format(ex))
+        return events_dict
+
+    @time_it
+    def get_ap_epg_audit_logs(self, dn):
+        """
+        Get Audit logs from rest API.
+        """
+        audit_logs_dict = None
+        try:
+            audit_logs_list = self.get_mo_related_item(dn, urls.AUDIT_LOGS_QUERY, "")
+            audit_logs_dict = self.get_dict_records(audit_logs_list, "auditLogRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Audit logs : " + str(ex))
+        return audit_logs_dict
+
+    def get_mo_related_item(self, mo_dn, item_query_string, item_type):
+        """
+        Common method to get MO related data based on item_type value
+        """
+        try:
+            if item_type == "":
+                url = urls.MO_URL.format(self.proto, self.apic_ip, mo_dn, item_query_string)
+            elif item_type == "other_url":
+                url = "{0}{1}{2}".format(self.proto, self.apic_ip, item_query_string)
+            elif item_type == "HealthRecords":
+                url = urls.MO_HEALTH_URL.format(self.proto, self.apic_ip, mo_dn)
+            elif item_type == "ifConnRecords":
+                url = urls.MO_OTHER_URL.format(self.proto, self.apic_ip, mo_dn, item_query_string)
+
+            item_list = []
+            response_json = self.aci_get(url)
+            if response_json and response_json.get("imdata"):
+                item_list = response_json.get("imdata")
+            return item_list
+        except Exception as ex:
+            logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
+            logger.exception('Epg Item Url : =>'.format(url))
+            return []
+    
+    @staticmethod
+    def get_dict_records(list_of_records, key):
+        records_dict = dict()
+        records_dict[key] = list_of_records
+        return records_dict
