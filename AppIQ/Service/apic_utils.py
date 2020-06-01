@@ -193,7 +193,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Parsing EP Data API call, Error: {}'.format(str(e)))
-            return None
+            return []
 
     def parse_and_return_ep_data(self, item):
         """Funtion to Parse data of EP
@@ -518,7 +518,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Contracts API call,  Error: {}'.format(str(e)))
-            return None
+            return {}
 
     def get_epg_health(self, dn):
         """Funtion to get health of EPG from dn
@@ -537,11 +537,11 @@ class AciUtils(object):
                 for key, value in each.iteritems():
                     if str(key) == 'healthInst':
                         return value['attributes']['cur']
-            return None
+            return ''
         except Exception as e:
             logger.exception(
                 'Exception in EPG health API call,  Error: {}'.format(str(e)))
-            return None
+            return ''
 
     def parse_epg_data(self, epg_resp):
         """Funtion to iterate over API response of EPG data

@@ -41,14 +41,13 @@ def set_polling_interval(interval):
 
     return "200", "Polling Interval Set!"
 
-
+@time_it
 def get_agent_list(data_center):
     """Returns list of all the agents
 
     TODO: should not be static, should be from Alchemy
     """
     try:
-        start_time = datetime.datetime.now()
         logger.info("Reading agent for datacenter " + str(data_center))
         file_exists = os.path.isfile(consul_credential_file_path)
         agent_list = []
@@ -67,16 +66,12 @@ def get_agent_list(data_center):
         logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(
             data_center, str(e)))
         return []
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("time for get agent list : " + str(end_time - start_time))
 
-
+@time_it
 def mapping(tenant, datacenter):
     """
     TODO: return valid dict
     """
-    start_time = datetime.datetime.now()
     try:
 
         mapping_dict = {"source_cluster": [], "target_cluster": []}
@@ -170,17 +165,13 @@ def mapping(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load mapping"
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for Mapping: " + str(end_time - start_time))
 
-
+@time_it
 def save_mapping(tenant, datacenter, mapped_data):
     """Save mapping to database.
 
     TODO: complete
     """
-    start_time = datetime.datetime.now()
     try:
         logger.info("Saving mappings for datacenter : " + str(datacenter))
         logger.debug("Mapped Data : " + mapped_data)
@@ -220,9 +211,6 @@ def save_mapping(tenant, datacenter, mapped_data):
         logger.exception(
             "Could not save mappings to the database. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for saveMapping: " + str(end_time - start_time))
 
 
 def parse_mapping_before_save(already_mapped_data, data_list):
@@ -243,7 +231,7 @@ def parse_mapping_before_save(already_mapped_data, data_list):
 
     return data_list
 
-
+@time_it
 def tree(tenant, datacenter):
     """Get correltated Tree view data.
 
@@ -256,7 +244,6 @@ def tree(tenant, datacenter):
     """
 
     logger.info("Tree view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
     try:
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
@@ -297,11 +284,8 @@ def tree(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the View."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.debug("Time for TREE: " + str(end_time - start_time))
 
-
+@time_it
 def details(tenant, datacenter):
     """Get correlated Details view data
 
@@ -314,7 +298,6 @@ def details(tenant, datacenter):
     """
 
     logger.info("Details view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
     try:
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
@@ -375,9 +358,6 @@ def details(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the Details."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.debug("Time for DETAILS: " + str(end_time - start_time))
 
 
 def get_mapping_dict_target_cluster(mapped_objects):
@@ -413,7 +393,7 @@ def change_key(services):
             })
     return final_list
 
-
+@time_it
 def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
 
@@ -427,7 +407,6 @@ def get_service_check(service_name, service_id, datacenter):
 
     logger.info("Service Check for service: {}, {}".format(
         service_name, service_id))
-    start_time = datetime.datetime.now()
     try:
         agent = get_agent_list(datacenter)[0]
         consul_obj = Consul(agent.get('ip'), agent.get(
@@ -448,12 +427,8 @@ def get_service_check(service_name, service_id, datacenter):
             "status_code": "300",
             "message": "Could not load service checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check: " +
-                    str(end_time - start_time))
 
-
+@time_it
 def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
 
@@ -466,7 +441,6 @@ def get_node_checks(node_name, datacenter):
     """
 
     logger.info("Node Check for node: {}".format(node_name))
-    start_time = datetime.datetime.now()
     try:
         agent = get_agent_list(datacenter)[0]
         consul_obj = Consul(agent.get('ip'), agent.get(
@@ -487,11 +461,8 @@ def get_node_checks(node_name, datacenter):
             "status_code": "300",
             "message": "Could not load node checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_health_check: " + str(end_time - start_time))
 
-
+@time_it
 def get_service_check_ep(service_list, datacenter):
     """Service checks with all detailed info of multiple service
 
@@ -504,7 +475,6 @@ def get_service_check_ep(service_list, datacenter):
     """
 
     logger.info("Service Checks for services: {}".format(service_list))
-    start_time = datetime.datetime.now()
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
@@ -532,12 +502,8 @@ def get_service_check_ep(service_list, datacenter):
             "status_code": "300",
             "message": "Could not load service checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " +
-                    str(end_time - start_time))
 
-
+@time_it
 def get_node_check_epg(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
 
@@ -550,7 +516,6 @@ def get_node_check_epg(node_list, datacenter):
     """
 
     logger.info("Node Checks for nodes: {}".format(node_list))
-    start_time = datetime.datetime.now()
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
@@ -574,12 +539,8 @@ def get_node_check_epg(node_list, datacenter):
             "status_code": "300",
             "message": "Could not load node checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " +
-                    str(end_time - start_time))
 
-
+@time_it
 def get_faults(dn):
     """
     Get List of Faults from APIC related to the given Modular object.
@@ -688,9 +649,8 @@ def get_audit_logs(dn):
             "payload": []
         })
 
-
+@time_it
 def get_children_ep_info(dn, mo_type, mac_list):
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
@@ -744,14 +704,10 @@ def get_children_ep_info(dn, mo_type, mac_list):
             "message": {'errors': str(e)},
             "payload": []
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_children_ep_info: " +
-                    str(end_time - start_time))
 
 
+@time_it
 def get_configured_access_policies(tn, ap, epg):
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
@@ -842,10 +798,6 @@ def get_configured_access_policies(tn, ap, epg):
             "message": {'errors': str(ex)},
             "payload": []
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_configured_access_policies: " +
-                    str(end_time - start_time))
 
 
 @time_it
@@ -880,13 +832,12 @@ def get_subnets(dn):
             "payload": []
         })
 
-
+@time_it
 def get_to_epg_traffic(epg_dn):
     """
     Gets the Traffic Details from the given EPG to other EPGs
     """
 
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
@@ -1018,27 +969,19 @@ def get_to_epg_traffic(epg_dn):
                 "message": {'errors': str(ex)},
                 "payload": []
             })
-        finally:
-            end_time = datetime.datetime.now()
-            logger.info("Time for get_to_epg_traffic: " +
-                        str(end_time - start_time))
     else:
         logger.error("Could not get Traffic Data related to EPG")
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_to_epg_traffic: " +
-                    str(end_time - start_time))
         return json.dumps({
             "status_code": "300",
             "message": "Exception while fetching Traffic Data related to EPG",
             "payload": []
         })
 
-
+@time_it
 def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
     """
     Returns the Cumulative Ingress and Egress packets information for the last 15 minutes
     """
-    start_time = datetime.datetime.now()
     cur_aggr_stats_query_url = "/api/node/mo/" + from_epg_dn + \
         "/to-[" + to_epg_dn + "]-subj-[" + subj_dn + "]-flt-" + \
         flt_name + "/CDactrlRuleHitAg15min.json"
@@ -1049,22 +992,15 @@ def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
         cur_ag_stat_attr = cur_aggr_stats_list[0]["actrlRuleHitAg15min"]["attributes"]
         ingr_pkts = cur_ag_stat_attr.get("ingrPktsCum")
         egr_pkts = cur_ag_stat_attr.get("egrPktsCum")
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_ingress_egress: " +
-                    str(end_time - start_time))
         return ingr_pkts, egr_pkts
     else:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_ingress_egress: " +
-                    str(end_time - start_time))
         return "0", "0"
 
-
+@time_it
 def get_filter_list(flt_dn, aci_util_obj):
     """
     Returns the list of filters for a given destination EPG
     """
-    start_time = datetime.datetime.now()
     flt_list = []
     flt_entry_query_string = "query-target=children&target-subtree-class=vzRFltE"
     flt_entries = aci_util_obj.get_mo_related_item(
@@ -1101,8 +1037,6 @@ def get_filter_list(flt_dn, aci_util_obj):
 
         flt_list.append(flt_str)
 
-    end_time = datetime.datetime.now()
-    logger.info("Time for get_filter_list: " + str(end_time - start_time))
     return flt_list
 
 
