@@ -700,16 +700,16 @@ export default class Agent extends React.Component {
                             </div>
                             <div className="panel-body ">
 
-                                <FilterableTable key={"agentTable"}
+                                {/* <FilterableTable key={"agentTable"}
                                     loading={this.state.readAgentLoading}
                                     loadingText={this.state.loadingText}
                                     className="-striped -highlight"
                                     noDataText="No Agent Found."
                                     data={this.state.details}
                                     columns={tableColumns}
-                                />
+                                /> */}
 
-                                {/* <Table key={"agentTable"}
+                                <Table key={"agentTable"}
                                     loading={this.state.readAgentLoading}
                                     loadingText={this.state.loadingText}
                                     className="-striped -highlight"
@@ -717,7 +717,7 @@ export default class Agent extends React.Component {
                                     // data={dummylist}
                                     data={this.state.details}
                                     columns={tableColumns}
-                                /> */}
+                                />
                             </div>
                         </div>
 

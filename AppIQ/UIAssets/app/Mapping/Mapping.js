@@ -22,7 +22,7 @@ class Mapping extends React.Component {
         return (
             <div>
                 <Screen id="agents" key="agents" className="modal-layer-1" hideFooter={true} title={"Mapping | " + this.props.mappingDcname} allowMinimize={false} onClose={this.closeAgent}>
-                    <CONSUL_Container tenantName={result['tn']} datacenterName={this.props.mappingDcname} onClose={this.closeAgent}/>
+                    <CONSUL_Container datacenterName={this.props.mappingDcname} tenantName={this.props.tenantName} onClose={this.closeAgent}/>
                 </Screen>
             </div>
         )

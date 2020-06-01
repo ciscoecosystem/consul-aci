@@ -1,11 +1,12 @@
 import React from 'react'
 import { Switch, Table, Button, Icon, FilterableTable } from 'blueprint-react';
 import { toast } from 'react-toastify';
-import { PROFILE_NAME, QUERY_URL, getCookie } from '../../constants.js';
+import { QUERY_URL, getCookie } from '../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import './consulmapping.css';
 // import './style.css'
 
+/*
 const dummyData = [{
     ip: "192.168.128.20", "ap": "AppD-AppProfile1",
     "vrf": "AppDynamics/AppD-VRF",
@@ -119,7 +120,7 @@ const dummyData = [{
     tenant: "tenant101", enabled: false, recommended: true
 }
 ]
-
+*/
 export default class CONSUL_Container extends React.Component {
     constructor(props) {
         super(props);

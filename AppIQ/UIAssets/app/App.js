@@ -313,7 +313,7 @@ export default class App extends React.Component {
                 <div>
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
-                    {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} />}
+                    {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
                     <Container items={this.state.items} sidebarItems={this.state.sidebarItems} />
                 </div >
