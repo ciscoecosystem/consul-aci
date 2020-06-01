@@ -776,29 +776,31 @@ def get_configured_access_policies(tn, ap, epg):
                     "/vmmp-")[1].split("/")[0]
             else:
                 logger.error("Attribute {} not found".format("domain"))
-                raise Exception("Attribute {} not found".format("domain"))
+                cap_vmm_prof = ''
+
             if re.search("/dom-", cap_attr["domain"]):
                 cap_domain_name = cap_attr["domain"].split("/dom-")[1]
             else:
                 logger.error("Attribute {} not found".format("domain"))
-                raise Exception("Attribute {} not found".format("domain"))
+                cap_domain_name = ''
+
             cap_dict["domain"] = cap_vmm_prof + "/" + cap_domain_name
             if re.search("/nprof-", cap_attr["nodeP"]):
                 cap_dict["switch_prof"] = cap_attr["nodeP"].split("/nprof-")[1]
             else:
                 logger.error("Attribute {} not found".format("nodeP"))
-                raise Exception("Attribute {} not found".format("nodeP"))
+
             if re.search("/attentp-", cap_attr["attEntityP"]):
                 cap_dict["aep"] = cap_attr["attEntityP"].split("/attentp-")[1]
             else:
                 logger.error("Attribute {} not found".format("attEntityP"))
-                raise Exception("Attribute {} not found".format("attEntityP"))
+
             if re.search("/accportprof-", cap_attr["accPortP"]):
                 cap_dict["iface_prof"] = cap_attr["accPortP"].split(
                     "/accportprof-")[1]
             else:
                 logger.error("Attribute {} not found".format("accPortP"))
-                raise Exception("Attribute {} not found".format("accPortP"))
+
             if re.search("/accportgrp-", cap_attr["accBndlGrp"]):
                 cap_dict["pc_vpc"] = cap_attr["accBndlGrp"].split(
                     "/accportgrp-")[1]
@@ -811,23 +813,22 @@ def get_configured_access_policies(tn, ap, epg):
                 cap_dict["pc_vpc"] = pc_pvc.groups()[0]
             else:
                 logger.error("Attribute {} not found".format("accBndlGrp"))
-                raise Exception("Attribute {} not found".format("accBndlGrp"))
+
             cap_dict["node"] = aci_util_obj.get_node_from_interface(
                 cap_attr["pathEp"])
             if not cap_dict["node"]:
                 logger.error("Attribute {} not found".format("node"))
-                raise Exception("attribute node not found")
+
             if re.search("/pathep-", cap_attr["pathEp"]):
                 cap_dict["path_ep"] = cap_attr["pathEp"].split(
                     "/pathep-")[1][1:-1]
             else:
                 logger.error("Attribute {} not found".format("pathEP"))
-                raise Exception("Attribute {} not found".format("pathEp"))
+
             if re.search("/from-", cap_attr["vLanPool"]):
                 cap_dict["vlan_pool"] = cap_attr["vLanPool"].split("/from-")[1]
             else:
                 logger.error("Attribute {} not found".format("vLanpool"))
-                raise Exception("Attribute {} not found".format("vLanpool"))
             cap_list.append(cap_dict)
 
         return json.dumps({
@@ -912,7 +913,7 @@ def get_to_epg_traffic(epg_dn):
                         tn = to_epg_dn.split("/tn-")[1].split("/")[0]
                     else:
                         logger.error("attribute 'tn' not found in epgDn")
-                        raise Exception("attribute 'tn' not found in epgDn")
+                        tn = ''
                     if re.search("/ap-", to_epg_dn):
                         ap = to_epg_dn.split("/ap-")[1].split("/")[0]
                     elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
@@ -920,7 +921,7 @@ def get_to_epg_traffic(epg_dn):
                         ap = re.split('\w+-(.*)', full_ap)[1]
                     else:
                         logger.error("attribute 'ap' not found in epgDn")
-                        raise Exception("attribute 'ap' not found in epgDn")
+                        ap = ''
                     if re.search("/epg-", to_epg_dn):
                         epg = to_epg_dn.split("/epg-")[1]
                     elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
@@ -928,7 +929,7 @@ def get_to_epg_traffic(epg_dn):
                         epg = re.split('\w+-(.*)', full_epg)[1]
                     else:
                         logger.error("attribute 'epg' not found in epgDn")
-                        raise Exception("attribute 'epg' not found in epgDn")
+                        epg = ''
                     parsed_to_epg_dn = tn + "/" + ap + "/" + epg
 
                     flt_attr_children = vz_to_epg_child["children"]
@@ -959,38 +960,35 @@ def get_to_epg_traffic(epg_dn):
                             flt_name = flt_attr_tdn.split("/fp-")[1]
                         else:
                             logger.error("filter not found")
-                            raise Exception("filter not found")
+                            flt_name = ''
                         flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
                         if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
                             subj_dn = flt_attr_subj_dn.split(
                                 "/rssubjFiltAtt-")[0]
                         else:
                             logger.error("filter attribute subject not found")
-                            raise Exception(
-                                "filter attribute subject not found")
+                            subj_dn = ''
                         if re.search("/tn-", flt_attr_subj_dn):
                             subj_tn = flt_attr_subj_dn.split(
                                 "/tn-")[1].split("/")[0]
                         else:
                             logger.error(
                                 "filter attribute subject dn not found")
-                            raise Exception(
-                                "filter attribute subject dn not found")
+                            subj_tn = ''
 
                         if re.search("/brc-", flt_attr_subj_dn):
                             subj_ctrlr = flt_attr_subj_dn.split(
                                 "/brc-")[1].split("/")[0]
                         else:
                             logger.error("filter attribute ctrlr not found")
-                            raise Exception("filter attribute ctrlr not found")
+                            subj_ctrlr = ''
                         if re.search("/subj-", flt_attr_subj_dn):
                             subj_name = flt_attr_subj_dn.split(
                                 "/subj-")[1].split("/")[0]
                         else:
                             logger.error(
                                 "filter attribute subj_name not found")
-                            raise Exception(
-                                "filter attribute subj_name not found")
+                            subj_name = ''
 
                         contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
                         flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
@@ -1126,7 +1124,6 @@ def get_all_interfaces(interfaces):
                                       [1][1:-1]+"(vmm)")
         else:
             logger.error("Incompetible format of Interfaces found")
-            raise Exception("Incompetible format of Interfaces found")
     return interface_list
 
 
