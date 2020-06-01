@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 
-import { Table, Button, Label, Icon } from "blueprint-react"
+import { Button, Label, Icon, FilterableTable } from "blueprint-react"
 import ToolBar from "./ToolBar"
 
 const successColor = "#6ebe4a";
@@ -31,13 +31,21 @@ export default class DataTable extends Component {
       {
         Header: "Service Tags",
         accessor: "serviceTags",
+        filterable: false,
         Cell: row => {
           return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
         }
       },
       {
         Header: "Service Checks",
+        accessor: "serviceChecksFilter",
+        show: false,
+        filterable: true
+      },
+      {
+        Header: "Service Checks",
         accessor: "serviceChecks",
+        filterable: false,
         width: 150,
         Cell: row => {
           return (<span>
@@ -130,8 +138,15 @@ export default class DataTable extends Component {
         accessor: "consulNode"
       },
       {
+        Header: "Node Checks",
+        accessor: "nodeChecksFilter",
+        show: false,
+        filterable: true
+      },
+      {
         Header: "Node checks",
         accessor: "nodeChecks",
+        filterable: false,
         width: 150,
         Cell: row => {
           return (<span>
@@ -143,8 +158,6 @@ export default class DataTable extends Component {
       },
       ...SERVICE_TABLE_HEADER
     ]
-
-   
 
     this.state = {
       row: this.props.data,
@@ -169,14 +182,18 @@ export default class DataTable extends Component {
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
-        <Table loading={this.state.loading}
+
+
+
+        <FilterableTable loading={this.state.loading}
           className="-striped -highlight"
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
           columns={this.state.columns}
           onPageChange={() => this.props.resetExpanded()}
           expanded={this.props.expanded}
-          onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)} 
+          onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
+          
           getTrProps={(state, rowInfo) => {
             if (rowInfo && rowInfo.row) {
               return {
@@ -185,11 +202,11 @@ export default class DataTable extends Component {
                   // console.log("Select row on click ", rowInfo );
                 }
               }
-            }else{
+            } else {
               return {}
             }
-          }} >
-        </Table>
+          }} />
+        {/* </FilterableTable> */}
       </div>
     )
   }

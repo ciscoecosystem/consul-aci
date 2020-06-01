@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Header from './Header'
+// import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
 import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
@@ -33,6 +33,7 @@ class Container extends Component {
         // this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
 
         this.notify = this.notify.bind(this);
+        this.setData = this.setData.bind(this);
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
@@ -68,6 +69,38 @@ class Container extends Component {
 
     }
 
+    setData(data) {
+        data = data.map(elem => {
+            let nodeChecksFilter = "";
+            let serviceChecksFilter = "";
+
+            if (elem.nodeChecks.passing && elem.nodeChecks.passing > 0){
+                nodeChecksFilter = "passing";
+            }
+            if (elem.nodeChecks.warning && elem.nodeChecks.warning > 0){
+                nodeChecksFilter += "warning";
+            }
+            if (elem.nodeChecks.failing && elem.nodeChecks.failing > 0){
+                nodeChecksFilter += "failing";
+            }
+
+            if (elem.serviceChecks.passing && elem.serviceChecks.passing > 0){
+                serviceChecksFilter = "passing";
+            }
+            if (elem.serviceChecks.warning && elem.serviceChecks.warning > 0){
+                serviceChecksFilter += "warning";
+            }
+            if (elem.serviceChecks.failing && elem.serviceChecks.failing > 0){
+                serviceChecksFilter += "failing";
+            }
+
+            return Object.assign({}, elem, { nodeChecksFilter, serviceChecksFilter });
+        })
+        console.log("Setdata adter adding filtercheck; ", data);
+
+        this.setState({ data })
+    }
+
     fetchData(dontLoad = false) {
         let { loading } = this.state;
         if (loading === true) return;
@@ -93,8 +126,8 @@ class Container extends Component {
     // staticFetchDataCall() {
     //     setTimeout(() => {
     //         console.log("Got data");
+    //         this.setData(dummyData);
     //         this.setState({
-    //             data: dummyData,
     //             loading: false
     //         })
     //     }, 2000)
@@ -140,9 +173,10 @@ class Container extends Component {
                                 // Success
                                 headerInstanceName = response.instanceName;
 
-                                thiss.setState({
-                                    "data": response.payload
-                                });
+                                thiss.setData(response.payload)
+                                // thiss.setState({
+                                //     "data": response.payload
+                                // });
                             }
                             thiss.setState({ loading: false })
                         }
@@ -190,20 +224,20 @@ class Container extends Component {
 
         console.log("[render] Container", this.state);
 
-        let title = " | Details";
-        let apptext = " " + result[PROFILE_NAME];
+        // let title = " | Details";
+        // let apptext = " " + result[PROFILE_NAME];
 
-        let properties = [{
-            label: "label", value: "val"
-        }, {
-            label: "label", value: "val"
-        }, {
-            label: "label", value: "val"
-        },]
+        // let properties = [{
+        //     label: "label", value: "val"
+        // }, {
+        //     label: "label", value: "val"
+        // }, {
+        //     label: "label", value: "val"
+        // },]
 
         return (
             <div>
-                 <ToastContainer />
+                <ToastContainer />
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
                     title={summaryDetail["endPointName"]}
