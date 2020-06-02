@@ -455,7 +455,7 @@ def get_node_checks(node_name, datacenter):
         })
 
 @time_it
-def get_service_check_ep(service_list, datacenter):
+def get_multi_service_check(service_list, datacenter):
     """Service checks with all detailed info of multiple service
 
     return: {
@@ -496,7 +496,7 @@ def get_service_check_ep(service_list, datacenter):
         })
 
 @time_it
-def get_node_check_epg(node_list, datacenter):
+def get_multi_node_check(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
 
     return: {
@@ -525,7 +525,7 @@ def get_node_check_epg(node_list, datacenter):
             "message": "OK"
         })
     except Exception as e:
-        logger.exception("Error in get_node_check_epg: " + str(e))
+        logger.exception("Error in get_multi_node_check: " + str(e))
         return json.dumps({
             "payload": [],
             "status_code": "300",
