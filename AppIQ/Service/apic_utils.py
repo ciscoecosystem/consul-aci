@@ -128,7 +128,7 @@ class AciUtils(object):
         """
         try:
             response = self.session.get(
-                url, cookies={'APIC-Cookie': self.apic_token}, verify=False)
+                url, cookies={'APIC-Cookie': self.apic_token}, timeout=90, verify=False)
             status_code = response.status_code
             if status_code == 200 or status_code == 201:
                 logger.info('API call success: ' + str(url))
