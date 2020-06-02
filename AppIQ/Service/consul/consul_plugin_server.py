@@ -41,14 +41,13 @@ def set_polling_interval(interval):
 
     return "200", "Polling Interval Set!"
 
-
+@time_it
 def get_agent_list(data_center):
     """Returns list of all the agents
 
     TODO: should not be static, should be from Alchemy
     """
     try:
-        start_time = datetime.datetime.now()
         logger.info("Reading agent for datacenter " + str(data_center))
         file_exists = os.path.isfile(consul_credential_file_path)
         agent_list = []
@@ -67,10 +66,6 @@ def get_agent_list(data_center):
         logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(
             data_center, str(e)))
         return []
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("time for get agent list : " + str(end_time - start_time))
-
 
 def get_new_mapping(tenant, datacenter):
     try:
@@ -177,7 +172,6 @@ def get_new_mapping(tenant, datacenter):
 def mapping(tenant, datacenter):
     """Returns mapping to UI and saves recommanded mapping to db"""
 
-    start_time = datetime.datetime.now()
     try:
         current_mapping = get_new_mapping(tenant, datacenter)
         
@@ -194,10 +188,6 @@ def mapping(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load mapping"
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for Mapping: " + str(end_time - start_time))
-
 
 @time_it
 def save_mapping(tenant, datacenter, mapped_data):
@@ -208,10 +198,6 @@ def save_mapping(tenant, datacenter, mapped_data):
         logger.debug("Mapped Data : " + mapped_data)
         mapped_data = mapped_data.replace("'", '"')
         mapped_data_dict = json.loads(mapped_data)
-
-        data_list = []
-        all_datacenter_mapping = {}
-        already_mapped_data = []
 
         for mapping in mapped_data_dict:
             db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
@@ -255,7 +241,7 @@ def parse_mapping_before_save(already_mapped_data, data_list):
 
     return data_list
 
-
+@time_it
 def tree(tenant, datacenter):
     """Get correltated Tree view data.
 
@@ -268,7 +254,6 @@ def tree(tenant, datacenter):
     """
 
     logger.info("Tree view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
     try:
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
@@ -309,11 +294,8 @@ def tree(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the View."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.debug("Time for TREE: " + str(end_time - start_time))
 
-
+@time_it
 def details(tenant, datacenter):
     """Get correlated Details view data
 
@@ -326,7 +308,6 @@ def details(tenant, datacenter):
     """
 
     logger.info("Details view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
     try:
         mapping(tenant, datacenter)
         all_datacenter_mapping = {}
@@ -387,9 +368,6 @@ def details(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the Details."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.debug("Time for DETAILS: " + str(end_time - start_time))
 
 
 def change_key(services):
@@ -407,7 +385,7 @@ def change_key(services):
             })
     return final_list
 
-
+@time_it
 def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
 
@@ -421,7 +399,6 @@ def get_service_check(service_name, service_id, datacenter):
 
     logger.info("Service Check for service: {}, {}".format(
         service_name, service_id))
-    start_time = datetime.datetime.now()
     try:
         agent = get_agent_list(datacenter)[0]
         consul_obj = Consul(agent.get('ip'), agent.get(
@@ -442,12 +419,8 @@ def get_service_check(service_name, service_id, datacenter):
             "status_code": "300",
             "message": "Could not load service checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check: " +
-                    str(end_time - start_time))
 
-
+@time_it
 def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
 
@@ -460,7 +433,6 @@ def get_node_checks(node_name, datacenter):
     """
 
     logger.info("Node Check for node: {}".format(node_name))
-    start_time = datetime.datetime.now()
     try:
         agent = get_agent_list(datacenter)[0]
         consul_obj = Consul(agent.get('ip'), agent.get(
@@ -481,12 +453,9 @@ def get_node_checks(node_name, datacenter):
             "status_code": "300",
             "message": "Could not load node checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_health_check: " + str(end_time - start_time))
 
-
-def get_service_check_ep(service_list, datacenter):
+@time_it
+def get_multi_service_check(service_list, datacenter):
     """Service checks with all detailed info of multiple service
 
     return: {
@@ -498,7 +467,6 @@ def get_service_check_ep(service_list, datacenter):
     """
 
     logger.info("Service Checks for services: {}".format(service_list))
-    start_time = datetime.datetime.now()
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
@@ -526,13 +494,9 @@ def get_service_check_ep(service_list, datacenter):
             "status_code": "300",
             "message": "Could not load service checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " +
-                    str(end_time - start_time))
 
-
-def get_node_check_epg(node_list, datacenter):
+@time_it
+def get_multi_node_check(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
 
     return: {
@@ -544,7 +508,6 @@ def get_node_check_epg(node_list, datacenter):
     """
 
     logger.info("Node Checks for nodes: {}".format(node_list))
-    start_time = datetime.datetime.now()
     response = []
     try:
         agent = get_agent_list(datacenter)[0]
@@ -562,18 +525,14 @@ def get_node_check_epg(node_list, datacenter):
             "message": "OK"
         })
     except Exception as e:
-        logger.exception("Error in get_node_check_epg: " + str(e))
+        logger.exception("Error in get_multi_node_check: " + str(e))
         return json.dumps({
             "payload": [],
             "status_code": "300",
             "message": "Could not load node checks."
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_service_check_ep: " +
-                    str(end_time - start_time))
 
-
+@time_it
 def get_faults(dn):
     """
     Get List of Faults from APIC related to the given Modular object.
@@ -682,9 +641,8 @@ def get_audit_logs(dn):
             "payload": []
         })
 
-
+@time_it
 def get_children_ep_info(dn, mo_type, mac_list):
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
@@ -738,14 +696,10 @@ def get_children_ep_info(dn, mo_type, mac_list):
             "message": {'errors': str(e)},
             "payload": []
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_children_ep_info: " +
-                    str(end_time - start_time))
 
 
+@time_it
 def get_configured_access_policies(tn, ap, epg):
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
@@ -770,29 +724,31 @@ def get_configured_access_policies(tn, ap, epg):
                     "/vmmp-")[1].split("/")[0]
             else:
                 logger.error("Attribute {} not found".format("domain"))
-                raise Exception("Attribute {} not found".format("domain"))
+                cap_vmm_prof = ''
+
             if re.search("/dom-", cap_attr["domain"]):
                 cap_domain_name = cap_attr["domain"].split("/dom-")[1]
             else:
                 logger.error("Attribute {} not found".format("domain"))
-                raise Exception("Attribute {} not found".format("domain"))
+                cap_domain_name = ''
+
             cap_dict["domain"] = cap_vmm_prof + "/" + cap_domain_name
             if re.search("/nprof-", cap_attr["nodeP"]):
                 cap_dict["switch_prof"] = cap_attr["nodeP"].split("/nprof-")[1]
             else:
                 logger.error("Attribute {} not found".format("nodeP"))
-                raise Exception("Attribute {} not found".format("nodeP"))
+
             if re.search("/attentp-", cap_attr["attEntityP"]):
                 cap_dict["aep"] = cap_attr["attEntityP"].split("/attentp-")[1]
             else:
                 logger.error("Attribute {} not found".format("attEntityP"))
-                raise Exception("Attribute {} not found".format("attEntityP"))
+
             if re.search("/accportprof-", cap_attr["accPortP"]):
                 cap_dict["iface_prof"] = cap_attr["accPortP"].split(
                     "/accportprof-")[1]
             else:
                 logger.error("Attribute {} not found".format("accPortP"))
-                raise Exception("Attribute {} not found".format("accPortP"))
+
             if re.search("/accportgrp-", cap_attr["accBndlGrp"]):
                 cap_dict["pc_vpc"] = cap_attr["accBndlGrp"].split(
                     "/accportgrp-")[1]
@@ -805,23 +761,22 @@ def get_configured_access_policies(tn, ap, epg):
                 cap_dict["pc_vpc"] = pc_pvc.groups()[0]
             else:
                 logger.error("Attribute {} not found".format("accBndlGrp"))
-                raise Exception("Attribute {} not found".format("accBndlGrp"))
+
             cap_dict["node"] = aci_util_obj.get_node_from_interface(
                 cap_attr["pathEp"])
             if not cap_dict["node"]:
                 logger.error("Attribute {} not found".format("node"))
-                raise Exception("attribute node not found")
+
             if re.search("/pathep-", cap_attr["pathEp"]):
                 cap_dict["path_ep"] = cap_attr["pathEp"].split(
                     "/pathep-")[1][1:-1]
             else:
                 logger.error("Attribute {} not found".format("pathEP"))
-                raise Exception("Attribute {} not found".format("pathEp"))
+
             if re.search("/from-", cap_attr["vLanPool"]):
                 cap_dict["vlan_pool"] = cap_attr["vLanPool"].split("/from-")[1]
             else:
                 logger.error("Attribute {} not found".format("vLanpool"))
-                raise Exception("Attribute {} not found".format("vLanpool"))
             cap_list.append(cap_dict)
 
         return json.dumps({
@@ -835,10 +790,6 @@ def get_configured_access_policies(tn, ap, epg):
             "message": {'errors': str(ex)},
             "payload": []
         })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_configured_access_policies: " +
-                    str(end_time - start_time))
 
 
 @time_it
@@ -873,13 +824,12 @@ def get_subnets(dn):
             "payload": []
         })
 
-
+@time_it
 def get_to_epg_traffic(epg_dn):
     """
     Gets the Traffic Details from the given EPG to other EPGs
     """
 
-    start_time = datetime.datetime.now()
     aci_util_obj = aci_utils.ACI_Utils()
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
@@ -906,7 +856,7 @@ def get_to_epg_traffic(epg_dn):
                         tn = to_epg_dn.split("/tn-")[1].split("/")[0]
                     else:
                         logger.error("attribute 'tn' not found in epgDn")
-                        raise Exception("attribute 'tn' not found in epgDn")
+                        tn = ''
                     if re.search("/ap-", to_epg_dn):
                         ap = to_epg_dn.split("/ap-")[1].split("/")[0]
                     elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
@@ -914,7 +864,7 @@ def get_to_epg_traffic(epg_dn):
                         ap = re.split('\w+-(.*)', full_ap)[1]
                     else:
                         logger.error("attribute 'ap' not found in epgDn")
-                        raise Exception("attribute 'ap' not found in epgDn")
+                        ap = ''
                     if re.search("/epg-", to_epg_dn):
                         epg = to_epg_dn.split("/epg-")[1]
                     elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
@@ -922,7 +872,7 @@ def get_to_epg_traffic(epg_dn):
                         epg = re.split('\w+-(.*)', full_epg)[1]
                     else:
                         logger.error("attribute 'epg' not found in epgDn")
-                        raise Exception("attribute 'epg' not found in epgDn")
+                        epg = ''
                     parsed_to_epg_dn = tn + "/" + ap + "/" + epg
 
                     flt_attr_children = vz_to_epg_child["children"]
@@ -953,38 +903,35 @@ def get_to_epg_traffic(epg_dn):
                             flt_name = flt_attr_tdn.split("/fp-")[1]
                         else:
                             logger.error("filter not found")
-                            raise Exception("filter not found")
+                            flt_name = ''
                         flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
                         if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
                             subj_dn = flt_attr_subj_dn.split(
                                 "/rssubjFiltAtt-")[0]
                         else:
                             logger.error("filter attribute subject not found")
-                            raise Exception(
-                                "filter attribute subject not found")
+                            subj_dn = ''
                         if re.search("/tn-", flt_attr_subj_dn):
                             subj_tn = flt_attr_subj_dn.split(
                                 "/tn-")[1].split("/")[0]
                         else:
                             logger.error(
                                 "filter attribute subject dn not found")
-                            raise Exception(
-                                "filter attribute subject dn not found")
+                            subj_tn = ''
 
                         if re.search("/brc-", flt_attr_subj_dn):
                             subj_ctrlr = flt_attr_subj_dn.split(
                                 "/brc-")[1].split("/")[0]
                         else:
                             logger.error("filter attribute ctrlr not found")
-                            raise Exception("filter attribute ctrlr not found")
+                            subj_ctrlr = ''
                         if re.search("/subj-", flt_attr_subj_dn):
                             subj_name = flt_attr_subj_dn.split(
                                 "/subj-")[1].split("/")[0]
                         else:
                             logger.error(
                                 "filter attribute subj_name not found")
-                            raise Exception(
-                                "filter attribute subj_name not found")
+                            subj_name = ''
 
                         contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
                         flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
@@ -1014,27 +961,19 @@ def get_to_epg_traffic(epg_dn):
                 "message": {'errors': str(ex)},
                 "payload": []
             })
-        finally:
-            end_time = datetime.datetime.now()
-            logger.info("Time for get_to_epg_traffic: " +
-                        str(end_time - start_time))
     else:
         logger.error("Could not get Traffic Data related to EPG")
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_to_epg_traffic: " +
-                    str(end_time - start_time))
         return json.dumps({
             "status_code": "300",
             "message": "Exception while fetching Traffic Data related to EPG",
             "payload": []
         })
 
-
+@time_it
 def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
     """
     Returns the Cumulative Ingress and Egress packets information for the last 15 minutes
     """
-    start_time = datetime.datetime.now()
     cur_aggr_stats_query_url = "/api/node/mo/" + from_epg_dn + \
         "/to-[" + to_epg_dn + "]-subj-[" + subj_dn + "]-flt-" + \
         flt_name + "/CDactrlRuleHitAg15min.json"
@@ -1045,22 +984,15 @@ def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
         cur_ag_stat_attr = cur_aggr_stats_list[0]["actrlRuleHitAg15min"]["attributes"]
         ingr_pkts = cur_ag_stat_attr.get("ingrPktsCum")
         egr_pkts = cur_ag_stat_attr.get("egrPktsCum")
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_ingress_egress: " +
-                    str(end_time - start_time))
         return ingr_pkts, egr_pkts
     else:
-        end_time = datetime.datetime.now()
-        logger.info("Time for get_ingress_egress: " +
-                    str(end_time - start_time))
         return "0", "0"
 
-
+@time_it
 def get_filter_list(flt_dn, aci_util_obj):
     """
     Returns the list of filters for a given destination EPG
     """
-    start_time = datetime.datetime.now()
     flt_list = []
     flt_entry_query_string = "query-target=children&target-subtree-class=vzRFltE"
     flt_entries = aci_util_obj.get_mo_related_item(
@@ -1097,8 +1029,6 @@ def get_filter_list(flt_dn, aci_util_obj):
 
         flt_list.append(flt_str)
 
-    end_time = datetime.datetime.now()
-    logger.info("Time for get_filter_list: " + str(end_time - start_time))
     return flt_list
 
 
@@ -1120,7 +1050,6 @@ def get_all_interfaces(interfaces):
                                       [1][1:-1]+"(vmm)")
         else:
             logger.error("Incompetible format of Interfaces found")
-            raise Exception("Incompetible format of Interfaces found")
     return interface_list
 
 
