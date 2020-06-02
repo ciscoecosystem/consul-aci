@@ -26,7 +26,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         logger.debug("ACI Data: {}".format(str(aci_data)))
         logger.debug("Mapping Data: {}".format(str(aci_consul_mappings)))
 
-        mappings = [node for node in aci_consul_mappings if node.get('disabled') == False]
+        mappings = [node for node in aci_consul_mappings if node.get('enabled') == True]
 
         for aci in aci_data:
             if aci['EPG'] not in total_epg_count.keys():
@@ -36,9 +36,9 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
             if aci_consul_mappings:
                 for each in mappings:
-                    mapping_key = 'ipaddress'
+                    mapping_key = 'ip'
                     aci_key = 'IP'
-                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['domainName'] == str(aci['dn']):
+                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['dn'] == str(aci['dn']):
                         logger.info('mapping: {}, aci: {}'.format(str(each), str(aci)))
                         # Service to CEp mapping
                         for node in consul_data:
@@ -70,7 +70,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     else:
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
-                        logger.info('Service to CEp mapped:' + str(merge_list))
+                        # logger.info('Service to CEp mapped:' + str(merge_list))
 
                         # node to EP mapping
                         mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('node_ips', [])]

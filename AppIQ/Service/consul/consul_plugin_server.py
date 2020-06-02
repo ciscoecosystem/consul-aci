@@ -67,15 +67,8 @@ def get_agent_list(data_center):
             data_center, str(e)))
         return []
 
-@time_it
-def mapping(tenant, datacenter):
-    """
-    TODO: return valid dict
-    """
+def get_new_mapping(tenant, datacenter):
     try:
-
-        mapping_dict = {"source_cluster": [], "target_cluster": []}
-
         # Get APIC data
         ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
         parsed_eps = []
@@ -89,13 +82,12 @@ def mapping(tenant, datacenter):
                 {
                     'dn': ep[3],
                     'IP': ep[1],
-                    'tenant': ep[2],
                     'cep_ip': cep_ip,
                 }
             )
 
         # Get consul data
-        consul_data = get_consul_data(datacenter) # db_obj.join(datacenter=True)
+        consul_data = get_consul_data(datacenter)
         ip_list = []
         for node in consul_data:
             ip_list += node.get('node_ips', [])
@@ -106,55 +98,86 @@ def mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommanded_eps(
-            list(set(ip_list)), parsed_eps)  # TODO: handle empty response
+            list(set(ip_list)), parsed_eps)
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
-            return json.dumps({
-                "agentIP": ' ',  # TODO: Is this required in UI, if no: change call, if yes return right val
-                "payload": mapping_dict,
-                "status_code": "200",
-                "message": "OK"
-            })
+            return []
 
-        current_mapping = get_mapping_dict_target_cluster(aci_consul_mappings)
-        all_datacenter_mapping = {}
-        already_mapped_data = []
+        current_mapping = []
+        for map_object in aci_consul_mappings:
+            for entry in map_object.get('domains'):
+                    logger.debug("Mapping found with ipaddress for "+str(map_object))
+                    current_mapping.append({
+                        'dn': entry.get('domainName'), 
+                        'ip': map_object.get('ipaddress'), 
+                        'recommended': entry.get('recommended'),
+                        'enabled': entry.get('recommended') # Initially only the recommended are true
+                    })
 
-        file_exists = os.path.isfile(mapppings_file_path)
-        if file_exists:
-            with open(mapppings_file_path, 'r') as fread:
-                file_data = fread.read()
-                if file_data:
-                    all_datacenter_mapping = json.loads(file_data)
-                    already_mapped_data = all_datacenter_mapping.get(
-                        datacenter)
+        apic_data = get_apic_data(tenant)
+        for maped_obj in current_mapping:
+            for ep in apic_data:
+                if ep.get('dn') == maped_obj.get('dn'):
+                    maped_obj.update({
+                        'vrf': ep.get('VRF'),
+                        'bd': ep.get('BD'),
+                        'ap': ep.get('AppProfile'),
+                        'tenant': tenant,
+                        'epg': ep.get('EPG')
+                    })
 
-            if already_mapped_data:
-                # current_mapping is new mapping between aci and consul
-                for new_map in current_mapping:
-                    # already_mapped_data is previously stored mapping by user
-                    for each_already_mapped in already_mapped_data:
-                        if each_already_mapped.get('ipaddress') == new_map.get('ipaddress') and each_already_mapped.get('domainName') == new_map.get('domainName'):
-                            # if node is already disabled then disable it from new mappings also
-                            if each_already_mapped.get('disabled') == True:
-                                new_map['disabled'] = True
-                            break
+        logger.info('New mapping: {}'.format(str(current_mapping)))
 
-        all_datacenter_mapping[datacenter] = current_mapping
+        already_mapped_data = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
 
-        with open(mapppings_file_path, 'w') as fwrite:
-            json.dump(all_datacenter_mapping, fwrite)
+        logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
+        logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
-        mapping_dict['target_cluster'] = [
-            node for node in current_mapping if node.get('disabled') == False]
+        # current_mapping is new mapping between aci and consul
+        # already_mapped_data is previously stored mapping by user
+        # if node is already disabled then disable it from new mappings also
+        for new_map in current_mapping:
+            for db_map in already_mapped_data:
+                if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn') and db_map[2] == datacenter:
+                    new_map['enabled'] = db_map[3] # replace the enabled value with the one in db
+                    break
 
-        for new_object in aci_consul_mappings:
-            mapping_dict['source_cluster'].append(new_object)
+            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
+                (
+                    new_map.get('ip'),
+                    new_map.get('dn'),
+                    datacenter,
+                    new_map.get('enabled'),
+                    new_map.get('ap'),
+                    new_map.get('bd'),
+                    new_map.get('epg'),
+                    new_map.get('vrf'),
+                    tenant
+                ),
+                {
+                    'ip': new_map.get('ip'),
+                    'dn': new_map.get('dn'),
+                    'datacenter': datacenter
+                })
 
+        return current_mapping
+
+    except Exception as e:
+        logger.exception("Could not load mapping, Error: {}".format(str(e)))
+        return [] # TODO: see if this can be un-empty list
+
+
+
+def mapping(tenant, datacenter):
+    """Returns mapping to UI and saves recommanded mapping to db"""
+
+    try:
+        current_mapping = get_new_mapping(tenant, datacenter)
+        
         return json.dumps({
             "agentIP": ' ',  # TODO: what to return here
-            "payload": mapping_dict,
+            "payload": current_mapping, # REturn current mapping
             "status_code": "200",
             "message": "OK"
         })
@@ -168,48 +191,35 @@ def mapping(tenant, datacenter):
 
 @time_it
 def save_mapping(tenant, datacenter, mapped_data):
-    """Save mapping to database.
+    """Save mapping to database"""
 
-    TODO: complete
-    """
     try:
         logger.info("Saving mappings for datacenter : " + str(datacenter))
         logger.debug("Mapped Data : " + mapped_data)
         mapped_data = mapped_data.replace("'", '"')
         mapped_data_dict = json.loads(mapped_data)
 
-        data_list = []
-        all_datacenter_mapping = {}
-        already_mapped_data = []
-
-        file_exists = os.path.isfile(mapppings_file_path)
-        if file_exists:
-            with open(mapppings_file_path, 'r') as fread:
-                file_data = fread.read()
-                if file_data:
-                    all_datacenter_mapping = json.loads(file_data)
-                    already_mapped_data = all_datacenter_mapping.get(
-                        datacenter)
-
         for mapping in mapped_data_dict:
-            if mapping.get('ipaddress') != "":
-                data_list.append({'ipaddress': mapping.get(
-                    'ipaddress'), 'domainName': mapping['domains'][0]['domainName'], 'disabled': False})
-
-        if not data_list:
-            all_datacenter_mapping.pop(datacenter)
-        else:
-            data_list = parse_mapping_before_save(
-                already_mapped_data, data_list)
-            all_datacenter_mapping[datacenter] = data_list
-
-        with open(mapppings_file_path, 'w') as fwrite:
-            json.dump(all_datacenter_mapping, fwrite)
+            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
+                (
+                    mapping.get('ip'),
+                    mapping.get('dn'),
+                    datacenter,
+                    mapping.get('enabled'),
+                    mapping.get('ap'),
+                    mapping.get('bd'),
+                    mapping.get('vrf'),
+                    tenant
+                ),
+                {
+                    'ip': mapping.get('ip'),
+                    'dn': mapping.get('dn'),
+                    'datacenter': datacenter
+                })
 
         return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
     except Exception as e:
-        logger.exception(
-            "Could not save mappings to the database. Error: "+str(e))
+        logger.exception("Could not save mappings to the database. Error: "+str(e))
         return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
 
 
@@ -358,24 +368,6 @@ def details(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the Details."
         })
-
-
-def get_mapping_dict_target_cluster(mapped_objects):
-    """
-    return mapping dict from recommended objects
-
-
-    TODO: this can be handled in tree and Details or get proper mapping from db
-    """
-    target = []
-    for map_object in mapped_objects:
-        for entry in map_object.get('domains'):
-            if entry.get('recommended') == True:
-                logger.debug(
-                    "Mapping found with ipaddress for "+str(map_object))
-                target.append({'domainName': entry.get(
-                    'domainName'), 'ipaddress': map_object.get('ipaddress'), 'disabled': False})
-    return target
 
 
 def change_key(services):
@@ -1235,16 +1227,7 @@ def details_flattened(tenant, datacenter):
     logger.info("Details view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
-        mapping(tenant, datacenter)
-        all_datacenter_mapping = {}
-
-        file_exists = os.path.isfile(mapppings_file_path)
-        if file_exists:
-            with open(mapppings_file_path, 'r') as fread:
-                file_data = fread.read()
-                if file_data:
-                    all_datacenter_mapping = json.loads(file_data)
-                    aci_consul_mappings = all_datacenter_mapping.get(datacenter)
+        aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
@@ -1329,9 +1312,9 @@ def get_datacenters():
 def post_tenant(tn):
     logger.info('Tenant received: {}'.format(str(tn)))
     try:
-        response = list(db_obj.select_from_table(db_obj.TENANT_NAME, {'tenant': tn}))
+        response = list(db_obj.select_from_table(db_obj.TENANT_TABLE_NAME, {'tenant': tn}))
         if not response:
-            response = db_obj.insert_into_table(db_obj.TENANT_NAME, [tn])
+            response = db_obj.insert_into_table(db_obj.TENANT_TABLE_NAME, [tn])
             if not response:
                 return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
         return json.dumps({'status_code': '200', 'message': 'OK'})
@@ -1433,7 +1416,7 @@ def get_apic_data(tenant):
             ep_dn = '/'.join(ep[3].split('/')[:4])
             if ep_dn == epg[0]:
                 apic_data.append({
-                    "AppProfile": epg[7],
+                    'AppProfile': epg[7],
                     'EPG': epg[2],
                     'CEP-Mac': ep[0],
                     'IP': ep[1],

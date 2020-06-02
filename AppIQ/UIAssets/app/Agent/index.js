@@ -1,9 +1,9 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Screen, Table, Button, Input, Select, Icon, IconButton } from 'blueprint-react';
+import { Screen, Table, Button, Input, Select, Icon, IconButton, FilterableTable } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
-import { QUERY_URL, getCookie } from "../../constants.js"
+import { QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js"
 import "./index.css";
 
 // const dummylist = [
@@ -55,7 +55,7 @@ export default class Agent extends React.Component {
         console.log("Agent index props", props);
         this.state = {
             details: [],
-            readAgentLoading: true,
+            readAgentLoading: false,
             redirectToMain: false,
             addAgentModalIsOpen: false,
             loadingText: "Loading agents...",
@@ -75,6 +75,7 @@ export default class Agent extends React.Component {
     componentDidMount() {
         // let thiss = this;
         this.readAgents();
+        setInterval(() => this.readAgents(true), INTERVAL_API_CALL);
     }
 
     componentWillUnmount() {
@@ -94,12 +95,25 @@ export default class Agent extends React.Component {
         this.props.updateDetails();
     }
 
-    readAgents() {
+    readAgents(isRepeatedCall = false) {
         let thiss = this;
-        this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
-            console.log("LOading----")
-            thiss.readAgentsCall();
-        })
+        console.log("readagent:= isrepeatcall ", isRepeatedCall);
+        if (isRepeatedCall === true) {
+            let { addAgentModalIsOpen, readAgentLoading } = this.state;
+
+            // if agent is being written or edit then dont read
+            if (addAgentModalIsOpen || readAgentLoading) {
+                console.log("Read agent abort");
+                return;
+            }
+            this.readAgentsCall();
+        } else {
+
+            this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
+                console.log("LOading----")
+                thiss.readAgentsCall();
+            })
+        }
     }
 
     actionEvent() {
@@ -579,7 +593,7 @@ export default class Agent extends React.Component {
                 return <div>
                     <span className={`health-bullet ${status ? 'healthy' : 'dead'}`}></span>
                     <span className='health-status'>
-                        {status ? "Active" : "Inactive"}
+                        {status ? "Connected" : "Disconnected"}
                     </span>
                 </div>
             }
@@ -688,10 +702,12 @@ export default class Agent extends React.Component {
 
                                 {/* <FilterableTable key={"agentTable"}
                                     loading={this.state.readAgentLoading}
+                                    loadingText={this.state.loadingText}
                                     className="-striped -highlight"
                                     noDataText="No Agent Found."
                                     data={this.state.details}
-                                    columns={tableColumns} /> */}
+                                    columns={tableColumns}
+                                /> */}
 
                                 <Table key={"agentTable"}
                                     loading={this.state.readAgentLoading}

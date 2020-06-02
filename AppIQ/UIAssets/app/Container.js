@@ -1,6 +1,6 @@
 import React from 'react';
-import { Route, Switch, Redirect } from 'react-router-dom';
-import { Sidebar, Dropdown, ButtonGroup, Icon } from 'blueprint-react';
+import { Route, Switch, Redirect} from 'react-router-dom';
+import { Sidebar, Dropdown, ButtonGroup, Icon, Screen } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
 import 'react-toastify/dist/ReactToastify.css';
@@ -55,12 +55,12 @@ export default class Container extends React.Component {
 
                             <Switch>
 
-                                <Route exact path={this.pathname + "/"} component={function () {
+                                {/* <Route exact path={this.pathname + "/"} component={function () {
                                     return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard Under construction
                                     </div>
-                                }} />
-                                   <Route exact path={this.pathname + "/index.html"} component={function () {
+                                }} /> */}
+                                <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={function () {
                                     return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard is Under construction
                                     </div>
@@ -70,18 +70,21 @@ export default class Container extends React.Component {
                                     // this results into unmounting of operational view if already in place
                                     return <Redirect to={thiss.pathname + "/operational" + window.location.search} />
                                 }} />
-                                <Route path={this.pathname + "/toMapping"} component={function () {
+                                {/* <Route path={this.pathname + "/toMapping"} component={function () {
                                     // this results into unmounting of operational view if already in place
-                                    return <Redirect to={thiss.pathname + "/mapping" + window.location.search} />
-                                }} />
+                                    return <Screen id="mapping" key="mapping" className="modal-layer-1" hideFooter={true} title={"Mapping"} allowMinimize={false} 
+                                            onClose={() => { 
+                                               
+                                                console.log("CLose hostory", history);
+                                                history.push("/");
+                                                 }}>
+                                        <App />
+                                    </Screen>
+                                }} /> */}
 
                                 <Route path={this.pathname + "/operational"} component={function () {
                                     return <OperationalViewComponent pathname={thiss.pathname} />
                                 }} />
-                                <Route path={this.pathname + "/mapping"} component={function () {
-                                    return <MappingViewComponent pathname={thiss.pathname} />
-                                }} />
-
                             </Switch>
 
                         </div>
@@ -111,7 +114,7 @@ class OperationalViewComponent extends React.Component {
         this.handleIsListView = this.handleIsListView.bind(this);
         this.state = {
             isListView: true, // True signifies detailview and False for Treeview
-            treeViewLocation: pathname + "/treeno.html" + search,
+            treeViewLocation: pathname + "/tree.html" + search,
             detailViewLocation: pathname + "/details.html" + search,
         }
     }
@@ -156,22 +159,24 @@ class OperationalViewComponent extends React.Component {
     }
 }
 
-
+/*
 function MappingViewComponent(props) {
-    // let { pathname, search } = props.location;
-    // let toLocation = pathname + search;
+    let { search } = window.location;
+    let pathname = props.pathname;
+
+    let paramsObject = getParamObject(window.location); // query string as object
+    let dcName = paramsObject[PROFILE_NAME];
+
+    let toLocation = pathname + "/mapping.html" + search;
     // console.log("View tree view ", props.location)
     return (<div>
-        Mapping under construction
-        {/* <Iframe url={toLocation}
-                width="450px"
-                height="80vh"
-                id="myId"
-                className="myClassname"
-                display="initial"
-                position="relative" styles={{ height: "max-content" }} /> */}
+        <div className="page-container-header ">
+            <h4>Mapping | <span className="dc-title"> {dcName.toUpperCase()}  </span> </h4>
+        </div>
+        <FrameComponent toLocation={toLocation} />
     </div>)
 }
+*/
 
 
 function FrameComponent(props) {
