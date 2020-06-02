@@ -399,7 +399,7 @@ def change_key(services):
             final_list.append({
                 'service': service.get('service_name'),
                 'serviceInstance': service.get('service_id'),
-                'Port': service.get('service_port'),
+                'port': service.get('service_port'),
                 'serviceTags': service.get('service_tags'),
                 'serviceKind': service.get('service_kind'),
                 'serviceChecks': service.get('service_checks'),
