@@ -55,9 +55,8 @@ export default function DetailPanel(props) {
     let { summaryPaneIsOpen, summaryDetail } = props;
     console.log("==> Detail pane mounted", summaryDetail);
 
-
-    let appProfileOrder = [{ name: "name", label: "Name" },
-    { name: "App-Health", label: "App-Health" }]
+    // { name: "App-Health", label: "App-Health" }
+    let appProfileOrder = [{ name: "name", label: "Name" }]
 
     // {name:"name", label:"Name"},
     let epgInfoOrder = [{ name: "name", label: "Name" },
@@ -80,6 +79,16 @@ export default function DetailPanel(props) {
     { name: "IP", label: "IP" }, { name: "Interfaces", label: "Interfaces" },
     { name: "VMM-Domain", label: "VMM-Domain" }]
 
+    let serviceInfoOrder = [
+        { name: "Service", label: "Service" },
+        { name: "Address", label: "Address" },
+        { name: "Service Instance", label: "Service Instance" },
+        { name: "Service Checks", label: "Service Checks" },
+        { name: "Namespace", label: "Namespace" },
+        { name: "Service Tags", label: "Service Tags" },
+        { name: "Service Kinds", label: "Service Kinds" },
+    ]
+
 
 
 
@@ -96,10 +105,15 @@ export default function DetailPanel(props) {
                     let { formattedData, totalCnt } = formateDataToChartData(showDetails[name])
                     detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                 }
-                else if (name === "serviceTags") {
-                    detailValue = showDetails[name].map(function (tags) {
-                        return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
-                    })
+                else if (name === "serviceTags" || name === "Service Tags") {
+                    if (!Array.isArray(showDetails[name])) {
+                        console.warn("Service Tags format invalid");
+                        detailValue = "-"
+                    } else {
+                        detailValue = showDetails[name].map(function (tags) {
+                            return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
+                        })
+                    }
                 } else if (name === "interface" || name === "Consumer" || name === "Provider") {
                     detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                         {showDetails[name].map(function (infcs) {
@@ -131,18 +145,17 @@ export default function DetailPanel(props) {
             case NODE_SERVICE_NAME:
                 return (
                     <React.Fragment>
-                        {CollapsePane(summaryDetail.name + " Information", [])}
-                        {CollapsePane("service info", [])}
+                        {CollapsePane(summaryDetail.name + " Information", serviceInfoOrder, summaryDetail.attributes)}
                     </React.Fragment>)
-   
+
             case NODE_EP_NAME:
                 if (summaryDetail.level === "grey") {
                     delete summaryDetail.attributes.name; // delete name as it does have any
                     return (
-                    <React.Fragment key="ep-ns">
-                        <PropertyItem propertyLabel={"EP Count"} propertyValue={Object.keys(summaryDetail.attributes).length} />
-                        <PropertyItem propertyLabel={"EP Information"} propertyValue={nonServiceEndPointEP(summaryDetail.attributes)} />
-                    </React.Fragment>) 
+                        <React.Fragment key="ep-ns">
+                            <PropertyItem propertyLabel={"EP Count"} propertyValue={Object.keys(summaryDetail.attributes).length} />
+                            <PropertyItem propertyLabel={"EP Information"} propertyValue={nonServiceEndPointEP(summaryDetail.attributes)} />
+                        </React.Fragment>)
                 } else {
                     return (
                         <React.Fragment key="ep">
@@ -151,7 +164,7 @@ export default function DetailPanel(props) {
                             {CollapsePane("Consul Services", consulServiceOrder, summaryDetail.attributes.Services_List)}
                         </React.Fragment>)
                 }
-            
+
 
             case NODE_EPG_NAME:
                 console.log("Epg info ", summaryDetail)
@@ -178,9 +191,9 @@ export default function DetailPanel(props) {
 
     let title = "";
     if (summaryDetail.name === "Service") {
-      title = summaryDetail.attributes['Service Instance']
+        title = summaryDetail.attributes['Service Instance']
     } else {
-      title = summaryDetail.sub_label || summaryDetail.label || "Non-service Endpoint";
+        title = summaryDetail.sub_label || summaryDetail.label || "Non-service Endpoint";
     }
 
     return (summaryPaneIsOpen) ? <SummaryPane
