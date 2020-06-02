@@ -270,26 +270,11 @@ def tree(tenant, datacenter):
     logger.info("Tree view for tenant: {}".format(tenant))
     start_time = datetime.datetime.now()
     try:
-        mapping(tenant, datacenter)
-        all_datacenter_mapping = {}
+        aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
-        file_exists = os.path.isfile(mapppings_file_path)
-        if file_exists:
-            with open(mapppings_file_path, 'r') as fread:
-                file_data = fread.read()
-                if file_data:
-                    all_datacenter_mapping = json.loads(file_data)
-                    aci_consul_mappings = all_datacenter_mapping.get(
-                        datacenter)
-        aci_obj = aci_utils.ACI_Utils()
-        aci_data = aci_obj.main(tenant)
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
-        consul_data = consul_obj.get_consul_data()
-
-        merged_data = consul_merge.merge_aci_consul(
-            tenant, aci_data, consul_data, aci_consul_mappings)
+        apic_data = get_apic_data(tenant)
+        consul_data = get_consul_data(datacenter)
+        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
@@ -297,7 +282,7 @@ def tree(tenant, datacenter):
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
-            "agentIP": agent.get('ip'),  # TODO: send valid ip
+            "agentIP": '',  # TODO: send valid ip
             "payload": response,
             "status_code": "200",
             "message": "OK"
