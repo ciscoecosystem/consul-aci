@@ -1,13 +1,13 @@
-@font-face {
+/* @font-face {
     font-family: 'Roboto:300';
     src: url('../../public/Roboto-Light.ttf') format('ttf');
 }
 
 * {
     font-family: 'Helvetica', 'sans-serif';
-    /* font-family: 'Roboto', sans-serif; */
-}
-
+    
+} 
+*/
 body{
     overflow: scroll !important;
 }

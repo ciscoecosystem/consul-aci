@@ -1,5 +1,6 @@
 import React from 'react'
 import Container from './Container'
+import CONSUL_Container from "./CONSUL_Container";
 
 class App extends React.Component {
   constructor(props) {
@@ -20,7 +21,8 @@ class App extends React.Component {
     let title = " | Consul Mapping ";
     return (
       <div>
-        <Container tenantName={result['tn']} applinktext={apptext} headertext={title} />
+        <CONSUL_Container tenantName={result['tn']}  />
+        {/* <Container tenantName={result['tn']} applinktext={apptext} headertext={title} /> */}
       </div>
     )
   }

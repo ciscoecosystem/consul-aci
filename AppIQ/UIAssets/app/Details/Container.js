@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import Header from './Header'
+// import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
 import { ToastContainer, toast } from 'react-toastify';
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie } from "../../constants.js";
 import 'react-toastify/dist/ReactToastify.css';
 // import { dummyData } from "./dummyData.js";
 import './style.css'
@@ -27,10 +27,13 @@ class Container extends Component {
     constructor(props) {
         super(props);
 
-        this.getData = this.getData.bind(this);
         this.reload = this.reload.bind(this);
         this.fetchData = this.fetchData.bind(this);
+        this.fetchDataCall = this.fetchDataCall.bind(this);
+        // this.staticFetchDataCall = this.staticFetchDataCall.bind(this);
+
         this.notify = this.notify.bind(this);
+        this.setData = this.setData.bind(this);
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
@@ -38,7 +41,7 @@ class Container extends Component {
 
         this.state = {
             "data": [],
-            loading: true,
+            loading: false,
             expanded: {},
             summaryPaneIsOpen: false,
             summaryDetail: {}
@@ -48,7 +51,7 @@ class Container extends Component {
         this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
         this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
 
-        setInterval(this.reload, 30000);
+        setInterval(() => this.fetchData(true), INTERVAL_API_CALL);
     }
     componentDidMount() {
         this.fetchData();
@@ -66,6 +69,48 @@ class Container extends Component {
 
     }
 
+    setData(data) {
+        data = data.map(elem => {
+            let nodeChecksFilter = "";
+            let serviceChecksFilter = "";
+
+            if (elem.nodeChecks.passing && elem.nodeChecks.passing > 0){
+                nodeChecksFilter = "passing";
+            }
+            if (elem.nodeChecks.warning && elem.nodeChecks.warning > 0){
+                nodeChecksFilter += "warning";
+            }
+            if (elem.nodeChecks.failing && elem.nodeChecks.failing > 0){
+                nodeChecksFilter += "failing";
+            }
+
+            if (elem.serviceChecks.passing && elem.serviceChecks.passing > 0){
+                serviceChecksFilter = "passing";
+            }
+            if (elem.serviceChecks.warning && elem.serviceChecks.warning > 0){
+                serviceChecksFilter += "warning";
+            }
+            if (elem.serviceChecks.failing && elem.serviceChecks.failing > 0){
+                serviceChecksFilter += "failing";
+            }
+
+            return Object.assign({}, elem, { nodeChecksFilter, serviceChecksFilter });
+        })
+        console.log("Setdata adter adding filtercheck; ", data);
+
+        this.setState({ data })
+    }
+
+    fetchData(dontLoad = false) {
+        let { loading } = this.state;
+        if (loading === true) return;
+
+        this.setState({ loading: !dontLoad }, () => {
+            this.fetchDataCall();
+            // this.staticFetchDataCall();
+        })
+    }
+
     notify(message, isSuccess = false, isWarning = false) {
         isWarning ? toast.warn(message, {
             position: toast.POSITION.TOP_CENTER
@@ -78,78 +123,17 @@ class Container extends Component {
                 });
     }
 
-    getData() {
-        /**
-        * Use this.httpGet to get data from REST API
-        */
-        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
+    // staticFetchDataCall() {
+    //     setTimeout(() => {
+    //         console.log("Got data");
+    //         this.setData(dummyData);
+    //         this.setState({
+    //             loading: false
+    //         })
+    //     }, 2000)
+    // }
 
-        details_raw = "[]";
-        try {
-            let main_data_raw = this.httpGet(document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json", payload);
-            let rawJsonData = JSON.parse(JSON.parse(main_data_raw).data.DetailsFlattened.details)
-            let main_data_json = JSON.parse(main_data_raw);
-
-            if ('errors' in main_data_json) {
-                // Error related to query
-                localStorage.setItem('message', JSON.stringify(main_data_json.errors));
-                // window.location.href = "index.html?gqlerror=1";
-            }
-            else {
-                if (rawJsonData.status_code != "200") {
-                    // Problem with backend fetching data
-                    const message = {
-                        "errors": [{
-                            "message": rawJsonData.message
-                        }]
-                    }
-                    localStorage.setItem('message', JSON.stringify(message.errors));
-                    // window.location.href = "index.html?gqlerror=1";
-                }
-                else {
-                    // Success
-                    headerInstanceName = rawJsonData.agentIP; // CONSUL change :replacing instanceName with agent ip
-                    this.setState({ loading: false })
-                    details_raw = JSON.parse(main_data_raw).data.DetailsFlattened.details;
-                    this.setState({
-                        "data": JSON.parse(details_raw).payload
-                    });
-                }
-            }
-        }
-        catch (e) {
-            // Problem fetching data
-            if (typeof message_set == 'undefined') {
-                const message = {
-                    "errors": [{
-                        "message": "Error while fetching data for details."
-                    }]
-                }
-                localStorage.setItem('message', JSON.stringify(message.errors));
-            }
-            // window.location.href = "index.html?gqlerror=1";
-        }
-    }
-
-
-    /**
-    * @param {string} theUrl The URL of the REST API
-    *
-    * @return {string} The response received from portal
-    */
-    httpGet(theUrl, payload) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", theUrl, true); // false for synchronous request
-        xmlHttp.setRequestHeader("Content-type", "application/json");
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-        xmlHttp.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-        xmlHttp.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
-        xmlHttp.send(JSON.stringify(payload));
-        return xmlHttp.responseText;
-    }
-
-    fetchData() {
+    fetchDataCall() {
         let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
         let thiss = this;
         let xhr = new XMLHttpRequest();
@@ -189,9 +173,10 @@ class Container extends Component {
                                 // Success
                                 headerInstanceName = response.instanceName;
 
-                                thiss.setState({
-                                    "data": response.payload
-                                });
+                                thiss.setData(response.payload)
+                                // thiss.setState({
+                                //     "data": response.payload
+                                // });
                             }
                             thiss.setState({ loading: false })
                         }
@@ -234,27 +219,28 @@ class Container extends Component {
     }
 
     render() {
+        console.log("Render container ");
         let { summaryPaneIsOpen, summaryDetail } = this.state;
 
         console.log("[render] Container", this.state);
 
-        let title = " | Details";
-        let apptext = " " + result[PROFILE_NAME];
+        // let title = " | Details";
+        // let apptext = " " + result[PROFILE_NAME];
 
-        let properties = [{
-            label: "label", value: "val"
-        }, {
-            label: "label", value: "val"
-        }, {
-            label: "label", value: "val"
-        },]
+        // let properties = [{
+        //     label: "label", value: "val"
+        // }, {
+        //     label: "label", value: "val"
+        // }, {
+        //     label: "label", value: "val"
+        // },]
 
         return (
             <div>
-                 <ToastContainer />
+                <ToastContainer />
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
-                    title={summaryDetail["ap"]}
+                    title={summaryDetail["endPointName"]}
                     setSummaryIsOpen={this.setSummaryIsOpen}
                 />
 
@@ -265,7 +251,6 @@ class Container extends Component {
                         setExpand={this.CONSUL_setExpand}
                         resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
-                        // data={dummyData}
                         data={this.state.data}
                         onReload={this.reload}
                         setSummaryDetail={this.setSummaryDetail}>

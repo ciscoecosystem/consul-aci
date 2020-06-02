@@ -33,13 +33,15 @@ function formateDataToChartData(data) {
 
 
 export default function DetailPanel(props) {
+    console.log("==> Detail pane mounted");
     let { summaryPaneIsOpen, summaryDetail, title } = props;
-    let apicInfoOrder = [{ name: "endPointName", label: "endPoint" },
+    let apicInfoOrder = [
     { name: "interface", label: "Interface" },
     { name: "ip", label: "ip" },
     { name: "mac", label: "mac" },
     { name: "epgName", label: "epg" },
     { name: "epgHealth", label: "epg Health" },
+    { name: "ap", label: "Application profile" },
     { name: "vrf", label: "Vrf" },
     { name: "bd", label: "bd" },
     { name: "learningSource", label: "Learning Source" },
@@ -90,6 +92,7 @@ export default function DetailPanel(props) {
 
 
     return (summaryPaneIsOpen) ? <SummaryPane
+        subTitle={"ENDPOINT"}
         title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
         openScreen={function () { console.log("Here open detail it") }}
