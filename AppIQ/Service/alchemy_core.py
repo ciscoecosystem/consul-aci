@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime
+from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
 from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.sql import select, text
@@ -28,7 +28,7 @@ class Database:
     SERVICECHECKSAUDIT_TABLE_NAME = 'servicechecksaudit'
     EPAUDIT_TABLE_NAME = 'epaudit'
     EPGAUDIT_TABLE_NAME = 'epgaudit'
-    TENANT_NAME = 'tenant'
+    TENANT_TABLE_NAME = 'tenant'
 
     SCHEMA_DICT = {
         LOGIN_TABLE_NAME: [
@@ -46,8 +46,13 @@ class Database:
         MAPPING_TABLE_NAME: [
             'ip',
             'dn',
-            'disabled',
             'datacenter',
+            'enabled',
+            'ap',
+            'bd',
+            'epg',
+            'vrf',
+            'tenant',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -141,7 +146,7 @@ class Database:
             'last_checked_ts'
         ],
 
-        TENANT_NAME: [
+        TENANT_TABLE_NAME: [
             'tenant',
             'created_ts'
         ]
@@ -176,8 +181,13 @@ class Database:
             self.MAPPING_TABLE_NAME, metadata,
             Column('ip', String, primary_key=True),
             Column('dn', String, primary_key=True),
-            Column('disabled', String),
-            Column('datacenter', String),
+            Column('datacenter', String, primary_key=True),
+            Column('enabled', Boolean),
+            Column('ap', String),
+            Column('bd', String),
+            Column('epg', String),
+            Column('vrf', String),
+            Column('tenant', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -387,7 +397,7 @@ class Database:
         )
 
         self.tenant = Table(
-            self.TENANT_NAME, metadata,
+            self.TENANT_TABLE_NAME, metadata,
             Column('tenant', String, primary_key=True),
             Column('created_ts', DateTime)
         )
@@ -409,7 +419,7 @@ class Database:
                 self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
                 self.EPAUDIT_TABLE_NAME: self.epaudit,
                 self.EPGAUDIT_TABLE_NAME: self.epgaudit,
-                self.TENANT_NAME: self.tenant
+                self.TENANT_TABLE_NAME: self.tenant
             })
             self.table_pkey_meta.update({
                 self.LOGIN_TABLE_NAME: {
@@ -418,7 +428,8 @@ class Database:
                 },
                 self.MAPPING_TABLE_NAME: {
                     'ip': self.mapping.c.ip,
-                    'dn': self.mapping.c.dn
+                    'dn': self.mapping.c.dn,
+                    'datacenter': self.mapping.c.datacenter
                 },
                 self.NODE_TABLE_NAME: {
                     'node_id': self.node.c.node_id
@@ -442,7 +453,7 @@ class Database:
                 self.EPG_TABLE_NAME: {
                     'dn': self.epg.c.dn
                 },
-                self.TENANT_NAME: {
+                self.TENANT_TABLE_NAME: {
                     'tenant': self.tenant.c.tenant
                 }
             })

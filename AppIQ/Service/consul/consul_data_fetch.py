@@ -26,7 +26,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = 1       # interval in minutes
+POLL_INTERVAL = 2       # interval in minutes
 CHECK_AGENT_LIST = 3    # interval in sec
 THREAD_POOL = 10        # Pool size for all thread pools
 
@@ -324,7 +324,7 @@ def data_fetch():
             logger.info("Start data fetch for APIC.")
 
             # get tenant list from db
-            tenants = list(db_obj.select_from_table(db_obj.TENANT_NAME))
+            tenants = list(db_obj.select_from_table(db_obj.TENANT_TABLE_NAME))
             tenant_list = []
             for tenant in tenants:
                 tenant_list.append(tenant[0])

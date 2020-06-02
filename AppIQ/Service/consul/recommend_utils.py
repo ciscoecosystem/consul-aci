@@ -104,7 +104,7 @@ def determine_recommendation(extract_ap_epgs, common_eps):
                 accounted = 1
 
     recommendation_set = set(map(tuple,recommendation_list))
-    recommendation_list = map(list,recommendation_list)
+    recommendation_list = map(list, recommendation_set)
     temp_list = copy.deepcopy(recommendation_list)
     for a in temp_list:
         for b in temp_list:
@@ -153,7 +153,7 @@ def recommanded_eps(source_ip_list, parsed_eps):
     
     TODO: explain
     """
-    logger.info('Finding Correlations for ACI and AppD')
+    logger.info('Finding Recommanded EPs for ACI and AppD')
 
     try:
         if not parsed_eps:
