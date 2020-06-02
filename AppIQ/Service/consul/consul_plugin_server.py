@@ -791,6 +791,41 @@ def get_configured_access_policies(tn, ap, epg):
             "payload": []
         })
 
+def get_to_epg(dn):
+    """Function to get TO_EPG from dn 
+
+    Arguments:
+        dn {str} -- domain name str
+
+    Returns:
+        str -- TO EPG str
+    """
+    epg = ''
+    tn = ''
+    ap = ''
+    if re.search("/tn-", dn):
+        tn = dn.split("/tn-")[1].split("/")[0]
+    else:
+        logger.error("attribute 'tn' not found in epgDn")
+
+    if re.search("/ap-", dn):
+        ap = dn.split("/ap-")[1].split("/")[0]
+    elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', dn):
+        full_ap = dn.split('/')[2]
+        ap = re.split('\w+-(.*)', full_ap)[1]
+    else:
+        logger.error("attribute 'ap' not found in epgDn")
+
+    if re.search("/epg-", dn):
+        epg = dn.split("/epg-")[1].split("/")[0]
+    elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', dn):
+        full_epg = dn.split('/')[3]
+        epg = re.split('\w+-(.*)', full_epg)[1]
+    else:
+        logger.error("attribute 'epg' not found in epgDn")
+
+    to_epg = tn + "/" + ap + "/" + epg
+    return to_epg
 
 @time_it
 def get_subnets(dn):
@@ -809,7 +844,10 @@ def get_subnets(dn):
                 "epg_alias": ""
             }
             subnet_attr = subnet.get("fvSubnet").get("attributes")
+            dn = subnet_attr.get("dn")
+            subnet_dict["to_epg"] = get_to_epg(dn)
             subnet_dict["ip"] = subnet_attr["ip"]
+            subnet_dict["epg_alias"] = subnet_attr.get("nameAlias", "")
             subnet_list.append(subnet_dict)
 
         return json.dumps({
@@ -846,34 +884,16 @@ def get_to_epg_traffic(epg_dn):
         try:
             for epg_traffic in epg_traffic_resp:
                 to_epg_children = epg_traffic["vzFromEPg"]["children"]
-
+                epg_alias = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("nameAlias", "")
+                type_mapping = {'prov': "Provider", 'cons': "Consumer"}
+                contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
+                contract_type = type_mapping.get(contract_type, contract_type)
                 for to_epg_child in to_epg_children:
 
                     vz_to_epg_child = to_epg_child["vzToEPg"]
 
                     to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
-                    if re.search("/tn-", to_epg_dn):
-                        tn = to_epg_dn.split("/tn-")[1].split("/")[0]
-                    else:
-                        logger.error("attribute 'tn' not found in epgDn")
-                        tn = ''
-                    if re.search("/ap-", to_epg_dn):
-                        ap = to_epg_dn.split("/ap-")[1].split("/")[0]
-                    elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
-                        full_ap = to_epg_dn.split('/')[2]
-                        ap = re.split('\w+-(.*)', full_ap)[1]
-                    else:
-                        logger.error("attribute 'ap' not found in epgDn")
-                        ap = ''
-                    if re.search("/epg-", to_epg_dn):
-                        epg = to_epg_dn.split("/epg-")[1]
-                    elif re.match('(\w+|-)\/(\w+|-)+\/\w+-(.*)', to_epg_dn):
-                        full_epg = to_epg_dn.split('/')[3]
-                        epg = re.split('\w+-(.*)', full_epg)[1]
-                    else:
-                        logger.error("attribute 'epg' not found in epgDn")
-                        epg = ''
-                    parsed_to_epg_dn = tn + "/" + ap + "/" + epg
+                    parsed_to_epg_dn = get_to_epg(to_epg_dn)
 
                     flt_attr_children = vz_to_epg_child["children"]
 
@@ -884,10 +904,10 @@ def get_to_epg_traffic(epg_dn):
                             "filter_list": [],
                             "ingr_pkts": "",
                             "egr_pkts": "",
-                            "epg_alias": "",
-                            "contract_type": ""
+                            "epg_alias": epg_alias,
+                            "contract_type": "",
+                            "type": contract_type
                         }
-
                         to_epg_traffic_dict["to_epg"] = parsed_to_epg_dn
 
                         flt_attr_child = flt_attr["vzRsRFltAtt"]
