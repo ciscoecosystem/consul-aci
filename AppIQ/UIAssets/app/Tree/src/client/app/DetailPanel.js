@@ -114,12 +114,17 @@ export default function DetailPanel(props) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
                         })
                     }
-                } else if (name === "interface" || name === "Consumer" || name === "Provider") {
-                    detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
+                } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces") {
+                    if (detailValue && Array.isArray(detailValue)) {
+                        detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                         {showDetails[name].map(function (infcs) {
                             return <li>{infcs}</li>
                         })}
-                    </ul>
+                        </ul>
+                    } else {
+                         console.warn("Invalid format", name);
+                         detailValue = "-"
+                    }
                 }
 
                 return <PropertyItem propertyLabel={label} propertyValue={detailValue} />
