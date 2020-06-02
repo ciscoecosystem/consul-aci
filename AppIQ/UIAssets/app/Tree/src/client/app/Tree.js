@@ -11,6 +11,7 @@ import Node from "./Node.js";
 import Link from "./Link.js";
 import DetailsPane from "./DetailsPane";
 import DetailsPage from "./DetailsPage";
+import DetailPanel from "./DetailPanel";
 import "./style.css";
 
 var boundEvent;
@@ -445,11 +446,16 @@ export default class Tree extends React.Component {
 
         <div>
           {this.props.detailsPane.visible ? (
-            <DetailsPane
-              closeDetailsPane={this.closeDetailsPane}
+            <DetailPanel summaryPaneIsOpen={true}
+              summaryDetail = {this.props.detailsPane.data}
               openDetailsPage={this.openDetailsPage}
-              data={this.props.detailsPane.data}
+              setSummaryIsOpen={this.closeDetailsPane} 
             />
+            // <DetailsPane
+            //   closeDetailsPane={this.closeDetailsPane}
+            //   openDetailsPage={this.openDetailsPage}
+            //   data={this.props.detailsPane.data}
+            // />
           ) : null}   
           {this.props.detailsPage.visible ? (
             <DetailsPage
