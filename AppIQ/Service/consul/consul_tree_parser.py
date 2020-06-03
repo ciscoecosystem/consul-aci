@@ -92,16 +92,8 @@ def consul_tree_dict(data):
                 # Extract EPs with above ip
                 ep_nodes = [ep for ep in epg_eps if ep['IP'] == epg_ip]
 
-                # TODO: understand if we need to ittrate over distinct ip and merge all EPs,
-                #  is there possiblity if getting EPs with same IP from the correlation logic for Consul. 
-                # It is possible in AppD (Every node is maped to and Ep and 
-                # then that EP added to the list) 
-                # Can be done keepinf it in safe side. But then same thing needs to be verified in Detais too
+                # Itterating for every ep
                 for ep_node in ep_nodes:
-
-                    # TODO: this is the issue,
-                    # Either it should be in the above loope,
-                    # Or both the loops shoild be merged
 
                     # 3rd layer nodes in Tree (EP)
                     ep_dict = {
@@ -116,7 +108,7 @@ def consul_tree_dict(data):
                             'Mac': ep_node['CEP-Mac'],
                             'Services_List' : [],
                             'IP': ep_node['IP'],
-                            'Interfaces': list(set([x['Interfaces'][0] for x in ep_nodes])), # TODO: understand y is this [0]
+                            'Interfaces': ep_node['Interfaces'],
                             'VMM-Domain': ep_node['VMM-Domain']
                         },
                         'children': [],
