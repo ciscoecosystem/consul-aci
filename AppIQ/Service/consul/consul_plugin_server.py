@@ -14,7 +14,7 @@ from . import consul_tree_parser
 from consul_utils import Consul
 from decorator import time_it
 
-import apic_utils
+import aci_utils
 import alchemy_core
 import custom_logger
 
@@ -351,8 +351,9 @@ def get_node_checks(node_name, datacenter):
         response = []
         node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
         for check in node_checks_data:
-            if check[3] == node_name:
+            if check[2] == node_name:
                 response.append({
+                    'NodeName': node_name,
                     'Name': check[3],
                     'ServiceName': check[4],
                     'CheckID': check[0],
@@ -362,7 +363,7 @@ def get_node_checks(node_name, datacenter):
                     'Status': check[8]
                 })
 
-        logger.debug('Response of Service chceck: {}'.format(response))
+        logger.debug('Response of Node chceck: {}'.format(response))
 
         return json.dumps({
             "agentIP": '',
@@ -457,8 +458,9 @@ def get_node_check_epg(node_list, datacenter):
 
         for node_name in node_list:
             for check in node_checks_data:
-                if check[3] == node_name:
+                if check[2] == node_name:
                     response.append({
+                        'NodeName': node_name,
                         'Name': check[3],
                         'ServiceName': check[4],
                         'CheckID': check[0],
@@ -492,7 +494,7 @@ def get_faults(dn):
     Get List of Faults from APIC related to the given Modular object.
     """
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     faults_resp = aci_util_obj.get_ap_epg_faults(start_time, dn)
 
     if faults_resp:
@@ -528,7 +530,7 @@ def get_events(dn):
     Get List of Events related to the given MO.
     """
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     events_resp = aci_util_obj.get_ap_epg_events(start_time, dn)
 
     if events_resp:
@@ -565,7 +567,7 @@ def get_audit_logs(dn):
     """
 
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     audit_logs_resp = aci_util_obj.get_ap_epg_audit_logs(start_time, dn)
 
     if audit_logs_resp:
@@ -598,7 +600,7 @@ def get_audit_logs(dn):
 
 def get_children_ep_info(dn, mo_type, mac_list):
     start_time = datetime.datetime.now()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
         mac_query_filter_list = []
@@ -659,7 +661,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
 
 def get_configured_access_policies(tn, ap, epg):
     start_time = datetime.datetime.now()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
     cap_resp = aci_util_obj.get_mo_related_item("", cap_url, "other_url")
@@ -759,7 +761,7 @@ def get_subnets(dn):
     """
     Gets the Subnets Information for an EPG
     """
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     subnet_query_string = "query-target=children&target-subtree-class=fvSubnet"
     subnet_resp = aci_util_obj.get_mo_related_item(dn, subnet_query_string, "")
     subnet_list = []
@@ -793,7 +795,7 @@ def get_to_epg_traffic(epg_dn):
     """
 
     start_time = datetime.datetime.now()
-    aci_util_obj = apic_utils.AciUtils()
+    aci_util_obj = aci_utils.ACI_Utils()
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
     epg_traffic_resp = aci_util_obj.get_all_mo_instances(
