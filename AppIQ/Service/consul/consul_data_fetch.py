@@ -13,7 +13,7 @@ import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
-from yaml_utils import get_conf_value
+# from yaml_utils import get_conf_value
 from decorator import exception_handler
 
 import time
@@ -28,9 +28,9 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = get_conf_value('POLL_INTERVAL')      # interval in minutes
-CHECK_AGENT_LIST = get_conf_value('CHECK_AGENT_LIST') # interval in sec
-THREAD_POOL = get_conf_value('THREAD_POOL') # Pool size for all thread pools
+POLL_INTERVAL = 5 #get_conf_value('POLL_INTERVAL')      # interval in minutes
+CHECK_AGENT_LIST = 3 #get_conf_value('CHECK_AGENT_LIST') # interval in sec
+THREAD_POOL = 10 #get_conf_value('THREAD_POOL') # Pool size for all thread pools
 
 
 @exception_handler
@@ -120,7 +120,7 @@ def get_service_info(service):
     service: service's info to be fetched
     """
     
-    logger.info("Services info for: {}".format(str(service.get('node_name'))))
+    logger.info("Services info for: {}".format(str(service.get('service_name'))))
 
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
@@ -140,7 +140,7 @@ def get_service_checks(service_checks_dict, service):
     service: service's checks to be fetched
     """
 
-    logger.info("Services checks for: {}".format(str(service.get('node_name'))))
+    logger.info("Services checks for: {}".format(str(service.get('service_name'))))
 
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
@@ -381,7 +381,7 @@ def data_fetch():
                     )
 
                     # Add check_id and service_id to key set
-                    service_checks_key.add(service.get('CheckID'), service.get('service_id'))
+                    service_checks_key.add((service.get('CheckID'), service.get('service_id')))
 
                 service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
                 for service in service_checks_data:

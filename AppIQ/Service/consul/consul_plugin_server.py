@@ -1227,7 +1227,7 @@ def delete_creds(agent_data):
         logger.info('Agent {} deleted'.format(str(agent_data)))
 
         # Delete all the data fetched by this agent
-        agent_addr = agent_data.get('ip') + ':' + agent_data.get('port')
+        agent_addr = agent_data.get('ip') + ':' + str(agent_data.get('port'))
         
         # Delete Node data wrt this agent
         node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
