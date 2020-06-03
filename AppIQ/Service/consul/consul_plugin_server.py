@@ -1080,9 +1080,11 @@ def read_creds():
             consul_obj = Consul(agent[0], agent[1], decoded_token, agent[2])
             status, message = consul_obj.check_connection()
 
-            datacenter = '-'
+            datacenter = ''
             if status:
                 datacenter = consul_obj.datacenter()
+                if datacenter == '-':
+                    datacenter = agent[5]
 
             if agent[4] != status or agent[5] != datacenter:
                 agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
@@ -1181,12 +1183,16 @@ def update_creds(update_input):
             if old_agent.get('ip') == agent[0] and old_agent.get('port') == int(agent[1]):
                 if new_agent.get('token') == agent[3]:
                     new_agent['token'] = base64.b64decode(new_agent.get('token')).decode('ascii')
-                consul_obj = Consul(new_agent.get('ip'), new_agent.get(
-                    'port'), new_agent.get('token'), new_agent.get('protocol'))
+                consul_obj = Consul(new_agent.get('ip'), new_agent.get('port'), new_agent.get('token'), new_agent.get('protocol'))
+
                 status, message = consul_obj.check_connection()
-                datacenter = '-'
+
+                datacenter = ''
                 if status:
                     datacenter = consul_obj.datacenter()
+                    if datacenter == '-':
+                        datacenter = agent[5]
+
                 new_agent['datacenter'] = datacenter
                 new_agent['status'] = status
                 new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
@@ -1214,9 +1220,9 @@ def delete_creds(agent_data):
     try:
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
+
         # Agent deleted
-        result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME,
-                                        {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
+        result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
 
@@ -1344,7 +1350,7 @@ def get_datacenters():
     try:
         agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
         if agents:
-            dc_list = []
+            dc_list = {}
             for agent in agents:
                 datacenter = str(agent[5])
                 status = int(agent[4])
@@ -1352,16 +1358,20 @@ def get_datacenters():
                     status = True
                 else:
                     status = False
-                if datacenter != '-' and datacenter not in dc_list:
-                    datacenters.append(
-                        {
-                            'status': status,
-                            'datacenter': datacenter
-                        }
-                    )
-                    dc_list.append(datacenter)
 
-        logger.info("Datacenters found")
+                # if the status is False, do not update it
+                if datacenter != '-' and dc_list.get(datacenter, True):
+                    dc_list[datacenter] = status
+
+            for dc, status in dc_list.items():
+                datacenters.append(
+                    {
+                        'status': status,
+                        'datacenter': dc
+                    }
+                )
+
+        logger.info("Datacenters found: {}".format(str(datacenters)))
         return json.dumps({'payload': datacenters, 'status_code': '200', 'message': 'OK'})
     except Exception as e:
         logger.exception('Error in get datacenters: ' + str(e))
