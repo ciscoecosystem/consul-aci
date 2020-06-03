@@ -21,6 +21,7 @@ import json
 import base64
 import threading
 from itertools import repeat
+import concurrent.futures
 from threading_util import ThreadSafeDict
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
@@ -221,8 +222,9 @@ def data_fetch():
 
                 # Ittrate for every agent of that DC 
                 # and create a unique list of nodes.
-                for agent in agents:
-                    get_nodes(nodes_dict, agent)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for agent in agents:
+                        executor.submit(get_nodes, nodes_dict, agent)
 
                 # Inserting Nodes data in DB
                 for node_id, node_val in nodes_dict.items():
@@ -261,12 +263,14 @@ def data_fetch():
                 logger.info("Data updation in Node Complete.")
 
                 # Ittrate all nodes and get all services
-                for node in nodes_dict.values():
-                    get_services(services_dict, node)
-
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for node in nodes_dict.values():
+                        executor.submit(get_services, services_dict, node)
+                
                 # Ittrate all nodes and get node checks
-                for node in nodes_dict.values():
-                    get_node_checks(node_checks_dict, node)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for node in nodes_dict.values():
+                        executor.submit(get_node_checks, node_checks_dict, node)
 
                 # Inserting Nodes checks data in DB
                 for node in node_checks_dict.values():
@@ -306,8 +310,9 @@ def data_fetch():
                 logger.info("Data updation in Node Checks Complete.")
 
                 # Ittrate all services and get services info
-                for service in services_dict.values():
-                    get_service_info(service)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for service in services_dict.values():
+                        executor.submit(get_service_info, service)
 
                 # Inserting Services into DB
                 for service in services_dict.values():
@@ -351,8 +356,9 @@ def data_fetch():
                 logger.info("Data updation in Service Complete.")
 
                 # Ittrate all services and get services checks
-                for service in services_dict.values():
-                    get_service_checks(service_checks_dict, service)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for service in services_dict.values():
+                        executor.submit(get_service_checks, service_checks_dict, service)
 
                 # Inserting Service Checks in DB
                 for service in service_checks_dict.values():
