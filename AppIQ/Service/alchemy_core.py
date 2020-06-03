@@ -63,6 +63,7 @@ class Database:
             'node_name',
             'node_ips',
             'datacenter',
+            'agents',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -79,6 +80,7 @@ class Database:
             'service_kind',
             'namespace',
             'datacenter',
+            'agents',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -94,6 +96,7 @@ class Database:
             'notes',
             'output',
             'status',
+            'agents',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -108,6 +111,7 @@ class Database:
             'notes',
             'output',
             'status',
+            'agents',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -199,6 +203,7 @@ class Database:
             Column('node_name', String),
             Column('node_ips', PickleType),
             Column('datacenter', String),
+            Column('agents', PickleType),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -216,6 +221,7 @@ class Database:
             Column('service_kind', String),
             Column('namespace', String),
             Column('datacenter', String),
+            Column('agents', PickleType),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -233,6 +239,7 @@ class Database:
             Column('notes', String),
             Column('output', String),
             Column('status', PickleType),
+            Column('agents', PickleType),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -250,6 +257,7 @@ class Database:
             Column('notes', String),
             Column('output', String),
             Column('status', PickleType),
+            Column('agents', PickleType),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
