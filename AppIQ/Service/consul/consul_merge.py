@@ -41,7 +41,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                     if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['dn'] == str(aci['dn']):
                         logger.info('mapping: {}, aci: {}'.format(str(each), str(aci)))
                         # Service to CEp mapping
-                        for node in consul_data:
+                        for node in copy.deepcopy(consul_data):
                             new_node = {
                                 'node_id': node.get('node_id'),
                                 'node_name': node.get('node_name'),
@@ -61,8 +61,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     node['node_services'].remove(service)
                             if new_node['node_services']:
                                 new_node.update(aci)
-                                merge_list.append(new_node)
-                                # what is this for?
+                                merge_list.append(copy.deepcopy(new_node))
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))
                                     if aci['EPG'] not in merged_epg_count:
@@ -70,14 +69,12 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     else:
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
-                        # logger.info('Service to CEp mapped:' + str(merge_list))
-
                         # node to EP mapping
                         mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('node_ips', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
-                                merge_list.append(each)
+                                merge_list.append(copy.deepcopy(each))
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))
                                     if aci['EPG'] not in merged_epg_count:
