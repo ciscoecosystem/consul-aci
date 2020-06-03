@@ -72,7 +72,7 @@ class App extends React.Component {
 
     reload() {
         // alert("Reloading");
-        loadingBoxShow("block");
+        loadingBoxShow();
         this.handleTransitionTree([400, -60], 1);
         this.setState({ initialTreeRender: 0 }, function () {
             this.getData(true);

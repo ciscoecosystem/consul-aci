@@ -2,7 +2,6 @@
     height: 100%;
     width: 350px;
     position: fixed;
-    z-index: 1;
     top: 0;
     right: 0;
     background-color: rgb(255, 255, 255);
@@ -16,50 +15,6 @@
 .bold-font {
     font-weight: bold;
 }
-
-/* .overlay-pane td {
-    border: 1px solid #dbdada
-} */
-
-/* @-moz-document url-prefix() {
-    .overlay-pane {
-        scrollbar-width: none;
-    }
-} */
-
-/* .overlay-content {
-    position: relative;
-    top: 25%;
-    width: 100%;
-    text-align: center;
-    margin-top: 30px;
-} */
-
-/* .overlay a {
-    padding: 8px;
-    text-decoration: none;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-}
-
-.overlay .closebtn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 1em;
-} */
-
-/* @media screen and (max-height: 450px) {
-    .overlay a {
-        font-size: 20px
-    }
-    .overlay .closebtn {
-        font-size: 40px;
-        top: 15px;
-        right: 35px;
-    }
-} */
 
 .summary-pane-header {
     /* padding: 2%;
@@ -134,48 +89,3 @@
 .summary-pane main .collapsible-pane{
     margin-bottom: 16px;
 }
-
-/* .summary-pane main .collapsible-pane, .summary-pane main .property-list-item:not(:last-child) {
-    margin-bottom: 16px;
-}
-
-.summary-pane main .property-list-item {
-    width: 100%;
-}
-
-.property-list-item .property-label {
-    font-size: 1.2rem;
-    font-weight: 600;
-    line-height: 16px;
-    text-transform: uppercase;
-    color: #9e9ea2;
-    margin-bottom: 8px;
-}
-
-.property-list-item .property-value {
-    all: unset;
-    font-size: 1.4rem;
-    line-height: 19px;
-    display: block;
-    overflow-wrap: break-word;
-} */
-
-
-
-/* 
-.overlay-pane::-webkit-scrollbar {
-    display: none;
-}
-
-
-.flex-container>div {
-    background-color: #f1f1f1;
-    margin: 10px;
-    padding: 10px;
-    font-size: 30px;
-}
-
-.sub-header {
-    font-size: 12px;
-    font-weight: 600;
-} */
