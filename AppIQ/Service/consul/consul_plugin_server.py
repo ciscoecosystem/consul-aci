@@ -385,6 +385,7 @@ def change_key(services):
             })
     return final_list
 
+
 @time_it
 def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
@@ -420,6 +421,7 @@ def get_service_check(service_name, service_id, datacenter):
             "message": "Could not load service checks."
         })
 
+
 @time_it
 def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
@@ -453,6 +455,7 @@ def get_node_checks(node_name, datacenter):
             "status_code": "300",
             "message": "Could not load node checks."
         })
+
 
 @time_it
 def get_multi_service_check(service_list, datacenter):
@@ -495,6 +498,7 @@ def get_multi_service_check(service_list, datacenter):
             "message": "Could not load service checks."
         })
 
+
 @time_it
 def get_multi_node_check(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
@@ -531,6 +535,7 @@ def get_multi_node_check(node_list, datacenter):
             "status_code": "300",
             "message": "Could not load node checks."
         })
+
 
 @time_it
 def get_faults(dn):
@@ -569,6 +574,7 @@ def get_faults(dn):
         })
 
 
+@time_it
 def get_events(dn):
     """
     Get List of Events related to the given MO.
@@ -605,6 +611,7 @@ def get_events(dn):
         })
 
 
+@time_it
 def get_audit_logs(dn):
     """
     Get List of Audit Log Records related to the given MO.
@@ -640,6 +647,7 @@ def get_audit_logs(dn):
             "message": "Error while fetching Audit log details.",
             "payload": []
         })
+
 
 @time_it
 def get_children_ep_info(dn, mo_type, mac_list):
@@ -824,6 +832,7 @@ def get_subnets(dn):
             "payload": []
         })
 
+
 @time_it
 def get_to_epg_traffic(epg_dn):
     """
@@ -969,6 +978,7 @@ def get_to_epg_traffic(epg_dn):
             "payload": []
         })
 
+
 @time_it
 def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
     """
@@ -987,6 +997,7 @@ def get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
         return ingr_pkts, egr_pkts
     else:
         return "0", "0"
+
 
 @time_it
 def get_filter_list(flt_dn, aci_util_obj):
@@ -1201,18 +1212,69 @@ def update_creds(update_input):
 @time_it
 def delete_creds(agent_data):
     try:
-        logger.info('deleting agents: ' + str(agent_data))
+        logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
+        # Agent deleted
         result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME,
                                         {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
-        if result:
-            return json.dumps({'status_code': '200', 'message': 'OK'})
-        return json.dumps({'status_code': '300', 'message': 'Could not delete the credentials.'})
+
+        logger.info('Agent {} deleted'.format(str(agent_data)))
+
+        # Delete all the data fetched by this agent
+        agent_addr = agent_data.get('ip') + ':' + agent_data.get('port')
+        
+        # Delete Node data wrt this agent
+        node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+        for node in node_data:
+            agents = node[4]
+            if len(agents) == 1 and agent_addr == agents[0]:
+                db_obj.delete_from_table(db_obj.NODE_TABLE_NAME,{'node_id': node[0]})
+            else:
+                node[4].remove(agent_addr)
+                db_obj.insert_and_update(db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
+        logger.info('Agent {}\'s Node data deleted'.format(str(agent_addr)))
+
+        # Delete Service data wrt this agent
+        service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
+        for service in service_data:
+            agents = service[10]
+            if len(agents) == 1 and agent_addr == agents[0]:
+                db_obj.delete_from_table(db_obj.SERVICE_TABLE_NAME,{'service_id': service[0],'node_id': service[1]})
+            else:
+                service[10].remove(agent_addr)
+                db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, service, {'service_id': service[0],'node_id': service[1]})
+        logger.info('Agent {}\'s Service data deleted'.format(str(agent_addr)))
+
+        # Delete Node Check data wrt this agent
+        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+        for node in node_checks_data:
+            agents = node[9]
+            if len(agents) == 1 and agent_addr == agents[0]:
+                db_obj.delete_from_table(db_obj.NODECHECKS_TABLE_NAME,{'check_id': node[0], 'node_id': node[1]})
+            else:
+                node[9].remove(agent_addr)
+                db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
+        logger.info('Agent {}\'s NodeChecks data deleted'.format(str(agent_addr)))
+
+        # Delete Service Check data wrt this agent
+        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+        for service in service_checks_data:
+            agents = service[8]
+            if len(agents) == 1 and agent_addr == agents[0]:
+                db_obj.delete_from_table(db_obj.SERVICECHECKS_TABLE_NAME,{'check_id': service[0],'service_id': service[1]})
+            else:
+                service[8].remove(agent_addr)
+                db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0],'service_id': service[1]})
+        logger.info('Agent {}\'s ServiceChecks data deleted'.format(str(agent_addr)))
+
+        # it is assumed that no delete call to db would fail
+        return json.dumps({'status_code': '200', 'message': 'OK'})
     except Exception as e:
         logger.exception('Error in delete credentials: ' + str(e))
         return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not delete the credentials.'})
 
 
+@time_it
 def details_flattened(tenant, datacenter):
     """Get correlated Details view data
 
@@ -1225,7 +1287,6 @@ def details_flattened(tenant, datacenter):
     """
 
     logger.info("Details view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
@@ -1274,11 +1335,9 @@ def details_flattened(tenant, datacenter):
             "status_code": "300",
             "message": "Could not load the Details."
             })
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.debug("Time for DETAILS: " + str(end_time - start_time))
 
 
+@time_it
 def get_datacenters():
     logger.info('In get datacenters')
     datacenters = []
@@ -1323,6 +1382,7 @@ def post_tenant(tn):
         return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
 
 
+@time_it
 def get_consul_data(datacenter):
     consul_data = []
     services = []
@@ -1405,6 +1465,7 @@ def get_consul_data(datacenter):
     return consul_data
 
 
+@time_it
 def get_apic_data(tenant):
     apic_data = []
     ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
