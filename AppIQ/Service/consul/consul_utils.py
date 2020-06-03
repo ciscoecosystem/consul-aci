@@ -118,7 +118,7 @@ class Consul(object):
         logger.info('In Consul Node List')
         node_list = []
         try:
-            catalog_nodes = self.session.get(urls.CATALOG_NODES.format(self.base_url))
+            catalog_nodes = self.session.get(urls.CATALOG_NODES.format(self.base_url), timeout=30)
             catalog_nodes = json.loads(catalog_nodes.content)
             logger.debug('Catalog Nodes API data: {}'.format(str(catalog_nodes)))
             
@@ -170,7 +170,7 @@ class Consul(object):
         service_list = []
         try:
             # API works for node id also, ask and decide
-            services_resp = self.session.get(urls.NODE_SERVICES.format(self.base_url, node_name))
+            services_resp = self.session.get(urls.NODE_SERVICES.format(self.base_url, node_name), timeout=30)
             services_resp = json.loads(services_resp.content)
             logger.debug('Node "{}" Services API data: {}'.format(node_name, str(services_resp)))
 
@@ -214,7 +214,7 @@ class Consul(object):
         logger.info('Node Checks for node: {}'.format(node_name))
         check_dict = {}
         try:
-            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name))
+            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name), timeout=30)
             node_resp = json.loads(node_resp.content)
             logger.debug('Node Check API data: {}'.format(node_resp))
 
@@ -261,7 +261,7 @@ class Consul(object):
         logger.info('Service Checks for node: {}'.format(service_name))
         check_dict = {}
         try:
-            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name), timeout=30)
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
         
@@ -306,7 +306,7 @@ class Consul(object):
         service_kind = ''
         service_namespace = ''
         try:
-            service_resp = self.session.get(urls.SERVICE_INFO.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_INFO.format(self.base_url, service_name), timeout=30)
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Details API data: {}'.format(service_resp))
 
@@ -335,7 +335,7 @@ class Consul(object):
         logger.info('Datacentres for agent: {}:{}'.format(self.agent_ip, self.port))
         datacenter_name = '-'
         try:
-            agent_resp = self.session.get(urls.CATALOG_DC.format(self.base_url))
+            agent_resp = self.session.get(urls.CATALOG_DC.format(self.base_url), timeout=30)
             agent_resp = json.loads(agent_resp.content)
             datacenter_name = agent_resp.get('Config', {}).get('Datacenter', '-')
             logger.debug('Datacenter API data: {}'.format(datacenter_name))
@@ -365,7 +365,7 @@ class Consul(object):
         logger.info('Service Checks for service: {}, {}'.format(service_name, service_id))
         service_checks_list = []
         try:
-            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name))
+            service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name), timeout=30)
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
             
@@ -409,7 +409,7 @@ class Consul(object):
         logger.info('Node Checks for node: {}'.format(node_name))
         node_checks_list = []
         try:
-            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name))
+            node_resp = self.session.get(urls.NODE_CHECK.format(self.base_url, node_name), timeout=30)
             node_resp = json.loads(node_resp.content)
             logger.debug('Node Check API data: {}'.format(node_resp))
 

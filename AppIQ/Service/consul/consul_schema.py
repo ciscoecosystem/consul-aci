@@ -298,12 +298,12 @@ class Query(graphene.ObjectType):
 
 
     def resolve_MultiServiceChecks(self, info, service_list, datacenter):
-        MultiServiceChecks.response = app.get_service_check_ep(service_list, datacenter)
+        MultiServiceChecks.response = app.get_multi_service_check(service_list, datacenter)
         return MultiServiceChecks
 
 
     def resolve_MultiNodeChecks(self, info, node_list, datacenter):
-        MultiNodeChecks.response = app.get_node_check_epg(node_list, datacenter)
+        MultiNodeChecks.response = app.get_multi_node_check(node_list, datacenter)
         return MultiNodeChecks 
 
 

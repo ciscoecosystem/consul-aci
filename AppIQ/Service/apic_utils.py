@@ -9,6 +9,7 @@ import concurrent.futures
 import urls
 from decorator import time_it
 from custom_logger import CustomLogger
+# from yaml_utils import get_conf_value
 
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
@@ -22,9 +23,9 @@ except:
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP = '172.17.0.1'
-STATIC_IP = '0.0.0.0'
-APIC_THREAD_POOL = 10
+APIC_IP = '' #get_conf_value('APIC_IP')
+STATIC_IP = '0.0.0.0' #get_conf_value('STATIC_IP')
+APIC_THREAD_POOL = 10 #get_conf_value('THREAD_POOL')
 
 
 class AciUtils(object):
@@ -127,7 +128,7 @@ class AciUtils(object):
         """
         try:
             response = self.session.get(
-                url, cookies={'APIC-Cookie': self.apic_token}, verify=False)
+                url, cookies={'APIC-Cookie': self.apic_token}, timeout=90, verify=False)
             status_code = response.status_code
             if status_code == 200 or status_code == 201:
                 logger.info('API call success: ' + str(url))
@@ -192,7 +193,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Parsing EP Data API call, Error: {}'.format(str(e)))
-            return None
+            return []
 
     def parse_and_return_ep_data(self, item):
         """Funtion to Parse data of EP
@@ -518,7 +519,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Contracts API call,  Error: {}'.format(str(e)))
-            return None
+            return {}
 
     def get_epg_health(self, dn):
         """Funtion to get health of EPG from dn
@@ -537,11 +538,11 @@ class AciUtils(object):
                 for key, value in each.iteritems():
                     if str(key) == 'healthInst':
                         return value['attributes']['cur']
-            return None
+            return ''
         except Exception as e:
             logger.exception(
                 'Exception in EPG health API call,  Error: {}'.format(str(e)))
-            return None
+            return ''
 
     def parse_epg_data(self, epg_resp):
         """Funtion to iterate over API response of EPG data
@@ -634,6 +635,7 @@ class AciUtils(object):
             logger.info("Exception while processing Faults : {}".format(ex))
         return faults_dict
 
+
     @time_it
     def get_ap_epg_events(self, dn):
         """
@@ -647,6 +649,7 @@ class AciUtils(object):
             logger.info("Exception while processing Events : {}".format(ex))
         return events_dict
 
+
     @time_it
     def get_ap_epg_audit_logs(self, dn):
         """
@@ -659,6 +662,7 @@ class AciUtils(object):
         except Exception as ex:
             logger.info("Exception while processing Audit logs : " + str(ex))
         return audit_logs_dict
+
 
     @time_it
     def get_mo_related_item(self, mo_dn, item_query_string, item_type):
@@ -685,9 +689,9 @@ class AciUtils(object):
             logger.exception('Epg Item Url : =>'.format(url))
             return []
 
+
     @staticmethod
     def get_dict_records(list_of_records, key):
         records_dict = dict()
         records_dict[key] = list_of_records
         return records_dict
-

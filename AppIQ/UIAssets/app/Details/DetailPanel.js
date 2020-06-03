@@ -54,7 +54,7 @@ export default function DetailPanel(props) {
     let serviceInfoOrder = [{ name: "service", label: "service" },
     { name: "serviceChecks", label: "service Checks" },
     { name: "serviceInstance", label: "service Instance" },
-    { name: "Port", label: "port" },
+    { name: "port", label: "port" },
     { name: "serviceTags", label: "service Tags" },
     { name: "serviceKind", label: "service Kind" },
     { name: "serviceNamespace", label: "Namespace" }];

@@ -13,6 +13,7 @@ import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
+# from yaml_utils import get_conf_value
 from decorator import exception_handler
 
 import time
@@ -20,15 +21,16 @@ import json
 import base64
 import threading
 from itertools import repeat
+import concurrent.futures
 from threading_util import ThreadSafeDict
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = 2       # interval in minutes
-CHECK_AGENT_LIST = 3    # interval in sec
-THREAD_POOL = 10        # Pool size for all thread pools
+POLL_INTERVAL = 5 #get_conf_value('POLL_INTERVAL')      # interval in minutes
+CHECK_AGENT_LIST = 3 #get_conf_value('CHECK_AGENT_LIST') # interval in sec
+THREAD_POOL = 10 #get_conf_value('THREAD_POOL') # Pool size for all thread pools
 
 
 @exception_handler
@@ -47,12 +49,16 @@ def get_nodes(nodes_dict, agent):
 
     for node in list_of_nodes:
         node_id = node.get('node_id')
+        agent_addr = agent.get('ip') + ':' + agent.get('port')
         if not nodes_dict.has_key(node_id):
             node.update({
-                'agent_consul_obj': consul_obj
+                'agent_consul_obj': consul_obj,
+                'agent_addr': [agent_addr]
             })
             with nodes_dict as active_node:
                 active_node[node_id] = node
+        elif agent_addr not in node['agent_addr']:
+            node['agent_addr'].append(agent_addr)
 
 
 @exception_handler
@@ -75,7 +81,8 @@ def get_services(services_dict, node):
         if not services_dict.has_key(service_key):
             service.update({
                 'agent_consul_obj': consul_obj,
-                'node_id': node_id
+                'node_id': node_id,
+                'agent_addr': node.get('agent_addr')
             })
             with services_dict as active_service:
                 active_service[service_key] = service
@@ -99,7 +106,8 @@ def get_node_checks(node_checks_dict, node):
         if not node_checks_dict.has_key(check_key):
             node_check.update({
                 'node_id': node.get('node_id'),
-                'node_name': node_name
+                'node_name': node_name,
+                'agent_addr': node.get('agent_addr')
             })
             with node_checks_dict as active_node:
                 active_node[check_key] = node_check
@@ -112,7 +120,7 @@ def get_service_info(service):
     service: service's info to be fetched
     """
     
-    logger.info("Services info for: {}".format(str(service.get('node_name'))))
+    logger.info("Services info for: {}".format(str(service.get('service_name'))))
 
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
@@ -121,7 +129,7 @@ def get_service_info(service):
     service.update({
         'service_tags': service_tags,
         'service_kind': service_kind,
-        'service_namespace': service_ns  
+        'service_namespace': service_ns
     })
 
 
@@ -132,7 +140,7 @@ def get_service_checks(service_checks_dict, service):
     service: service's checks to be fetched
     """
 
-    logger.info("Services checks for: {}".format(str(service.get('node_name'))))
+    logger.info("Services checks for: {}".format(str(service.get('service_name'))))
 
     consul_obj = service.get('agent_consul_obj')
     service_name = service.get('service_name')
@@ -143,7 +151,8 @@ def get_service_checks(service_checks_dict, service):
         check_key = service_check.get('CheckID') + service_id
         if not service_checks_dict.has_key(check_key):
             service_check.update({
-                'service_id': service_id
+                'service_id': service_id,
+                'agent_addr': service.get('agent_addr')
             })
             with service_checks_dict as active_service:
                 active_service[check_key] = service_check
@@ -168,6 +177,7 @@ def data_fetch():
             # get agent list from db
             agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
             agent_list = []
+            agent_addr_list = []
             for agent in agents:
                 status = int(agent[4])
                 if status == 1:
@@ -181,6 +191,7 @@ def data_fetch():
                             'datacenter': agent[5],
                         }
                     )
+                    agent_addr_list.append(agent[0] + ':' + agent[1])
 
             # if there is no agent list on 
             # db check it evety CHECK_AGENT_LIST sec
@@ -204,11 +215,16 @@ def data_fetch():
                 node_checks_dict = ThreadSafeDict()
                 service_checks_dict = ThreadSafeDict()
 
+                nodes_key = set()
+                services_key = set()
+                node_checks_key = set()
+                service_checks_key = set()
 
                 # Ittrate for every agent of that DC 
                 # and create a unique list of nodes.
-                for agent in agents:
-                    get_nodes(nodes_dict, agent)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for agent in agents:
+                        executor.submit(get_nodes, nodes_dict, agent)
 
                 # Inserting Nodes data in DB
                 for node_id, node_val in nodes_dict.items():
@@ -217,7 +233,8 @@ def data_fetch():
                             node_val.get('node_id'),
                             node_val.get('node_name'),
                             node_val.get('node_ips'),
-                            datacenter
+                            datacenter,
+                            node_val.get('agent_addr')
                         ),
                         {
                             'node_id': node_val.get('node_id')
@@ -228,15 +245,32 @@ def data_fetch():
                     for ip in node_val.get('node_ips'):
                         consul_ip_list.add(ip)
 
-                logger.info("Data insertion in Node Complete.")
+                    # Add node_id to key set
+                    nodes_key.add(node_val.get('node_id'))
+
+                # Remove deleted Node data.
+                node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+                for node in node_data:
+                    agents = node[4]
+                    for agent in agents:
+                        if agent in agent_addr_list and node[0] not in nodes_key:
+                            if len(agents) == 1:
+                                db_obj.delete_from_table(db_obj.NODE_TABLE_NAME,{'node_id': node[0]})
+                            elif len(agents) > 1:
+                                node[4].remove(agent)
+                                db_obj.insert_and_update(db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
+
+                logger.info("Data updation in Node Complete.")
 
                 # Ittrate all nodes and get all services
-                for node in nodes_dict.values():
-                    get_services(services_dict, node)
-
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for node in nodes_dict.values():
+                        executor.submit(get_services, services_dict, node)
+                
                 # Ittrate all nodes and get node checks
-                for node in nodes_dict.values():
-                    get_node_checks(node_checks_dict, node)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for node in nodes_dict.values():
+                        executor.submit(get_node_checks, node_checks_dict, node)
 
                 # Inserting Nodes checks data in DB
                 for node in node_checks_dict.values():
@@ -251,18 +285,34 @@ def data_fetch():
                             node.get('Notes'),
                             node.get('Output'),
                             node.get('Status'),
+                            node.get('agent_addr')
                         ),
                         {
-                            'node_id': node.get('node_id'),
-                            'check_id': node.get('CheckID')
+                            'check_id': node.get('CheckID'),
+                            'node_id': node.get('node_id')
                         }
                     )
 
-                logger.info("Data insertion in Node Checks Complete.")
+                    # Add node_id, check_id to key set
+                    node_checks_key.add((node.get('CheckID'), node.get('node_id')))
+
+                node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+                for node in node_checks_data:
+                    agents = node[9]
+                    for agent in agents:
+                        if agent in agent_addr_list and (node[0], node[1]) not in node_checks_key:
+                            if len(agents) == 1:
+                                db_obj.delete_from_table(db_obj.NODECHECKS_TABLE_NAME,{'check_id': node[0], 'node_id': node[1]})
+                            elif len(agents) > 1:
+                                node[9].remove(agent)
+                                db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
+
+                logger.info("Data updation in Node Checks Complete.")
 
                 # Ittrate all services and get services info
-                for service in services_dict.values():
-                    get_service_info(service)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for service in services_dict.values():
+                        executor.submit(get_service_info, service)
 
                 # Inserting Services into DB
                 for service in services_dict.values():
@@ -277,7 +327,8 @@ def data_fetch():
                             service.get('service_tags'),
                             service.get('service_kind'),
                             service.get('service_namespace'),
-                            datacenter
+                            datacenter,
+                            service.get('agent_addr')
                         ),
                         {
                             'service_id': service.get('service_id'),
@@ -288,11 +339,26 @@ def data_fetch():
                     # Add service ip to consul ip list
                     consul_ip_list.add(service.get('service_ip'))
 
-                logger.info("Data insertion in Service Complete.")
+                    # Add service_id, node_id to key set
+                    services_key.add((service.get('service_id'), service.get('node_id')))
+
+                service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
+                for service in service_data:
+                    agents = service[10]
+                    for agent in agents:
+                        if agent in agent_addr_list and (service[0], service[1]) not in services_key:
+                            if len(agents) == 1:
+                                db_obj.delete_from_table(db_obj.SERVICE_TABLE_NAME,{'service_id': service[0],'node_id': service[1]})
+                            elif len(agents) > 1:
+                                service[10].remove(agent)
+                                db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, service, {'service_id': service[0],'node_id': service[1]})
+
+                logger.info("Data updation in Service Complete.")
 
                 # Ittrate all services and get services checks
-                for service in services_dict.values():
-                    get_service_checks(service_checks_dict, service)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
+                    for service in services_dict.values():
+                        executor.submit(get_service_checks, service_checks_dict, service)
 
                 # Inserting Service Checks in DB
                 for service in service_checks_dict.values():
@@ -305,7 +371,8 @@ def data_fetch():
                             service.get('Type'),
                             service.get('Notes'),
                             service.get('Output'),
-                            service.get('Status')
+                            service.get('Status'),
+                            service.get('agent_addr')
                         ),
                         {
                             'check_id': service.get('CheckID'),
@@ -313,7 +380,21 @@ def data_fetch():
                         }
                     )
 
-                logger.info("Data insertion in Service Checks Complete.")
+                    # Add check_id and service_id to key set
+                    service_checks_key.add((service.get('CheckID'), service.get('service_id')))
+
+                service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+                for service in service_checks_data:
+                    agents = service[8]
+                    for agent in agents:
+                        if agent in agent_addr_list and (service[0], service[1]) not in service_checks_key:
+                            if len(agents) == 1:
+                                db_obj.delete_from_table(db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                            elif len(agents) > 1:
+                                service[8].remove(agent)
+                                db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0],'service_id': service[1]})
+
+                logger.info("Data updation in Service Checks Complete.")
 
                 logger.info("Data fetch for datacenter {} complete.".format(datacenter))
 
@@ -344,6 +425,9 @@ def data_fetch():
                     logger.info("NO EP in tenant {} mapped to any consul nodes or services.".format(tenant))
                     continue
 
+                ep_key = set()
+                epg_key = set()
+
                 for ep in ep_data:
                     db_obj.insert_and_update(db_obj.EP_TABLE_NAME,
                         (
@@ -367,6 +451,15 @@ def data_fetch():
                         }
                     )
 
+                    # Add mac, ip to key set
+                    ep_key.add((ep.get('mac'), ep.get('ip')))
+
+                ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+                for ep in ep_data:
+                    if ep[2] == tenant and (ep[0], ep[1]) not in ep_key:
+                        db_obj.delete_from_table(db_obj.EP_TABLE_NAME, ep, {'mac': ep[0], 'ip': ep[1]})
+
+                logger.info("Data updation in EP Complete.")
 
                 epg_data = aci_obj.apic_fetch_epg_data(tenant)
                 for epg in epg_data:
@@ -385,6 +478,16 @@ def data_fetch():
                             'dn': epg.get('dn')
                         }
                     )
+
+                    # Add dn to key set
+                    epg_key.add(epg.get('dn'))
+
+                epg_data = list(db_obj.select_from_table(db_obj.EPG_TABLE_NAME))
+                for epg in epg_data:
+                    if epg[1] == tenant and epg[0] not in epg_key:
+                        db_obj.delete_from_table(db_obj.EPG_TABLE_NAME, epg, {'dn': epg[0]})
+
+                logger.info("Data updation in EPG Complete.")
 
             logger.info("Data fetch complete:")
 
