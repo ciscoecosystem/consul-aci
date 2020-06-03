@@ -7,6 +7,12 @@ assignees: dipika-crest, mohitagrawal-crest, yashpariharcrest
 
 ---
 
+**Reporter Details**
+Reporter details for us to provide account support and follow up through proper channels in addition to GitHub
+ - name [e.g. John Smith]
+ - job title [e.g. Site Reliability Engineer]
+ - company [e.g. ACME Corp]
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
