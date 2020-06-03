@@ -1,7 +1,6 @@
 import re
 import json
 import time
-# import yaml
 import base64
 import requests
 from collections import defaultdict
@@ -337,7 +336,7 @@ class AciUtils(object):
 
         return (ctrlr_name, hyper_name)
 
-    def get_all_mo_instances(self, mo_class, query_string):
+    def get_all_mo_instances(self, mo_class, query_string=""):
         """Function to return All mo instances
 
         Arguments:
@@ -351,7 +350,8 @@ class AciUtils(object):
             instance_list = []
             url = urls.MO_INSTANCE_URL.format(
                 self.proto, self.apic_ip, mo_class)
-            url += "?" + query_string
+            if query_string:
+                url += "?" + query_string
             response_json = self.aci_get(url)
             if response_json and response_json['imdata']:
                 instance_list = response_json['imdata']
@@ -642,7 +642,7 @@ class AciUtils(object):
         events_dict = None
         try:
             events_list = self.get_mo_related_item(dn, urls.EVENTS_QUERY, "")
-            events_dict = self.get_dict_records(events_list, "eventRecords")
+            events_dict = AciUtils.get_dict_records(events_list, "eventRecords")
         except Exception as ex:
             logger.info("Exception while processing Events : {}".format(ex))
         return events_dict
@@ -655,11 +655,12 @@ class AciUtils(object):
         audit_logs_dict = None
         try:
             audit_logs_list = self.get_mo_related_item(dn, urls.AUDIT_LOGS_QUERY, "")
-            audit_logs_dict = self.get_dict_records(audit_logs_list, "auditLogRecords")
+            audit_logs_dict = AciUtils.get_dict_records(audit_logs_list, "auditLogRecords")
         except Exception as ex:
             logger.info("Exception while processing Audit logs : " + str(ex))
         return audit_logs_dict
 
+    @time_it
     def get_mo_related_item(self, mo_dn, item_query_string, item_type):
         """
         Common method to get MO related data based on item_type value
@@ -683,7 +684,7 @@ class AciUtils(object):
             logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
             logger.exception('Epg Item Url : =>'.format(url))
             return []
-    
+
     @staticmethod
     def get_dict_records(list_of_records, key):
         records_dict = dict()
