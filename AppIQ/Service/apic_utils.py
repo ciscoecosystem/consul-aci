@@ -23,7 +23,7 @@ except:
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP = '' #get_conf_value('APIC_IP')
+APIC_IP = '172.17.0.1' #get_conf_value('APIC_IP')
 STATIC_IP = '0.0.0.0' #get_conf_value('STATIC_IP')
 APIC_THREAD_POOL = 10 #get_conf_value('THREAD_POOL')
 
