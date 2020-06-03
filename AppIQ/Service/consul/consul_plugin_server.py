@@ -351,8 +351,9 @@ def get_node_checks(node_name, datacenter):
         response = []
         node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
         for check in node_checks_data:
-            if check[3] == node_name:
+            if check[2] == node_name:
                 response.append({
+                    'NodeName': node_name,
                     'Name': check[3],
                     'ServiceName': check[4],
                     'CheckID': check[0],
@@ -362,7 +363,7 @@ def get_node_checks(node_name, datacenter):
                     'Status': check[8]
                 })
 
-        logger.debug('Response of Service chceck: {}'.format(response))
+        logger.debug('Response of Node chceck: {}'.format(response))
 
         return json.dumps({
             "agentIP": '',
@@ -457,8 +458,9 @@ def get_node_check_epg(node_list, datacenter):
 
         for node_name in node_list:
             for check in node_checks_data:
-                if check[3] == node_name:
+                if check[2] == node_name:
                     response.append({
+                        'NodeName': node_name,
                         'Name': check[3],
                         'ServiceName': check[4],
                         'CheckID': check[0],
@@ -491,9 +493,8 @@ def get_faults(dn):
     """
     Get List of Faults from APIC related to the given Modular object.
     """
-    start_time = datetime.datetime.utcnow()
     aci_util_obj = apic_utils.AciUtils()
-    faults_resp = aci_util_obj.get_ap_epg_faults(start_time, dn)
+    faults_resp = aci_util_obj.get_ap_epg_faults(dn)
 
     if faults_resp:
         faults_payload = []
@@ -527,9 +528,8 @@ def get_events(dn):
     """
     Get List of Events related to the given MO.
     """
-    start_time = datetime.datetime.utcnow()
     aci_util_obj = apic_utils.AciUtils()
-    events_resp = aci_util_obj.get_ap_epg_events(start_time, dn)
+    events_resp = aci_util_obj.get_ap_epg_events(dn)
 
     if events_resp:
         events_payload = []
@@ -564,9 +564,8 @@ def get_audit_logs(dn):
     Get List of Audit Log Records related to the given MO.
     """
 
-    start_time = datetime.datetime.utcnow()
     aci_util_obj = apic_utils.AciUtils()
-    audit_logs_resp = aci_util_obj.get_ap_epg_audit_logs(start_time, dn)
+    audit_logs_resp = aci_util_obj.get_ap_epg_audit_logs(dn)
 
     if audit_logs_resp:
         audit_logs_payload = []
@@ -632,10 +631,10 @@ def get_children_ep_info(dn, mo_type, mac_list):
                 "mcast_addr": mcast_addr,
                 "learning_source": ep_attr.get("lcC"),
                 "encap": ep_attr.get("encap"),
-                "ep_name": ep_info.get("VM-Name"),
-                "hosting_server_name": ep_info.get("hostingServerName"),
-                "iface_name": ep_info.get("Interfaces"),
-                "ctrlr_name": ep_info.get("controllerName")
+                "ep_name": ep_info.get("vm_name"),
+                "hosting_server_name": ep_info.get("hosting_servername"),
+                "iface_name": ep_info.get("interfaces"),
+                "ctrlr_name": ep_info.get("controller")
             }
             ep_info_list.append(ep_info_dict)
         return json.dumps({
@@ -798,8 +797,7 @@ def get_to_epg_traffic(epg_dn):
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
     epg_traffic_resp = aci_util_obj.get_all_mo_instances(
         "vzFromEPg", epg_traffic_query_string)
-    if epg_traffic_resp["status"]:
-        epg_traffic_resp = epg_traffic_resp["payload"]
+    if epg_traffic_resp:
 
         from_epg_dn = epg_dn
 
