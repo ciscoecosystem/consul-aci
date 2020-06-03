@@ -215,7 +215,8 @@ export default class Agent extends React.Component {
                     let credsData = JSON.parse(checkData.data.ReadCreds.creds);
 
                     if (parseInt(credsData.status_code) === 200) {
-                        thiss.setState({ details: credsData.payload })
+                        thiss.setDetails(credsData.payload);
+                        // thiss.setState({ details: credsData.payload })
                     } else if (parseInt(credsData.status_code) === 300) {
                         try {
                             thiss.notify(credsData.message)
