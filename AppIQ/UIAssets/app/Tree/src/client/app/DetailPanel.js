@@ -116,7 +116,7 @@ export default function DetailPanel(props) {
                     }
                 } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces") {
                     if (detailValue && Array.isArray(detailValue)) {
-                        detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
+                        detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px", paddingBottom: "3px"}}>
                         {showDetails[name].map(function (infcs) {
                             return <li>{infcs}</li>
                         })}
