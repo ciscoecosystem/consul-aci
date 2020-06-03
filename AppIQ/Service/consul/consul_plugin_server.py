@@ -14,7 +14,7 @@ from . import consul_tree_parser
 from consul_utils import Consul
 from decorator import time_it
 
-import aci_utils
+import apic_utils
 import alchemy_core
 import custom_logger
 
@@ -40,36 +40,6 @@ def set_polling_interval(interval):
     """
 
     return "200", "Polling Interval Set!"
-
-
-def get_agent_list(data_center):
-    """Returns list of all the agents
-
-    TODO: should not be static, should be from Alchemy
-    """
-    try:
-        start_time = datetime.datetime.now()
-        logger.info("Reading agent for datacenter " + str(data_center))
-        file_exists = os.path.isfile(consul_credential_file_path)
-        agent_list = []
-
-        if file_exists:
-            with open(consul_credential_file_path, 'r') as fread:
-                creds = json.load(fread)
-
-            for agent in creds:
-                if agent.get('datacenter') == data_center:
-                    agent_list.append(agent)
-                    return agent_list
-        else:
-            return []
-    except Exception as e:
-        logger.exception("Could not fetch agent list for datacenter {}, Error: {}".format(
-            data_center, str(e)))
-        return []
-    finally:
-        end_time = datetime.datetime.now()
-        logger.info("time for get agent list : " + str(end_time - start_time))
 
 
 def get_new_mapping(tenant, datacenter):
@@ -299,84 +269,6 @@ def tree(tenant, datacenter):
         logger.debug("Time for TREE: " + str(end_time - start_time))
 
 
-def details(tenant, datacenter):
-    """Get correlated Details view data
-
-    return: {
-        agentIP: string
-        payload: list of dict/{}
-        status_code: string: 200/300 
-        message: string
-    }
-    """
-
-    logger.info("Details view for tenant: {}".format(tenant))
-    start_time = datetime.datetime.now()
-    try:
-        mapping(tenant, datacenter)
-        all_datacenter_mapping = {}
-
-        file_exists = os.path.isfile(mapppings_file_path)
-        if file_exists:
-            with open(mapppings_file_path, 'r') as fread:
-                file_data = fread.read()
-                if file_data:
-                    all_datacenter_mapping = json.loads(file_data)
-                    aci_consul_mappings = all_datacenter_mapping.get(
-                        datacenter)
-        aci_obj = aci_utils.ACI_Utils()
-        aci_data = aci_obj.main(tenant)
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
-        consul_data = consul_obj.get_consul_data()
-
-        merged_data = consul_merge.merge_aci_consul(
-            tenant, aci_data, consul_data, aci_consul_mappings)
-
-        details_list = []
-        for each in merged_data:
-            epg_health = aci_obj.get_epg_health(
-                str(tenant), str(each['AppProfile']), str(each['EPG']))
-            details_list.append({
-                'interface': each.get('Interfaces'),
-                'endPointName': each.get('VM-Name'),
-                'ip': each.get('IP'),
-                'mac': each.get('CEP-Mac'),
-                'learningSource': each.get('learningSource'),
-                'hostingServer': each.get('hostingServerName'),
-                'reportingController': each.get('controllerName'),
-                'vrf': each.get('VRF'),
-                'bd': each.get('BD'),
-                'ap': each.get('AppProfile'),
-                'epgName': each.get('EPG'),
-                'epgHealth': epg_health,
-                'consulNode': each.get('node_name'),
-                'nodeChecks': each.get('node_check'),
-                'services': change_key(each.get('node_services'))
-            })
-        logger.debug("Details final data ended: " + str(details_list))
-
-        # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
-        return json.dumps({
-            "agentIP": agent.get('ip'),
-            "payload": details_list,
-            "status_code": "200",
-            "message": "OK"
-        })
-    except Exception as e:
-        logger.exception(
-            "Could not load the Details. Error: {}".format(str(e)))
-        return json.dumps({
-            "payload": {},
-            "status_code": "300",
-            "message": "Could not load the Details."
-        })
-    finally:
-        end_time = datetime.datetime.now()
-        logger.debug("Time for DETAILS: " + str(end_time - start_time))
-
-
 def change_key(services):
     final_list = []
     if services:
@@ -404,18 +296,27 @@ def get_service_check(service_name, service_id, datacenter):
     } 
     """
 
-    logger.info("Service Check for service: {}, {}".format(
-        service_name, service_id))
+    logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
-        response = consul_obj.detailed_service_check(service_name, service_id)
+        response = []
+        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+        for check in service_checks_data:
+            if check[1] == service_id and check[2] == service_name:
+                response.append({
+                    'ServiceName': check[2],
+                    'CheckID': check[0],
+                    'Type': check[4],
+                    'Notes': check[5],
+                    'Output': check[6],
+                    'Name': check[3],
+                    'Status': check[7]
+                })
+
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP": agent.get('ip'),
+            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -447,14 +348,24 @@ def get_node_checks(node_name, datacenter):
     logger.info("Node Check for node: {}".format(node_name))
     start_time = datetime.datetime.now()
     try:
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
-        response = consul_obj.detailed_node_check(node_name)
+        response = []
+        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+        for check in node_checks_data:
+            if check[3] == node_name:
+                response.append({
+                    'Name': check[3],
+                    'ServiceName': check[4],
+                    'CheckID': check[0],
+                    'Type': check[5],
+                    'Notes': check[6],
+                    'Output': check[7],
+                    'Status': check[8]
+                })
+
         logger.debug('Response of Service chceck: {}'.format(response))
 
         return json.dumps({
-            "agentIP": agent.get('ip'),
+            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -486,20 +397,28 @@ def get_service_check_ep(service_list, datacenter):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
         service_list = json.loads(service_list)
+        response = []
+        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+        
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
             service_id = service_dict["ServiceID"]
-
-            response += consul_obj.detailed_service_check(
-                service_name, service_id)
+            for check in service_checks_data:
+                if check[1] == service_id and check[2] == service_name:
+                    response.append({
+                        'ServiceName': check[2],
+                        'CheckID': check[0],
+                        'Type': check[4],
+                        'Notes': check[5],
+                        'Output': check[6],
+                        'Name': check[3],
+                        'Status': check[7]
+                    })
 
         return json.dumps({
-            "agentIP": agent.get('ip'),
+            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -532,16 +451,25 @@ def get_node_check_epg(node_list, datacenter):
     start_time = datetime.datetime.now()
     response = []
     try:
-        agent = get_agent_list(datacenter)[0]
-        consul_obj = Consul(agent.get('ip'), agent.get(
-            'port'), agent.get('token'), agent.get('protocol'))
+        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+
         node_list = json.loads(node_list)
 
         for node_name in node_list:
-            response += consul_obj.detailed_node_check(node_name)
+            for check in node_checks_data:
+                if check[3] == node_name:
+                    response.append({
+                        'Name': check[3],
+                        'ServiceName': check[4],
+                        'CheckID': check[0],
+                        'Type': check[5],
+                        'Notes': check[6],
+                        'Output': check[7],
+                        'Status': check[8]
+                    })
 
         return json.dumps({
-            "agentIP": agent.get('ip'),
+            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -564,7 +492,7 @@ def get_faults(dn):
     Get List of Faults from APIC related to the given Modular object.
     """
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     faults_resp = aci_util_obj.get_ap_epg_faults(start_time, dn)
 
     if faults_resp:
@@ -600,7 +528,7 @@ def get_events(dn):
     Get List of Events related to the given MO.
     """
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     events_resp = aci_util_obj.get_ap_epg_events(start_time, dn)
 
     if events_resp:
@@ -637,7 +565,7 @@ def get_audit_logs(dn):
     """
 
     start_time = datetime.datetime.utcnow()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     audit_logs_resp = aci_util_obj.get_ap_epg_audit_logs(start_time, dn)
 
     if audit_logs_resp:
@@ -670,7 +598,7 @@ def get_audit_logs(dn):
 
 def get_children_ep_info(dn, mo_type, mac_list):
     start_time = datetime.datetime.now()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
         mac_query_filter_list = []
@@ -731,7 +659,7 @@ def get_children_ep_info(dn, mo_type, mac_list):
 
 def get_configured_access_policies(tn, ap, epg):
     start_time = datetime.datetime.now()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
     cap_resp = aci_util_obj.get_mo_related_item("", cap_url, "other_url")
@@ -831,7 +759,7 @@ def get_subnets(dn):
     """
     Gets the Subnets Information for an EPG
     """
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     subnet_query_string = "query-target=children&target-subtree-class=fvSubnet"
     subnet_resp = aci_util_obj.get_mo_related_item(dn, subnet_query_string, "")
     subnet_list = []
@@ -865,7 +793,7 @@ def get_to_epg_traffic(epg_dn):
     """
 
     start_time = datetime.datetime.now()
-    aci_util_obj = aci_utils.ACI_Utils()
+    aci_util_obj = apic_utils.AciUtils()
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
     epg_traffic_resp = aci_util_obj.get_all_mo_instances(

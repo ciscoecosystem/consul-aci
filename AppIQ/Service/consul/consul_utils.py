@@ -358,11 +358,7 @@ class Consul(object):
             Notes: string
             Output: string
             Name: string
-            Status: {
-                passing: int: if val > 0
-                warning: int: if val > 0
-                failing: int: if val > 0
-                }
+            Status: string
             },...]
         """
 
@@ -406,11 +402,7 @@ class Consul(object):
             Type: string
             Notes: string
             Output: string
-            Status: {
-                passing: int: if val > 0
-                warning: int: if val > 0
-                failing: int: if val > 0
-                }
+            Status: string
             },...]
         """
 

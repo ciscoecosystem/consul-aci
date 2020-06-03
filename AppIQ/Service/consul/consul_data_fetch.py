@@ -172,7 +172,7 @@ def data_fetch():
                 status = int(agent[4])
                 if status == 1:
                     decoded_token = base64.b64decode(agent[3]).decode('ascii')
-                    agent_list = [
+                    agent_list.append(
                         {
                             'ip': agent[0],
                             'port': agent[1],
@@ -180,7 +180,7 @@ def data_fetch():
                             'token': decoded_token,
                             'datacenter': agent[5],
                         }
-                    ]
+                    )
 
             # if there is no agent list on 
             # db check it evety CHECK_AGENT_LIST sec
