@@ -46,51 +46,41 @@ class Consul(object):
         
         logger.info('Check Consul Connection')
         try:
-            while True:
-                if self.header:
-                    logger.info("Token provided, trying connecting to agent with token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
-                    status_code = response.status_code
-                    if status_code == 200:
-                        logger.info("Successfully connected to {}".format(self.agent_ip))
-                        self.connected = True
-                        return self.connected, None
+            status_code = None
+            if self.header:
+                logger.info("Token provided, trying connecting to agent with token.")
+                response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
+                status_code = response.status_code
 
-                    # try connecting without token
-                    else:
-                        logger.info("Connection failed with https, status_code: {}".format(status_code))
-                        logger.info("Trying connection without token using http")
-                        self.header = {} # TODO: header is removed for trying token less connection. Understand the usecsase where it fails
-                        continue
+            # This is the case when no token is provided by the user or 
+            # it is provided but connection has failed
+            else:
+                logger.info("Token NOT provided, trying connecting to agent without token.")
+                response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
+                status_code = response.status_code
 
-                # This is the case when no token is provided by the user or 
-                # it is provided but connection has failed
-                else:
-                    logger.info("Token NOT provided, trying connecting to agent without token.")
-                    response = self.session.get(urls.AUTH.format(self.base_url), timeout=5)
-                    status_code = response.status_code
-                    if status_code == 200:
-                        logger.info("Successfully connected to {}".format(self.agent_ip))
-                        self.connected = True
-                        message = None
+            if status_code == 200:
+                logger.info("Successfully connected to {}".format(self.agent_ip))
+                self.connected = True
+                message = None
 
-                    elif status_code == 403:
-                        logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
-                        self.connected = False
-                        message = "403: Authentication failed!"
+            elif status_code == 403:
+                logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
+                self.connected = False
+                message = "403: Authentication failed!"
 
-                    elif status_code == 500:
-                        logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
-                        self.connected = False
-                        message = "500: Consul Server Error!"
+            elif status_code == 500:
+                logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
+                self.connected = False
+                message = "500: Consul Server Error!"
 
-                    # When all the cases fail with/without token
-                    else:
-                        logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
-                        self.connected = False
-                        message = None
+            # When all the cases fail with/without token
+            else:
+                logger.info("Connection FAILED for agent {}:{} ".format(self.agent_ip, self.port))
+                self.connected = False
+                message = None
 
-                    return self.connected, message
+            return self.connected, message
 
         except requests.exceptions.ConnectTimeout as e:
             logger.exception('ConnectTimeout Exception in Consul check connection: {}'.format(str(e)))
