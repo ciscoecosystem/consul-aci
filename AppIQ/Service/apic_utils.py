@@ -25,7 +25,7 @@ logger = CustomLogger.get_logger("/home/app/log/app.log")
 
 APIC_IP =  get_conf_value('APIC', 'APIC_IP')
 STATIC_IP = get_conf_value('APIC', 'STATIC_IP')
-APIC_THREAD_POOL = get_conf_value('APIC', 'APIC_THREAD_POOL')
+APIC_THREAD_POOL = int(get_conf_value('APIC', 'APIC_THREAD_POOL'))
 
 class AciUtils(object):
     __instance = None

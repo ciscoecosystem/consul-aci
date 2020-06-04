@@ -28,9 +28,9 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = get_conf_value('DATA_FETCH', 'POLL_INTERVAL')      # interval in minutes
-CHECK_AGENT_LIST = get_conf_value('DATA_FETCH', 'CHECK_AGENT_LIST') # interval in sec
-THREAD_POOL = get_conf_value('DATA_FETCH', 'CONSUL_THREAD_POOL') # Pool size for all thread pools
+POLL_INTERVAL = int(get_conf_value('DATA_FETCH', 'POLL_INTERVAL'))       # interval in minutes
+CHECK_AGENT_LIST = int(get_conf_value('DATA_FETCH', 'CHECK_AGENT_LIST')) # interval in sec
+THREAD_POOL = int(get_conf_value('DATA_FETCH', 'CONSUL_THREAD_POOL'))    # Pool size for all thread pools
 
 
 @exception_handler
