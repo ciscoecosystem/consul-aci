@@ -13,7 +13,7 @@ import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
-# from yaml_utils import get_conf_value
+from config_utils import get_conf_value
 from decorator import exception_handler
 
 import time
@@ -28,9 +28,9 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = 2 #get_conf_value('POLL_INTERVAL')      # interval in minutes
-CHECK_AGENT_LIST = 3 #get_conf_value('CHECK_AGENT_LIST') # interval in sec
-THREAD_POOL = 10 #get_conf_value('THREAD_POOL') # Pool size for all thread pools
+POLL_INTERVAL = int(get_conf_value('DATA_FETCH', 'POLL_INTERVAL'))       # interval in minutes
+CHECK_AGENT_LIST = int(get_conf_value('DATA_FETCH', 'CHECK_AGENT_LIST')) # interval in sec
+THREAD_POOL = int(get_conf_value('DATA_FETCH', 'CONSUL_THREAD_POOL'))    # Pool size for all thread pools
 
 
 @exception_handler
@@ -177,7 +177,6 @@ def data_fetch():
             # get agent list from db
             agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
             agent_list = []
-            agent_addr_list = []
             for agent in agents:
                 status = int(agent[4])
                 if status == 1:
@@ -191,7 +190,6 @@ def data_fetch():
                             'datacenter': agent[5],
                         }
                     )
-                    agent_addr_list.append(agent[0] + ':' + agent[1])
 
             # if there is no agent list on 
             # db check it evety CHECK_AGENT_LIST sec
@@ -208,6 +206,11 @@ def data_fetch():
             for datacenter, agents in datacenter_list.items():
                 
                 logger.info("Data fetch for dc: {}".format(datacenter))
+
+                # Creating a list of agents
+                agent_addr_list = []
+                for agent in agents:
+                    agent_addr_list.append(agent.get('ip') + ':' + agent.get('port'))
 
                 # Thread safe dicts
                 nodes_dict = ThreadSafeDict()
