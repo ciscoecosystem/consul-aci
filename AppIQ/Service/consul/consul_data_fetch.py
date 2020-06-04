@@ -28,7 +28,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = 5 #get_conf_value('POLL_INTERVAL')      # interval in minutes
+POLL_INTERVAL = 2 #get_conf_value('POLL_INTERVAL')      # interval in minutes
 CHECK_AGENT_LIST = 3 #get_conf_value('CHECK_AGENT_LIST') # interval in sec
 THREAD_POOL = 10 #get_conf_value('THREAD_POOL') # Pool size for all thread pools
 

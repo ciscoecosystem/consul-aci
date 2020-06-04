@@ -43,7 +43,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                     if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['dn'] == str(aci['dn']):
                         logger.info('mapping: {}, aci: {}'.format(str(each), str(aci)))
                         # Service to CEp mapping
-                        for node in copy.deepcopy(consul_data):
+                        for node in consul_data:
                             new_node = {
                                 'node_id': node.get('node_id'),
                                 'node_name': node.get('node_name'),
@@ -55,7 +55,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             node_services = copy.deepcopy(node.get('node_services', []))
                             for service in node_services:
                                 if aci.get(aci_key).upper() == service.get('service_ip') and aci.get(aci_key).upper() not in node.get('node_ips'):
-                                    node['node_services'].remove(service)
+                                    # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
                                 # but this will remove all the non mapped services in first itteration node
