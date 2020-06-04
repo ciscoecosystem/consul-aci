@@ -10,7 +10,7 @@ const warningColor = "#f49141";
 export default class DataTable extends Component {
   constructor(props) {
     super(props);
-
+    this.myRef = React.createRef();
     const SERVICE_TABLE_HEADER = [
       {
         Header: "Service",
@@ -123,6 +123,12 @@ export default class DataTable extends Component {
         filterable: true
       },
       {
+        Header: "Any text",
+        accessor: "anyText",
+        show: false,
+        filterable: false
+      },
+      {
         Header: "Node Checks",
         accessor: "nodeChecks",
         filterable: false,
@@ -146,6 +152,11 @@ export default class DataTable extends Component {
     }
   }
 
+  componentDidMount(){
+    const node = this.myRef.current;
+    node.filterFields.pop(); // remove anytext from filter
+  }
+
   componentWillReceiveProps(newprops) {
     this.setState({ loading: newprops.loading })
     this.setState({ row: newprops.data })
@@ -165,6 +176,7 @@ export default class DataTable extends Component {
 
 
         <FilterableTable loading={this.state.loading}
+          ref={this.myRef}
           className="-striped -highlight"
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
