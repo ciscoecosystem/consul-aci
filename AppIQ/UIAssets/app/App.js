@@ -138,11 +138,17 @@ export default class App extends React.Component {
         let thiss = this;
         let sidebarItems = [...this.state.sidebarItems];
 
+        let ifAnyDCconnected = false;
+        details.some(data =>{
+            ifAnyDCconnected = ifAnyDCconnected || data.status
+            return data.status;
+        })
+
         // filter out and show 
         function datacenterSubitem(pageind) {
             // let thiss= this;
             // if no datacenters
-            if (details.length === 0) {
+            if (details.length === 0 || !ifAnyDCconnected) {
                 return ["No Datacenter found"].map(function (elem) {
                     return {
                         id: 'dc0',

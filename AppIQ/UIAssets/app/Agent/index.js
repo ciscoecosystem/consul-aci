@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Screen, Table, Button, Input, Select, Icon, IconButton, FilterableTable } from 'blueprint-react';
+import { Screen, Table, Button, Input, Select, Icon, IconButton } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
 import { QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js"
 import "./index.css";
@@ -36,6 +36,7 @@ export default class Agent extends React.Component {
         super(props)
         // this.xhrCred = new XMLHttpRequest();
         this.xhrCred = new XMLHttpRequest();
+        this.intervalCall = null;
         this.setDetails = this.setDetails.bind(this);
         this.closeAgent = this.closeAgent.bind(this);
         this.handleModal = this.handleModal.bind(this);
@@ -75,10 +76,12 @@ export default class Agent extends React.Component {
     componentDidMount() {
         // let thiss = this;
         this.readAgents();
-        setInterval(() => this.readAgents(true), INTERVAL_API_CALL);
+        this.intervalCall  = setInterval(() => this.readAgents(true), INTERVAL_API_CALL);
     }
 
     componentWillUnmount() {
+        console.log("Component will unmount; intervalcall")
+        clearInterval(this.intervalCall); // this clears the interval calls
         this.xhrCred.abort(); // cancel all apis
     }
 
@@ -90,12 +93,16 @@ export default class Agent extends React.Component {
         this.setState({ ...defaultFieldState })
     }
 
-    setDetails(details) {
+    setDetails(details, isReloaded = false) {
         this.setState({ details });
-        this.props.updateDetails();
+        isReloaded && this.props.updateDetails();
     }
 
-    readAgents(isRepeatedCall = false) {
+    /**  readAgents @params
+     * isRepeatedCall: true indicate read agent called in interval 
+     * isReloaded: true indicate, user reloaded the agent, its also reloads update dc api.
+    */
+    readAgents(isRepeatedCall = false, isReloaded = false) {
         let thiss = this;
         console.log("readagent:= isrepeatcall ", isRepeatedCall);
         if (isRepeatedCall === true) {
@@ -106,12 +113,12 @@ export default class Agent extends React.Component {
                 console.log("Read agent abort");
                 return;
             }
-            this.readAgentsCall();
+            this.readAgentsCall(isReloaded);
         } else {
 
             this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
                 console.log("LOading----")
-                thiss.readAgentsCall();
+                thiss.readAgentsCall(isReloaded);
             })
         }
     }
@@ -193,7 +200,7 @@ export default class Agent extends React.Component {
                 });
     }
 
-    readAgentsCall() {
+    readAgentsCall(isReloaded) {
         let thiss = this;
         const payload = {
             query: `query{
@@ -215,7 +222,7 @@ export default class Agent extends React.Component {
                     let credsData = JSON.parse(checkData.data.ReadCreds.creds);
 
                     if (parseInt(credsData.status_code) === 200) {
-                        thiss.setDetails(credsData.payload);
+                        thiss.setDetails(credsData.payload, isReloaded);
                         // thiss.setState({ details: credsData.payload })
                     } else if (parseInt(credsData.status_code) === 300) {
                         try {
@@ -331,25 +338,6 @@ export default class Agent extends React.Component {
                         console.log("Add agentresponse ", resp);
 
                         if (resp.status_code == 200) {
-
-                            // if (isNewAgentAdded) { // new agent added
-                            //     if (resp.payload && resp.payload.length > 0) {
-                            //         // details[updateIndex] = resp.payload[0];
-                            //         details.unshift(resp.payload[0]);
-                            //         // thiss.setState({ details });
-                            //         thiss.setDetails(details);
-
-                            //         // connection is not true
-                            //         if (resp.payload.status !== true && resp.message) {
-                            //             thiss.notify(resp.message, false, true);
-                            //             // thiss.notify("Connection could not be established for "+ details[updateIndex].ip +":" + details[updateIndex].port ,false, true)
-                            //         }
-                            //     } else {
-                            //         // thiss.abortUpdateAgentAction();
-                            //         thiss.notify("Some technical glitch!");
-                            //     }
-
-                            // } else { // updated an agent
                             if (resp.payload) {
 
                                 if (isNewAgentAdded) {
@@ -358,7 +346,7 @@ export default class Agent extends React.Component {
                                     details[editAgentIndex] = resp.payload;
                                 }
 
-                                thiss.setDetails(details);
+                                thiss.setDetails(details, true);
 
                                 // connection is not true
                                 if (resp.payload.status !== true && resp.message) {
@@ -383,18 +371,6 @@ export default class Agent extends React.Component {
                         else if (resp.status_code == 301) { // detail updated but some server error 
                             console.log("Response 301 ", resp.payload);
                             thiss.notify(resp.message); // error message
-
-                            // if (isNewAgentAdded) { // new agent added
-                            //     if (resp.payload && resp.payload.length > 0) {
-                            //         details.unshift(resp.payload[0]);
-                            //         // thiss.setState({ details });
-                            //         thiss.setDetails(details);
-
-                            //     } else {
-                            //         thiss.notify("Some technical glitch!");
-                            //     }
-
-                            // } else { // updated an agent
                             if (resp.payload) {
                                 if (isNewAgentAdded) {
                                     details.unshift(resp.payload);
@@ -402,7 +378,7 @@ export default class Agent extends React.Component {
                                     details[editAgentIndex] = resp.payload;
                                 }
 
-                                thiss.setDetails(details);
+                                thiss.setDetails(details, true);
                             } else {
                                 thiss.notify("Some technical glitch!");
                             }
@@ -460,16 +436,13 @@ export default class Agent extends React.Component {
 
         let { details } = this.state;
 
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
-
         let payload = {
             query: `query{
             DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
 
         let xhr = this.xhrCred;
-        // new XMLHttpRequest();
+
         let thiss = this;
         try {
             xhr.open("POST", QUERY_URL, true);
@@ -494,7 +467,7 @@ export default class Agent extends React.Component {
                         if (resp.status_code == 200) {
                             details.splice(deleteIndex, 1);
                             // thiss.setState({ details });
-                            thiss.setDetails(details);
+                            thiss.setDetails(details, true);
                         }
                         else {
                             thiss.notify(resp.message);
@@ -515,9 +488,6 @@ export default class Agent extends React.Component {
         }
         catch (e) {
             console.error("Error api removeagent", e);
-        }
-        finally {
-            // this.setState({ readAgentLoading: false, editAgentIndex: null, editDetailCopy: undefined, isNewAgentAdded: false })
         }
     }
 
@@ -695,20 +665,11 @@ export default class Agent extends React.Component {
                                         type="btn--icon btn--gray-ghost"
                                         size="btn--small"
                                         icon="icon-refresh"
-                                        onClick={this.readAgents} />
-
+                                        onClick={() => this.readAgents(false, true)} />
+                                    {/* This recalls agent api and also updatedc call */}
                                 </div>
                             </div>
                             <div className="panel-body ">
-
-                                {/* <FilterableTable key={"agentTable"}
-                                    loading={this.state.readAgentLoading}
-                                    loadingText={this.state.loadingText}
-                                    className="-striped -highlight"
-                                    noDataText="No Agent Found."
-                                    data={this.state.details}
-                                    columns={tableColumns}
-                                /> */}
 
                                 <Table key={"agentTable"}
                                     loading={this.state.readAgentLoading}
