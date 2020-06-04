@@ -13,7 +13,7 @@ import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
 from apic_utils import AciUtils
-# from yaml_utils import get_conf_value
+from config_utils import get_conf_value
 from decorator import exception_handler
 
 import time
@@ -28,9 +28,9 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = 2 #get_conf_value('POLL_INTERVAL')      # interval in minutes
-CHECK_AGENT_LIST = 3 #get_conf_value('CHECK_AGENT_LIST') # interval in sec
-THREAD_POOL = 10 #get_conf_value('THREAD_POOL') # Pool size for all thread pools
+POLL_INTERVAL = get_conf_value('DATA_FETCH', 'POLL_INTERVAL')      # interval in minutes
+CHECK_AGENT_LIST = get_conf_value('DATA_FETCH', 'CHECK_AGENT_LIST') # interval in sec
+THREAD_POOL = get_conf_value('DATA_FETCH', 'CONSUL_THREAD_POOL') # Pool size for all thread pools
 
 
 @exception_handler
