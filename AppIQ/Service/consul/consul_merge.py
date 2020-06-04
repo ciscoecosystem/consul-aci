@@ -1,11 +1,14 @@
-import datetime
 import json
-import custom_logger
 import copy
+import datetime
+
+import custom_logger
+from decorator import time_it
+
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
-
+@time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
     Initial algo implementaion.
@@ -13,7 +16,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     Merge ACI data with Consul Data fetched from API directly
     """
 
-    start_time = datetime.datetime.now()
     logger.info('Merging objects')
 
     try:
@@ -128,8 +130,5 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         return final_list #updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
-        logger.exception("Error while merge_aci_data : "+str(e))
-        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the Merge ACI and AppDynamics objects."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for merge_aci_appd: " + str(end_time - start_time))
+        logger.exception("Error in merge_aci_data : "+str(e))
+        return []

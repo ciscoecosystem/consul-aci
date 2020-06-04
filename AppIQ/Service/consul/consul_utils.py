@@ -30,7 +30,7 @@ class Consul(object):
         self.header = {}
         if self.token:
             logger.info('Token provided')
-            self.header = {'X-Consul-Token' : token}
+            self.header = {'X-Consul-Token' : self.token}
 
 
     def check_connection(self):

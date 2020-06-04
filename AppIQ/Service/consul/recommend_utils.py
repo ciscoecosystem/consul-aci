@@ -6,7 +6,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
 def get_common_eps(source_ip_list, aci_parsed_eps):
-    """Map EP(ACI) to Nodes(AppD/Consul)
+    """Map EP(ACI) to Nodes(Consul)
     
     Matches the IP of ACI fvIp with Source Node IPs and returns a list of matched ACI fvIps dicts"""
     
@@ -153,7 +153,7 @@ def recommanded_eps(source_ip_list, parsed_eps):
     
     TODO: explain
     """
-    logger.info('Finding Recommanded EPs for ACI and AppD')
+    logger.info('Finding Recommanded EPs for ACI and Consul')
 
     try:
         if not parsed_eps:
@@ -161,9 +161,9 @@ def recommanded_eps(source_ip_list, parsed_eps):
             return []
         else:
             # Example of each EP dn
-            # "uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-test/cep-00:50:56:92:BA:4A/ip-[20.20.20.10]"
+            # "uni/tn-Tenant1/ap-AppProfile1/epg-Epg-test/cep-AA:BB:CC:DD:EE:FF"
             # Example of extracted Epg dn
-            # "uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-test"
+            # "uni/tn-Tenant1/ap-AppProfile1/epg-Epg-test"
             for each in parsed_eps:
                 each['dn'] = '/'.join(each['dn'].split('/',4)[0:4])
     except Exception as e:

@@ -34,9 +34,9 @@ mapppings_file_path = "/home/app/data/mappings.json"
 
 
 def set_polling_interval(interval):
-    """Sets the polling interval in AppDynamics config file
+    """Sets the polling interval for data fetch
 
-    TODO: see if needed or not
+    TODO: to be implemented
     """
 
     return "200", "Polling Interval Set!"
