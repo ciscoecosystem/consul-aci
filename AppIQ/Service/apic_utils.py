@@ -9,7 +9,7 @@ import concurrent.futures
 import urls
 from decorator import time_it
 from custom_logger import CustomLogger
-# from yaml_utils import get_conf_value
+from config_utils import get_conf_value
 
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
@@ -23,10 +23,9 @@ except:
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP = '172.17.0.1' #get_conf_value('APIC_IP')
-STATIC_IP = '0.0.0.0' #get_conf_value('STATIC_IP')
-APIC_THREAD_POOL = 10 #get_conf_value('THREAD_POOL')
-
+APIC_IP =  get_conf_value('APIC', 'APIC_IP')
+STATIC_IP = get_conf_value('APIC', 'STATIC_IP')
+APIC_THREAD_POOL = int(get_conf_value('APIC', 'APIC_THREAD_POOL'))
 
 class AciUtils(object):
     __instance = None
