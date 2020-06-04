@@ -177,7 +177,6 @@ def data_fetch():
             # get agent list from db
             agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
             agent_list = []
-            agent_addr_list = []
             for agent in agents:
                 status = int(agent[4])
                 if status == 1:
@@ -191,7 +190,6 @@ def data_fetch():
                             'datacenter': agent[5],
                         }
                     )
-                    agent_addr_list.append(agent[0] + ':' + agent[1])
 
             # if there is no agent list on 
             # db check it evety CHECK_AGENT_LIST sec
@@ -208,6 +206,11 @@ def data_fetch():
             for datacenter, agents in datacenter_list.items():
                 
                 logger.info("Data fetch for dc: {}".format(datacenter))
+
+                # Creating a list of agents
+                agent_addr_list = []
+                for agent in agents:
+                    agent_addr_list.append(agent.get('ip') + ':' + agent.get('port'))
 
                 # Thread safe dicts
                 nodes_dict = ThreadSafeDict()
