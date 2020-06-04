@@ -1,11 +1,14 @@
-import datetime
 import json
-import custom_logger
 import copy
+import datetime
+
+import custom_logger
+from decorator import time_it
+
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
-
+@time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
     Initial algo implementaion.
@@ -13,7 +16,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     Merge ACI data with Consul Data fetched from API directly
     """
 
-    start_time = datetime.datetime.now()
     logger.info('Merging objects')
 
     try:
@@ -53,7 +55,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             node_services = copy.deepcopy(node.get('node_services', []))
                             for service in node_services:
                                 if aci.get(aci_key).upper() == service.get('service_ip') and aci.get(aci_key).upper() not in node.get('node_ips'):
-                                    node['node_services'].remove(service)
+                                    # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
                                 # but this will remove all the non mapped services in first itteration node
@@ -61,8 +63,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     node['node_services'].remove(service)
                             if new_node['node_services']:
                                 new_node.update(aci)
-                                merge_list.append(new_node)
-                                # what is this for?
+                                merge_list.append(copy.deepcopy(new_node))
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))
                                     if aci['EPG'] not in merged_epg_count:
@@ -70,14 +71,12 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     else:
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
-                        # logger.info('Service to CEp mapped:' + str(merge_list))
-
                         # node to EP mapping
                         mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('node_ips', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
-                                merge_list.append(each)
+                                merge_list.append(copy.deepcopy(each))
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))
                                     if aci['EPG'] not in merged_epg_count:
@@ -131,8 +130,5 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         return final_list #updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
-        logger.exception("Error while merge_aci_data : "+str(e))
-        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not load the Merge ACI and AppDynamics objects."})
-    finally:
-        end_time =  datetime.datetime.now()
-        logger.info("Time for merge_aci_appd: " + str(end_time - start_time))
+        logger.exception("Error in merge_aci_data : "+str(e))
+        return []

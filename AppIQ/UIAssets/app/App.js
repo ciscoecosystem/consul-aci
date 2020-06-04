@@ -80,9 +80,9 @@ export default class App extends React.Component {
                     title: 'Dashboard'
                 },
                 {
-                    id: 'Operational',
+                    id: 'Operations',
                     icon: "icon-diagnostics",
-                    title: 'Operational',
+                    title: 'Operations',
                     subItems: [
                         {
                             id: 'dc1',
@@ -109,7 +109,13 @@ export default class App extends React.Component {
                         <span className="icon-analysis ">
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
-                }
+                },
+                {
+                    id: 'serviceint',
+                    icon: "icon-admin",
+                    path: this.pathname + '/serviceintention',
+                    title: 'Service Intentions'
+                },
             ]
         }
     }
@@ -182,7 +188,7 @@ export default class App extends React.Component {
 
         try {
             delete sidebarItems[1].content;
-            sidebarItems[1].subItems = datacenterSubitem(1) // for operational
+            sidebarItems[1].subItems = datacenterSubitem(1) // for Operations
 
             delete sidebarItems[2].content;
             sidebarItems[2].subItems = datacenterSubitem(2) // for mapping

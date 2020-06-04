@@ -1,7 +1,6 @@
 import re
 import json
 import time
-# import yaml
 import base64
 import requests
 from collections import defaultdict
@@ -10,6 +9,7 @@ import concurrent.futures
 import urls
 from decorator import time_it
 from custom_logger import CustomLogger
+# from yaml_utils import get_conf_value
 
 from cobra.model.pol import Uni as PolUni
 from cobra.model.aaa import UserEp as AaaUserEp
@@ -23,9 +23,9 @@ except:
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP = '172.17.0.1'
-STATIC_IP = '0.0.0.0'
-APIC_THREAD_POOL = 10
+APIC_IP = '172.17.0.1' #get_conf_value('APIC_IP')
+STATIC_IP = '0.0.0.0' #get_conf_value('STATIC_IP')
+APIC_THREAD_POOL = 10 #get_conf_value('THREAD_POOL')
 
 
 class AciUtils(object):
@@ -128,7 +128,7 @@ class AciUtils(object):
         """
         try:
             response = self.session.get(
-                url, cookies={'APIC-Cookie': self.apic_token}, verify=False)
+                url, cookies={'APIC-Cookie': self.apic_token}, timeout=90, verify=False)
             status_code = response.status_code
             if status_code == 200 or status_code == 201:
                 logger.info('API call success: ' + str(url))
@@ -193,7 +193,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Parsing EP Data API call, Error: {}'.format(str(e)))
-            return None
+            return []
 
     def parse_and_return_ep_data(self, item):
         """Funtion to Parse data of EP
@@ -337,7 +337,7 @@ class AciUtils(object):
 
         return (ctrlr_name, hyper_name)
 
-    def get_all_mo_instances(self, mo_class, query_string):
+    def get_all_mo_instances(self, mo_class, query_string=""):
         """Function to return All mo instances
 
         Arguments:
@@ -351,7 +351,8 @@ class AciUtils(object):
             instance_list = []
             url = urls.MO_INSTANCE_URL.format(
                 self.proto, self.apic_ip, mo_class)
-            url += "?" + query_string
+            if query_string:
+                url += "?" + query_string
             response_json = self.aci_get(url)
             if response_json and response_json['imdata']:
                 instance_list = response_json['imdata']
@@ -518,7 +519,7 @@ class AciUtils(object):
         except Exception as e:
             logger.exception(
                 'Exception in Contracts API call,  Error: {}'.format(str(e)))
-            return None
+            return {}
 
     def get_epg_health(self, dn):
         """Funtion to get health of EPG from dn
@@ -537,11 +538,11 @@ class AciUtils(object):
                 for key, value in each.iteritems():
                     if str(key) == 'healthInst':
                         return value['attributes']['cur']
-            return None
+            return ''
         except Exception as e:
             logger.exception(
                 'Exception in EPG health API call,  Error: {}'.format(str(e)))
-            return None
+            return ''
 
     def parse_epg_data(self, epg_resp):
         """Funtion to iterate over API response of EPG data
@@ -619,3 +620,78 @@ class AciUtils(object):
             mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
 
         return (list(ip_set) + list(mac_set)), is_cep
+
+
+    @time_it
+    def get_ap_epg_faults(self, dn):
+        """
+        Get Faults from rest API.
+        """
+        faults_dict = None
+        try:
+            faults_list = self.get_mo_related_item(dn, urls.FAULTS_QUERY, "")
+            faults_dict = AciUtils.get_dict_records(faults_list, "faultRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Faults : {}".format(ex))
+        return faults_dict
+
+
+    @time_it
+    def get_ap_epg_events(self, dn):
+        """
+        Get Events from rest API.
+        """
+        events_dict = None
+        try:
+            events_list = self.get_mo_related_item(dn, urls.EVENTS_QUERY, "")
+            events_dict = AciUtils.get_dict_records(events_list, "eventRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Events : {}".format(ex))
+        return events_dict
+
+
+    @time_it
+    def get_ap_epg_audit_logs(self, dn):
+        """
+        Get Audit logs from rest API.
+        """
+        audit_logs_dict = None
+        try:
+            audit_logs_list = self.get_mo_related_item(dn, urls.AUDIT_LOGS_QUERY, "")
+            audit_logs_dict = AciUtils.get_dict_records(audit_logs_list, "auditLogRecords")
+        except Exception as ex:
+            logger.info("Exception while processing Audit logs : " + str(ex))
+        return audit_logs_dict
+
+
+    @time_it
+    def get_mo_related_item(self, mo_dn, item_query_string, item_type):
+        """
+        Common method to get MO related data based on item_type value
+        """
+        try:
+            if item_type == "":
+                url = urls.MO_URL.format(self.proto, self.apic_ip, mo_dn, item_query_string)
+            elif item_type == "other_url":
+                url = "{0}{1}{2}".format(self.proto, self.apic_ip, item_query_string)
+            elif item_type == "HealthRecords":
+                url = urls.MO_HEALTH_URL.format(self.proto, self.apic_ip, mo_dn)
+            elif item_type == "ifConnRecords":
+                url = urls.MO_OTHER_URL.format(self.proto, self.apic_ip, mo_dn, item_query_string)
+
+            item_list = []
+            response_json = self.aci_get(url)
+            if response_json and response_json.get("imdata"):
+                item_list = response_json.get("imdata")
+            return item_list
+        except Exception as ex:
+            logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
+            logger.exception('Epg Item Url : =>'.format(url))
+            return []
+
+
+    @staticmethod
+    def get_dict_records(list_of_records, key):
+        records_dict = dict()
+        records_dict[key] = list_of_records
+        return records_dict

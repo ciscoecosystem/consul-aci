@@ -3,17 +3,6 @@ from . import consul_plugin_server as app
 
 
 """Response Classes"""
-class Check(graphene.ObjectType):
-    checkpoint = graphene.String()
-
-
-class LoginApp(graphene.ObjectType):
-    loginStatus = graphene.String()
-
-
-class Application(graphene.ObjectType):
-    apps = graphene.String()
-
 
 class Mapping(graphene.ObjectType):
     mappings = graphene.String()
@@ -58,10 +47,6 @@ class SetPollingInterval(graphene.ObjectType):
 
 class OperationalTree(graphene.ObjectType):
     response = graphene.String()
-
-
-class Details(graphene.ObjectType):
-    details = graphene.String()
 
 
 class ServiceChecks(graphene.ObjectType):
@@ -110,29 +95,15 @@ class PostTenant(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     """Query class which resolves all the incomming requests"""
-    
-    Check = graphene.Field(Check)
-
-    LoginApp = graphene.Field(LoginApp, 
-                                ip = graphene.String(), 
-                                port = graphene.String(), 
-                                username = graphene.String(),
-                                account = graphene.String(),
-                                password = graphene.String()
-                            )
-
-    Application = graphene.Field(Application, tn=graphene.String())
 
     Mapping = graphene.Field(Mapping, 
                                 tn=graphene.String(), 
-                                datacenter=graphene.String()
-                            )
+                                datacenter=graphene.String())
 
     SaveMapping = graphene.Field(SaveMapping, 
                                     tn = graphene.String(),
                                     datacenter = graphene.String(),
-                                    data = graphene.String()
-                                )
+                                    data = graphene.String())
 
     OperationalTree = graphene.Field(OperationalTree, tn=graphene.String(), datacenter=graphene.String())
 
@@ -145,14 +116,12 @@ class Query(graphene.ObjectType):
     GetOperationalInfo = graphene.Field(GetOperationalInfo, 
                                             dn = graphene.String(),
                                             mo_type = graphene.String(),
-                                            mac_list = graphene.String()
-                                        )
+                                            mac_list = graphene.String())
 
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies,
                                                     tn = graphene.String(),
                                                     ap = graphene.String(),
-                                                    epg = graphene.String()
-                                                )
+                                                    epg = graphene.String())
 
     GetToEpgTraffic = graphene.Field(GetToEpgTraffic, dn = graphene.String())
 
@@ -160,28 +129,22 @@ class Query(graphene.ObjectType):
 
     SetPollingInterval = graphene.Field(SetPollingInterval, interval = graphene.String())
 
-    Details = graphene.Field(Details, tn=graphene.String(), datacenter=graphene.String())
-
     ServiceChecks = graphene.Field(ServiceChecks,
                                     service_name = graphene.String(),
                                     service_id = graphene.String(),
-                                    datacenter = graphene.String()
-                                )
+                                    datacenter = graphene.String())
 
     NodeChecks = graphene.Field(NodeChecks,
                                     node_name=graphene.String(), 
-                                    datacenter=graphene.String()
-                                )
+                                    datacenter=graphene.String())
 
     MultiServiceChecks = graphene.Field(MultiServiceChecks,
                                         service_list=graphene.String(),
-                                        datacenter=graphene.String()
-                                    )
+                                        datacenter=graphene.String())
 
     MultiNodeChecks = graphene.Field(MultiNodeChecks,
                                         node_list=graphene.String(),
-                                        datacenter=graphene.String()
-                                    )
+                                        datacenter=graphene.String())
 
     ReadCreds = graphene.Field(ReadCreds)
 
@@ -191,7 +154,9 @@ class Query(graphene.ObjectType):
 
     DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
 
-    DetailsFlattened = graphene.Field(DetailsFlattened, tn=graphene.String(), datacenter=graphene.String())
+    DetailsFlattened = graphene.Field(DetailsFlattened, 
+                                      tn=graphene.String(), 
+                                      datacenter=graphene.String())
 
     GetDatacenters = graphene.Field(GetDatacenters)
 
@@ -242,30 +207,6 @@ class Query(graphene.ObjectType):
         return SetPollingInterval
 
 
-    def resolve_Check(self,info): #On APIC
-        Check.checkpoint = app.checkFile()
-        return Check
-
-
-    def resolve_LoginApp(self, info, ip, port, username, account, password):
-        app_creds = {
-            "appd_ip": ip,
-            "appd_port": port,
-            "appd_user": username,
-            "appd_account": account,
-            "appd_pw": password
-        }
-
-        login_resp = app.login(app_creds)
-        LoginApp.loginStatus = login_resp
-        return LoginApp
-
-
-    def resolve_Application(self, info, tn):
-        Application.apps = app.get_datacenter_list()
-        return Application
-
-
     def resolve_Mapping(self, info, tn, datacenter):
         Mapping.mappings = app.mapping(tn, datacenter)
         return Mapping
@@ -282,11 +223,6 @@ class Query(graphene.ObjectType):
         return OperationalTree
 
 
-    def resolve_Details(self, info, tn, datacenter):
-        Details.details = app.details(tn, datacenter)
-        return Details
-
-
     def resolve_ServiceChecks(self, info, service_name, service_id, datacenter):
         ServiceChecks.response = app.get_service_check(service_name, service_id, datacenter)
         return ServiceChecks
@@ -298,12 +234,12 @@ class Query(graphene.ObjectType):
 
 
     def resolve_MultiServiceChecks(self, info, service_list, datacenter):
-        MultiServiceChecks.response = app.get_service_check_ep(service_list, datacenter)
+        MultiServiceChecks.response = app.get_multi_service_check(service_list, datacenter)
         return MultiServiceChecks
 
 
     def resolve_MultiNodeChecks(self, info, node_list, datacenter):
-        MultiNodeChecks.response = app.get_node_check_epg(node_list, datacenter)
+        MultiNodeChecks.response = app.get_multi_node_check(node_list, datacenter)
         return MultiNodeChecks 
 
 

@@ -26,20 +26,3 @@ FETCH_EP_MAC_URL = '{0}{1}/api/node/class/fvCEp.json?query-target-filter=eq(fvCE
 AUDIT_LOGS_QUERY = 'rsp-subtree-include=audit-logs,no-scoped,subtree'
 FAULTS_QUERY = 'rsp-subtree-include=fault-records,no-scoped,subtree'
 EVENTS_QUERY = 'rsp-subtree-include=event-logs,no-scoped,subtree'
-
-#AppD Urls
-#All urls containing "/restui" are non documented Appd API
-APPD_LOGIN_URL = '{0}:{1}/controller/auth?action=login'
-APP_HEALTH_URL = '{0}:{1}/controller/restui/app/list/ids'
-APP_HEALTH_URL_V1 = '{0}:{1}/controller/restui/v1/app/list/ids'
-TIER_HEALTH_URL = '{0}:{1}/controller/restui/tiers/list/health/ids'
-TIER_HEALTH_URL_V1 = '{0}:{1}/controller/restui/v1/tiers/list/health/ids'
-NODE_HEALTH_URL = '{0}:{1}/controller/restui/nodes/list/health/ids'
-NODE_HEALTH_URL_V1 = '{0}:{1}/controller/restui/v1/nodes/list/health/ids'
-SERVICE_ENDPOINTS_URL = '{0}:{1}/controller/restui/serviceEndpoint/listViewData/{2}/{3}?time-range=last_5_minnutes.BEFORE_NOW.-1.-1.5'
-NODE_MAC_URL = '{0}:{1}/controller/sim/v2/user/machines?nodeIds={2}&output=JSON'
-APP_INFO_URL = '{0}:{1}/controller/rest/applications?output=JSON'
-TIER_INFO_URL = '{0}:{1}/controller/rest/applications/{2}/tiers?output=JSON'
-NODE_INFO_URL = '{0}:{1}/controller/rest/applications/{2}/tiers/{3}/nodes?output=JSON'
-HEALTH_VIOLATIONS_URL = '{0}:{1}/controller/restui/incidents/application/{2}'
-NODE_DETAILS_URL = '{0}:{1}/controller/rest/applications/{2}/nodes/{3}?output=JSON'

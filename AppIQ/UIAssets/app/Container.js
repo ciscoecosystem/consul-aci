@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Redirect} from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 import { Sidebar, Dropdown, ButtonGroup, Icon, Screen } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
@@ -55,14 +55,20 @@ export default class Container extends React.Component {
 
                             <Switch>
 
-                                {/* <Route exact path={this.pathname + "/"} component={function () {
-                                    return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
-                                        Dashboard Under construction
-                                    </div>
-                                }} /> */}
                                 <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={function () {
                                     return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
                                         Dashboard is Under construction
+                                    </div>
+                                }} />
+
+                                <Route exact path={this.pathname + "/serviceintention"} component={function () {
+                                    return <div style={{ height: "fit-content", margin: "30px", background: "white", padding: "20px" }}>
+                                        <h5 style={{ textAlign: "center" }}>Network Middleware Automation is under construction</h5>
+                                        <ul style={{listStyle:"upper-alpha", padding:"20px"}}>
+                                            <li>Service mesh defined service-to-service communication topology overlay with ACI logical and fabric constructs </li>
+                                            <li>Verification of ACI policy (contract and filter) to support Consul service mesh intentions</li>
+                                            <li>ACI policy (contract and filter) recommendation and creation based on Consul service mesh intentions</li>
+                                        </ul>
                                     </div>
                                 }} />
 
@@ -70,21 +76,12 @@ export default class Container extends React.Component {
                                     // this results into unmounting of operational view if already in place
                                     return <Redirect to={thiss.pathname + "/operational" + window.location.search} />
                                 }} />
-                                {/* <Route path={this.pathname + "/toMapping"} component={function () {
-                                    // this results into unmounting of operational view if already in place
-                                    return <Screen id="mapping" key="mapping" className="modal-layer-1" hideFooter={true} title={"Mapping"} allowMinimize={false} 
-                                            onClose={() => { 
-                                               
-                                                console.log("CLose hostory", history);
-                                                history.push("/");
-                                                 }}>
-                                        <App />
-                                    </Screen>
-                                }} /> */}
 
                                 <Route path={this.pathname + "/operational"} component={function () {
                                     return <OperationalViewComponent pathname={thiss.pathname} />
                                 }} />
+
+
                             </Switch>
 
                         </div>
@@ -125,10 +122,10 @@ class OperationalViewComponent extends React.Component {
         })
     }
     componentWillMount() {
-        console.log("Mounting operational view")
+        console.log("Mounting Operations view")
     }
     componentWillUnmount() {
-        console.log("Unmounting Operational view")
+        console.log("Unmounting Operations view")
     }
 
     render() {
@@ -137,11 +134,11 @@ class OperationalViewComponent extends React.Component {
 
         let dcName = this.paramsObject[PROFILE_NAME];
 
-        console.log("Operational view Render", this.state);
+        console.log("Operations view Render", this.state);
 
         return (<div>
             <div className="page-container-header ">
-                <h4>Operational | <span className="dc-title"> {dcName.toUpperCase()} </span> </h4>
+                <h4>Operations | <span className="dc-title"> {dcName.toUpperCase()} </span> </h4>
                 <div className="page-actions">
                     <ButtonGroup type={"btn--primary-ghost"}
                         buttons={[
@@ -158,25 +155,6 @@ class OperationalViewComponent extends React.Component {
         </div>)
     }
 }
-
-/*
-function MappingViewComponent(props) {
-    let { search } = window.location;
-    let pathname = props.pathname;
-
-    let paramsObject = getParamObject(window.location); // query string as object
-    let dcName = paramsObject[PROFILE_NAME];
-
-    let toLocation = pathname + "/mapping.html" + search;
-    // console.log("View tree view ", props.location)
-    return (<div>
-        <div className="page-container-header ">
-            <h4>Mapping | <span className="dc-title"> {dcName.toUpperCase()}  </span> </h4>
-        </div>
-        <FrameComponent toLocation={toLocation} />
-    </div>)
-}
-*/
 
 
 function FrameComponent(props) {

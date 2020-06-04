@@ -42,14 +42,14 @@ class Container extends Component {
         this.state = {
             "data": [],
             loading: false,
-            expanded: {},
+            // expanded: {},
             summaryPaneIsOpen: false,
             summaryDetail: {}
         };
 
         this.handleBackClick = this.handleBackClick.bind(this);
-        this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
-        this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
+        // this.CONSUL_setExpand = this.CONSUL_setExpand.bind(this);
+        // this.CONSUL_resetExpanded = this.CONSUL_resetExpanded.bind(this);
 
         setInterval(() => this.fetchData(true), INTERVAL_API_CALL);
     }
@@ -73,6 +73,7 @@ class Container extends Component {
         data = data.map(elem => {
             let nodeChecksFilter = "";
             let serviceChecksFilter = "";
+            let serviceTagFilter = "";
 
             if (elem.nodeChecks.passing && elem.nodeChecks.passing > 0){
                 nodeChecksFilter = "passing";
@@ -81,7 +82,7 @@ class Container extends Component {
                 nodeChecksFilter += "warning";
             }
             if (elem.nodeChecks.failing && elem.nodeChecks.failing > 0){
-                nodeChecksFilter += "failing";
+                nodeChecksFilter += "critical";
             }
 
             if (elem.serviceChecks.passing && elem.serviceChecks.passing > 0){
@@ -91,10 +92,14 @@ class Container extends Component {
                 serviceChecksFilter += "warning";
             }
             if (elem.serviceChecks.failing && elem.serviceChecks.failing > 0){
-                serviceChecksFilter += "failing";
+                serviceChecksFilter += "critical";
             }
 
-            return Object.assign({}, elem, { nodeChecksFilter, serviceChecksFilter });
+            if (elem.serviceTags && Array.isArray(elem.serviceTags)){
+                serviceTagFilter = elem.serviceTags.join("");
+            }
+
+            return Object.assign({}, elem, { nodeChecksFilter, serviceChecksFilter, serviceTagFilter });
         })
         console.log("Setdata adter adding filtercheck; ", data);
 
@@ -140,10 +145,10 @@ class Container extends Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-            xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-            xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+            // window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
+            // window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
+            xhr.setRequestHeader("DevCookie", getCookie("app_Cisco_AppIQ_token"));
+            xhr.setRequestHeader("APIC-challenge", getCookie("app_Cisco_AppIQ_token"));
 
             xhr.onreadystatechange = () => {
 
@@ -199,15 +204,15 @@ class Container extends Component {
         // window.location.href = "index.html";
     }
 
-    CONSUL_setExpand(index) {
-        let { expanded } = this.state;
-        let newExpanded = Object.assign(expanded, { [index]: (expanded[index] === true) ? false : true })
-        this.setState({ expanded: newExpanded })
-    }
+    // CONSUL_setExpand(index) {
+    //     let { expanded } = this.state;
+    //     let newExpanded = Object.assign(expanded, { [index]: (expanded[index] === true) ? false : true })
+    //     this.setState({ expanded: newExpanded })
+    // }
 
-    CONSUL_resetExpanded() {
-        this.setState({ expanded: {} })
-    }
+    // CONSUL_resetExpanded() {
+    //     this.setState({ expanded: {} })
+    // }
 
     reload(loading) {
         if (!this.state.loading) {
@@ -247,9 +252,9 @@ class Container extends Component {
                 {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 <div className="scroll" style={{ padding: "0px 14px" }}>
                     <DataTable
-                        expanded={this.state.expanded}
-                        setExpand={this.CONSUL_setExpand}
-                        resetExpanded={this.CONSUL_resetExpanded}
+                        // expanded={this.state.expanded}
+                        // setExpand={this.CONSUL_setExpand}
+                        // resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
                         data={this.state.data}
                         onReload={this.reload}
