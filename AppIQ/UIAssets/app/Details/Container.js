@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 // import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js";
+import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // import { dummyData } from "./dummyData.js";
