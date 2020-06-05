@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data name="helpvariables">
-   <data name="appTitle" value="Cisco APIC AppIQ Application"/>
+   <data name="appTitle" value="Cisco APIC Consul Application"/>
    <data name="DropInLocation" value="&#34;suitename&#34;, &#34;appname&#34;"/>
    <data name="engineVersion" value="8"/>
    <data name="runtimePath" value="content"/>

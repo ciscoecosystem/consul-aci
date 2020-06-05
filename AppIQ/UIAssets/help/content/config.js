@@ -5,7 +5,7 @@ top.framesOn = true;
 var about = "Using Help";
 
 //Application title. This will be the title of index.html
-var appTitle = "Cisco APIC AppIQ Application";
+var appTitle = "Cisco APIC Consul Application";
 
 //Application runtime path under the help folder.
 var appPath = "content";
@@ -134,7 +134,7 @@ var show = "Show";
 var sOpen = "open";
 
 //default start page
-var startPage = "r_ACI_AppIQ.html";
+var startPage = "r_ACI_Consul.html";
 
 //label for search
 var totResults = "total results for";
