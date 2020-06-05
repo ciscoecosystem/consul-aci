@@ -166,22 +166,19 @@ class Container extends Component {
                             // Response successful
                             let response = JSON.parse(json.data.DetailsFlattened.details)
 
-                            if (response.status_code != "200") {
+                            if (response.status_code == "200") {
+                                    // Success
+                                    headerInstanceName = response.instanceName;
+                                    thiss.setData(response.payload)
+                                }
+                             else if (response.status_code == "300") {
                                 // Problem with backend fetching data
                                 try {
+                                    thiss.setData(response.payload);
                                     thiss.notify(response.message)
                                 } catch (e) {
                                     console.log("message error", e)
                                 }
-                                // window.location.href = "index.html?gqlerror=1";
-                            } else {
-                                // Success
-                                headerInstanceName = response.instanceName;
-
-                                thiss.setData(response.payload)
-                                // thiss.setState({
-                                //     "data": response.payload
-                                // });
                             }
                             thiss.setState({ loading: false })
                         }
@@ -204,15 +201,6 @@ class Container extends Component {
         // window.location.href = "index.html";
     }
 
-    // CONSUL_setExpand(index) {
-    //     let { expanded } = this.state;
-    //     let newExpanded = Object.assign(expanded, { [index]: (expanded[index] === true) ? false : true })
-    //     this.setState({ expanded: newExpanded })
-    // }
-
-    // CONSUL_resetExpanded() {
-    //     this.setState({ expanded: {} })
-    // }
 
     reload(loading) {
         if (!this.state.loading) {
@@ -229,16 +217,6 @@ class Container extends Component {
 
         console.log("[render] Container", this.state);
 
-        // let title = " | Details";
-        // let apptext = " " + result[PROFILE_NAME];
-
-        // let properties = [{
-        //     label: "label", value: "val"
-        // }, {
-        //     label: "label", value: "val"
-        // }, {
-        //     label: "label", value: "val"
-        // },]
 
         return (
             <div>
@@ -252,9 +230,6 @@ class Container extends Component {
                 {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 <div className="scroll" style={{ padding: "0px 14px" }}>
                     <DataTable
-                        // expanded={this.state.expanded}
-                        // setExpand={this.CONSUL_setExpand}
-                        // resetExpanded={this.CONSUL_resetExpanded}
                         loading={this.state.loading}
                         data={this.state.data}
                         onReload={this.reload}
