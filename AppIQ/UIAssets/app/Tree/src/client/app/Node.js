@@ -216,7 +216,7 @@ export default class Node extends React.Component {
     if (window.tipAvailable) {
       this.qtip.show("d", event.target);
     } else {
-      console.log("AppD : Tooltip display locked.");
+      console.log("consul : Tooltip display locked.");
     }
   }
 

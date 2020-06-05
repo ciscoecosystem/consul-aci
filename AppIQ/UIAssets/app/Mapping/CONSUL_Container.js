@@ -1,126 +1,11 @@
 import React from 'react'
-import { Switch, Table, Button, Icon, FilterableTable } from 'blueprint-react';
+import { Switch, Table, Button, Icon } from 'blueprint-react';
 import { toast } from 'react-toastify';
-import { QUERY_URL, getCookie } from '../../constants.js';
+import { QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from '../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import './consulmapping.css';
 // import './style.css'
 
-/*
-const dummyData = [{
-    ip: "192.168.128.20", "ap": "AppD-AppProfile1",
-    "vrf": "AppDynamics/AppD-VRF",
-    "epg": "Appd-Ecom-Cont",
-    "bd": "AppD-BD3",
-    tenant: "tenant101", enabled: true, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile2",
-    "vrf": "AppDynamics22/AppD-VRF",
-    "epg": "Appd-tyty-Cont",
-    "bd": "AppD-BD7",
-    tenant: "tenant101", enabled: true, recommended: false
-},
-{
-    ip: "192.168.128.23", "ap": "AppD-AppProfile3",
-    "vrf": "AppDynamics77/AppD-VRF",
-    "epg": "Appd-erer-Cont",
-    "bd": "AppD-BD1",
-    tenant: "tenant101", enabled: false, recommended: false
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-},
-{
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: true, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: true, recommended: true
-}, {
-    ip: "192.168.128.21", "ap": "AppD-AppProfile4",
-    "vrf": "AppDynamics11/AppD-VRF",
-    "epg": "Appd-fdgdf-Cont",
-    "bd": "AppD-BD55",
-    tenant: "tenant101", enabled: false, recommended: true
-}
-]
-*/
 export default class CONSUL_Container extends React.Component {
     constructor(props) {
         super(props);
@@ -169,8 +54,8 @@ export default class CONSUL_Container extends React.Component {
 
                 xhrMapping.open("POST", QUERY_URL, true);
                 xhrMapping.setRequestHeader("Content-type", "application/json");
-                window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-                window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+                window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+                window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
                 xhrMapping.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
                 xhrMapping.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
@@ -257,8 +142,8 @@ export default class CONSUL_Container extends React.Component {
         try {
             xhrMapping.open("POST", QUERY_URL, true);
             xhrMapping.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhrMapping.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrMapping.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrMapping.onreadystatechange = function () {

@@ -56,7 +56,7 @@ export default function DetailPanel(props) {
     console.log("==> Detail pane mounted", summaryDetail);
 
     // { name: "App-Health", label: "App-Health" }
-    let appProfileOrder = [{ name: "name", label: "Name" }]
+    let appProfileOrder = [{ name: "sub_label", label: "Name" }]
 
     // {name:"name", label:"Name"},
     let epgInfoOrder = [{ name: "name", label: "Name" },
@@ -188,7 +188,7 @@ export default function DetailPanel(props) {
             default:
                 return (
                     <React.Fragment>
-                        {CollapsePane(summaryDetail.name + " Information", appProfileOrder)}
+                        {CollapsePane(summaryDetail.sub_label + " Information", appProfileOrder)}
                     </React.Fragment>)
 
         }
