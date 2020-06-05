@@ -7,8 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 // import './style.css'
 import Modal from './commonComponent/Modal.js';
 
-import img1 from '../help/content/502075.jpg';
-import img2 from '../help/content/502220.jpg';
+import img1 from './Asset/502075.jpg';
+import img2 from './Asset/502220.jpg';
 
 
 
