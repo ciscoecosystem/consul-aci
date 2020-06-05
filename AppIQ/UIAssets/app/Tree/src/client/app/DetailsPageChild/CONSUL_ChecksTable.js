@@ -2,16 +2,13 @@ import React, { Component } from "react";
 import { Table, Panel, Icon, Label } from "blueprint-react";
 
 import { ToastContainer, toast } from 'react-toastify';
-import { INTERVAL_API_CALL, QUERY_URL, getCookie } from '../../../../../../constants.js';
+import { INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
 const successColor = "#6ebe4a";
 const failColor = "#e2231a";
 const warningColor = "#f49141";
-
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for checktab
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for checktab
 
 
 export default class CONSUL_ChecksTable extends Component {
@@ -63,8 +60,8 @@ export default class CONSUL_ChecksTable extends Component {
         let xhrCheck = new XMLHttpRequest();
         try {
             xhrCheck.open("POST", QUERY_URL, true);
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // checktable fetch dev cookie
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken");  // checktable fetch  cookie
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for checktab
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for checktab
             xhrCheck.setRequestHeader("Content-type", "application/json");
             xhrCheck.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrCheck.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);

@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Screen, Table, Button, Input, Select, Icon, IconButton } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
-import { QUERY_URL, getCookie, INTERVAL_API_CALL, AGENTS } from "../../constants.js"
+import { QUERY_URL, getCookie, INTERVAL_API_CALL, AGENTS, URL_TOKEN, DEV_TOKEN } from "../../constants.js"
 import "./index.css";
 
 // const dummylist = [
@@ -210,8 +210,8 @@ export default class Agent extends React.Component {
         try {
             xhrCred.open("POST", QUERY_URL, true);
             xhrCred.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhrCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrCred.onreadystatechange = function () {
@@ -317,8 +317,8 @@ export default class Agent extends React.Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
 
@@ -447,8 +447,8 @@ export default class Agent extends React.Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhr.onreadystatechange = function () {
@@ -615,7 +615,7 @@ export default class Agent extends React.Component {
         return (<div>
             {redirectToMain && <Redirect to="/" />}
 
-            <Modal isOpen={addAgentModalIsOpen} title="Add Agent" onClose={function () {
+            <Modal isOpen={addAgentModalIsOpen} title={"Add "+AGENTS} onClose={function () {
                 thiss.refreshField();
                 thiss.handleModal()
             }}>
@@ -634,7 +634,7 @@ export default class Agent extends React.Component {
                                         className={!saveAllow && "disabled"}
                                         size="btn--small"
                                         type="btn--primary"
-                            >{"Add " + AGENTS}</Button>
+                                    >{"Add " + AGENTS}</Button>
 
                                 </div>
                             </div>

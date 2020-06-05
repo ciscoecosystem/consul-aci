@@ -4,7 +4,7 @@ import { Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Mapping from "./Mapping/Mapping.js";
 import Agent from "./Agent/index.js"
-import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS } from "../constants.js";
+import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS, URL_TOKEN, DEV_TOKEN } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
@@ -30,7 +30,6 @@ function ToMappingRedirect(dc, tn) {
 //     { "protocol": "https", "ip": "10.0.0.1", "port": 8051, "token": "lnfeialilsacirvjlglaial", "status": false, "datacenter": "datacenter1" },
 //     { "protocol": "http", "ip": "10.0.0.2", "port": 8051, "token": "lnfeialilsacirvjhnlaial", "status": true, "datacenter": "datacenter2" }
 // ]
-// const dummyredirect = `/tree.html?${PROFILE_NAME}=` + encodeURIComponent("cisco-ecosystem-internal-new") + "&tn=" + encodeURIComponent("AppDynamics");
 
 export default class App extends React.Component {
     constructor(props) {
@@ -245,8 +244,8 @@ export default class App extends React.Component {
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhrPostTenant.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrPostTenant.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrPostTenant.onreadystatechange = function () {
@@ -281,8 +280,8 @@ export default class App extends React.Component {
         try {
             xhrReadDc.open("POST", QUERY_URL, true);
             xhrReadDc.setRequestHeader("Content-type", "application/json");
-            window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for loginform
-            window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for loginform
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
             xhrReadDc.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrReadDc.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrReadDc.onreadystatechange = function () {

@@ -145,10 +145,8 @@ class Container extends Component {
         try {
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
-            // window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for details
-            // window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for details
-            xhr.setRequestHeader("DevCookie", getCookie("app_Cisco_AppIQ_token"));
-            xhr.setRequestHeader("APIC-challenge", getCookie("app_Cisco_AppIQ_token"));
+            xhr.setRequestHeader("DevCookie", getCookie(DEV_TOKEN));
+            xhr.setRequestHeader("APIC-challenge", getCookie(URL_TOKEN));
 
             xhr.onreadystatechange = () => {
 
