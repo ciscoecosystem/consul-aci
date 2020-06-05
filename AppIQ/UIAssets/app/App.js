@@ -4,7 +4,7 @@ import { Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Mapping from "./Mapping/Mapping.js";
 import Agent from "./Agent/index.js"
-import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY } from "../constants.js";
+import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
@@ -67,7 +67,7 @@ export default class App extends React.Component {
             mappingDcname: undefined,
             mappingPopup: false,
             items: [
-                { label: "Agents", action: this.handleAgent },
+                { label: AGENTS , action: this.handleAgent },
                 { label: "Polling interval", action: function () { console.log("polling interval") } }
             ],
             details: [],

@@ -60,3 +60,7 @@ export const READ_DATACENTER_QUERY = {
 export function POST_TENANT_QUERY(tn) {
     return { query: 'query{PostTenant(tn:"' + tn + '"){tenant}}' }
 }
+
+
+// naming 
+export const AGENTS = "Seed Agents";

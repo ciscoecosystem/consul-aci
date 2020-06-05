@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Screen, Table, Button, Input, Select, Icon, IconButton } from 'blueprint-react';
 import Modal from '../commonComponent/Modal.js';
-import { QUERY_URL, getCookie, INTERVAL_API_CALL } from "../../constants.js"
+import { QUERY_URL, getCookie, INTERVAL_API_CALL, AGENTS } from "../../constants.js"
 import "./index.css";
 
 // const dummylist = [
@@ -59,7 +59,7 @@ export default class Agent extends React.Component {
             readAgentLoading: false,
             redirectToMain: false,
             addAgentModalIsOpen: false,
-            loadingText: "Loading agents...",
+            loadingText: "Loading seed agents...",
             actionItems: [
                 { label: "Update", action: this.actionEvent },
                 { label: "Delete", action: this.actionEvent }
@@ -116,7 +116,7 @@ export default class Agent extends React.Component {
             this.readAgentsCall(isReloaded);
         } else {
 
-            this.setState({ readAgentLoading: true, loadingText: "Loading agents..." }, function () {
+            this.setState({ readAgentLoading: true, loadingText: "Loading seed agents..." }, function () {
                 console.log("LOading----")
                 thiss.readAgentsCall(isReloaded);
             })
@@ -634,7 +634,7 @@ export default class Agent extends React.Component {
                                         className={!saveAllow && "disabled"}
                                         size="btn--small"
                                         type="btn--primary"
-                                    >Add</Button>
+                            >{"Add " + AGENTS}</Button>
 
                                 </div>
                             </div>
@@ -642,7 +642,7 @@ export default class Agent extends React.Component {
                 </div>
             </Modal>
 
-            <Screen id="agents" key="agents" className="modal-layer-1" hideFooter={true} title={"Agents"} allowMinimize={false} onClose={this.closeAgent}>
+            <Screen id="agents" key="agents" className="modal-layer-1" hideFooter={true} title={AGENTS} allowMinimize={false} onClose={this.closeAgent}>
 
                 <div className="dialog-content">
                     <div className="screen-content">
@@ -658,7 +658,7 @@ export default class Agent extends React.Component {
                                         className={`half-margin-left ${readAgentLoading && 'disabled'}`}
                                         size="btn--small"
                                         type="btn--primary-ghost"
-                                        onClick={() => { this.setState({ isNewAgentAdded: true }, () => this.handleModal(true)) }}>Add Agent</Button>
+                                        onClick={() => { this.setState({ isNewAgentAdded: true }, () => this.handleModal(true)) }}> {"Add " + AGENTS} </Button>
 
                                     <IconButton
                                         className={`pull-right ${readAgentLoading && 'disabled'}`}
