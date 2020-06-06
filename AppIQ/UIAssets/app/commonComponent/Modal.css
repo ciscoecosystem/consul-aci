@@ -23,7 +23,7 @@
 }
 
 .modal-layout>main.scrollable {
-    max-height: fit-content;
+    max-height: 75%;
 }
 
 .modal-layout>header {
