@@ -1038,7 +1038,7 @@ def read_creds():
                 'datacenter': datacenter
             })
 
-        logger.debug('agent data: ' + str(list(agents)))
+        logger.debug('Read cretds resopnse: {}'.format(str(payload)))
         return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
 
     except Exception as e:
@@ -1049,8 +1049,8 @@ def read_creds():
 @time_it
 def write_creds(new_agent):
     try:
-        logger.info('Writing agent: ' + str(new_agent))
-        new_agent = json.loads(new_agent)[0] # TODO: UI should return single object, not list of one obj
+        new_agent = json.loads(new_agent)[0] # UI returns list of 1 object
+        logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
         agents = list(db_obj.select_from_table(
                         db_obj.LOGIN_TABLE_NAME,
                         {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')}))
