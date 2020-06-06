@@ -3,8 +3,7 @@ __author__ = 'nilayshah'
 from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
-from consul.consul_schema import schema
-from consul.consul_data_fetch import data_fetch
+from schema import schema
 
 import alchemy_core as database
 
@@ -21,14 +20,6 @@ app.add_url_rule('/graphql.json', view_func=GraphQLView.as_view('graphql', schem
 
 database_object = database.Database()
 database_object.create_tables()
-
-Process(target=data_fetch).start()
-
-# TODO: remove following code
-path = "/home/app/data/credentials.json"
-file_exists = os.path.isfile(path)
-if file_exists:
-    os.remove(path)
 
 
 @app.teardown_appcontext

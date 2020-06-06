@@ -1,5 +1,5 @@
 import graphene
-from . import consul_plugin_server as app
+import plugin_server as app
 
 
 """Response Classes"""

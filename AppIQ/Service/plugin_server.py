@@ -8,9 +8,9 @@ import base64
 from flask import Flask
 
 
-from . import consul_merge
-from . import recommend_utils
-from . import consul_tree_parser
+import merge
+import recommend_utils
+import tree_parser
 from consul_utils import Consul
 from decorator import time_it
 
@@ -22,15 +22,12 @@ import custom_logger
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
 app.secret_key = "consul_key"
-app.debug = True  # See use
+app.debug = True
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 db_obj = alchemy_core.Database()
 db_obj.create_tables()
-
-consul_credential_file_path = "/home/app/data/consulCredentials.json"
-mapppings_file_path = "/home/app/data/mappings.json"
 
 
 def set_polling_interval(interval):
