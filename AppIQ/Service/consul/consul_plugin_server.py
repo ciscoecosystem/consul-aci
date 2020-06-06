@@ -1172,7 +1172,9 @@ def delete_creds(agent_data):
         node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
         for node in node_data:
             agents = node[4]
-            if len(agents) == 1 and agent_addr == agents[0]:
+            if agent_addr not in agents:
+                continue
+            if len(agents) == 1:
                 db_obj.delete_from_table(db_obj.NODE_TABLE_NAME,{'node_id': node[0]})
             else:
                 node[4].remove(agent_addr)
@@ -1183,7 +1185,9 @@ def delete_creds(agent_data):
         service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
         for service in service_data:
             agents = service[10]
-            if len(agents) == 1 and agent_addr == agents[0]:
+            if agent_addr not in agents:
+                continue
+            if len(agents) == 1:
                 db_obj.delete_from_table(db_obj.SERVICE_TABLE_NAME,{'service_id': service[0],'node_id': service[1]})
             else:
                 service[10].remove(agent_addr)
@@ -1194,7 +1198,9 @@ def delete_creds(agent_data):
         node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
         for node in node_checks_data:
             agents = node[9]
-            if len(agents) == 1 and agent_addr == agents[0]:
+            if agent_addr not in agents:
+                continue
+            if len(agents) == 1:
                 db_obj.delete_from_table(db_obj.NODECHECKS_TABLE_NAME,{'check_id': node[0], 'node_id': node[1]})
             else:
                 node[9].remove(agent_addr)
@@ -1205,7 +1211,9 @@ def delete_creds(agent_data):
         service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
         for service in service_checks_data:
             agents = service[8]
-            if len(agents) == 1 and agent_addr == agents[0]:
+            if agent_addr not in agents:
+                continue
+            if len(agents) == 1:
                 db_obj.delete_from_table(db_obj.SERVICECHECKS_TABLE_NAME,{'check_id': service[0],'service_id': service[1]})
             else:
                 service[8].remove(agent_addr)
