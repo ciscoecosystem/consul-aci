@@ -231,11 +231,11 @@ def tree(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
-        response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
+        response = json.dumps(tree_parser.consul_tree_dict(merged_data))
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
@@ -1242,7 +1242,7 @@ def details_flattened(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
