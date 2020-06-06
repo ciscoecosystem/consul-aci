@@ -106,6 +106,8 @@ def get_new_mapping(tenant, datacenter):
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
+        new_map_list = []
+
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
@@ -133,11 +135,21 @@ def get_new_mapping(tenant, datacenter):
                     'datacenter': datacenter
                 })
 
-        return current_mapping
+            new_map_list((new_map.get('ip'), new_map.get('dn')))
 
+        for mapping in already_mapped_data:
+            if maped_obj[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
+                db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
+                    mapping[0],
+                    mapping[1],
+                    mapping[2]
+                })
+
+
+        return current_mapping
     except Exception as e:
         logger.exception("Could not load mapping, Error: {}".format(str(e)))
-        return [] # TODO: see if this can be un-empty list
+        return []
 
 
 
@@ -1161,6 +1173,19 @@ def delete_creds(agent_data):
         result = db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
+
+        agent_dc = agent_data.get('datacenter')
+        agent_list = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        agent_list = [agent for agent in agent_list if agents[5] == agent_dc]
+        if not agent_list:
+            mappings = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
+            for mapping in mappings:
+                if mapping[2] == agent_dc:
+                    db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
+                        mapping[0],
+                        mapping[1],
+                        mapping[2]
+                    })
 
         # Delete all the data fetched by this agent
         agent_addr = agent_data.get('ip') + ':' + str(agent_data.get('port'))
