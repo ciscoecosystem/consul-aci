@@ -1038,7 +1038,7 @@ def read_creds():
                 'datacenter': datacenter
             })
 
-        logger.debug('Read cretds resopnse: ' + str(list(payload)))
+        logger.debug('Read cretds resopnse: {}'.format(str(payload)))
         return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
 
     except Exception as e:
