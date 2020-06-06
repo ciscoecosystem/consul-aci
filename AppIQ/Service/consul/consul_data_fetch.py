@@ -41,7 +41,7 @@ def get_nodes(nodes_dict, agent):
     agent: agent to be used to fetch the data
     """
 
-    logger.info("Nodes for agent: {}".format(str(agent)))
+    logger.info("Nodes for agent: {}:{}".format(agent.get('ip'), agent.get('port')))
 
     consul_obj = Consul(agent.get('ip'), agent.get('port'), agent.get('token'), agent.get('protocol'))
     # consul_obj.check_connection()
