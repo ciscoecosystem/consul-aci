@@ -135,14 +135,14 @@ def get_new_mapping(tenant, datacenter):
                     'datacenter': datacenter
                 })
 
-            new_map_list((new_map.get('ip'), new_map.get('dn')))
+            new_map_list.append((new_map.get('ip'), new_map.get('dn')))
 
         for mapping in already_mapped_data:
-            if maped_obj[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
+            if mapping[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
                 db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
-                    mapping[0],
-                    mapping[1],
-                    mapping[2]
+                    'ip': mapping[0],
+                    'dn': mapping[1],
+                    'datacenter': mapping[2]
                 })
 
 
@@ -1176,16 +1176,17 @@ def delete_creds(agent_data):
 
         agent_dc = agent_data.get('datacenter')
         agent_list = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
-        agent_list = [agent for agent in agent_list if agents[5] == agent_dc]
+        agent_list = [agent for agent in agent_list if agent[5] == agent_dc]
         if not agent_list:
             mappings = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
             for mapping in mappings:
                 if mapping[2] == agent_dc:
                     db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
-                        mapping[0],
-                        mapping[1],
-                        mapping[2]
+                        'ip': mapping[0],
+                        'dn': mapping[1],
+                        'datacenter': mapping[2]
                     })
+            logger.info('Mapping for Datacenter {} deleted'.format(str(agent_dc)))
 
         # Delete all the data fetched by this agent
         agent_addr = agent_data.get('ip') + ':' + str(agent_data.get('port'))
