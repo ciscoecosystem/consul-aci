@@ -4,12 +4,10 @@ import { ToastContainer, toast } from 'react-toastify';
 import { Loader } from "blueprint-react"
 import TestComponent from './TestComponent.js';
 // import Header from './Header.js'
-import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie } from "../../../../../constants.js"
+import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from "../../../../../constants.js"
 import 'react-toastify/dist/ReactToastify.css';
 var key = 0;
 
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for operational
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for operational
 
 var headerInstanceName;
 
@@ -198,6 +196,8 @@ class App extends React.Component {
             console.log("opening post")
             xhr.open("POST", QUERY_URL, true);
             xhr.setRequestHeader("Content-type", "application/json");
+            window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for operational
+            window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for operational
             xhr.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhr.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             console.log("header set")

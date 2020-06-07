@@ -5,17 +5,15 @@ import {
   TABLE_COLUMNS_AUDIT_LOG,
   TABLE_COLUMNS_EVENTS,
   TABLE_COLUMNS_FAULTS,
-  ROWS_FAULTS, TABLE_POLICIES,
+  TABLE_POLICIES,
   TABLE_OPERATIONAL,
   TABLE_TOEPG,
   TABLE_SUBNETS
 } from "./tableHeaders.js";
-import { INTERVAL_API_CALL, QUERY_URL, getCookie } from '../../../../../../constants.js';
+import { INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from '../../../../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
 
-window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for expansion view
-window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for expansion view
 
 export default class DataTable extends Component {
   constructor(props) {
@@ -119,8 +117,8 @@ export default class DataTable extends Component {
       let xhrDataTable = new XMLHttpRequest();
       try {
         xhrDataTable.open("POST", QUERY_URL, true);
-        window.APIC_DEV_COOKIE = getCookie("app_Cisco_AppIQ_token"); // fetch for expansion
-        window.APIC_URL_TOKEN = getCookie("app_Cisco_AppIQ_urlToken"); // fetch for expansion
+        window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for expansion
+        window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for expansion
         xhrDataTable.setRequestHeader("Content-type", "application/json");
         xhrDataTable.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
         xhrDataTable.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);

@@ -489,7 +489,7 @@ class AciUtils(object):
             response_json = self.aci_get(url)
             contract_list = []
             mapping_dict = {
-                'fvRsCon': "Consumer",
+                'fvRsCons': "Consumer",
                 'fvRsIntraEpg': "IntraEpg",
                 'fvRsProv': "Provider",
                 'fvRsConsIf': "Consumer Interface",

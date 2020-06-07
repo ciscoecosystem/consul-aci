@@ -1,8 +1,12 @@
+export const APPID = "Consul"; // this resembles App name: Note: also to be changed in html files
 export const PROFILE_NAME = "datacenterName";
 export const INTERVAL_API_CALL = 30000; // in milliseconds
 
 // export const QUERY_URL = "http://127.0.0.1:5000/graphql.json"; // for Local
-export const QUERY_URL = document.location.origin + "/appcenter/Cisco/AppIQ/graphql.json"; // for Production
+export const QUERY_URL = document.location.origin + "/appcenter/Cisco/"+APPID+"/graphql.json"; // for Production
+
+export const DEV_TOKEN = "app_Cisco_"+APPID+"_token";
+export const URL_TOKEN = "app_Cisco_"+APPID+"_urlToken";
 
 // cookie handler
 export function getCookieVal(offset) {
@@ -60,3 +64,7 @@ export const READ_DATACENTER_QUERY = {
 export function POST_TENANT_QUERY(tn) {
     return { query: 'query{PostTenant(tn:"' + tn + '"){tenant}}' }
 }
+
+
+// naming 
+export const AGENTS = "Seed Agents";
