@@ -15,8 +15,10 @@
                 var treeViewtokenObj = Ext.decode(e.data, true);
                 if (treeViewtokenObj) {
                     // Setting the cookie received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', treeViewtokenObj.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', treeViewtokenObj.urlToken);
+                    // Ext.util.Cookies.set('app_Cisco_Consul_token', treeViewtokenObj.token);
+                    // Ext.util.Cookies.set('app_Cisco_Consul_urlToken', treeViewtokenObj.urlToken);
+                    Ext.util.Cookies.set('app_' + treeViewtokenObj.appId + '_token', treeViewtokenObj.token);
+					Ext.util.Cookies.set('app_' + treeViewtokenObj.appId + '_urlToken', treeViewtokenObj.urlToken);
                     console.log('treeview Tokens set')
                 }
             }

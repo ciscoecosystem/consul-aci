@@ -12,8 +12,10 @@
                 var tokenObjDetails = Ext.decode(e.data, true);
                 if (tokenObjDetails) {
                     // Setting the cookie with the tokens received by the APIC
-                    Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObjDetails.token);
-                    Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObjDetails.urlToken);
+                    // Ext.util.Cookies.set('app_Cisco_Consul_token', tokenObjDetails.token);
+                    // Ext.util.Cookies.set('app_Cisco_Consul_urlToken', tokenObjDetails.urlToken);
+                    Ext.util.Cookies.set('app_' + tokenObjDetails.appId + '_token', tokenObjDetails.token);
+					Ext.util.Cookies.set('app_' + tokenObjDetails.appId + '_urlToken', tokenObjDetails.urlToken);
                     console.log('details Token set')
                 }
             }

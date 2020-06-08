@@ -634,7 +634,7 @@ export default class Agent extends React.Component {
                                         className={!saveAllow && "disabled"}
                                         size="btn--small"
                                         type="btn--primary"
-                                    >{"Add " + AGENTS}</Button>
+                                    >Save</Button>
 
                                 </div>
                             </div>
