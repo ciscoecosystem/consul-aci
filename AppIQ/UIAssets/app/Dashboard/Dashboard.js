@@ -51,15 +51,15 @@ export default class Dashboard extends React.Component{
 
 notify(message, isSuccess = false, isWarning = false) {
     isWarning ? toast.warn(message, {
-        position: toast.POSITION.TOP_RIGHT,
+        position: toast.POSITION.TOP_BOTTOM,
         delay: 1500
     }) :
         isSuccess ? toast.success(message, {
-            position: toast.POSITION.TOP_RIGHT,
+            position: toast.POSITION.TOP_BOTTOM,
             delay: 1500
         }) :
             toast.error(message, {
-                position: toast.POSITION.TOP_RIGHT,
+                position: toast.POSITION.TOP_BOTTOM,
                 delay: 1500
             });
 }
@@ -170,11 +170,11 @@ notify(message, isSuccess = false, isWarning = false) {
                             {this.state.services && this.state.nodes?
                                 <div style={{textAlign:"center"}}>
                                     <div className="service-chart">
-                                        <h6>Services</h6>
+                                        <h6>Service checks</h6>
                                         <PieChartAndCounter  data={this.formateDataToChartData(this.state.services).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.services).totalCnt)} />
                                     </div>
                                     <div className="node-chart">
-                                        <h6>Nodes</h6>
+                                        <h6>Node checks</h6>
                                         <PieChartAndCounter  data={this.formateDataToChartData(this.state.nodes).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.nodes).totalCnt)}/>
                                     </div>
                                 </div>

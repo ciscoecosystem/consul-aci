@@ -57,7 +57,7 @@ export default class Container extends React.Component {
                             <Switch>
 
                                 <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={() => {
-                                    return <div style={{ height: "100%", color:	"rgb(128,128,128)" }}>
+                                    return <div style={{ height: "100%" }}>
                                         <Dashboard tenantName={this.props.tenantName}/>
                                     </div>
                                 }} />
