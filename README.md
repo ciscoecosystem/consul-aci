@@ -3,7 +3,7 @@ Repo for hosting ACI-Consul integration for ACI platforms APIC, cloud APIC, Serv
 
 ## About Consul for ACI
 Consul for ACI runs as an application on APIC to enable following use cases with a goal to have service mesh led network middleware automation and operations.
-**App can de downloaded from [Cisco DC Appcenter](https://dcappcenter.cisco.com/appiq.html)** TO BE CHANGED
+**App can de downloaded from [Cisco DC Appcenter](https://dcappcenter.cisco.com/)** TO BE CHANGED
 
 
 ## Service visibility and faster Mean-time-to-Resolution (MTTR)
