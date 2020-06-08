@@ -51,13 +51,16 @@ export default class Dashboard extends React.Component{
 
 notify(message, isSuccess = false, isWarning = false) {
     isWarning ? toast.warn(message, {
-        position: toast.POSITION.BOTTOM_CENTER
+        position: toast.POSITION.TOP_RIGHT,
+        delay: 1500
     }) :
         isSuccess ? toast.success(message, {
-            position: toast.POSITION.BOTTOM_CENTER
+            position: toast.POSITION.TOP_RIGHT,
+            delay: 1500
         }) :
             toast.error(message, {
-                position: toast.POSITION.BOTTOM_CENTER
+                position: toast.POSITION.TOP_RIGHT,
+                delay: 1500
             });
 }
 
@@ -96,7 +99,7 @@ notify(message, isSuccess = false, isWarning = false) {
     }
 
     try {
-        this.xhrReadDashboard.open("POST", QUERY_URL, true);
+        this.xhrReadDashboard.open("POST", QUERY_URL, false);
         this.xhrReadDashboard.setRequestHeader("Content-type", "application/json");
         // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
         // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
@@ -123,11 +126,12 @@ notify(message, isSuccess = false, isWarning = false) {
                     }
                 }
 
-                this.setState({loadingDashBoard:false})
             }
             else {
+                this.notify("something went wrong");
                 console.log("Not fetching");
             }
+            this.setState({loadingDashBoard:false})
         }
         this.xhrReadDashboard.send(JSON.stringify(payload));
     }
@@ -140,7 +144,7 @@ notify(message, isSuccess = false, isWarning = false) {
     return(
         <React.Fragment>
                 <div style={{ margin:"10px"}}><h4>Dashboard</h4></div>
-                <div className="overview" style={{ margin: "5px 10px"}}>
+                <div className="overview">
                     {/* <ExamplesHeader title="Charts"/> */}
                     <h5 style={{"padding":"5px", "marginBottom":"10px"}}><b>Overview</b></h5>
                         {this.state.loadingDashBoard?<Loader></Loader>:
@@ -165,11 +169,11 @@ notify(message, isSuccess = false, isWarning = false) {
                             </div>
                             {this.state.services && this.state.nodes?
                                 <div style={{textAlign:"center"}}>
-                                    <div style={{float:"left", "margin-left":"15%", "width":"15%"}}>
+                                    <div className="service-chart">
                                         <h6>Services</h6>
                                         <PieChartAndCounter  data={this.formateDataToChartData(this.state.services).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.services).totalCnt)} />
                                     </div>
-                                    <div style={{float:"right", "margin-right":"15%", "width":"15%"}}>
+                                    <div className="node-chart">
                                         <h6>Nodes</h6>
                                         <PieChartAndCounter  data={this.formateDataToChartData(this.state.nodes).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.nodes).totalCnt)}/>
                                     </div>
