@@ -7,7 +7,7 @@ function renderLabels(count = 0) {
     return (
         <div className="pie-labels">
             <div className="pie-total-label">
-                {count}
+                <b style={{fontSize:"125%"}}>{count}</b>
             </div>
         </div>
     );
@@ -21,7 +21,7 @@ function FormatToLabel(label) {
 }
 
 export default function PieChartAndCounter(props) {
-    let { data, totalCount } = props;
+    let { data, totalCount} = props;
 
     return (<div className="d-flex">
         <div className="piechart-wrapper">
