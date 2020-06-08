@@ -1,11 +1,11 @@
 import React from 'react';
 import './Dashboard.css';
-import {Loader, Button, Icon} from 'blueprint-react';
+import {Loader} from 'blueprint-react';
 import PieChartAndCounter from "../commonComponent/PieChartAndCounter.js";
 import {QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN} from '../../constants.js';
 import {  toast } from 'react-toastify';
 
-// const dummydata = {'nodes': {'passing': 6, 'warning': 0, 'failing': 0}, 'agents': {'down': 0, 'up': 2}, 'service': {'passing': 1, 'warning': 0, 'failing': 0}, 'service_endpoint': {'non_service': 21, 'service': 11}}
+// const dummydata = {'nodes': {'passing': 6, 'warning': 0, 'failing': 2}, 'agents': {'down': 0, 'up': 2}, 'service': {'passing': 1, 'warning': 1, 'failing':2}, 'service_endpoint': {'non_service': 21, 'service': 11}}
 
 export default class Dashboard extends React.Component{
 
@@ -29,7 +29,6 @@ export default class Dashboard extends React.Component{
     console.log("In component Did")
     this.setState({loadingDashBoard: true}, this.getDashboardData)
     // this.loadDashBoardData(dummydata);
-    // this.getDashboardData()
   }
 
   loadDashBoardData(data){
@@ -128,7 +127,6 @@ notify(message, isSuccess = false, isWarning = false) {
 
             }
             else {
-                this.notify("something went wrong");
                 console.log("Not fetching");
             }
             this.setState({loadingDashBoard:false})
@@ -136,6 +134,7 @@ notify(message, isSuccess = false, isWarning = false) {
         this.xhrReadDashboard.send(JSON.stringify(payload));
     }
     catch (e) {
+        this.notify("Something went wrong.");
         console.error('Error While Fetching Dashboard', e);
     }
   }

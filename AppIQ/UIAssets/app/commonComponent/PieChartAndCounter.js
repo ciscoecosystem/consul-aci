@@ -48,10 +48,11 @@ export default function PieChartAndCounter(props) {
 
         <div class="counters " style={{ maxHeight: "270px" }}>
             {data.map(function (elem, key) {
+                let label = (elem.label === "failing") ? "Critical" : elem.label;
                 return (<div class="info-container  zero-values NORMAL">
                     <div class="info-title">
                         <span class="info-bullet NORMAL" style={{ backgroundColor: `${elem.color}` }}></span>
-                        <span class="info-label NORMAL"> {FormatToLabel(elem.label)} </span>
+                        <span class="info-label NORMAL"> {FormatToLabel(label)} </span>
                     </div>
                     <div class="info-count">({elem.value})</div>
                 </div>)
