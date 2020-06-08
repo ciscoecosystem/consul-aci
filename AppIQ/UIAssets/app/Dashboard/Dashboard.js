@@ -2,8 +2,10 @@ import React from 'react';
 import './Dashboard.css';
 import {Loader, Button, Icon} from 'blueprint-react';
 import PieChartAndCounter from "../commonComponent/PieChartAndCounter.js";
-import {QUERY_URL} from '../../constants.js';
+import {QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN} from '../../constants.js';
 import {  toast } from 'react-toastify';
+
+// const dummydata = {'nodes': {'passing': 6, 'warning': 0, 'failing': 0}, 'agents': {'down': 0, 'up': 2}, 'service': {'passing': 1, 'warning': 0, 'failing': 0}, 'service_endpoint': {'non_service': 21, 'service': 11}}
 
 export default class Dashboard extends React.Component{
 
@@ -13,7 +15,8 @@ export default class Dashboard extends React.Component{
     this.state ={
         loadingDashBoard: false
     }
-    this.xhrCred = new XMLHttpRequest();
+    // console.log("==> props ", this.props);
+    this.xhrReadDashboard = new XMLHttpRequest();
     this.loadDashBoardData = this.loadDashBoardData.bind(this);
     this.formateDataToChartData = this.formateDataToChartData.bind(this);
     this.nFormatter = this.nFormatter.bind(this);
@@ -25,6 +28,7 @@ export default class Dashboard extends React.Component{
   componentDidMount(){
     console.log("In component Did")
     this.setState({loadingDashBoard: true}, this.getDashboardData)
+    // this.loadDashBoardData(dummydata);
     // this.getDashboardData()
   }
 
@@ -85,42 +89,47 @@ notify(message, isSuccess = false, isWarning = false) {
 }
 
   getDashboardData(){
-    // console.log("In Get Dashboard Data!")
+    console.log("In Get Dashboard Data!")
 
     const payload = {
         query: 'query{GetPerformanceDashboard(tn:"' + this.props.tenantName + '"){response}}'
     }
 
     try {
-        this.xhrCred.open("POST", QUERY_URL, true);
-        this.xhrCred.setRequestHeader("Content-type", "application/json");
-        window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
-        window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
-        this.xhrCred.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-        this.xhrCred.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+        this.xhrReadDashboard.open("POST", QUERY_URL, true);
+        this.xhrReadDashboard.setRequestHeader("Content-type", "application/json");
+        // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+        // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+        this.xhrReadDashboard.setRequestHeader("DevCookie", getCookie(DEV_TOKEN));
+        this.xhrReadDashboard.setRequestHeader("APIC-challenge", getCookie(URL_TOKEN));
 
-        this.xhrCred.onreadystatechange =  () = >{
-            // console.log("chr== state ", xhrCred.readyState);
-            if (this.xhrCred.status == 200) {
-                let checkData = JSON.parse(this.xhrCred.responseText);
-                if (parseInt(checkData.status_code) === 200) {
-                    let credsData = JSON.parse(checkData.payload);
-                    this.loadDashBoardData(credsData)
-                    this.setState({chartLoaded:true, loadingDashBoard: false})
-                } else if (parseInt(checkData.status_code) === 300) {
+        this.xhrReadDashboard.onreadystatechange = () => {
+            // debugger
+            console.log("xhr== state ", this.xhrReadDashboard);
+            if (this.xhrReadDashboard.readyState == 4 && this.xhrReadDashboard.status == 200) {
+                console.log("reponse data =>  ", this.xhrReadDashboard);
+                let checkData = JSON.parse(this.xhrReadDashboard.responseText);
+                console.log("checkdata ", checkData, typeof(checkData));
+                let dashoardData = JSON.parse(checkData.data.GetPerformanceDashboard.response);
+                console.log("dashoardData data", dashoardData);
+
+                if (parseInt(dashoardData.status) === 200) {
+                    this.loadDashBoardData(dashoardData.payload)
+                } else if (parseInt(dashoardData.status) === 300) {
                     try {
-                        this.notify(credsData.message)
+                        this.notify(dashoardData.message)
                     } catch (e) {
                         console.log("message error", e)
                     }
                 }
+
+                this.setState({loadingDashBoard:false})
             }
             else {
-                this.setState({loadingDashBoard:false})
                 console.log("Not fetching");
             }
         }
-        this.xhrCred.send(JSON.stringify(payload));
+        this.xhrReadDashboard.send(JSON.stringify(payload));
     }
     catch (e) {
         console.error('Error While Fetching Dashboard', e);
@@ -130,8 +139,8 @@ notify(message, isSuccess = false, isWarning = false) {
   render(){
     return(
         <React.Fragment>
-                <div style={{marginBottom:"1%"}}><h4>Dashboard</h4></div>
-                <div className="overview">
+                <div style={{ margin:"10px"}}><h4>Dashboard</h4></div>
+                <div className="overview" style={{ margin: "5px 10px"}}>
                     {/* <ExamplesHeader title="Charts"/> */}
                     <h5 style={{"padding":"5px", "marginBottom":"10px"}}><b>Overview</b></h5>
                         {this.state.loadingDashBoard?<Loader></Loader>:
