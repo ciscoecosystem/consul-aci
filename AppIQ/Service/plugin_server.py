@@ -1476,3 +1476,130 @@ def get_apic_data(tenant):
                 break
 
     return apic_data
+
+def get_agent_status(datacenter=""):
+    """Function to get overview agent
+
+    Returns:
+        dict: Response for agents
+    """
+    agents_res = {'up':0, 'down':0}
+    agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+    if not agents:
+        logger.info('Agents List Empty.')
+        return agents_res    
+    for agent in agents:
+        if datacenter:
+            if datacenter == agent[5] and agent[4]:
+                agents_res['up'] += 1
+            elif datacenter == agent[5] and not agent[4]:
+                agents_res['down'] += 1
+        else:
+            if agent[4]:
+                agents_res['up'] += 1
+            else:
+                agents_res['down'] += 1
+    return agents_res
+
+def get_service_status(datacenter=""):
+    """Function to get status of service
+
+    Args:
+        datacenter (str, optional): name of datacenter. Defaults to "".
+
+    Returns:
+        dict: Dictionary with count of passing, warning and critical nodes
+    """
+    service_res = {'passing': 0, 'warning':0, 'failing':0}
+    services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
+    service_checks = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+    if not service_checks:
+        logger.info("Service check is empty")
+        return service_res
+    for service in services:
+        for service_check in service_checks:
+            if service[0] == service_check[1]:
+                if datacenter:
+                    if datacenter == service[9]:
+                        service_res[service_check[7].lower()] += 1
+                else:
+                    if service_check[7].lower():
+                        service_res[service_check[7].lower()] += 1
+                break
+    return service_res
+
+def get_nodes_status(datacenter=""):
+    """Function to get status of nodes
+
+    Args:
+        datacenter (str, optional): name of datacenter. Defaults to "".
+
+    Returns:
+        dict: Dictionary with count of passing, warning and critical nodes
+    """
+    nodes_res = {'passing': 0, 'warning':0, 'failing':0}
+    nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+    node_checks = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+    if not node_checks:
+        logger.info("Node check is empty")
+        return nodes_res
+    for node in nodes:
+        for node_check in node_checks:
+            if node[0] == node_check[1]:
+                if datacenter:
+                    if datacenter == node[3]:
+                        nodes_res[node_check[8].lower()] += 1
+                else:
+                    if node_check[8].lower():
+                        nodes_res[node_check[8].lower()] += 1
+                break
+    return nodes_res
+
+def get_service_endpoints(tn):
+    """Function to return count of service and non service endpoint
+
+    Args:
+        tn (str): Tenant name
+
+    Returns:
+        dict: Dictionary with count of service and non service enpoint
+    """
+    response = {'service':0, 'non_service':0}
+    eps = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+    services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
+    nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+    ep_ips = set()
+    service_ips = set()
+    node_ips = set()
+    for ep in eps:
+        if ep[1] and ep[2] == tn:
+            ep_ips.add(ep[1])
+    
+    for service in services:
+        if service[3]:
+            service_ips.add(service[3])
+
+    for node in nodes:
+        if node[2]:
+            for ip in node[2]:
+                node_ips.add(ip)
+
+    response['non_service'] = len(ep_ips - service_ips - node_ips)
+    response['service'] = len(ep_ips) - response['non_service']
+
+    return response
+
+@time_it
+def get_performance_dashboard(tn):
+
+    try:
+        response = {}
+        response['agents'] = get_agent_status()
+        response['service'] = get_service_status()
+        response['nodes'] = get_nodes_status()
+        response['service_endpoint'] = get_service_endpoints(tn)
+        # Send the agents
+        
+        return response
+    except Exception as e:
+        logger.exception("Exception Occrred. \n Error: {}".format(e))

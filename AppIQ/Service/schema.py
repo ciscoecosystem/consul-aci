@@ -92,6 +92,9 @@ class GetDatacenters(graphene.ObjectType):
 class PostTenant(graphene.ObjectType):
     tenant = graphene.String()
 
+class GetPerformanceDashboard(graphene.ObjectType):
+    response = graphene.String()
+
 
 class Query(graphene.ObjectType):
     """Query class which resolves all the incomming requests"""
@@ -161,6 +164,8 @@ class Query(graphene.ObjectType):
     GetDatacenters = graphene.Field(GetDatacenters)
 
     PostTenant = graphene.Field(PostTenant, tn=graphene.String())
+
+    GetPerformanceDashboard = graphene.Field(GetPerformanceDashboard, tn=graphene.String())
 
 
     """All the resolve methods of class Query"""
@@ -277,5 +282,8 @@ class Query(graphene.ObjectType):
         PostTenant.tenant = app.post_tenant(tn)
         return PostTenant
 
+    def resolve_GetPerformanceDashboard(self, info, tn):
+        GetPerformanceDashboard.response = app.get_performance_dashboard(tn)
+        return GetPerformanceDashboard
 
 schema = graphene.Schema(query=Query)
