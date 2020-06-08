@@ -8,9 +8,9 @@ import base64
 from flask import Flask
 
 
-from . import consul_merge
-from . import recommend_utils
-from . import consul_tree_parser
+import merge
+import recommend_utils
+import tree_parser
 from consul_utils import Consul
 from decorator import time_it
 
@@ -22,15 +22,12 @@ import custom_logger
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
 app.secret_key = "consul_key"
-app.debug = True  # See use
+app.debug = True
 
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 db_obj = alchemy_core.Database()
 db_obj.create_tables()
-
-consul_credential_file_path = "/home/app/data/consulCredentials.json"
-mapppings_file_path = "/home/app/data/mappings.json"
 
 
 def set_polling_interval(interval):
@@ -109,6 +106,8 @@ def get_new_mapping(tenant, datacenter):
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
+        new_map_list = []
+
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
@@ -136,11 +135,21 @@ def get_new_mapping(tenant, datacenter):
                     'datacenter': datacenter
                 })
 
-        return current_mapping
+            new_map_list.append((new_map.get('ip'), new_map.get('dn')))
 
+        for mapping in already_mapped_data:
+            if mapping[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
+                db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
+                    'ip': mapping[0],
+                    'dn': mapping[1],
+                    'datacenter': mapping[2]
+                })
+
+
+        return current_mapping
     except Exception as e:
         logger.exception("Could not load mapping, Error: {}".format(str(e)))
-        return [] # TODO: see if this can be un-empty list
+        return []
 
 
 
@@ -234,11 +243,11 @@ def tree(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
-        response = json.dumps(consul_tree_parser.consul_tree_dict(merged_data))
+        response = json.dumps(tree_parser.consul_tree_dict(merged_data))
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
@@ -1165,6 +1174,20 @@ def delete_creds(agent_data):
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
 
+        agent_dc = agent_data.get('datacenter')
+        agent_list = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        agent_list = [agent for agent in agent_list if agent[5] == agent_dc]
+        if not agent_list:
+            mappings = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
+            for mapping in mappings:
+                if mapping[2] == agent_dc:
+                    db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
+                        'ip': mapping[0],
+                        'dn': mapping[1],
+                        'datacenter': mapping[2]
+                    })
+            logger.info('Mapping for Datacenter {} deleted'.format(str(agent_dc)))
+
         # Delete all the data fetched by this agent
         agent_addr = agent_data.get('ip') + ':' + str(agent_data.get('port'))
         
@@ -1245,7 +1268,7 @@ def details_flattened(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = consul_merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:

@@ -502,3 +502,8 @@ def data_fetch():
         if time_to_sleep > 0:
             logger.info("Data fetch thread sleeping for interval: {}".format(time_to_sleep))
             time.sleep(time_to_sleep)
+
+if __name__ == "__main__":
+    # Starting the data fetch process
+    logger.info("Starting the data fetch process")
+    data_fetch()

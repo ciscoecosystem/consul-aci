@@ -19,7 +19,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     logger.info('Merging objects')
 
     try:
-        merge_list = []  # TODO: these should go above 946
+        merge_list = []
         merged_eps = []
         total_epg_count = {}
         merged_epg_count = {}
@@ -76,7 +76,10 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
-                                merge_list.append(copy.deepcopy(each))
+                                mapped_node = copy.deepcopy(each)
+                                services = copy.deepcopy(mapped_node.get('node_services', []))
+                                mapped_node['node_services'] = [service for service in services if (service.get('service_ip') == "" or service.get('service_ip') in mapped_node.get('node_ips', []))]
+                                merge_list.append(mapped_node)
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))
                                     if aci['EPG'] not in merged_epg_count:
