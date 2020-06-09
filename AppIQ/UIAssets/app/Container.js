@@ -3,25 +3,24 @@ import { Route, Switch, Redirect } from 'react-router-dom';
 import { Sidebar, Dropdown, ButtonGroup, Icon, Screen, Button } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
-import 'react-toastify/dist/ReactToastify.css';
-// import './style.css'
 import Modal from './commonComponent/Modal.js';
-
-// import img1 from './Asset/502075.jpg';
-// import img2 from './Asset/502220.jpg';
-import qsimg from './Asset/qs-details.png';
-
-
 import Dashboard from './Dashboard/Dashboard.js';
+import 'react-toastify/dist/ReactToastify.css';
+// import qsimg from './Asset/qs-details.png';
+
+// const img2 = require("./Asset/qs-details.png");
+// const img3 = "./public/Asset/qs-details.png"
+const QSIMG_PATH = "./public/Asset/qs-details.png";
 
 export default class Container extends React.Component {
     constructor(props) {
         super(props);
+
         this.state = {
             showHelpPopUpIsOpen: false,
             images:[
-                qsimg,
-                qsimg
+                QSIMG_PATH,
+                QSIMG_PATH
             ]
         }
         // getting pathname for route
@@ -73,6 +72,7 @@ export default class Container extends React.Component {
                         <Modal className="help-popup" isOpen={this.state.showHelpPopUpIsOpen} title="Quickstart guide" onClose={this.closeHelpPopUp}>
                                 <div className="panel">
                                     <div className="wrapper" >
+                                    {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
                                     {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
 
                                     </div>
