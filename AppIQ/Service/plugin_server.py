@@ -1519,8 +1519,9 @@ def get_service_status(ep_ips):
         logger.info("Service check is empty")
         return service_res
     for service in services:
+        service_ip = service[5].split(':')[0]
         for service_check in service_checks:
-            if service[0] == service_check[1] and service[3] in ep_ips and service_check[7].lower():
+            if service[0] == service_check[1] and service_ip in ep_ips and service_check[7].lower():
                 service_res[service_check[7].lower()] += 1
                 break
 
