@@ -22,7 +22,12 @@ function FormatToLabel(label) {
 
 export default function PieChartAndCounter(props) {
     let { data, totalCount } = props;
-
+        data = [{
+            color: "#bebec1",
+            value: (totalCount === 0) ? 1 : 0,
+            label: "none"
+        }, ...data]
+    
     return (<div className="d-flex">
         <div className="piechart-wrapper">
             <Charts.ResponsiveContainer width="100%" height={100}>
@@ -47,11 +52,12 @@ export default function PieChartAndCounter(props) {
         </div>
 
         <div class="counters " style={{ maxHeight: "270px" }}>
-            {data.map(function (elem, key) {
+            {data.slice(1).map(function (elem, key) {
+                let label = (elem.label === "failing") ? "Critical" : elem.label;
                 return (<div class="info-container  zero-values NORMAL">
                     <div class="info-title">
                         <span class="info-bullet NORMAL" style={{ backgroundColor: `${elem.color}` }}></span>
-                        <span class="info-label NORMAL"> {FormatToLabel(elem.label)} </span>
+                        <span class="info-label NORMAL"> {FormatToLabel(label)} </span>
                     </div>
                     <div class="info-count">({elem.value})</div>
                 </div>)
