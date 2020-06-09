@@ -733,9 +733,11 @@ def get_to_epg(dn):
 
     Arguments:
         dn {str} -- domain name str
+        eg: "uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-Services"
 
     Returns:
         str -- TO EPG str
+        eg: AppDynamics/AppD-AppProfile1/AppD-Services
     """
     epg = ''
     tn = ''
@@ -828,15 +830,13 @@ def get_to_epg_traffic(epg_dn):
                 for to_epg_child in to_epg_children:
 
                     vz_to_epg_child = to_epg_child["vzToEPg"]
-
                     to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
                     parsed_to_epg_dn = get_to_epg(to_epg_dn)
 
                     flt_attr_children = vz_to_epg_child["children"]
-
                     for flt_attr in flt_attr_children:
                         to_epg_traffic_dict = {
-                            "to_epg": "",
+                            "to_epg": parsed_to_epg_dn,
                             "contract_subj": "",
                             "filter_list": [],
                             "ingr_pkts": "",
@@ -845,12 +845,11 @@ def get_to_epg_traffic(epg_dn):
                             "contract_type": "",
                             "type": contract_type
                         }
-                        to_epg_traffic_dict["to_epg"] = parsed_to_epg_dn
 
                         flt_attr_child = flt_attr["vzRsRFltAtt"]
                         flt_attr_tdn = flt_attr_child["attributes"]["tDn"]
 
-                        traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn
+                        traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn + "||" + contract_type
 
                         # Check if we have already encountered the filter for a particular destination EPG
                         if traffic_id in to_epg_traffic_set:
@@ -882,6 +881,7 @@ def get_to_epg_traffic(epg_dn):
                         else:
                             logger.error("filter attribute ctrlr not found")
                             subj_ctrlr = ''
+
                         if re.search("/subj-", flt_attr_subj_dn):
                             subj_name = flt_attr_subj_dn.split(
                                 "/subj-")[1].split("/")[0]
