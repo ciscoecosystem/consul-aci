@@ -136,6 +136,8 @@ class AciUtils(object):
                 self.login()
                 if retry == 1:
                     self.aci_get(url, 2)
+            else:
+                logger.info('API call status code: ' + str(status_code))
         except Exception as e:
             logger.exception(
                 'ACI call exception: {}, URL: {}'.format(str(e), str(url)))
@@ -682,6 +684,10 @@ class AciUtils(object):
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
                 item_list = response_json.get("imdata")
+            else:
+                response_json = self.aci_get(url)
+                if response_json and response_json.get("imdata"):
+                    item_list = response_json.get("imdata")
             return item_list
         except Exception as ex:
             logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
