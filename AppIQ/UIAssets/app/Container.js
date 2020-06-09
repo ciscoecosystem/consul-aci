@@ -19,7 +19,6 @@ export default class Container extends React.Component {
         this.state = {
             showHelpPopUpIsOpen: false,
             images:[
-                QSIMG_PATH,
                 QSIMG_PATH
             ]
         }

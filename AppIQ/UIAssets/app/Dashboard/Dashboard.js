@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader } from 'blueprint-react';
 import PieChartAndCounter from "../commonComponent/PieChartAndCounter.js";
-import { QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from '../../constants.js';
+import { QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN, AGENTS } from '../../constants.js';
 import { toast } from 'react-toastify';
 import './Dashboard.css';
 
@@ -184,7 +184,7 @@ export default class Dashboard extends React.Component {
                         <div class="row">
                             <div class="col">
                                 <div class="row">
-                                    Seed Agent
+                                    {AGENTS}
                                     </div>
                                 <div class="row">
                                     <div className="agent" >
