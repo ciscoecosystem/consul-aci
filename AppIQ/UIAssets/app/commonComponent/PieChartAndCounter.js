@@ -7,7 +7,7 @@ function renderLabels(count = 0) {
     return (
         <div className="pie-labels">
             <div className="pie-total-label">
-                <b style={{fontSize:"125%"}}>{count}</b>
+                {count}
             </div>
         </div>
     );
@@ -21,7 +21,7 @@ function FormatToLabel(label) {
 }
 
 export default function PieChartAndCounter(props) {
-    let { data, totalCount} = props;
+    let { data, totalCount } = props;
 
     return (<div className="d-flex">
         <div className="piechart-wrapper">
@@ -48,11 +48,10 @@ export default function PieChartAndCounter(props) {
 
         <div class="counters " style={{ maxHeight: "270px" }}>
             {data.map(function (elem, key) {
-                let label = (elem.label === "failing") ? "Critical" : elem.label;
                 return (<div class="info-container  zero-values NORMAL">
                     <div class="info-title">
                         <span class="info-bullet NORMAL" style={{ backgroundColor: `${elem.color}` }}></span>
-                        <span class="info-label NORMAL"> {FormatToLabel(label)} </span>
+                        <span class="info-label NORMAL"> {FormatToLabel(elem.label)} </span>
                     </div>
                     <div class="info-count">({elem.value})</div>
                 </div>)

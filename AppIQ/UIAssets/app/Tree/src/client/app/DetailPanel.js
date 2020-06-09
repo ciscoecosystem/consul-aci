@@ -188,7 +188,7 @@ export default function DetailPanel(props) {
             default:
                 return (
                     <React.Fragment>
-                        {CollapsePane(summaryDetail.name + " Information", appProfileOrder)}
+                        {CollapsePane(summaryDetail.sub_label + " Information", appProfileOrder)}
                     </React.Fragment>)
 
         }
