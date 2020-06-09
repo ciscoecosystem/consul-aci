@@ -1,26 +1,45 @@
 import React from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
-import { Sidebar, Dropdown, ButtonGroup, Icon, Screen } from 'blueprint-react';
+import { Sidebar, Dropdown, ButtonGroup, Icon, Screen, Button } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
-import 'react-toastify/dist/ReactToastify.css';
-// import './style.css'
+import Modal from './commonComponent/Modal.js';
 import Dashboard from './Dashboard/Dashboard.js';
+import 'react-toastify/dist/ReactToastify.css';
+// import qsimg from './Asset/qs-details.png';
+
+// const img2 = require("./Asset/qs-details.png");
+// const img3 = "./public/Asset/qs-details.png"
+const QSIMG_PATH = "./public/Asset/qs-details.png";
 
 export default class Container extends React.Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            showHelpPopUpIsOpen: false,
+            images:[
+                QSIMG_PATH
+            ]
+        }
         // getting pathname for route
         let pathname = window.location.pathname;
         pathname = pathname.split("/");
         pathname.pop();
         this.pathname = pathname.join("/");
-
+        this.closeHelpPopUp = this.closeHelpPopUp.bind(this)
+        this.openHelpPopUp = this.openHelpPopUp.bind(this)
         console.log("container constructor");
         // <Redirect to={this.pathname + "/" + window.location.search} />
     }
+    
+    closeHelpPopUp() {
+        this.setState({ showHelpPopUpIsOpen: false })
+    }
 
+    openHelpPopUp(){
+        this.setState({showHelpPopUpIsOpen: true})
+    }
     render() {
         let thiss = this;
         return (
@@ -37,12 +56,9 @@ export default class Container extends React.Component {
                         <div className="header-buttons">
                             <div className="right-menu-icons ">
 
-                                <Dropdown
-                                    label={<span class="icon-help icon-small"></span>}
-                                    size="btn--small"
-                                    disabled={true}
-                                    items={[]}>
-                                </Dropdown>
+                                <Button size="btn--small" disabled={true} onClick={this.openHelpPopUp}>
+                                    <span class="icon-help icon-small"></span>
+                                </Button>
                                 <Dropdown
                                     label={<span class="icon-cog icon-small"></span>}
                                     size="btn--small"
@@ -52,6 +68,16 @@ export default class Container extends React.Component {
                         </div>
                     </header>
                     <main>
+                        <Modal className="help-popup" isOpen={this.state.showHelpPopUpIsOpen} title="Quickstart guide" onClose={this.closeHelpPopUp}>
+                                <div className="panel">
+                                    <div className="wrapper" >
+                                    {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
+                                    {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
+
+                                    </div>
+                                </div>
+                        </Modal>
+                        
                         <div className="routed-content">
 
                             <Switch>
