@@ -7,8 +7,9 @@ import 'react-toastify/dist/ReactToastify.css';
 // import './style.css'
 import Modal from './commonComponent/Modal.js';
 
-import img1 from './Asset/502075.jpg';
-import img2 from './Asset/502220.jpg';
+// import img1 from './Asset/502075.jpg';
+// import img2 from './Asset/502220.jpg';
+import qsimg from './Asset/qs-details.png';
 
 
 
@@ -18,10 +19,8 @@ export default class Container extends React.Component {
         this.state = {
             showHelpPopUpIsOpen: false,
             images:[
-                img1,
-                img2,
-                img1,
-                img2
+                qsimg,
+                qsimg
             ]
         }
         // getting pathname for route
