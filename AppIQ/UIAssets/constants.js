@@ -1,4 +1,4 @@
-export const APPID = "NewConsulUI"; // this resembles App name: Note: also to be changed in html files
+export const APPID = "Consul"; // this resembles App name: Note: also to be changed in html files
 export const PROFILE_NAME = "datacenterName";
 export const INTERVAL_API_CALL = 30000; // in milliseconds
 
