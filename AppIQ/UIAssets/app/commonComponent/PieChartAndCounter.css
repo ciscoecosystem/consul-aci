@@ -6,7 +6,7 @@
 .piechart-wrapper {
     position: relative;
     text-align: center;
-    width: 70%;
+    width: 35%;
 }
 .piechart-wrapper>.pie-labels {
     position: absolute;
@@ -18,14 +18,9 @@
     font-weight: lighter;
 }
 
-.recharts-surface{
-    overflow: overlay;
-}
 
 .counters {
     margin: auto 1px;
-    text-align: right;
-    width: 0%;
 }
 
 .counters .info-container {

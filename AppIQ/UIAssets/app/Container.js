@@ -5,7 +5,6 @@ import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
 import 'react-toastify/dist/ReactToastify.css';
 // import './style.css'
-import Dashboard from './Dashboard/Dashboard.js';
 
 export default class Container extends React.Component {
     constructor(props) {
@@ -56,9 +55,9 @@ export default class Container extends React.Component {
 
                             <Switch>
 
-                                <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={() => {
-                                    return <div style={{ height: "100%" }}>
-                                        <Dashboard tenantName={this.props.tenantName}/>
+                                <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={function () {
+                                    return <div style={{ height: "100%", textAlign: "center", margin: "30px" }}>
+                                        Dashboard is Under construction
                                     </div>
                                 }} />
 
