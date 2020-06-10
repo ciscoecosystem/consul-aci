@@ -4,37 +4,28 @@
     },
     "apicversion":"3.2(1l)",
     "appid":"Consul",
-    "author":"Nilay Shah, Devarshi Shah",
+    "author":"Dipika Mansukhani, Mohit Agrawal, Yash Parihar, Devarshi Shah",
     "category":[
-        "Visibility and Monitoring"
+        "Visibility and Monitoring",
+        "Tools and Utilities",
+        "Networking"
     ],
     "contact":{
-        "contact-email":"aciappcenter-support@cisco.com",
-        "contact-phone":"1 800 553 2447",
-        "contact-url":"https://globalcontacts.cloudapps.cisco.com/contacts/contactDetails/en_US/c1o1-c2o2-c3o8"
+        "contact-email":"ask-aci-consul@external.cisco.com",
+        "contact-phone":"",
+        "contact-url":"https://github.com/ciscoecosystem/consul-aci/issues"
     },
     "helpURL":"/help/content/index.html",
     "iconfile":"hashicorp-consul.png",
     "insertionURL":"fv:infoTenant:center",
     "metaversion":"1.1",
-    "name":"Consul",
+    "name":"Consul(Beta)",
     "permissions":[
-        "admin",
-        "tenant-connectivity-mgmt",
-        "tenant-connectivity-util",
-        "tenant-connectivity-l2",
-        "tenant-epg",
-        "tenant-ext-connectivity-util",
-        "tenant-network-profile",
-        "tenant-protocol-l2",
-        "tenant-protocol-ops",
-        "tenant-protocol-util",
-        "vmm-ep",
-        "vmm-connectivity"
+        "admin"
     ],
     "permissionslevel":"read",
-    "shortdescr":"The Consul app can link together ACI and Consul.",
+    "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
     "vendor":"Cisco",
     "vendordomain":"Cisco",
-    "version":"1.0"
+    "version":"0.1"
 }
