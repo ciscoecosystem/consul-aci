@@ -1,6 +1,7 @@
 import re
 import json
 import time
+import copy
 import base64
 import requests
 from collections import defaultdict
@@ -189,7 +190,7 @@ class AciUtils(object):
                     future_list.append(future)
                 for future in concurrent.futures.as_completed(future_list):
                     data = future.result()
-                    ep_list.append(data)
+                    ep_list.extend(data)
             return ep_list
         except Exception as e:
             logger.exception(
@@ -205,6 +206,7 @@ class AciUtils(object):
         Returns:
             dict -- Parsed EP data
         """
+        data_list = []
         data = {}
         ep_attr = item.get('fvCEp').get('attributes')
         ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
@@ -222,7 +224,8 @@ class AciUtils(object):
         for ip_mac in ip_mac_list:
             data['ip'] = ip_mac
             data.update(ep_info)
-        return data
+            data_list.append(copy.deepcopy(data))
+        return data_list
 
     def get_ep_info(self, ep_children_list):
 
