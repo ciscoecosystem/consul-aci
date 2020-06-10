@@ -1491,14 +1491,14 @@ def get_agent_status(datacenter=""):
         return agents_res    
     for agent in agents:
         if datacenter:
-            if datacenter == agent[5] and agent[4]:
+            if datacenter == agent[5] and agent[4] == '1':
                 agents_res['up'] += 1
-            elif datacenter == agent[5] and not agent[4]:
+            elif datacenter == agent[5] and agent[4] == '0':
                 agents_res['down'] += 1
         else:
-            if agent[4]:
+            if agent[4] == '1':
                 agents_res['up'] += 1
-            else:
+            elif agent[4] == '0':
                 agents_res['down'] += 1
     return agents_res
 
