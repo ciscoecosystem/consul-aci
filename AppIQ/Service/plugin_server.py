@@ -733,11 +733,11 @@ def get_to_epg(dn):
 
     Arguments:
         dn {str} -- domain name str
-        eg: "uni/tn-AppDynamics/ap-AppD-AppProfile1/epg-AppD-Services"
+        eg: "uni/tn-Tenant1/ap-AppProfile1/epg-EPG1"
 
     Returns:
         str -- TO EPG str
-        eg: AppDynamics/AppD-AppProfile1/AppD-Services
+        eg: Tenant1/AppProfile1/EPG1"
     """
     epg = ''
     tn = ''
