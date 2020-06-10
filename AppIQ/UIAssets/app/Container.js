@@ -56,7 +56,7 @@ export default class Container extends React.Component {
                         <div className="header-buttons">
                             <div className="right-menu-icons ">
 
-                                <Button size="btn--small" disabled={true} onClick={this.openHelpPopUp}>
+                                <Button size="btn--small" onClick={this.openHelpPopUp}>
                                     <span class="icon-help icon-small"></span>
                                 </Button>
                                 <Dropdown
