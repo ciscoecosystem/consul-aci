@@ -1,41 +1,45 @@
-Cisco AppIQ is a stateful app.
+The <Consul for ACI (BETA)> application provides ACI administrators L4-L7 Service Mesh visibility and an automated way to manage L2-L3 infrastructure based on L4-L7 infrastructure requirements.
 
-AppIQ stateful application correlates the APM construct and metrics seen by AppDynamics Core APM in terms of Application Tiers, Nodes and ServiceEndpoints with the corresponding ACI constructs of Tenant, Application Profile, EPG, Contracts, etc.
-This Application provides ACI operators almost real-time visibility of the performance and the health of the application as it relates to ACI applicationa dn fabric topology.
+This application offers enhanced Consul-to-ACI L4-L7 service visibility including dynamic service health, enabling faster mean-time-to-resoultion (MTTR); and L4-L7 service mesh intention driven dynamic Network Middleware Automation.
 
-PREREQUISITE:
-ACI version 3.2 or above
-AppDynamics Controller version 4.4 or above (on-prem and SaaS supported)
-Application monitored by AppDynamics Controller should be running on ACI fabric managed by the APIC cluster on which AppIQ is installed
+Service visibility and faster Mean-time-to-Resolution (MTTR):
+- Real-time visibility into dynamic L4-L7 services, service health and service-to-service communication on virtual, container and bare-metal workloads connected by the ACI multi-cloud network.
+- Faster identification of issues based on service health and network data correlation.
 
+Network Middleware Automation:
+- Consistent L4-L7 service mesh driven network policy (contracts and filters) automation for virtual, bare-metal and container workloads across private and public cloud for your ACI multi-cloud network.
+- Easier transition to a secure service mesh based deployments for Applications teams and DevOps operators with the ACI multi-cloud network.
 
-HOWTO:
-Login
-Once the AppIQ has been enabled, Navigate to the tenant in which the application Endpoints are present. AppIQ will show up as a tab on the far right of the menu bar.
-To login Enter the following information:
+Features:
+- Supports Consul Enterprise and Consul open-source deployments.
+- Visibility into L4-L7 services running on multiple Consul Datacenter
+- Self-Discovery of an entire Consul Datacenter service catalog though a single seed agent(Consul Server).
+- Automated correlation of L4-L7 service-to-ACI fabic and logical topology.
+- Dynamic Service Dashboard to view L4-L7 service health.
 
-Property 			Description
-AppDynamics 		Controller The AppDynamics controller IP address.
-Controller Port 	The running port identifier.
-User 				The controller user name.
-Account 			The tenant user account name.
-Password 			The tenant user account password.
+Highlights:
+- Enhanced L4-L7 service visibility for L2-L3 ACI infrastructure.
+- Green field and brown field deployment supported.
+- Saves data configured by the application.
+- NO impact ACI and Consul configurations if the application is deleted.
+- Maintains organization operational model and ownership.
 
-Once the credentials are input correctly, you will see a list of applications on the AppDynamics controller available to view for the above user.
-Each application will have "Details", "Mapping" and "View"
+Pre-requisites:
+- APIC version 3.2(1l) or above
+- Consul version 1.6.3/1.6.3+ent or above
+- In-band or Out-of-band connectivity between APIC and Consul seed agent (Consul server) on TCP port 8500 and 8501.
+- Enable ACI CNI and Consul Connect on Kubernetes cluster for visibility into Kubernetes workloads.
 
-Details:
-Clicking this gives the information about the ACI endpoints in this application along with the health of the tier the endpoint is a part of and the health of the EPG that the application is a part of.
+Beta release limitations:
+- Supported on Chrome web-browser only.
+- Supported for ipv4 based endpoints only.
+- Supported for on-premise APIC only.
 
-Mapping:
-Clicking this gives the user the ability to select application endpoints that they would like to view in the "Details" and "View" tabs.
-tag (R) next to endpoints indicates that this is the recommended endpoint to be viewed.
+Before you begin:
+User guide: <to be added>
+FAQs: <to be added>
+Video(s): <to be added>
+Support: https://github.com/ciscoecosystem/consul-aci/issues
 
-View:
-Please refer to the screenshots for more information this.
-
-RESTRICTIONS:
-AppIQ is supported for upto 250 application endpoints on ACI fabric.
-AppIQ is tested to support 1 AppDynamics controller per APIC cluster.
-Application "Details", "View" and "Mapping" will be empty if there are no application endpoints for a given Application in the Tenant on which AppIQ is viewed.
-ACI should be setup in Learning mode and not flooding.
+About Consul (https://www.consul.io/):
+- Consul is a highly distributed service mesh solution by HashiCorp for providing a full featured control plane with service discovery, configuration, and segmentation functionality at L4-L7.
