@@ -1,12 +1,13 @@
 export const APPID = "ConsulExtensionforACI"; // this resembles App name: Note: also to be changed in html files
+export const VENDORNAME = "CiscoHashiCorp";
 export const PROFILE_NAME = "datacenterName";
 export const INTERVAL_API_CALL = 30000; // in milliseconds
 
 // export const QUERY_URL = "http://127.0.0.1:5000/graphql.json"; // for Local
-export const QUERY_URL = document.location.origin + "/appcenter/Cisco/"+APPID+"/graphql.json"; // for Production
+export const QUERY_URL = document.location.origin + "/appcenter/"+VENDORNAME+"/"+APPID+"/graphql.json"; // for Production
 
-export const DEV_TOKEN = "app_Cisco_"+APPID+"_token";
-export const URL_TOKEN = "app_Cisco_"+APPID+"_urlToken";
+export const DEV_TOKEN = "app_"+VENDORNAME+"_"+APPID+"_token";
+export const URL_TOKEN = "app_"+VENDORNAME+"_"+APPID+"_urlToken";
 
 // cookie handler
 export function getCookieVal(offset) {
