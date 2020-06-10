@@ -12,7 +12,6 @@
     ],
     "contact":{
         "contact-email":"ask-aci-consul@external.cisco.com",
-        "contact-phone":"",
         "contact-url":"https://github.com/ciscoecosystem/consul-aci/issues"
     },
     "helpURL":"/help/content/index.html",
