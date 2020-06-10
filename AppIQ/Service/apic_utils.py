@@ -1,6 +1,7 @@
 import re
 import json
 import time
+import copy
 import base64
 import requests
 from collections import defaultdict
@@ -223,7 +224,7 @@ class AciUtils(object):
         for ip_mac in ip_mac_list:
             data['ip'] = ip_mac
             data.update(ep_info)
-            data_list.append(data)
+            data_list.append(copy.deepcopy(data))
         return data_list
 
     def get_ep_info(self, ep_children_list):
