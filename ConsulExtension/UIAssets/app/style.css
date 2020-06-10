@@ -1,0 +1,192 @@
+/* .cui .sidebar {
+    display: inline-block;
+    /* position: relative; */
+
+/* } */
+
+.display-in-blk {
+    display: inline-block !important;
+}
+
+*/
+/* .app-container .sidebar--locked~.content-container, .app-container .sidebar--locked~.content-header {
+    margin-left: 280px;
+} */
+
+/* .app-container>.content-header {
+    grid-area: header;
+    color: #58585b;
+    background: #fff;
+    padding: 12px 20px;
+    margin-left: 50px;
+    border-bottom: 1px solid #dfdfdf;
+    -webkit-transition: margin-left .25s;
+    -o-transition: margin-left .25s;
+    transition: margin-left .25s;
+    height: 64px;
+} */
+
+/* .app-container>.content-header .right-menu-icons {
+    float: right;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    height: 100%;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+} */
+
+.right-menu-icons {
+    padding: 3px;
+    padding-right: 10px;
+}
+
+.right-menu-icons .dropdown {
+    margin-right: 13px;
+}
+
+.right-menu-icons .dropdown__menu {
+    right: 0px !important;
+}
+
+.right-menu-icons .dropdown__menu:after {
+    left: auto !important;
+    right: 10px !important;
+}
+
+.right-menu-icons .dropdown>.btn:after, .dropdown>a:after {
+    content: none;
+}
+
+.right-menu-icons .btn.btn--small {
+    padding: 0px;
+    min-width: 30px;
+}
+
+.app-container .main-content-wrapper {
+    margin-left: 50px;
+    transition: margin-left .25s!important;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.app-container .sidebar--locked~.main-content-wrapper {
+    margin-left: 280px;
+}
+
+.app-container .sidebar--collapsed~.main-content-wrapper {
+    margin-left: 50px;
+}
+
+.global-header {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-bottom: 1px solid #c6c7ca;
+    padding: 0 12px;
+    line-height: 1;
+    height: 57px;
+    min-height: 57px;
+}
+
+.global-header .app-title {
+    flex: 1;
+    margin: auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.global-header .header-buttons {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+main {
+    -webkit-transition: width .2s;
+    -o-transition: width .2s;
+    transition: width .2s;
+}
+
+main {
+    height: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 100%;
+    flex: 1 100%;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    overflow: auto;
+    position: relative;
+    max-width: 2560px;
+}
+
+.app-container .main-content-wrapper>main {
+    position: relative;
+    flex: 1;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f2f2f2;
+    overflow-y: auto;
+}
+
+.app-container .main-content-wrapper>main .routed-content {
+    height: 88vh;
+    overflow-y: hidden;
+    flex: 1;
+    /* padding: 12px; */
+}
+
+
+.app-container .dc-item .health-bullet {
+    margin-right: 16px;
+}
+
+.page-container-header {
+    padding: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+.page-container-header  .form-group {
+    display: inline-block;
+}
+
+.page-container-header .dc-title {
+    color: #005073
+}
+/* .cui.blueprint .sidebar.sidebar--collapsed {
+    width: 50px!important;
+}
+
+.cui .cui.cui--animated .sidebar, .cui .cui.cui--animated main {
+    -webkit-transition: width .2s;
+    -o-transition: width .2s;
+    transition: width .2s;
+}
+
+.cui.blueprint .sidebar {
+    -webkit-transition: width .25s!important;
+    -o-transition: width .25s!important;
+    transition: width .25s!important;
+    overflow: auto;
+    white-space: nowrap;
+} */

@@ -1,0 +1,174 @@
+<!DOCTYPE html
+  SYSTEM "about:legacy-compat">
+<html lang="en-us"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta charset="UTF-8"><meta name="copyright" content="(C) Copyright 2018"><meta name="DC.rights.owner" content="(C) Copyright 2018"><meta name="DC.Type" content="reference"><meta name="description" content=""><meta name="DC.Format" content="XHTML"><meta name="DC.Identifier" content="id_80375"><meta name="DC.Language" content="en-US"><link rel="stylesheet" type="text/css" href="css/olh-base.css"><title>Consul</title><script type="text/javascript" language="JavaScript1.2" src="template_images/expand.js"></script>
+<script type="text/javascript" language="JavaScript1.2" src="template_images/page.js"></script>
+<script type="text/javascript" language="JavaScript1.2">
+     <!--
+      function  WWNoOp() {}
+      function  WWNoValue() { return ""; }
+
+      var  VarDropDown;
+
+      if (typeof(HTMLHelp_Object) != "undefined")
+      {
+        VarDropDown = new WWDropDown_Object();
+      }
+      else
+      {
+        VarDropDown = new Object();
+        VarDropDown.fAnchorOpen  = WWNoOp;
+        VarDropDown.fAnchorClose = WWNoOp;
+        VarDropDown.fDIVOpen  = WWNoOp;
+        VarDropDown.fDIVClose = WWNoOp;
+      }
+     // -->
+</script>
+<SCRIPT language="javascript">
+<!--
+  self.document.write("<link href='style.css' rel='stylesheet' type='text/css'>");
+  myid=1;
+  self.document.write("<script type='text/javascript' language='JavaScript' src='con_utils.js'></scr"+"ipt>");
+//-->
+</SCRIPT>
+</head><body onload="highlightSearchTerms();" id="id_80375"><main role="main"><article role="article" aria-labelledby="ariaid-title1"><h1 class="title topictitle1" id="ariaid-title1">Consul</h1><div class="body refbody"><section class="section" id="id_80375__d50e12"><h2 class="title sectiontitle">Overview</h2>
+                        
+                        <p class="p">Consul and consuls work together to assist the user to map each application to a recommended APIC end point and allows the user a visual guide of the running state of those configurations.</p>
+                </section><section class="section" id="id_80375__d50e20"><h2 class="title sectiontitle">Requirements</h2>
+                        
+            <p class="p">The following are the Consul requirements:</p>
+            <ul class="ul"><li class="li">
+                    <p class="p">Permission level: <span class="ph uicontrol">read</span></p>
+                </li><li class="li">
+                                        <p class="p">Permissions:</p>
+                                        <ul class="ul"><li class="li">
+                                                        <p class="p">tenant-connectivity-mgmt</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-connectivity-util</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-connectivity-l2</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-epg</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-ext-connectivity-util</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-network-profile</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-protocol-l2</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-protocol-ops</p>
+                                                </li><li class="li">
+                                                        <p class="p">tenant-protocol-util</p>
+                                                </li><li class="li">
+                                                        <p class="p">vmm-ep</p>
+                                                </li><li class="li">
+                                                        <p class="p">vmm-connectivity</p>
+                                                </li></ul>
+                                </li><li class="li">
+                                        <p class="p">App version 1.0</p>
+                                </li><li class="li">
+                                        <p class="p">Minimum required controller version: 2.2(1n)</p>
+                                </li><li class="li">
+                                        <p class="p">On premise consuls controller version: 4.5.1 and above.</p>
+                                </li><li class="li">
+                                		<p class="p">Consul integration requires consuls monitored applications to be running on this ACI fabric and the mapping of End points will only show up if the End points are present under the given Tenant.</p>
+								</li></ul>
+                                
+        </section><section class="section" id="id_80375__d50e89"><h2 class="title sectiontitle">Login</h2>
+                        
+                        <p class="p">Once the Consul has been enabled, click on your consuls tenant and the Consul tab on the far left of the menu bar to login. Enter the following information:</p>
+                        <table width="100%" border="1" class="table" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333"><caption></caption><colgroup><col style="width:30%"><col style="width:70%"></colgroup><thead class="thead"><tr class="row"><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1">Property </th><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2">Description </th></tr></thead><tbody class="tbody"><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls Controller</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:name" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2 ">
+                                                                <p class="p">The consuls controller IP address or Hostname.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls Controller Port</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:descr" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2 ">
+                                                                <p class="p">The running port identifier.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls User</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2 ">
+                                                                <p class="p">The controller user name.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls Account</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2 ">
+                                                                <p class="p">The tenant user account name.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls User Password</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333__entry__2 ">
+                                                                <p class="p">The tenant user account password.</p>
+                                                        </td></tr></tbody></table>
+                </section><section class="section" id="id_80375__d50e169"><h2 class="title sectiontitle">List of Applications</h2>
+                        
+                        <p class="p">Displays the list of applications from consuls and recommends the appropriate APIC end points to deploy them on.  </p>
+                        <table width="100%" border="1" class="table" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310"><caption></caption><colgroup><col style="width:30%"><col style="width:70%"></colgroup><thead class="thead"><tr class="row"><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__1">Property </th><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__2">Description </th></tr></thead><tbody class="tbody"><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">Application Name</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:name_d5e195a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__2 ">
+                                                                <p class="p">The consuls tenant application name.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">Health</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:descr_d5e207a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e177a1310__entry__2 ">
+                                                                <p class="p">Displays the application statistics.</p>
+                                                                <ul class="ul"><li class="li" id="id_80375__li_78731290674B4A4499C62DA0EA511A2E">
+                                                                                <p class="p">
+                                                                                        <strong class="ph b">Status</strong>—The application current health state. The state is expressed from normal to critical depending on the current health state of the application running on consuls.</p>
+                                                                        </li><li class="li" id="id_80375__li_5FE58DB7FD6040CBB08E3DEAC94ED8AA">
+                                                                                <p class="p"><strong class="ph b">Details</strong>—Lists the Apic end points and which EPGs, and consul applications they are associated with and their health states. </p>
+                                                                        </li><li class="li" id="id_80375__li_5FE58DB7FD6040CBB08E3DEAC94ED8AA_d5e228a1310">
+                                                                                <p class="p"><strong class="ph b">Mapping</strong>—Allows the user to add or remove consul applications to the recommended APIC end points. </p>
+                                                                        </li><li class="li" id="id_80375__li_5FE58DB7FD6040CBB08E3DEAC94ED8AA_d5e235a1310">
+                                                                                <p class="p"><strong class="ph b">View</strong>—Displays a tree format view of all the tenant associated end points. Each branch is color coded from the top at Application Profile&gt;EPG&gt;EP&gt;Node. The health can be viewed by the color that encircles each point.</p>
+                                                                                <table role="note" class="note olh_note note--note note--compact"><tr><td class="olh_note" role="heading"><div>Note</div></td><td class="olh_note"><div class="note__content">
+                                                                                        <p class="p">Hover over each point to view the end point statistics.</p>
+                                                                                </div></td></tr></table>
+                                                                        </li></ul>
+                                                        </td></tr></tbody></table>
+                </section><section class="section" id="id_80375__d50e250"><h2 class="title sectiontitle">Mapping</h2><p class="p">Add or remove consul applications to the recommended APIC end points.</p><img class="image" src="502220.jpg"></section><section class="section" id="id_80375__d50e256"><h2 class="title sectiontitle">View</h2><p class="p">Use the <span class="ph uicontrol">View</span> display to see detailed information on all the tenant EPGs within consuls:</p><img class="image" src="502075.jpg">
+                <table width="100%" border="1" class="table" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310"><caption></caption><colgroup><col style="width:30%"><col style="width:70%"></colgroup><thead class="thead"><tr class="row"><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1">Number</th><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2">Description </th></tr></thead><tbody class="tbody"><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">1 - 3</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:name_d5e283a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">The consuls health status. The health status color is shown as the circled color surrounding each point on the tree graph. The status can be:</p>
+                                                                <ul class="ul"><li class="li">
+                                                                                <p class="p">Red - critical</p>
+                                                                        </li><li class="li">
+                                                                                <p class="p">Yellow - warning</p>
+                                                                        </li><li class="li">
+                                                                                <p class="p">Green - normal</p>
+                                                                        </li></ul>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">4</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:descr_d5e312a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">The APIC EPG, EP, and node name.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">5</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">The consuls EPG or EP tier name.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">6</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">Hover over each point to see details on how the end points connect to the APIC and their contract information.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">7</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">Expresses the number of ACI EPs in the EPG <b>not</b> mapped to any consuls application.</p>
+                                                        </td></tr></tbody></table>
+                                                        <table width="100%" border="1" class="table" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310"><caption></caption><colgroup><col style="width:30%"><col style="width:70%"></colgroup><thead class="thead"><tr class="row"><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1">Caveats</th><th font-weight="bold" class="entry" id="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2">Description </th></tr></thead><tbody class="tbody"><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">Total ACI Tenants supported</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:name_d5e283a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">Recommended for having consuls EPs mapped with up to <b>3</b> ACI Tenants.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls Controller</span></p>
+                                                        </td><td class="entry dbreference" id="id_80375__aaa:Domain:descr_d5e312a1310" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">The Consul app can only point to <b>1</b> consul Controller at a time.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls User Privileges</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">consul configured user on Consul needs to have privileges to access consul public APIs.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">consuls Communication Access</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">The app uses https access by default. If the consuls controller communicates over http, add http://consulsControllerIP/ in the login page of Consul.</p>
+                                                        </td></tr><tr class="row"><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__1 ">
+                                                                <p class="p"><span class="ph uicontrol">ACI Communication Access</span></p>
+                                                        </td><td class="entry" headers="id_80375__table_F7D03560E63A43CD8C231DD69E3EE333_d5e265a1310__entry__2 ">
+                                                                <p class="p">If the https access to APIC is disabled, the app will try to communicate via http. To ensure HTTPS communication, enable HTTPS access in ACI.</p>
+                                                        </td></tr></tbody></table></section></div></article></main><script src="js/app/main.js" type="text/javascript"></script></body></html>
