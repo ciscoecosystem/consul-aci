@@ -3,8 +3,8 @@
         "graphql.json":"GraphQL Json"
     },
     "apicversion":"3.2(1l)",
-    "appid":"Consul",
-    "author":"Dipika Mansukhani, Mohit Agrawal, Yash Parihar, Devarshi Shah",
+    "appid":"ConsulExtensionforACI",
+    "author":"Dipika Mansukhani, Mohit Agrawal, Yash Parihar, Devarshi Shah, Cisco, HashiCorp",
     "category":[
         "Visibility and Monitoring",
         "Tools and Utilities",
@@ -18,14 +18,14 @@
     "helpURL":"/help/content/index.html",
     "iconfile":"hashicorp-consul.png",
     "insertionURL":"fv:infoTenant:center",
-    "metaversion":"1.1",
-    "name":"Consul(Beta)",
+    "metaversion":"1.0",
+    "name":"Consul Extension for ACI (Beta)",
     "permissions":[
         "admin"
     ],
     "permissionslevel":"read",
     "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
-    "vendor":"Cisco",
-    "vendordomain":"Cisco",
+    "vendor":"Cisco HashiCorp",
+    "vendordomain":"CiscoHashiCorp",
     "version":"0.1"
 }

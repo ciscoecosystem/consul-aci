@@ -1,5 +1,3 @@
-__author__ = 'nilayshah'
-
 from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
@@ -12,7 +10,7 @@ import requests
 from multiprocessing import Process
 
 app = Flask(__name__)
-CORS(app, resources={r"/graphql.json": {"origins": "*"}}) # CORS used for what?
+CORS(app, resources={r"/graphql.json": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.debug = True
 

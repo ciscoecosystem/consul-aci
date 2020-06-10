@@ -31,10 +31,7 @@ db_obj.create_tables()
 
 
 def set_polling_interval(interval):
-    """Sets the polling interval for data fetch
-
-    TODO: to be implemented
-    """
+    """Sets the polling interval for data fetch"""
 
     return "200", "Polling Interval Set!"
 
@@ -69,7 +66,7 @@ def get_new_mapping(tenant, datacenter):
                 if service.get('service_ip', ''):
                     ip_list.append(service.get('service_ip'))
 
-        aci_consul_mappings = recommend_utils.recommanded_eps(
+        aci_consul_mappings = recommend_utils.recommended_eps(
             list(set(ip_list)), parsed_eps)
 
         if not aci_consul_mappings:
@@ -88,10 +85,10 @@ def get_new_mapping(tenant, datacenter):
                     })
 
         apic_data = get_apic_data(tenant)
-        for maped_obj in current_mapping:
+        for mapped_obj in current_mapping:
             for ep in apic_data:
-                if ep.get('dn') == maped_obj.get('dn'):
-                    maped_obj.update({
+                if ep.get('dn') == mapped_obj.get('dn'):
+                    mapped_obj.update({
                         'vrf': ep.get('VRF'),
                         'bd': ep.get('BD'),
                         'ap': ep.get('AppProfile'),
@@ -154,13 +151,13 @@ def get_new_mapping(tenant, datacenter):
 
 
 def mapping(tenant, datacenter):
-    """Returns mapping to UI and saves recommanded mapping to db"""
+    """Returns mapping to UI and saves recommended mapping to db"""
 
     try:
         current_mapping = get_new_mapping(tenant, datacenter)
         
         return json.dumps({
-            "agentIP": ' ',  # TODO: what to return here
+            "agentIP": '',
             "payload": current_mapping, # REturn current mapping
             "status_code": "200",
             "message": "OK"
@@ -227,7 +224,7 @@ def parse_mapping_before_save(already_mapped_data, data_list):
 
 @time_it
 def tree(tenant, datacenter):
-    """Get correltated Tree view data.
+    """Get correlated Tree view data.
 
     return: {
         agentIP: string
@@ -251,7 +248,7 @@ def tree(tenant, datacenter):
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
-            "agentIP": '',  # TODO: send valid ip
+            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -308,7 +305,7 @@ def get_service_check(service_name, service_id, datacenter):
                     'Status': check[7]
                 })
 
-        logger.debug('Response of Service chceck: {}'.format(response))
+        logger.debug('Response of Service check: {}'.format(response))
 
         return json.dumps({
             "agentIP": '',
@@ -354,7 +351,7 @@ def get_node_checks(node_name, datacenter):
                     'Status': check[8]
                 })
 
-        logger.debug('Response of Node chceck: {}'.format(response))
+        logger.debug('Response of Node check: {}'.format(response))
 
         return json.dumps({
             "agentIP": '',
@@ -1008,7 +1005,7 @@ def get_all_interfaces(interfaces):
                 interface_list += str(interface.split("/pathgrp-")
                                       [1][1:-1]+"(vmm)")
         else:
-            logger.error("Incompetible format of Interfaces found")
+            logger.error("Incompatible format of Interfaces found")
     return interface_list
 
 
@@ -1017,7 +1014,7 @@ def read_creds():
     try:
         logger.info('Reading agents.')
 
-        # handle db read faliure, just pass empty list from there
+        # handle db read failure, just pass empty list from there
         agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
         if not agents:
             logger.info('Agents List Empty.')
@@ -1047,7 +1044,7 @@ def read_creds():
                 'datacenter': datacenter
             })
 
-        logger.debug('Read cretds resopnse: {}'.format(str(payload)))
+        logger.debug('Read creds response: {}'.format(str(payload)))
         return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
 
     except Exception as e:
@@ -1297,7 +1294,6 @@ def details_flattened(tenant, datacenter):
                 details_list.append(record)
         logger.debug("Details final data ended: " + str(details_list))
 
-        # TODO: details = [dict(t) for t in set([tuple(d.items()) for d in details_list])]
         return json.dumps({
             "agentIP": ' ', # send ip if needed
             "payload": details_list,
@@ -1611,5 +1607,5 @@ def get_performance_dashboard(tn):
         
         return json.dumps({"status": "200", "payload": response, "message": "OK"})
     except Exception as e:
-        logger.exception("Exception Occrred. \n Error: {}".format(e))
+        logger.exception("Exception occurred. \n Error: {}".format(e))
         return json.dumps({"status": "300", "payload": {}, "message":"Could not load performance data"})

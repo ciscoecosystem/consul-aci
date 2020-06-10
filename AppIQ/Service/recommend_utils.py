@@ -148,12 +148,12 @@ def generatelist(ip_list):
     return src_clus_list
 
 
-def recommanded_eps(source_ip_list, parsed_eps):
-    """This finds all the recommanded EPs in APIC wrt the source data
+def recommended_eps(source_ip_list, parsed_eps):
+    """This finds all the recommended EPs in APIC wrt the source data
     
     TODO: explain
     """
-    logger.info('Finding Recommanded EPs for ACI and Consul')
+    logger.info('Finding Recommended EPs for ACI and Consul')
 
     try:
         if not parsed_eps:

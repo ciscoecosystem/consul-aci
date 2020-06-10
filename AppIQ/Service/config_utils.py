@@ -1,7 +1,7 @@
 import configparser
 
 def get_conf_value(section, key_name):
-    """Funtion to return value from configuration
+    """Function to return value from configuration
     File
 
     Args:

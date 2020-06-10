@@ -116,7 +116,7 @@ class AciUtils(object):
 
     @time_it
     def aci_get(self, url, retry=1):
-        """Funtion to  make API call to APIC API
+        """Function to  make API call to APIC API
         with provided URL
 
         Arguments:
@@ -171,7 +171,7 @@ class AciUtils(object):
             return []
 
     def parse_ep_data(self, ep_resp):
-        """Funtion to iterate over EP data response using threading
+        """Function to iterate over EP data response using threading
 
         Arguments:
             ep_resp {list} -- List of EP response from API
@@ -198,7 +198,7 @@ class AciUtils(object):
             return []
 
     def parse_and_return_ep_data(self, item):
-        """Funtion to Parse data of EP
+        """Function to Parse data of EP
 
         Arguments:
             item {dict} -- Single response of EP data
@@ -368,7 +368,7 @@ class AciUtils(object):
 
     @staticmethod
     def get_node_from_interface(interfaces):
-        """Funtion to return node number from interface
+        """Function to return node number from interface
 
         Arguments:
             interfaces {list or str} -- List of interface or interface string
@@ -410,7 +410,7 @@ class AciUtils(object):
 
     @time_it
     def apic_fetch_epg_data(self, tenant):
-        """Funtion to fetch EPGs data from APIC API
+        """Function to fetch EPGs data from APIC API
 
         Arguments:
             tenant str -- tenant name for which we want to fetch EPGs data
@@ -526,7 +526,7 @@ class AciUtils(object):
             return {}
 
     def get_epg_health(self, dn):
-        """Funtion to get health of EPG from dn
+        """Function to get health of EPG from dn
 
         Arguments:
             dn {str} -- dn string
@@ -549,7 +549,7 @@ class AciUtils(object):
             return ''
 
     def parse_epg_data(self, epg_resp):
-        """Funtion to iterate over API response of EPG data
+        """Function to iterate over API response of EPG data
         using multithreading.
 
         Arguments:
@@ -571,7 +571,7 @@ class AciUtils(object):
         return parsed_data
 
     def parse_and_return_epg_data(self, item):
-        """Funtion to Parse EPG data
+        """Function to Parse EPG data
 
         Arguments:
             item {dict} -- EPG data from API

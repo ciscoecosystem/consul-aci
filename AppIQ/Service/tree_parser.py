@@ -1,7 +1,7 @@
 """Module for parsing tree data for consul
 
     This module will gets the mapped data and return a 
-    hirachical Tree data for the D3 component in UI.
+    hierarchical Tree data for the D3 component in UI.
 
     Multiple Tree will be returned in case of multiple
     AP in that mapped data.
@@ -9,7 +9,6 @@
     to be show in the side pane is also displayed is also
     sent in attributes.
 
-    TODO: add checks in each tree node
 """
 
 def consul_tree_dict(data):
@@ -41,7 +40,6 @@ def consul_tree_dict(data):
         ap_service_addr_list=[]
 
         # Top level node in Tree
-        # TODO: lable not sent because not needed in Consul: Try send ''
         ap_dict = {
             'name': 'AppProf',
             'type': '#581552',
@@ -92,7 +90,7 @@ def consul_tree_dict(data):
                 # Extract EPs with above ip
                 ep_nodes = [ep for ep in epg_eps if ep['IP'] == epg_ip]
 
-                # Itterating for every ep
+                # Iterating for every ep
                 for ep_node in ep_nodes:
 
                     # 3rd layer nodes in Tree (EP)
@@ -154,7 +152,7 @@ def consul_tree_dict(data):
 
                         # Now adding the service info in EP and EPG attributes
                         # for the Side Pane info, 
-                        # And adding services lable to EPG
+                        # And adding services label to EPG
 
                         # Service for side pane
                         service_side_pane = {
@@ -185,7 +183,7 @@ def consul_tree_dict(data):
                             epg_dict['checks'] = add_checks(epg_dict['checks'], service_dict['checks'])
                             epg_service_addr_list.append(service_address)
 
-                        # Add lable to EPG if not there, a EPG can have more then one services in 
+                        # Add label to EPG if not there, a EPG can have more then one services in 
                         # the EPs, But as it is difficult to show all of those in the tree view 
                         # UI only 1 is shown with ellipsis
                         if not epg_dict['label']:
@@ -233,13 +231,13 @@ def consul_tree_dict(data):
 
             # 3rd layer nodes in Tree (EP)
             #  Iterating for each Non service end point in EPG
-            if epg_eps[0]['Non_IPs']: # TODO: understand Y is this [0], Also the key
+            if epg_eps[0]['Non_IPs']:
                 non_ep_dict={}
                 non_ep_dict['name'] = 'EP'
                 non_ep_dict['type'] = 'grey'
-                non_ep_dict['label'] = '' # No lable is shown in the ui for a non-service ep
+                non_ep_dict['label'] = '' # No label is shown in the ui for a non-service ep
                 non_ep_dict['level'] = 'grey'
-                non_ep_dict['sub_label'] = '' # No sub_lable is shown in the ui for a non-service ep
+                non_ep_dict['sub_label'] = '' # No sub_label is shown in the ui for a non-service ep
                 non_ep_dict['attributes'] = epg_eps[0]['Non_IPs']
                 non_ep_dict['fractions'] = epg_eps[0]['fraction']
                 epg_dict['children'].append(non_ep_dict)

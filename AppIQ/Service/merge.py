@@ -11,8 +11,6 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 @time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
-    Initial algo implementaion.
-
     Merge ACI data with Consul Data fetched from API directly
     """
 
@@ -58,7 +56,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                     # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
-                                # but this will remove all the non mapped services in first itteration node
+                                # but this will remove all the non mapped services in first iteration node
                                 elif service.get('service_ip') != "" and service.get('service_ip') not in [each.get(mapping_key) for each in mappings]:
                                     node['node_services'].remove(service)
                             if new_node['node_services']:
