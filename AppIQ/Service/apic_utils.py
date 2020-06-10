@@ -66,7 +66,7 @@ class AciUtils(object):
         """
         user_cert, plugin_key = AciUtils.create_cert_session()
         app_token_payload = {"aaaAppToken": {
-            "attributes": {"appName": "Cisco_ConsulExtensionforACI"}}}
+            "attributes": {"appName": "CiscoHashiCorp_ConsulExtensionforACI"}}}
         data = json.dumps(app_token_payload)
         pay_load = "POST" + urls.LOGIN_URL_SUFFIX + data
         private_key = load_privatekey(FILETYPE_PEM, plugin_key)
@@ -101,7 +101,7 @@ class AciUtils(object):
         Create user certificate and session.
         """
 
-        cert_user = 'Cisco_ConsulExtensionforACI'  # Name of Application, used for token generation
+        cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
         # static generated upon install
         plugin_key_file = '/home/app/credentials/plugin.key'
         pol_uni = PolUni('')
