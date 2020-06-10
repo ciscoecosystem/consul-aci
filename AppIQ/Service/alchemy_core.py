@@ -475,7 +475,7 @@ class Database:
         try:
             ins = None
             table_name = table_name.lower()
-            field_values.append(datetime.now()) #TODO: check created_ts
+            field_values.append(datetime.now())
             ins = self.table_obj_meta[table_name].insert().values(field_values)
             if ins != None:
                 self.conn.execute(ins)
@@ -562,7 +562,7 @@ class Database:
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]
-                    # TODO: call audit
+
                     if new_record_dict:
                         new_record_dict['updated_ts'] = datetime.now()
                     self.update_in_table(table_name, primary_key, new_record_dict)

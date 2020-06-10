@@ -1,6 +1,6 @@
-The <Consul for ACI (BETA)> application provides ACI administrators L4-L7 Service Mesh visibility and an automated way to manage L2-L3 infrastructure based on L4-L7 infrastructure requirements.
+The Consul Extension for ACI (Beta) application provides ACI administrators L4-L7 Service Mesh visibility and an automated way to manage L2-L3 infrastructure based on L4-L7 service requirements.
 
-This application offers enhanced Consul-to-ACI L4-L7 service visibility including dynamic service health, enabling faster mean-time-to-resoultion (MTTR); and L4-L7 service mesh intention driven dynamic Network Middleware Automation.
+This application offers enhanced Consul-to-ACI L4-L7 service visibility including dynamic service health, enabling faster mean-time-to-resolution (MTTR); and L4-L7 service mesh intention driven dynamic Network Middleware Automation.
 
 Service visibility and faster Mean-time-to-Resolution (MTTR):
 - Real-time visibility into dynamic L4-L7 services, service health and service-to-service communication on virtual, container and bare-metal workloads connected by the ACI multi-cloud network.
@@ -12,33 +12,30 @@ Network Middleware Automation:
 
 Features:
 - Supports Consul Enterprise and Consul open-source deployments.
-- Visibility into L4-L7 services running on multiple Consul Datacenter
+- Visibility into L4-L7 services running on multiple Consul Datacenters.
 - Self-Discovery of an entire Consul Datacenter service catalog though a single seed agent(Consul Server).
-- Automated correlation of L4-L7 service-to-ACI fabic and logical topology.
+- Automated correlation of L4-L7 service-to-ACI fabric and logical topology.
 - Dynamic Service Dashboard to view L4-L7 service health.
 
 Highlights:
 - Enhanced L4-L7 service visibility for L2-L3 ACI infrastructure.
 - Green field and brown field deployment supported.
 - Saves data configured by the application.
-- NO impact ACI and Consul configurations if the application is deleted.
+- NO impact on ACI and Consul configurations if the application is deleted.
 - Maintains organization operational model and ownership.
 
 Pre-requisites:
 - APIC version 3.2(1l) or above
 - Consul version 1.6.3/1.6.3+ent or above
 - In-band or Out-of-band connectivity between APIC and Consul seed agent (Consul server) on TCP port 8500 and 8501.
-- Enable ACI CNI and Consul Connect on Kubernetes cluster for visibility into Kubernetes workloads.
 
 Beta release limitations:
 - Supported on Chrome web-browser only.
-- Supported for ipv4 based endpoints only.
 - Supported for on-premise APIC only.
 
 Before you begin:
-User guide: <to be added>
-FAQs: <to be added>
-Video(s): <to be added>
+User guide: https://tinyurl.com/y9ztt362
+FAQs: https://tinyurl.com/ya8b95j2
 Support: https://github.com/ciscoecosystem/consul-aci/issues
 
 About Consul (https://www.consul.io/):

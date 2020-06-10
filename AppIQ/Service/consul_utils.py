@@ -22,10 +22,10 @@ class Consul(object):
         self.protocol = protocol
 
         self.session = requests.Session()
-        self.connected = False # TODO: remove if no use
+        self.connected = False
 
         # The base URL is set with protocol http, 
-        # if http failes https will be tried
+        # if http fails https will be tried
         self.base_url = '{}://{}:{}'.format(self.protocol, self.agent_ip, self.port)
         self.header = {}
         if self.token:
@@ -112,7 +112,7 @@ class Consul(object):
             catalog_nodes = json.loads(catalog_nodes.content)
             logger.debug('Catalog Nodes API data: {}'.format(str(catalog_nodes)))
             
-            # Ittrate over each node and get all its unique ips
+            # Iterate over each node and get all its unique ips
             for node in catalog_nodes:
                 ip_list = []
                 ip_list.append(node.get('Address', ''))
@@ -212,7 +212,7 @@ class Consul(object):
                 status = check.get('Status', '')
 
                 # The API return the all the node and service checks,
-                # but only the node checks are retuned
+                # but only the node checks are returned
                 if not check.get('ServiceID') and status:
                     if 'passing' == status.lower():
                         if check_dict.get('passing'):
@@ -285,7 +285,7 @@ class Consul(object):
         
         service_name: name of the service for checks
 
-        return: tupple(tag_list, kind, namespace)
+        return: tuple(tag_list, kind, namespace)
                     tag_list: string list
                     kind: string
                     namespace/NA: string
@@ -386,7 +386,7 @@ class Consul(object):
         node_name: name of the node for checks
 
         return: [{
-            Name: streing
+            Name: string
             ServiceName: string
             CheckID: string
             Type: string
@@ -428,7 +428,7 @@ class Consul(object):
     def get_consul_data(self):
         """
         This will fetch the data from the API and return for now
-        Decide the form of data neede in the merge logic and return as per that.
+        Decide the form of data needed in the merge logic and return as per that.
 
         return: [
                     {

@@ -5,10 +5,6 @@ intercal and then puts it into the database.
 
 """
 
-# TODO: Node services and Node checks can run parallel,Servce Info and Check can run parallel
-# TODO: Testcase for this - using mock/realtime things
-# TODO: multi threading
-
 import custom_logger
 import alchemy_core as database
 from consul_utils import Consul
@@ -192,7 +188,7 @@ def data_fetch():
                     )
 
             # if there is no agent list on 
-            # db check it evety CHECK_AGENT_LIST sec
+            # db check it every CHECK_AGENT_LIST sec
             if not agent_list:
                 logger.info("No Agents found in the Login table, retrying after {}sec".format(CHECK_AGENT_LIST))
                 time.sleep(CHECK_AGENT_LIST)
@@ -202,7 +198,7 @@ def data_fetch():
             for agent in agent_list:
                 datacenter_list.setdefault(agent.get('datacenter'), []).append(agent)
 
-            # Ittrate over each datacenter to fetch the data
+            # Iterate over each datacenter to fetch the data
             for datacenter, agents in datacenter_list.items():
                 
                 logger.info("Data fetch for dc: {}".format(datacenter))
@@ -223,7 +219,7 @@ def data_fetch():
                 node_checks_key = set()
                 service_checks_key = set()
 
-                # Ittrate for every agent of that DC 
+                # Iterate for every agent of that DC 
                 # and create a unique list of nodes.
                 with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
                     for agent in agents:
@@ -263,14 +259,14 @@ def data_fetch():
                                 node[4].remove(agent)
                                 db_obj.insert_and_update(db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
 
-                logger.info("Data updation in Node Complete.")
+                logger.info("Data update in Node Complete.")
 
-                # Ittrate all nodes and get all services
+                # Iterate all nodes and get all services
                 with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
                     for node in nodes_dict.values():
                         executor.submit(get_services, services_dict, node)
                 
-                # Ittrate all nodes and get node checks
+                # Iterate all nodes and get node checks
                 with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
                     for node in nodes_dict.values():
                         executor.submit(get_node_checks, node_checks_dict, node)
@@ -310,9 +306,9 @@ def data_fetch():
                                 node[9].remove(agent)
                                 db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
 
-                logger.info("Data updation in Node Checks Complete.")
+                logger.info("Data update in Node Checks Complete.")
 
-                # Ittrate all services and get services info
+                # Iterate all services and get services info
                 with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
                     for service in services_dict.values():
                         executor.submit(get_service_info, service)
@@ -356,9 +352,9 @@ def data_fetch():
                                 service[10].remove(agent)
                                 db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, service, {'service_id': service[0],'node_id': service[1]})
 
-                logger.info("Data updation in Service Complete.")
+                logger.info("Data update in Service Complete.")
 
-                # Ittrate all services and get services checks
+                # Iterate all services and get services checks
                 with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
                     for service in services_dict.values():
                         executor.submit(get_service_checks, service_checks_dict, service)
@@ -397,7 +393,7 @@ def data_fetch():
                                 service[8].remove(agent)
                                 db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0],'service_id': service[1]})
 
-                logger.info("Data updation in Service Checks Complete.")
+                logger.info("Data update in Service Checks Complete.")
 
                 logger.info("Data fetch for datacenter {} complete.".format(datacenter))
 
@@ -418,7 +414,7 @@ def data_fetch():
             for tenant in tenant_list:
                 ep_data = aci_obj.apic_fetch_ep_data(tenant)
 
-                # check if even a single ip of ep is maped to consul
+                # check if even a single ip of ep is mapped to consul
                 flag = False
                 for ep in ep_data:
                     if ep.get('ip') in consul_ip_list:
@@ -462,7 +458,7 @@ def data_fetch():
                     if ep[2] == tenant and (ep[0], ep[1]) not in ep_key:
                         db_obj.delete_from_table(db_obj.EP_TABLE_NAME, ep, {'mac': ep[0], 'ip': ep[1]})
 
-                logger.info("Data updation in EP Complete.")
+                logger.info("Data update in EP Complete.")
 
                 epg_data = aci_obj.apic_fetch_epg_data(tenant)
                 for epg in epg_data:
@@ -490,7 +486,7 @@ def data_fetch():
                     if epg[1] == tenant and epg[0] not in epg_key:
                         db_obj.delete_from_table(db_obj.EPG_TABLE_NAME, epg, {'dn': epg[0]})
 
-                logger.info("Data updation in EPG Complete.")
+                logger.info("Data update in EPG Complete.")
 
             logger.info("Data fetch complete:")
 

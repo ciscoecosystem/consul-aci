@@ -97,7 +97,7 @@ class GetPerformanceDashboard(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    """Query class which resolves all the incomming requests"""
+    """Query class which resolves all the incoming requests"""
 
     Mapping = graphene.Field(Mapping, 
                                 tn=graphene.String(), 
