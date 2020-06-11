@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
-import { Sidebar, Dropdown, ButtonGroup, Icon, Screen, Button } from 'blueprint-react';
+import { Sidebar,  ButtonGroup, Icon, Screen, Button, Dropdown, Carousel } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
 import Modal from './commonComponent/Modal.js';
@@ -19,7 +19,10 @@ export default class Container extends React.Component {
         this.state = {
             showHelpPopUpIsOpen: false,
             images:[
-                QSIMG_PATH
+                QSIMG_PATH,
+                QSIMG_PATH,
+                QSIMG_PATH,
+                QSIMG_PATH,
             ]
         }
         // getting pathname for route
@@ -62,7 +65,8 @@ export default class Container extends React.Component {
                                 <Dropdown
                                     label={<span class="icon-cog icon-small"></span>}
                                     size="btn--small"
-                                    items={this.props.items}>
+                                    items={this.props.items}
+                                    type="dropdown--type-button">
                                 </Dropdown>
                             </div>
                         </div>
@@ -72,8 +76,13 @@ export default class Container extends React.Component {
                                 <div className="panel">
                                     <div className="wrapper" >
                                     {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
-                                    {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
-
+                                    {/* {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)} */}
+                                        <Carousel>
+                                            <img src={this.state.images[0]} alt="help"/>
+                                            <img src={this.state.images[0]} alt="help"/>
+                                            <img src={this.state.images[0]} alt="help"/>
+                                            <img src={this.state.images[0]} alt="help"/>
+                                        </Carousel>
                                     </div>
                                 </div>
                         </Modal>
