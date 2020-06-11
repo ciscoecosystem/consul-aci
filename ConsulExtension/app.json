@@ -21,17 +21,7 @@
     "metaversion":"1.0",
     "name":"Consul Extension for ACI (Beta)",
     "permissions":[
-        "tenant-connectivity-mgmt",
-        "tenant-connectivity-util",
-        "tenant-connectivity-l2",
-        "tenant-epg",
-        "tenant-ext-connectivity-util",
-        "tenant-network-profile",
-        "tenant-protocol-l2",
-        "tenant-protocol-ops",
-        "tenant-protocol-util",
-        "vmm-ep",
-        "vmm-connectivity"
+        "admin"
     ],
     "permissionslevel":"read",
     "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
