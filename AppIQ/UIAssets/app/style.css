@@ -193,3 +193,11 @@ main {
     overflow: auto;
     white-space: nowrap;
 } */
+
+.cui .slideInRightSmall{
+    animation: none !important;
+}
+
+.cui .slideInLeftSmall{
+    animation: none !important;
+}
