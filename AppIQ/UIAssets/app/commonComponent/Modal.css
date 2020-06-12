@@ -1,9 +1,7 @@
 
 .modal-layout {
-    z-index: 2100;
-    width: 50%;
-    /* overflow: scroll; */
-    height: -webkit-fill-available;
+    z-index: 2100 !important;
+    width: 50% !important;
     margin: 1% 25%;
 }
 
@@ -23,17 +21,18 @@
 }
 
 .modal-layout>main.scrollable {
-    max-height: 75%;
+    max-height: fit-content !important;
 }
 
 .modal-layout>header {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    background: white;
-    color: black;
+    background: white !important;
+    color: black !important;
     
 }
 
-.cui.blueprint .screen-container{
-    z-index: 5000 !important;
+.cui.blueprint .screen-container > header h3 {
+    font-weight: 200;
 }
+

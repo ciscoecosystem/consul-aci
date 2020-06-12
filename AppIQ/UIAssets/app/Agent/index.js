@@ -621,7 +621,7 @@ export default class Agent extends React.Component {
             }}>
                 <div>
                     <div className="panel">
-                        <form onSubmit={this.submitAgent}>
+                        <form>
                             <div className="integration-form">
                                 {
                                     agentFields.map(function (elem) {
@@ -634,6 +634,7 @@ export default class Agent extends React.Component {
                                         className={!saveAllow && "disabled"}
                                         size="btn--small"
                                         type="btn--primary"
+                                        onClick={this.submitAgent}
                                     >Save</Button>
 
                                 </div>
