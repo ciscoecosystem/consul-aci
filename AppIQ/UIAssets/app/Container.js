@@ -19,10 +19,7 @@ export default class Container extends React.Component {
         this.state = {
             showHelpPopUpIsOpen: false,
             images:[
-                QSIMG_PATH,
-                QSIMG_PATH,
-                QSIMG_PATH,
-                QSIMG_PATH,
+                QSIMG_PATH
             ]
         }
         // getting pathname for route
@@ -78,10 +75,7 @@ export default class Container extends React.Component {
                                     {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
                                     {/* {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)} */}
                                         <Carousel>
-                                            <img src={this.state.images[0]} alt="help"/>
-                                            <img src={this.state.images[0]} alt="help"/>
-                                            <img src={this.state.images[0]} alt="help"/>
-                                            <img src={this.state.images[0]} alt="help"/>
+                                            {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
                                         </Carousel>
                                     </div>
                                 </div>
