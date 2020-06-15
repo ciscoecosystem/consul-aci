@@ -5,6 +5,7 @@ import { Icon } from "blueprint-react";
 import "./style.css";
 import "react-tippy/dist/tippy.css";
 import d3Tip from "d3-tip";
+import {showShortName} from "./utils.js";
 d3.tip = d3Tip;
 
 var d;
@@ -307,7 +308,7 @@ export default class Node extends React.Component {
             //style={nodeStyle.attributes}
             dy="10"
           >
-            {"(" + this.props.label + ")"}
+            {"(" + showShortName(this.props.label, 15) + ")"}
           </text>
         ) : (
             ""
@@ -321,12 +322,12 @@ export default class Node extends React.Component {
             //style={nodeStyle.attributes}
             dy="10"
           >
-            {
+            {showShortName(
               this.props.sub_label.replace(/([^,]*),.*/, "$1 + ") +
               " " +
               (this.props.sub_label.split(",").length > 1
                 ? this.props.sub_label.split(",").length - 1
-                : "")}
+                : ""), 15)}
           </text>
         ) : (
             ""
