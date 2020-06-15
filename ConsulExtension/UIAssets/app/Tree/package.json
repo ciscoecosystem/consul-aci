@@ -5,7 +5,7 @@
   "scripts": {
     "build": "webpack -p --watch",
     "dev": "webpack -d --watch",
-    "start": "webpack-dev-server --inline --hot --port 9999"
+    "start": "webpack-dev-server --mode production --inline --hot --port 9999"
   },
   "author": "",
   "license": "ISC",
@@ -36,8 +36,9 @@
     "tls": "0.0.1",
     "url-loader": "^1.0.1",
     "vis": "^4.21.0",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
