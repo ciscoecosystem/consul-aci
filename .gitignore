@@ -1,11 +1,2 @@
-AppIQ/Service/__pycache__/*
-AppIQ/UIAssets/app/Tree/node_modules/*
-
-[merge]
-    tool = vscode
-[mergetool "vscode"]
-    cmd = code --wait $MERGED
-[diff]
-    tool = vscode
-[difftool "vscode"]
-    cmd = code --wait --diff $LOCAL $REMOTE
+ConsulExtension/Service/__pycache__/*
+ConsulExtension/UIAssets/app/Tree/node_modules/*
