@@ -1,12 +1,11 @@
+
 module.exports = {
 	'entry': {
-		// 'mapping': __dirname + "/mapping.js",
 		'details': __dirname + "/details.js",
-		// 'login': __dirname + "/login.js",
 		'app': __dirname + "/app.js",
 	},
 	'module': {
-		'loaders': [{
+		'rules': [{
 			'test': /\.js$/,
 			'exclude': /(node_modules|bower_compontents)/,
 			'loader': 'babel-loader',
@@ -32,7 +31,9 @@ module.exports = {
 		}
 		]
 	},
-
+	"stats": {
+		"warnings": false
+	},
 	'output': {
 		'filename': '[name].js',
 		'path': __dirname + '/public',
