@@ -1,5 +1,28 @@
-export let showShortName = (string, str_len)=>{
-    if(string.length > str_len)
-      return string.substr(0, str_len) + ".."
-    return string
+export let showShortName = (dataString, strLen)=>{
+    if(typeof(dataString) === "string"){
+      if(dataString.length > strLen){
+        return dataString.substr(0, strLen) + ".."
+      }
+    return dataString
+    }
+    else
+      return dataString
+    
   }
+
+
+export let  nFormatter = (num) =>{
+    if(typeof(num) !== "number"){
+      return num
+    }
+    if (num >= 1000000000) {
+        return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'G';
+    }
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num;
+}

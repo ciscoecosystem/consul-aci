@@ -6,6 +6,7 @@ import "./style.css";
 import "react-tippy/dist/tippy.css";
 import d3Tip from "d3-tip";
 import {showShortName} from "./utils.js";
+import {nFormatter} from "./utils.js";
 d3.tip = d3Tip;
 
 var d;
@@ -334,12 +335,10 @@ export default class Node extends React.Component {
           )}
 
         {/* checks part */}
-        {(checks !== undefined) && <foreignObject x="-47" y="45" width="100" height="30" className="node-icon">
-          <span>
-            {(checks.passing !== undefined) && <span> <Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{checks.passing}&nbsp;&nbsp;</span>}
-            {(checks.warning !== undefined) && <span> <Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{checks.warning}&nbsp;&nbsp;</span>}
-            {(checks.failing !== undefined) && <span> <Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{checks.failing} </span>}
-          </span>
+        {(checks !== undefined) && <foreignObject x="-70" y="45" width="160" height="50" style={{fontSize:"12px"}} className="node-icon">
+            {(checks.passing !== undefined) && <span><Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{nFormatter(checks.passing)}&nbsp;&nbsp;</span>}
+            {(checks.warning !== undefined) && <span><Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{nFormatter(checks.warning)}&nbsp;&nbsp;</span>}
+            {(checks.failing !== undefined) && <span><Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{nFormatter(checks.failing)} </span>}
         </foreignObject>}
 
       </g>
