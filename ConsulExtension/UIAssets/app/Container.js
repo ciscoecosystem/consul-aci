@@ -5,6 +5,7 @@ import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
 import Modal from './commonComponent/Modal.js';
 import Dashboard from './Dashboard/Dashboard.js';
+import Details from './Details/App.js';
 import 'react-toastify/dist/ReactToastify.css';
 // import qsimg from './Asset/qs-details.png';
 
@@ -163,6 +164,7 @@ class OperationalViewComponent extends React.Component {
         let toLocation = isListView ? detailViewLocation : treeViewLocation;
 
         let dcName = this.paramsObject[PROFILE_NAME];
+        let tenantName = this.paramsObject["tn"];
 
         console.log("Operations view Render", this.state);
 
@@ -180,7 +182,8 @@ class OperationalViewComponent extends React.Component {
                         onChange={this.handleIsListView} />
                 </div>
             </div>
-            <FrameComponent toLocation={toLocation} />}
+            {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName}/> : 
+                <FrameComponent toLocation={toLocation} />}
 
         </div>)
     }

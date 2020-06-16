@@ -12,6 +12,7 @@ var params_tn;
 var details_raw;
 
 var urlToParse = location.search;
+console.log("Detail location", urlToParse);
 var urlParams = {};
 urlToParse.replace(
     new RegExp("([^?=&]+)(=([^&]*))?", "g"),
@@ -37,7 +38,7 @@ class Container extends Component {
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
-        params_tn = result['tn'];
+        // params_tn = result['tn'];
 
         this.state = {
             "data": [],
@@ -139,7 +140,7 @@ class Container extends Component {
     // }
 
     fetchDataCall() {
-        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
+        let payload = DC_DETAILS_QUERY_PAYLOAD(this.props.tenantName, this.props.dcName);
         let thiss = this;
         let xhr = new XMLHttpRequest();
         try {

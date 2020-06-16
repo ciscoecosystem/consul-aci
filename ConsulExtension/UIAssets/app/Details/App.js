@@ -8,7 +8,7 @@ class App extends Component {
     render() {
         return (
             <div>
-                <Container />
+                <Container tenantName={this.props.tenantName} dcName={this.props.dcName}/>
             </div>
         )
     }
