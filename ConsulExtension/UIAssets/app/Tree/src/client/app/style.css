@@ -278,6 +278,7 @@
 
 .node-icon {
   text-align: center;
+  font-size: "12px"
 }
 
 .cui .node-icon .icon-tiny:before {
