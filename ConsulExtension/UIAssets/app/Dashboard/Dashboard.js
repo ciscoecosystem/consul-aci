@@ -203,7 +203,7 @@ export default class Dashboard extends React.Component {
                                         Service checks
                                     </div>
                                     <div class="row">
-                                        <PieChartAndCounter data={this.formateDataToChartData(this.state.services).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.services).totalCnt)} />
+                                        <PieChartAndCounter data={this.formateDataToChartData(this.state.services).formattedData} totalCount={this.formateDataToChartData(this.state.services).totalCnt} />
                                     </div>
                                 </div> : null}
 
@@ -213,7 +213,7 @@ export default class Dashboard extends React.Component {
                                         Node checks
                                     </div>
                                     <div class="row">
-                                        <PieChartAndCounter data={this.formateDataToChartData(this.state.nodes).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.nodes).totalCnt)} />
+                                        <PieChartAndCounter data={this.formateDataToChartData(this.state.nodes).formattedData} totalCount={this.formateDataToChartData(this.state.nodes).totalCnt} />
                                     </div>
                                 </div> : null}
 
