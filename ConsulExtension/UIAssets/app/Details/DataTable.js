@@ -15,22 +15,22 @@ export default class DataTable extends Component {
       {
         Header: "Service",
         accessor: "service",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Service Instance",
         accessor: "serviceInstance",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Port",
         accessor: "port",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Service Kind",
         accessor: "serviceKind",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Service Tags",
@@ -62,7 +62,7 @@ export default class DataTable extends Component {
       {
         Header: "Namespace",
         accessor: "serviceNamespace",
-        filterType: "textoptions"
+        filterType: "text"
       }
     ]
 
@@ -71,22 +71,22 @@ export default class DataTable extends Component {
       {
         Header: "Endpoint",
         accessor: "endPointName",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "IP",
         accessor: "ip",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Application Profile",
         accessor: "ap",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "EPG",
         accessor: "epgName",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "EPG Health",
@@ -108,7 +108,7 @@ export default class DataTable extends Component {
       {
         Header: "Consul Node",
         accessor: "consulNode",
-        filterType: "textoptions"
+        filterType: "text"
       },
       {
         Header: "Node Check",
@@ -154,6 +154,8 @@ export default class DataTable extends Component {
 
   componentDidMount(){
     const node = this.myRef.current;
+    console.log("==> filtertable ref ", node);
+
     node.filterFields.pop(); // remove anytext from filter
   }
 
@@ -173,30 +175,31 @@ export default class DataTable extends Component {
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
 
-
-
         <FilterableTable loading={this.state.loading}
           ref={this.myRef}
           className="-striped -highlight"
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
           columns={this.state.columns}
-          // onPageChange={() => this.props.resetExpanded()}
-          // expanded={this.props.expanded}
-          // onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
-          getTrProps={(state, rowInfo) => {
-            if (rowInfo && rowInfo.row) {
-              return {
-                onClick: (e) => {
-                  thiss.props.setSummaryDetail(rowInfo.original)
-                  // console.log("Select row on click ", rowInfo );
+          defaultFilters={[
+                   {
+                     category: 'endPointName',
+                     operator: 'contains',
+                     value: 'none',
+            }]}
+            getTrProps={(state, rowInfo) => {
+              if (rowInfo && rowInfo.row) {
+                return {
+                  onClick: (e) => {
+                    thiss.props.setSummaryDetail(rowInfo.original)
+                    // console.log("Select row on click ", rowInfo );
+                  }
                 }
+              } else {
+                return {}
               }
-            } else {
-              return {}
-            }
-          }} />
-        {/* </FilterableTable> */}
+            }}
+           />
       </div>
     )
   }
