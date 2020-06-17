@@ -30,8 +30,8 @@ def exception_handler(method):
             logger.exception('Exception in {} : {}'.format(method.__name__, str(e)))
     return wrapper
 
-# Decorators used in alchemy
 
+# Decorators used in alchemy
 def alchemy_commit_session(method):
     def wrapper(*args):
         try:
@@ -39,7 +39,7 @@ def alchemy_commit_session(method):
         except Exception as e:
             logger.exception('error in {} : {}'.format(method.__name__, str(e)))
         finally:
-            args[0].commit_session() # here 0th argument is self so args[0].commit_session()
+            args[0].commit_session()  # here 0th argument is self so args[0].commit_session()
     return wrapper
 
 
