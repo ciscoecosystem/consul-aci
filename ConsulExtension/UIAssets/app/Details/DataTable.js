@@ -170,7 +170,6 @@ export default class DataTable extends Component {
   // }
 
   render() {
-    let thiss = this;
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
