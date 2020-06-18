@@ -1561,9 +1561,15 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
         dict: Count of service and non service endpoint
     """
     response = {'service':0, 'non_service':0}
-    response['non_service'] = len(ep_ips - service_ips - node_ips)
-    response['service'] = len(ep_ips) - response['non_service']
+    consul_ips = service_ips|node_ips
+    common_ips = set()
 
+    for each in ep_ips:
+        if each in consul_ips:
+            common_ips.add(each)
+
+    response['service'] = len(common_ips)
+    response['non_service'] = len(ep_ips) - len(common_ips)
     return response
 
 
