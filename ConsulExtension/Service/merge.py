@@ -38,7 +38,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 for each in mappings:
                     mapping_key = 'ip'
                     aci_key = 'IP'
-                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['dn'] == str(aci['dn']):
+                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key) == each.get(mapping_key) and each['dn'] == str(aci['dn']):
                         logger.info('mapping: {}, aci: {}'.format(str(each), str(aci)))
                         # Service to CEp mapping
                         for node in consul_data:
@@ -52,7 +52,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             # All the services which matches CEp and its ip is different from its nodes ip
                             node_services = copy.deepcopy(node.get('node_services', []))
                             for service in node_services:
-                                if aci.get(aci_key).upper() == service.get('service_ip') and aci.get(aci_key).upper() not in node.get('node_ips'):
+                                if aci.get(aci_key) == service.get('service_ip') and aci.get(aci_key) not in node.get('node_ips'):
                                     # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
@@ -70,7 +70,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                         # node to EP mapping
-                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('node_ips', [])]
+                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key) in node.get('node_ips', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
