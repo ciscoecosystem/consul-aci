@@ -2,11 +2,14 @@ import React from 'react'
 import { CollapsiblePanel, Label } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
+import { showShortName } from './utils.js';
 import "./DetailPanel.css";
 
 const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
-const NODE_EPG_NAME = "EPG"
+const NODE_EPG_NAME = "EPG";
+const HEADER_LENGTH = 25;
+const VALUE_LENGTH = 35;
 
 function formateDataToChartData(data) {
     let totalCnt = 0;
@@ -203,7 +206,7 @@ export default function DetailPanel(props) {
 
     return (summaryPaneIsOpen) ? <SummaryPane
         subTitle={""}
-        title={title}
+        title={showShortName(title, HEADER_LENGTH)}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
         isOpenScreen={true}
         openScreen={() => props.openDetailsPage(summaryDetail)}
@@ -219,7 +222,7 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value">{props.propertyValue ? props.propertyValue : "-"}</div>
+            <div className="property-value">{props.propertyValue ? typeof(props.propertyValue) === "string"? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : "-"}</div>
         </div>
     )
 }
