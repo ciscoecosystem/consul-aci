@@ -250,6 +250,12 @@ export default class Node extends React.Component {
       : { ...styles.leafNode };
 
     //onClick={this.handleClick}
+    const subLabel= this.props.sub_label ?(this.props.sub_label.replace(/([^,]*),.*/, "$1 + ") +
+                      " " +
+                      (this.props.sub_label.split(",").length > 1
+                        ? this.props.sub_label.split(",").length - 1
+                        : "")):null
+    const Label = "(" + showShortName(this.props.label, 15) + ")"
 
     return (
       <g
@@ -307,8 +313,9 @@ export default class Node extends React.Component {
             transform={textLayout.transform}
             //style={nodeStyle.attributes}
             dy="10"
+            title={Label}
           >
-            {"(" + showShortName(this.props.label, 15) + ")"}
+            <title>{Label}</title>{showShortName(Label, 15)}
           </text>
         ) : (
             ""
@@ -321,13 +328,9 @@ export default class Node extends React.Component {
             transform={textLayout.transform}
             //style={nodeStyle.attributes}
             dy="10"
+            
           >
-            {showShortName(
-              this.props.sub_label.replace(/([^,]*),.*/, "$1 + ") +
-              " " +
-              (this.props.sub_label.split(",").length > 1
-                ? this.props.sub_label.split(",").length - 1
-                : ""), 15)}
+            <title>{subLabel}</title>{showShortName(subLabel, 15)}
           </text>
         ) : (
             ""
