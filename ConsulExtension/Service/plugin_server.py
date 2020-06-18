@@ -18,6 +18,8 @@ import apic_utils
 import alchemy_core
 import custom_logger
 
+import functools
+
 
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
@@ -1564,12 +1566,17 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
     consul_ips = service_ips|node_ips
     common_ips = set()
 
+    ep_map = {}
     for each in ep_ips:
         if each in consul_ips:
-            common_ips.add(each)
+            if each in ep_map:
+                ep_map[each] = ep_map[each] + 1
+            else:
+                ep_map[each] = 1
 
-    response['service'] = len(common_ips)
-    response['non_service'] = len(ep_ips) - len(common_ips)
+    total_service_count = functools.reduce(lambda a, b: a+b, [v for k, v in ep_map])
+    response['service'] = total_service_count
+    response['non_service'] = len(ep_ips) - total_service_count
     return response
 
 
