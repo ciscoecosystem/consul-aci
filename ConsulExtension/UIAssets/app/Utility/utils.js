@@ -28,3 +28,5 @@ export const nFormatter = (num) => {
   }
   return num;
 }
+
+export const isString = (value)=> (typeof(value) === "string")

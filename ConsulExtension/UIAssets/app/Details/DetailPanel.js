@@ -2,11 +2,13 @@ import React from 'react'
 import { CollapsiblePanel, Label } from "blueprint-react"
 import SummaryPane from "../Components/SummaryPane";
 import PieChartAndCounter from "../commonComponent/PieChartAndCounter";
-import { showShortName } from '../Utility/utils.js' ;
+import { showShortName, isString } from '../Utility/utils.js' ;
 import "./DetailPanel.css";
 
-const HEADER_LENGTH = 25;
+
+
 const VALUE_LENGTH = 35;
+
 
 function formateDataToChartData(data) {
     let totalCnt = 0;
@@ -82,7 +84,7 @@ export default function DetailPanel(props) {
                     } else if (name === "interface") {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                             {summaryDetail[name].map(function (infcs) {
-                                return <li>{infcs}</li>
+                                return <li title={infcs}>{infcs}</li>
                             })}
                         </ul>
                     }
@@ -97,7 +99,7 @@ export default function DetailPanel(props) {
 
     return (summaryPaneIsOpen) ? <SummaryPane
         subTitle={"ENDPOINT"}
-        title={showShortName(title, HEADER_LENGTH)}
+        title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
         openScreen={function () { console.log("Here open detail it") }}
     >
@@ -114,9 +116,9 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value">
+            <div className="property-value" title={ isString(props.propertyValue) && props.propertyValue}>
                 {props.propertyValue ? 
-                    (typeof(props.propertyValue) === "string") ? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue 
+                    isString(props.propertyValue) ? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue 
                     : "-"}
             </div>
         </div>

@@ -15,22 +15,34 @@ export default class DataTable extends Component {
       {
         Header: "Service",
         accessor: "service",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Instance",
         accessor: "serviceInstance",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Port",
         accessor: "port",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Kind",
         accessor: "serviceKind",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Tags",
@@ -62,7 +74,10 @@ export default class DataTable extends Component {
       {
         Header: "Namespace",
         accessor: "serviceNamespace",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       }
     ]
 
@@ -71,22 +86,34 @@ export default class DataTable extends Component {
       {
         Header: "Endpoint",
         accessor: "endPointName",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "IP",
         accessor: "ip",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Application Profile",
         accessor: "ap",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "EPG",
         accessor: "epgName",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "EPG Health",
@@ -108,7 +135,10 @@ export default class DataTable extends Component {
       {
         Header: "Consul Node",
         accessor: "consulNode",
-        filterType: "textoptions"
+        filterType: "textoptions",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Node Check",
