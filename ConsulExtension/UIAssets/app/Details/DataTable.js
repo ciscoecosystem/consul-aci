@@ -181,12 +181,12 @@ export default class DataTable extends Component {
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
           columns={this.state.columns}
-          defaultFilters={[
-                   {
-                     category: 'endPointName',
-                     operator: 'contains',
-                     value: 'none',
-            }]}
+          // defaultFilters={[
+          //          {
+          //            category: 'endPointName',
+          //            operator: 'contains',
+          //            value: 'none',
+          //   }]}
             getTrProps={(state, rowInfo) => {
               if (rowInfo && rowInfo.row) {
                 return {

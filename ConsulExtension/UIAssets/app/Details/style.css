@@ -66,3 +66,14 @@ body{
     padding-top: 9px;
     display: inline-block
 }
+
+.detail-container {
+    height: 80vh;
+    margin: 10px 0px;
+    overflow-y: overlay;
+    overflow-x: unset;
+}
+
+.detail-container .ReactTable .rt-tbody {
+    overflow: hidden;
+}

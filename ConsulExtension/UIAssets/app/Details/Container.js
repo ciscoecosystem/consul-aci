@@ -2,11 +2,9 @@ import React, { Component } from 'react'
 // import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
+import { toast } from 'react-toastify';
 // import { dummyData } from "./dummyData.js";
-import './style.css'
 
 var params_tn;
 var details_raw;
@@ -119,19 +117,20 @@ class Container extends Component {
 
     notify(message, isSuccess = false, isWarning = false) {
         isWarning ? toast.warn(message, {
-            position: toast.POSITION.TOP_CENTER
+            position: toast.POSITION.BOTTOM_CENTER
         }) :
             isSuccess ? toast.success(message, {
-                position: toast.POSITION.TOP_CENTER
+                position: toast.POSITION.BOTTOM_CENTER
             }) :
                 toast.error(message, {
-                    position: toast.POSITION.TOP_CENTER
+                    position: toast.POSITION.BOTTOM_CENTER
                 });
     }
 
     // staticFetchDataCall() {
     //     setTimeout(() => {
     //         console.log("Got data");
+    //         this.notify("Fecthed the data");
     //         this.setData(dummyData);
     //         this.setState({
     //             loading: false
@@ -219,7 +218,7 @@ class Container extends Component {
 
         return (
             <div>
-                <ToastContainer />
+
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
                     title={summaryDetail["endPointName"]}
