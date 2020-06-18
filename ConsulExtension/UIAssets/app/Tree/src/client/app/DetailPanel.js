@@ -2,8 +2,8 @@ import React from 'react'
 import { CollapsiblePanel, Label } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
-import "./DetailPanel.css";
 import { showShortName } from './utils.js';
+import "./DetailPanel.css";
 
 const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
