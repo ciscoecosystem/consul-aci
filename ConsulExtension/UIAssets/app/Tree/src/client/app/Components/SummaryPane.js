@@ -1,7 +1,9 @@
 import React from "react";
 import { Icon } from "blueprint-react";
 import "./SummaryPane.css";
+import {showShortName} from "../utils.js"
 
+const HEADER_LENGTH = 25;
 class SummaryPane extends React.Component {
   constructor(props) {
     super(props);
@@ -15,8 +17,8 @@ class SummaryPane extends React.Component {
             <div className="summary-pane-header">
 
               <div class="summary-pane-title-value">
-                <div class="title">{this.props.subTitle}</div>
-                <div class="value">{this.props.title}</div>
+                <div class="title" title={this.props.subTitle}>{showShortName(this.props.subTitle, HEADER_LENGTH)}</div>
+                <div class="value" title={this.props.title}>{showShortName(this.props.title, HEADER_LENGTH)}</div>
               </div>
 
 
