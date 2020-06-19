@@ -1565,12 +1565,14 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
     response = {'service': 0, 'non_service': 0}
     consul_ips = service_ips | node_ips
     ep_map = {}
+    for each in consul_ips:
+        if each in ep_ips:
+            logger.info('======= ip in service ====== ' + each)
+            ep_map[each] = 0
+
     for each in ep_ips:
-        if each in consul_ips:
-            if each in ep_map:
-                ep_map[each] = ep_map[each] + 1
-            else:
-                ep_map[each] = 1
+        if each in ep_map.keys():
+            ep_map[each] = ep_map[each] + 1
 
     total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
     response['service'] = total_service_count
@@ -1595,8 +1597,8 @@ def get_performance_dashboard(tn):
         services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
         nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
         ep_ips = set()
-        service_ips = set()
-        node_ips = set()
+        service_ips = []
+        node_ips = []
         for ep in eps:
             if ep[1] and ep[2] == tn:
                 ep_ips.add(ep[1])
