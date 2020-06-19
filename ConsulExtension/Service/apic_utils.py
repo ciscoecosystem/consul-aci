@@ -222,7 +222,7 @@ class AciUtils(object):
         ep_child_attr = item.get('fvCEp').get('children')
         ep_info = self.get_ep_info(ep_child_attr)
         for ip_mac in ip_mac_list:
-            data['ip'] = ip_mac
+            data['ip'] = ip_mac  # TODO: if mac, then add ''
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -611,16 +611,15 @@ class AciUtils(object):
             # If first key is 'fvIp' than add IP to list otherwise add mac address
             if eachip.keys()[0] == 'fvIp':
                 is_ip_list = True
-                ip_set.add(
-                    str(eachip.get('fvIp').get('attributes').get('addr')))
+                ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')).lower())
 
         # Below if condition adds all valid ip and mac to the list
-        cep_ip = str(item.get('fvCEp').get('attributes').get('ip'))
+        cep_ip = str(item.get('fvCEp').get('attributes').get('ip')).lower()
         if cep_ip != STATIC_IP and not is_ip_list:
             is_cep = True
             ip_set.add(cep_ip)
         elif not is_ip_list:
-            mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
+            mac_set.add(item.get('fvCEp').get('attributes').get('mac').lower())
 
         return (list(ip_set) + list(mac_set)), is_cep
 

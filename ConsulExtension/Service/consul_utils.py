@@ -121,7 +121,7 @@ class Consul(object):
                     ip_list.append(tagged_addr.get('lan_ipv4', ''))
 
                 # for removing '' from ip_list
-                ip_list = [ip for ip in ip_list if ip]
+                ip_list = [ip.lower() for ip in ip_list if ip]
 
                 node_name = node.get('Node', '')
 
@@ -163,12 +163,12 @@ class Consul(object):
             for service in services_resp.get('Services'):
 
                 # form service_address
-                service_ip = service.get('Address')
+                service_ip = service.get('Address').lower()
                 service_port = service.get('Port')
                 if service_ip:
                     service_address = str(service_ip) + ':' + str(service_port)
                 else:
-                    service_address = str(services_resp.get('Node', {}).get('Address', '')) + ':' + str(service_port)
+                    service_address = str(services_resp.get('Node', {}).get('Address', '')).lower() + ':' + str(service_port)
 
                 # Form a dict
                 service_list.append({
