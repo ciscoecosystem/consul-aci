@@ -572,7 +572,7 @@ def get_audit_logs(dn):
 
 
 @time_it
-def get_children_ep_info(dn, mo_type, mac_list):
+def get_children_ep_info(dn, mo_type, mac_list, ip):
     aci_util_obj = apic_utils.AciUtils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
@@ -582,10 +582,9 @@ def get_children_ep_info(dn, mo_type, mac_list):
         mac_query_filter = ",".join(mac_query_filter_list)
 
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + \
-            mac_query_filter + \
-            ')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
+            mac_query_filter + ')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
     elif mo_type == "epg":
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
+        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
     ep_info_list = []
@@ -601,8 +600,18 @@ def get_children_ep_info(dn, mo_type, mac_list):
             if mcast_addr == "not-applicable":
                 mcast_addr = "---"
 
+            if mo_type == "ep":
+                cep_ip = ip
+            elif mo_type == "epg":
+                ip_set = set()
+                for eachip in ep_children:
+                    if eachip.keys()[0] == 'fvIp':
+                        ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')))
+                ip_set.add(ep_attr.get('ip'))
+                cep_ip = ', '.join(ip_set)
+
             ep_info_dict = {
-                "ip": ep_attr.get("ip"),
+                "ip": cep_ip,
                 "mac": ep_attr.get("mac"),
                 "mcast_addr": mcast_addr,
                 "learning_source": ep_attr.get("lcC"),
