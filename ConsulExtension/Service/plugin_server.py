@@ -35,7 +35,11 @@ def set_polling_interval(interval):
 def get_new_mapping(tenant, datacenter):
     try:
         # Get APIC data
-        ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
+        connection.close()
+
         parsed_eps = []
         for ep in ep_data:
             cep_ip = int(ep[12])
@@ -94,7 +98,11 @@ def get_new_mapping(tenant, datacenter):
 
         logger.info('New mapping: {}'.format(str(current_mapping)))
 
-        already_mapped_data = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            already_mapped_data = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
+        connection.close()
+
 
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
@@ -104,39 +112,45 @@ def get_new_mapping(tenant, datacenter):
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
-        for new_map in current_mapping:
-            for db_map in already_mapped_data:
-                if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn') and db_map[2] == datacenter:
-                    new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
-                    break
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for new_map in current_mapping:
+                for db_map in already_mapped_data:
+                    if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn') and db_map[2] == datacenter:
+                        new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
+                        break
 
-            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
-                (
-                    new_map.get('ip'),
-                    new_map.get('dn'),
-                    datacenter,
-                    new_map.get('enabled'),
-                    new_map.get('ap'),
-                    new_map.get('bd'),
-                    new_map.get('epg'),
-                    new_map.get('vrf'),
-                    tenant
-                ),
-                {
-                    'ip': new_map.get('ip'),
-                    'dn': new_map.get('dn'),
-                    'datacenter': datacenter
-                })
+                db_obj.insert_and_update(connection, db_obj.MAPPING_TABLE_NAME,
+                    (
+                        new_map.get('ip'),
+                        new_map.get('dn'),
+                        datacenter,
+                        new_map.get('enabled'),
+                        new_map.get('ap'),
+                        new_map.get('bd'),
+                        new_map.get('epg'),
+                        new_map.get('vrf'),
+                        tenant
+                    ),
+                    {
+                        'ip': new_map.get('ip'),
+                        'dn': new_map.get('dn'),
+                        'datacenter': datacenter
+                    })
 
-            new_map_list.append((new_map.get('ip'), new_map.get('dn')))
+                new_map_list.append((new_map.get('ip'), new_map.get('dn')))
+        connection.close()
 
-        for mapping in already_mapped_data:
-            if mapping[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
-                db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
-                    'ip': mapping[0],
-                    'dn': mapping[1],
-                    'datacenter': mapping[2]
-                })
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for mapping in already_mapped_data:
+                if mapping[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
+                    db_obj.delete_from_table(connection, db_obj.MAPPING_TABLE_NAME, {
+                        'ip': mapping[0],
+                        'dn': mapping[1],
+                        'datacenter': mapping[2]
+                    })
+        connection.close()
 
         return current_mapping
     except Exception as e:
@@ -175,23 +189,26 @@ def save_mapping(tenant, datacenter, mapped_data):
         mapped_data = mapped_data.replace("'", '"')
         mapped_data_dict = json.loads(mapped_data)
 
-        for mapping in mapped_data_dict:
-            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
-                (
-                    mapping.get('ip'),
-                    mapping.get('dn'),
-                    datacenter,
-                    mapping.get('enabled'),
-                    mapping.get('ap'),
-                    mapping.get('bd'),
-                    mapping.get('vrf'),
-                    tenant
-                ),
-                {
-                    'ip': mapping.get('ip'),
-                    'dn': mapping.get('dn'),
-                    'datacenter': datacenter
-                })
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for mapping in mapped_data_dict:
+                db_obj.insert_and_update(connection, db_obj.MAPPING_TABLE_NAME,
+                    (
+                        mapping.get('ip'),
+                        mapping.get('dn'),
+                        datacenter,
+                        mapping.get('enabled'),
+                        mapping.get('ap'),
+                        mapping.get('bd'),
+                        mapping.get('vrf'),
+                        tenant
+                    ),
+                    {
+                        'ip': mapping.get('ip'),
+                        'dn': mapping.get('dn'),
+                        'datacenter': datacenter
+                    })
+        connection.close()
 
         return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
     except Exception as e:
@@ -289,7 +306,12 @@ def get_service_check(service_name, service_id, datacenter):
     logger.info("Service Check for service: {}, {}".format(service_name, service_id))
     try:
         response = []
-        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        connection.close()
+
         for check in service_checks_data:
             if check[1] == service_id and check[2] == service_name:
                 response.append({
@@ -334,7 +356,11 @@ def get_node_checks(node_name, datacenter):
     logger.info("Node Check for node: {}".format(node_name))
     try:
         response = []
-        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        connection.close()
+
         for check in node_checks_data:
             if check[2] == node_name:
                 response.append({
@@ -382,7 +408,10 @@ def get_multi_service_check(service_list, datacenter):
     try:
         service_list = json.loads(service_list)
         response = []
-        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        connection.close()        
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -429,7 +458,10 @@ def get_multi_node_check(node_list, datacenter):
     logger.info("Node Checks for nodes: {}".format(node_list))
     response = []
     try:
-        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        connection.close()
 
         node_list = json.loads(node_list)
 
@@ -1010,34 +1042,42 @@ def read_creds():
         logger.info('Reading agents.')
 
         # handle db read failure, just pass empty list from there
-        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        connection.close()
+
         if not agents:
             logger.info('Agents List Empty.')
             return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
         payload = []
-        for agent in agents:
-            decoded_token = base64.b64decode(agent[3]).decode('ascii')
-            consul_obj = Consul(agent[0], agent[1], decoded_token, agent[2])
-            status, message = consul_obj.check_connection()
 
-            datacenter = ''
-            if status:
-                datacenter = consul_obj.datacenter()
-                if datacenter == '-':
-                    datacenter = agent[5]
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for agent in agents:
+                decoded_token = base64.b64decode(agent[3]).decode('ascii')
+                consul_obj = Consul(agent[0], agent[1], decoded_token, agent[2])
+                status, message = consul_obj.check_connection()
 
-            if agent[4] != status or agent[5] != datacenter:
-                agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
-                db_obj.insert_and_update(db_obj.LOGIN_TABLE_NAME, agent_val, {'agent_ip': agent[0], 'port': agent[1]})
+                datacenter = ''
+                if status:
+                    datacenter = consul_obj.datacenter()
+                    if datacenter == '-':
+                        datacenter = agent[5]
 
-            payload.append({
-                'ip': agent[0],
-                'port': agent[1],
-                'protocol': agent[2],
-                'token': agent[3],
-                'status': status,
-                'datacenter': datacenter
-            })
+                if agent[4] != status or agent[5] != datacenter:
+                    agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
+                    db_obj.insert_and_update(connection, db_obj.LOGIN_TABLE_NAME, agent_val, {'agent_ip': agent[0], 'port': agent[1]})
+
+                payload.append({
+                    'ip': agent[0],
+                    'port': agent[1],
+                    'protocol': agent[2],
+                    'token': agent[3],
+                    'status': status,
+                    'datacenter': datacenter
+                })
+        connection.close()
 
         logger.debug('Read creds response: {}'.format(str(payload)))
         return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
@@ -1052,10 +1092,13 @@ def write_creds(new_agent):
     try:
         new_agent = json.loads(new_agent)[0]  # UI returns list of 1 object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
-        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME, {
-            'agent_ip': new_agent.get('ip'),
-            'port': new_agent.get('port')
-        }))
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            agents = list(db_obj.select_from_table(connection,
+                            db_obj.LOGIN_TABLE_NAME,
+                            {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')}))
+        connection.close()
 
         if agents:
             message = 'Agent ' + new_agent.get('ip') + ':' + str(new_agent.get('port')) + ' already exists.'
@@ -1075,14 +1118,17 @@ def write_creds(new_agent):
         new_agent['status'] = status
         new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
 
-        db_obj.insert_into_table(db_obj.LOGIN_TABLE_NAME, [
-            new_agent.get('ip'),
-            new_agent.get('port'),
-            new_agent.get('protocol'),
-            new_agent.get('token'),
-            new_agent.get('status'),
-            new_agent.get('datacenter')
-        ])
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            db_obj.insert_into_table(connection, db_obj.LOGIN_TABLE_NAME, [
+                new_agent.get('ip'),
+                new_agent.get('port'),
+                new_agent.get('protocol'),
+                new_agent.get('token'),
+                new_agent.get('status'),
+                new_agent.get('datacenter')
+            ])
+        connection.close()
 
         if status:
             return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
@@ -1103,17 +1149,21 @@ def update_creds(update_input):
         old_agent = update_input.get('oldData')
         new_agent = update_input.get('newData')
 
-        agents = list(db_obj.select_from_table(
-            db_obj.LOGIN_TABLE_NAME).fetchall())
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            agents = list(db_obj.select_from_table(connection,
+                db_obj.LOGIN_TABLE_NAME))
+        connection.close()
         if not agents:
             logger.info('Agents List Empty.')
             return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
 
         if not (old_agent.get('ip') == new_agent.get('ip') and old_agent.get('port') == new_agent.get('port')):
-            new_agent_db_data = db_obj.select_from_table(
-                db_obj.LOGIN_TABLE_NAME,
-                {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')})
-            new_agent_db_data = new_agent_db_data.fetchone()
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                new_agent_db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME,
+                    {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')})
+            connection.close()
             if new_agent_db_data:
                 message = 'Agent ' + \
                     new_agent.get('ip') + ':' + \
@@ -1138,19 +1188,23 @@ def update_creds(update_input):
                 new_agent['datacenter'] = datacenter
                 new_agent['status'] = status
                 new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
-                db_obj.insert_and_update(db_obj.LOGIN_TABLE_NAME,
-                    [
-                        new_agent.get('ip'),
-                        new_agent.get('port'),
-                        new_agent.get('protocol'),
-                        new_agent.get('token'),
-                        new_agent.get('status'),
-                        new_agent.get('datacenter')
-                    ],
-                    {
-                        'agent_ip': old_agent.get('ip'),
-                        'port': old_agent.get('port')
-                    })
+
+                connection = db_obj.engine.connect()
+                with connection.begin():
+                    db_obj.insert_and_update(connection, db_obj.LOGIN_TABLE_NAME, 
+                        [
+                            new_agent.get('ip'),
+                            new_agent.get('port'),
+                            new_agent.get('protocol'),
+                            new_agent.get('token'),
+                            new_agent.get('status'),
+                            new_agent.get('datacenter')
+                        ], 
+                        {
+                            'agent_ip': old_agent.get('ip'),
+                            'port': old_agent.get('port')
+                        })
+                connection.close()
 
                 if status:
                     return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
@@ -1169,77 +1223,119 @@ def delete_creds(agent_data):
         agent_data = json.loads(agent_data)
 
         # Agent deleted
-        db_obj.delete_from_table(db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            db_obj.delete_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
+        connection.close()
+
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
 
         agent_dc = agent_data.get('datacenter')
-        agent_list = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            agent_list = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        connection.close()
         agent_list = [agent for agent in agent_list if agent[5] == agent_dc]
         if not agent_list:
-            mappings = list(db_obj.select_from_table(db_obj.MAPPING_TABLE_NAME))
-            for mapping in mappings:
-                if mapping[2] == agent_dc:
-                    db_obj.delete_from_table(db_obj.MAPPING_TABLE_NAME, {
-                        'ip': mapping[0],
-                        'dn': mapping[1],
-                        'datacenter': mapping[2]
-                    })
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                mappings = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
+            connection.close()
+
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                for mapping in mappings:
+                    if mapping[2] == agent_dc:
+                        db_obj.delete_from_table(connection, db_obj.MAPPING_TABLE_NAME, {
+                            'ip': mapping[0],
+                            'dn': mapping[1],
+                            'datacenter': mapping[2]
+                        })
+            connection.close()
             logger.info('Mapping for Datacenter {} deleted'.format(str(agent_dc)))
 
         # Delete all the data fetched by this agent
         agent_addr = agent_data.get('ip') + ':' + str(agent_data.get('port'))
 
         # Delete Node data wrt this agent
-        node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
-        for node in node_data:
-            agents = node[4]
-            if agent_addr not in agents:
-                continue
-            if len(agents) == 1:
-                db_obj.delete_from_table(db_obj.NODE_TABLE_NAME, {'node_id': node[0]})
-            else:
-                node[4].remove(agent_addr)
-                db_obj.insert_and_update(db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        connection.close()
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for node in node_data:
+                agents = node[4]
+                if agent_addr not in agents:
+                    continue
+                if len(agents) == 1:
+                    db_obj.delete_from_table(connection, db_obj.NODE_TABLE_NAME, {'node_id': node[0]})
+                else:
+                    node[4].remove(agent_addr)
+                    db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
+        connection.close()
         logger.info('Agent {}\'s Node data deleted'.format(str(agent_addr)))
 
         # Delete Service data wrt this agent
-        service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
-        for service in service_data:
-            agents = service[10]
-            if agent_addr not in agents:
-                continue
-            if len(agents) == 1:
-                db_obj.delete_from_table(db_obj.SERVICE_TABLE_NAME, {'service_id': service[0], 'node_id': service[1]})
-            else:
-                service[10].remove(agent_addr)
-                db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME, service, {'service_id': service[0], 'node_id': service[1]})
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+        connection.close()
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for service in service_data:
+                agents = service[10]
+                if agent_addr not in agents:
+                    continue
+                if len(agents) == 1:
+                    db_obj.delete_from_table(connection, db_obj.SERVICE_TABLE_NAME, {'service_id': service[0], 'node_id': service[1]})
+                else:
+                    service[10].remove(agent_addr)
+                    db_obj.insert_and_update(connection, db_obj.SERVICE_TABLE_NAME, service, {'service_id': service[0], 'node_id': service[1]})
+        connection.close()
         logger.info('Agent {}\'s Service data deleted'.format(str(agent_addr)))
 
         # Delete Node Check data wrt this agent
-        node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
-        for node in node_checks_data:
-            agents = node[9]
-            if agent_addr not in agents:
-                continue
-            if len(agents) == 1:
-                db_obj.delete_from_table(db_obj.NODECHECKS_TABLE_NAME, {'check_id': node[0], 'node_id': node[1]})
-            else:
-                node[9].remove(agent_addr)
-                db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        connection.close()
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for node in node_checks_data:
+                agents = node[9]
+                if agent_addr not in agents:
+                    continue
+                if len(agents) == 1:
+                    db_obj.delete_from_table(connection, db_obj.NODECHECKS_TABLE_NAME, {'check_id': node[0], 'node_id': node[1]})
+                else:
+                    node[9].remove(agent_addr)
+                    db_obj.insert_and_update(connection, db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
+        connection.close()
         logger.info('Agent {}\'s NodeChecks data deleted'.format(str(agent_addr)))
 
         # Delete Service Check data wrt this agent
-        service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
-        for service in service_checks_data:
-            agents = service[8]
-            if agent_addr not in agents:
-                continue
-            if len(agents) == 1:
-                db_obj.delete_from_table(db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0], 'service_id': service[1]})
-            else:
-                service[8].remove(agent_addr)
-                db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        connection.close()
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for service in service_checks_data:
+                agents = service[8]
+                if agent_addr not in agents:
+                    continue
+                if len(agents) == 1:
+                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                else:
+                    service[8].remove(agent_addr)
+                    db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
+        connection.close()
         logger.info('Agent {}\'s ServiceChecks data deleted'.format(str(agent_addr)))
 
         # it is assumed that no delete call to db would fail
@@ -1316,7 +1412,11 @@ def get_datacenters():
     logger.info('In get datacenters')
     datacenters = []
     try:
-        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        connection.close()
+
         if agents:
             dc_list = {}
             for agent in agents:
@@ -1349,9 +1449,18 @@ def get_datacenters():
 def post_tenant(tn):
     logger.info('Tenant received: {}'.format(str(tn)))
     try:
-        response = list(db_obj.select_from_table(db_obj.TENANT_TABLE_NAME, {'tenant': tn}))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            response = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME, {'tenant': tn}))
+        connection.close()
+
         if not response:
-            response = db_obj.insert_into_table(db_obj.TENANT_TABLE_NAME, [tn])
+
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                response = db_obj.insert_into_table(connection, db_obj.TENANT_TABLE_NAME, [tn])
+            connection.close()
+
             if not response:
                 return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
         return json.dumps({'status_code': '200', 'message': 'OK'})
@@ -1364,10 +1473,15 @@ def post_tenant(tn):
 def get_consul_data(datacenter):
     consul_data = []
     services = []
-    node_data = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
-    service_data = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
-    node_checks_data = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
-    service_checks_data = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+        node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+    connection.close()
+
     for service in service_data:
         if service[9] != datacenter:
             continue
@@ -1446,8 +1560,13 @@ def get_consul_data(datacenter):
 @time_it
 def get_apic_data(tenant):
     apic_data = []
-    ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
-    epg_data = list(db_obj.select_from_table(db_obj.EPG_TABLE_NAME))
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
+        epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+    connection.close()
+
     for ep in ep_data:
         if ep[2] != tenant:
             continue
@@ -1483,7 +1602,12 @@ def get_agent_status(datacenter=""):
         dict: Response for agents
     """
     agents_res = {'up': 0, 'down': 0}
-    agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME))
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+    connection.close()
+
     if not agents:
         logger.info('Agents List Empty.')
         return agents_res
@@ -1510,9 +1634,14 @@ def get_service_status(ep_ips):
     Returns:
         dict: Dictionary with count of passing, warning and critical services
     """
-    service_res = {'passing': 0, 'warning': 0, 'failing': 0}
-    services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
-    service_checks = list(db_obj.select_from_table(db_obj.SERVICECHECKS_TABLE_NAME))
+    service_res = {'passing': 0, 'warning':0, 'failing':0}
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+        service_checks = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+    connection.close()
+
     if not service_checks:
         logger.info("Service check is empty")
         return service_res
@@ -1536,8 +1665,13 @@ def get_nodes_status(ep_ips):
         dict: Dictionary with count of passing, warning and critical nodes
     """
     nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-    nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
-    node_checks = list(db_obj.select_from_table(db_obj.NODECHECKS_TABLE_NAME))
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        node_checks = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+    connection.close()
+
     if not node_checks:
         logger.info("Node check is empty")
         return nodes_res
@@ -1582,9 +1716,14 @@ def get_performance_dashboard(tn):
 
     try:
         response = {}
-        eps = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
-        services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
-        nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            eps = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
+            services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+            nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        connection.close()
+
         ep_ips = set()
         service_ips = set()
         node_ips = set()
