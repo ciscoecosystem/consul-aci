@@ -1567,7 +1567,6 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
     ep_map = {}
     for each in consul_ips:
         if each in ep_ips:
-            logger.info('======= ip in service ====== ' + each)
             ep_map[each] = 0
 
     for each in ep_ips:
