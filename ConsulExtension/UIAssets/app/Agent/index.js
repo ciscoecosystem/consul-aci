@@ -658,7 +658,15 @@ export default class Agent extends React.Component {
                                         className={`half-margin-left ${readAgentLoading && 'disabled'}`}
                                         size="btn--small"
                                         type="btn--primary-ghost"
-                                        onClick={() => { this.setState({ isNewAgentAdded: true }, () => this.handleModal(true)) }}> {"Add " + AGENTS} </Button>
+                                        onClick={() => { this.setState({
+                                            isNewAgentAdded: true,
+                                            Address: null,
+                                            Port: null,
+                                            Token: null,
+                                            errormsg: {
+                                                Address: null,
+                                                Port: null
+                                            } }, () => this.handleModal(true)) }}> {"Add " + AGENTS} </Button>
 
                                     <IconButton
                                         className={`pull-right ${readAgentLoading && 'disabled'}`}
