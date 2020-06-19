@@ -1298,6 +1298,16 @@ def details_flattened(tenant, datacenter):
             }
 
             services = change_key(each.get('node_services'))
+            if not services:
+                services.append({
+                    'service': '',
+                    'serviceInstance': '',
+                    'port': '',
+                    'serviceTags': [],
+                    'serviceKind': '',
+                    'serviceNamespace': '',
+                    'serviceChecks': {}
+                })
             for service in services:
                 record = {}
                 record.update(ep)
