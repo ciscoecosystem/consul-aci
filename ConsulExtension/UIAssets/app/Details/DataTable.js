@@ -190,7 +190,7 @@ export default class DataTable extends Component {
               if (rowInfo && rowInfo.row) {
                 return {
                   onClick: (e) => {
-                    thiss.props.setSummaryDetail(rowInfo.original)
+                    this.props.setSummaryDetail(rowInfo.original)
                     // console.log("Select row on click ", rowInfo );
                   }
                 }
