@@ -481,6 +481,17 @@ class Database:
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
+    def select_from_ep_with_tenants(self, tn):
+        try:
+            table_obj = self.table_obj_meta[self.EP_TABLE_NAME]
+            select_query = table_obj.select()
+            select_query = select_query.where(('tenant' == tn))
+            result = self.conn.execute("Select * from ep where tenant='" + tn + "'")
+            return result
+        except Exception as e:
+            logger.exception("Exception in selecting data from {} Error:{}".format(self.EP_TABLE_NAME, str(e)))
+        return None
+
     def select_from_table(self, table_name, primary_key={}):
         try:
             select_query = None
