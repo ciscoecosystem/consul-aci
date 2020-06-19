@@ -3,13 +3,9 @@ import { render } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { Loader } from "blueprint-react"
 import TestComponent from './TestComponent.js';
-// import Header from './Header.js'
 import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from "../../../../../constants.js"
 import 'react-toastify/dist/ReactToastify.css';
 var key = 0;
-
-
-var headerInstanceName;
 
 function loadingBoxShow() {
     let health = document.getElementById("health-indicators")
@@ -232,8 +228,7 @@ class App extends React.Component {
                             else {
                                 // Success
                                 var treedata_raw = JSON.parse(json.data.OperationalTree.response).payload;
-                                headerInstanceName = JSON.parse(json.data.OperationalTree.response).agentIP; //  CONSUL : change from instanceName to agentIp
-
+ 
                                 if ((JSON.stringify(thiss.state.treedata) !== JSON.stringify(JSON.parse(treedata_raw)) || fullyReload)
                                     && !treeApiLoading) {
 
@@ -286,13 +281,10 @@ class App extends React.Component {
     render() {
         let { treedata, treeApiLoading, initialTreeRender, treeTranslate, treeScale } = this.state;
         loadingBoxHide();
-        let apptext = " " + this.state.result[PROFILE_NAME]; // CONSUL changes
-        let title = " | Operational"
 
         return (
             <div>
                 <ToastContainer />
-                {/* <Header text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 {(treedata === undefined || treeApiLoading) ? <Loader> loading </Loader> : <TestComponent key={key}
                     detailsPage={this.state.detailsPage}
                     detailsPane={this.state.detailsPane}
