@@ -1562,11 +1562,8 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
         Returns:
             dict: Count of service and non service endpoint
         """
-    logger.info('=================== get_service_endpoints =====================')
     response = {'service': 0, 'non_service': 0}
     consul_ips = service_ips | node_ips
-    # common_ips = set()
-
     ep_map = {}
     for each in ep_ips:
         if each in consul_ips:
@@ -1575,12 +1572,7 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
             else:
                 ep_map[each] = 1
 
-    # for each in ep_ips:
-    #     if each in consul_ips:
-    #         common_ips.add(each)
-    logger.info('======================== service eps ================ ' + str(ep_map))
     total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
-
     response['service'] = total_service_count
     response['non_service'] = len(ep_ips) - total_service_count
     return response

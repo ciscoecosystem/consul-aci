@@ -2,11 +2,13 @@ import React from 'react'
 import { CollapsiblePanel, Label } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
+import { showShortName, isString } from './utils.js';
 import "./DetailPanel.css";
 
 const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
-const NODE_EPG_NAME = "EPG"
+const NODE_EPG_NAME = "EPG";
+const VALUE_LENGTH = 35;
 
 function formateDataToChartData(data) {
     let totalCnt = 0;
@@ -118,7 +120,7 @@ export default function DetailPanel(props) {
                     if (detailValue && Array.isArray(detailValue)) {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px", paddingBottom: "3px"}}>
                         {showDetails[name].map(function (infcs) {
-                            return <li>{infcs}</li>
+                            return <li title={infcs}>{infcs}</li>
                         })}
                         </ul>
                     } else {
@@ -219,7 +221,7 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value">{props.propertyValue ? props.propertyValue : "-"}</div>
+            <div className="property-value" title={isString(props.propertyValue) && props.propertyValue}>{props.propertyValue ? isString(props.propertyValue)? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : "-"}</div>
         </div>
     )
 }

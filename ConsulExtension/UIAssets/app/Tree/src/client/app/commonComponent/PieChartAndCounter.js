@@ -2,6 +2,7 @@
 import React from 'react';
 import { Charts } from 'blueprint-react';
 import "./PieChartAndCounter.css";
+import {nFormatter} from "../utils.js";
 
 function renderLabels(count = 0) {
     return (
@@ -49,7 +50,7 @@ export default function PieChartAndCounter(props) {
                     </Charts.Pie>
                 </Charts.PieChart>
             </Charts.ResponsiveContainer>
-            {renderLabels(totalCount)}
+            {renderLabels(nFormatter(totalCount))}
         </div>
 
         <div class="counters " style={{ maxHeight: "270px" }}>
