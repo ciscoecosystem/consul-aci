@@ -95,7 +95,8 @@ export default class DetailePage extends Component {
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
       let macList = "";
-      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:[]'
+      let ip = "";
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:"' + ip
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
