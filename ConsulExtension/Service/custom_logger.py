@@ -1,4 +1,3 @@
-import os
 import logging
 
 
@@ -7,10 +6,9 @@ class CustomLogger(object):
 
     @classmethod
     def get_logger(cls, path):
-        if cls.__logger == None:
+        if cls.__logger is None:
             cls.__logger = CustomLogger.__get_logger(path)
         return cls.__logger
-
 
     @staticmethod
     def __get_logger(path):
