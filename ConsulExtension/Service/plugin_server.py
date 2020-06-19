@@ -607,8 +607,8 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
                 for eachip in ep_children:
                     if eachip.keys()[0] == 'fvIp':
                         ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')))
-                ip_set(ep_attr.get('ip'))
-                cep_ip = ','.join(ip_set)
+                ip_set.add(ep_attr.get('ip'))
+                cep_ip = ', '.join(ip_set)
 
             ep_info_dict = {
                 "ip": cep_ip,
