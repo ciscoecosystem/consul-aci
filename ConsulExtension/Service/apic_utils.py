@@ -1,6 +1,5 @@
 import re
 import json
-import time
 import copy
 import base64
 import requests
@@ -18,15 +17,16 @@ from cobra.model.aaa import AppUser as AaaAppUser
 from cobra.model.aaa import UserCert as AaaUserCert
 try:
     from OpenSSL.crypto import FILETYPE_PEM, load_privatekey, sign
-except:
+except Exception as e:
     print("=== could not import openssl crypto ===")
 
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP =  get_conf_value('APIC', 'APIC_IP')
+APIC_IP = get_conf_value('APIC', 'APIC_IP')
 STATIC_IP = get_conf_value('APIC', 'STATIC_IP')
 APIC_THREAD_POOL = int(get_conf_value('APIC', 'APIC_THREAD_POOL'))
+
 
 class AciUtils(object):
     __instance = None
@@ -92,7 +92,7 @@ class AciUtils(object):
                 self.apic_token = None
                 return None
         except Exception as e:
-            logger.exception('Unable to connect with APIC. Exception: '+str(e))
+            logger.exception('Unable to connect with APIC. Exception: {}'.format(str(e)))
             self.apic_token = None
 
     @staticmethod
@@ -362,8 +362,7 @@ class AciUtils(object):
                 instance_list = response_json['imdata']
             return instance_list
         except Exception as ex:
-            logger.exception('Exception while fetching MO: ' +
-                             mo_class + ', Error:' + str(ex))
+            logger.exception('Exception while fetching MO: {}, Error: {}'.format(mo_class, str(ex)))
             return []
 
     @staticmethod
@@ -625,7 +624,6 @@ class AciUtils(object):
 
         return (list(ip_set) + list(mac_set)), is_cep
 
-
     @time_it
     def get_ap_epg_faults(self, dn):
         """
@@ -638,7 +636,6 @@ class AciUtils(object):
         except Exception as ex:
             logger.info("Exception while processing Faults : {}".format(ex))
         return faults_dict
-
 
     @time_it
     def get_ap_epg_events(self, dn):
@@ -653,7 +650,6 @@ class AciUtils(object):
             logger.info("Exception while processing Events : {}".format(ex))
         return events_dict
 
-
     @time_it
     def get_ap_epg_audit_logs(self, dn):
         """
@@ -666,7 +662,6 @@ class AciUtils(object):
         except Exception as ex:
             logger.info("Exception while processing Audit logs : " + str(ex))
         return audit_logs_dict
-
 
     @time_it
     def get_mo_related_item(self, mo_dn, item_query_string, item_type):
@@ -694,9 +689,8 @@ class AciUtils(object):
             return item_list
         except Exception as ex:
             logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
-            logger.exception('Epg Item Url : =>'.format(url))
+            logger.exception('Epg Item Url : {}'.format(url))
             return []
-
 
     @staticmethod
     def get_dict_records(list_of_records, key):

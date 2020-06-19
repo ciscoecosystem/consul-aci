@@ -1,12 +1,9 @@
-import json
 import copy
-import datetime
-
 import custom_logger
 from decorator import time_it
 
-
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
+
 
 @time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
@@ -26,7 +23,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         logger.debug("ACI Data: {}".format(str(aci_data)))
         logger.debug("Mapping Data: {}".format(str(aci_consul_mappings)))
 
-        mappings = [node for node in aci_consul_mappings if node.get('enabled') == True]
+        mappings = [node for node in aci_consul_mappings if node.get('enabled')]
 
         for aci in aci_data:
             if aci['EPG'] not in total_epg_count.keys():
@@ -91,7 +88,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             else:
                 if aci['EPG'] not in non_merged_ep_dict:
                     non_merged_ep_dict[aci['EPG']] = {aci['CEP-Mac']: str(aci['IP'])}
-                
+
                 if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']].keys() and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
                     multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']] + ", " + str(aci['IP'])
                     non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
@@ -100,7 +97,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         final_non_merged = {}
         if non_merged_ep_dict:
-            for key,value in non_merged_ep_dict.items():
+            for key, value in non_merged_ep_dict.items():
                 if not value:
                     continue
                 final_non_merged[key] = value
@@ -110,7 +107,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             for epg in total_epg_count.keys():
                 un_map_eps = int(total_epg_count.get(epg, [])) - len(merged_epg_count.get(epg, []))
                 fractions[epg] = int(un_map_eps)
-                logger.info('Total Unmapped Eps (Inactive):'+str(un_map_eps)+" - "+str(epg))
+                logger.info('Total Unmapped Eps (Inactive): {} - {}'.format(str(un_map_eps), str(epg)))
 
         updated_merged_list = []
         if fractions:
@@ -129,7 +126,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             final_list.append(each)
         logger.info('Merge complete. Total objects correlated: ' + str(len(final_list)))
 
-        return final_list #updated_merged_list#,total_epg_count # TBD for returning values
+        return final_list  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
-        logger.exception("Error in merge_aci_data : "+str(e))
+        logger.exception("Error in merge_aci_data : {}".format(str(e)))
         return []
