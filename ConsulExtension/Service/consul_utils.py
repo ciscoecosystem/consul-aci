@@ -169,7 +169,7 @@ class Consul(object):
                     service_address = str(service_ip) + ':' + str(service_port)
                 else:
                     service_address = str(services_resp.get('Node', {}).get('Address', '')).lower() + ':' + str(service_port)
-                
+
                 # Form a dict
                 service_list.append({
                     'service_id': service.get('ID'),
