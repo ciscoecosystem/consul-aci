@@ -1,5 +1,6 @@
 import configparser
 
+
 def get_conf_value(section, key_name):
     """Function to return value from configuration
     File

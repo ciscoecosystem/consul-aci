@@ -2,12 +2,7 @@ from flask import Flask
 from flask_graphql import GraphQLView
 from flask_cors import CORS
 from schema import schema
-
 import alchemy_core as database
-
-import os
-import requests
-from multiprocessing import Process
 
 app = Flask(__name__)
 CORS(app, resources={r"/graphql.json": {"origins": "*"}})

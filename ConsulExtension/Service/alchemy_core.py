@@ -1,8 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
 from datetime import datetime
-from sqlalchemy import and_
-from sqlalchemy.sql import select, text
+from sqlalchemy.sql import select
 
 from custom_logger import CustomLogger
 
@@ -163,7 +162,7 @@ class Database:
             self.table_obj_meta = dict()
             self.table_pkey_meta = dict()
         except Exception as e:
-            pass
+            logger.exception("Exception in creating db obj: {}".format(str(e)))
 
     def create_tables(self):
         metadata = MetaData()
@@ -247,10 +246,8 @@ class Database:
 
         self.servicechecks = Table(
             self.SERVICECHECKS_TABLE_NAME, metadata,
-            Column('check_id', String,
-                    primary_key=True),
-            Column('service_id', String, ForeignKey(
-                self.service.c.service_id), primary_key=True),
+            Column('check_id', String, primary_key=True),
+            Column('service_id', String, ForeignKey(self.service.c.service_id), primary_key=True),
             Column('service_name', String),
             Column('name', String),
             Column('type', String),
@@ -469,7 +466,6 @@ class Database:
             logger.exception("Exception in {} Error:{}".format(
                 'create_tables()', str(e)))
 
-
     def insert_into_table(self, table_name, field_values):
         field_values = list(field_values)
         try:
@@ -477,14 +473,13 @@ class Database:
             table_name = table_name.lower()
             field_values.append(datetime.now())
             ins = self.table_obj_meta[table_name].insert().values(field_values)
-            if ins != None:
+            if ins is not None:
                 self.conn.execute(ins)
                 return True
         except Exception as e:
             logger.exception(
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
-
 
     def select_from_table(self, table_name, primary_key={}):
         try:
@@ -499,14 +494,12 @@ class Database:
             else:
                 select_query = self.table_obj_meta[table_name].select()
 
-            if select_query != None:
+            if select_query is not None:
                 result = self.conn.execute(select_query)
                 return result
         except Exception as e:
-            logger.exception(
-                "Exception in selecting data from {} Error:{}".format(table_name, str(e)))
+            logger.exception("Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
-
 
     def update_in_table(self, table_name, primary_key, new_record_dict):
         try:
@@ -525,7 +518,6 @@ class Database:
                 "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
 
-
     def delete_from_table(self, table_name, primary_key={}):
         try:
             table_name = table_name.lower()
@@ -543,7 +535,6 @@ class Database:
             logger.exception(
                 "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
-
 
     def insert_and_update(self, table_name, new_record, primary_key={}):
         table_name = table_name.lower()
@@ -574,7 +565,6 @@ class Database:
             self.insert_into_table(table_name, new_record)
         return True
 
-
     def get_join_obj(self, table_name1, table_name2, datacenter=None):
         try:
             table_name1 = table_name1.lower()
@@ -582,15 +572,14 @@ class Database:
             obj1 = self.table_obj_meta[table_name1]
             obj2 = self.table_obj_meta[table_name2]
             if datacenter:
-                join_obj = obj1.join(obj2,isouter=True)
+                join_obj = obj1.join(obj2, isouter=True)
             else:
-                join_obj = obj1.join(obj2, obj1.c.dn == obj2.c.dn,isouter=True)
+                join_obj = obj1.join(obj2, obj1.c.dn == obj2.c.dn, isouter=True)
             return join_obj
         except Exception as e:
             logger.exception(
                 "Exception in joining tables: {} & {}, Error: {}".format(table_name1, table_name2, str(e)))
         return None
-
 
     def join(self, datacenter=None, tenant=None):
         try:
@@ -598,7 +587,7 @@ class Database:
                 obj1 = self.get_join_obj("node", "nodechecks", datacenter)
                 obj2 = self.get_join_obj("service", "servicechecks", datacenter)
                 join_obj = obj1.join(obj2)
-                smt = select([self.node,self.service,self.nodechecks,self.servicechecks]).select_from(join_obj)
+                smt = select([self.node, self.service, self.nodechecks, self.servicechecks]).select_from(join_obj)
             elif tenant:
                 join_obj = self.get_join_obj("ep", "epg")
                 smt = select([self.ep, self.epg]).select_from(join_obj)
@@ -608,28 +597,25 @@ class Database:
             logger.exception(
                 "Exception in join, Error: {}".format(str(e)))
             return None
-    
-    
-    def join_formatter(self,result):
-        if result == None:
+
+    def join_formatter(self, result):
+        if result is None:
             return []
         return_list = []
         for each in result.fetchall():
-            return_list.append(
-                {
-                'node_id':each[0],
-                'node_name':each[1],
-                'node_ips':each[2],
-                'node_check':each[28],
-                'service_id':each[7],
-                'service_name':each[9],
-                'service_ip':each[10],
-                'service_port':each[11],
-                'service_address':each[12],
-                'service_tags':each[13],
-                'service_kind':each[14],
-                'service_namespace':each[15],
-                'service_checks':each[39]
-                }
-            )
+            return_list.append({
+                'node_id': each[0],
+                'node_name': each[1],
+                'node_ips': each[2],
+                'node_check': each[28],
+                'service_id': each[7],
+                'service_name': each[9],
+                'service_ip': each[10],
+                'service_port': each[11],
+                'service_address': each[12],
+                'service_tags': each[13],
+                'service_kind': each[14],
+                'service_namespace': each[15],
+                'service_checks': each[39]
+            })
         return return_list

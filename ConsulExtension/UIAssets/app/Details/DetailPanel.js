@@ -2,7 +2,13 @@ import React from 'react'
 import { CollapsiblePanel, Label } from "blueprint-react"
 import SummaryPane from "../Components/SummaryPane";
 import PieChartAndCounter from "../commonComponent/PieChartAndCounter";
+import { showShortName, isString } from '../Utility/utils.js' ;
 import "./DetailPanel.css";
+
+
+
+const VALUE_LENGTH = 35;
+
 
 function formateDataToChartData(data) {
     let totalCnt = 0;
@@ -78,7 +84,7 @@ export default function DetailPanel(props) {
                     } else if (name === "interface") {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                             {summaryDetail[name].map(function (infcs) {
-                                return <li>{infcs}</li>
+                                return <li title={infcs}>{infcs}</li>
                             })}
                         </ul>
                     }
@@ -110,7 +116,11 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value">{props.propertyValue ? props.propertyValue : "-"}</div>
+            <div className="property-value" title={ isString(props.propertyValue) && props.propertyValue}>
+                {props.propertyValue ? 
+                    isString(props.propertyValue) ? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue 
+                    : "-"}
+            </div>
         </div>
     )
 }
