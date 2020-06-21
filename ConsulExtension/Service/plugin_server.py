@@ -36,7 +36,7 @@ def get_new_mapping(tenant, datacenter):
     try:
         # Get APIC data
         # ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
-        ep_data = list(db_obj.select_from_ep_with_tenants(tenant))
+        ep_data = list(db_obj.select_from_ep_with_tenant(tenant))
         parsed_eps = []
         for ep in ep_data:
             cep_ip = int(ep[12])

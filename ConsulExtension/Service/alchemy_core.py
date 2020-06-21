@@ -481,7 +481,7 @@ class Database:
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
-    def select_from_ep_with_tenants(self, tn):
+    def select_from_ep_with_tenant(self, tn):
         try:
             table_obj = self.table_obj_meta[self.EP_TABLE_NAME]
             select_query = table_obj.select()
