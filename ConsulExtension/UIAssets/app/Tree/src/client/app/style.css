@@ -289,3 +289,12 @@
   color: black;
   font-size: 16px;
 }
+
+.ReactTable .rt-tbody {
+  overflow: hidden;
+}
+
+body {
+  overflow-x: auto;
+  overflow-y: scroll;
+}

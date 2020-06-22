@@ -71,7 +71,7 @@ export default class Container extends React.Component {
                     </header>
                     <main>
                         <Modal className="help-popup" isOpen={this.state.showHelpPopUpIsOpen} title="Quickstart guide" onClose={this.closeHelpPopUp}>
-                                <div className="panel">
+                                <div className="panel quickquide">
                                     <div className="wrapper" >
                                     {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
                                     {/* {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)} */}
@@ -183,7 +183,9 @@ class OperationalViewComponent extends React.Component {
                 </div>
             </div>
             {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName}/> : 
-                <FrameComponent toLocation={toLocation} />}
+                <div style={{height:"84vh" }}>
+                    <FrameComponent toLocation={toLocation} />
+                </div>}
 
         </div>)
     }
@@ -193,7 +195,6 @@ class OperationalViewComponent extends React.Component {
 function FrameComponent(props) {
     return <Iframe url={props.toLocation}
         width="450px"
-        height="80vh"
         id="myId"
         className="myClassname"
         display="initial"

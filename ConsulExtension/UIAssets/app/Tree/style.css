@@ -126,3 +126,16 @@
   color: black;
   font-size: 16px;
 }
+
+.ReactTable .rt-tbody {
+  overflow: hidden;
+}
+
+body {
+  overflow-x: auto;
+  overflow-y: scroll;
+}
+
+.cui .form-group.dropdown .dropdown__menu {
+  margin-bottom: 50px !important;
+}
