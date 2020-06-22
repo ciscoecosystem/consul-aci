@@ -1583,7 +1583,7 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
             dict: Count of service and non service endpoint
         """
     response = {'service': 0, 'non_service': 0}
-    consul_ips = service_ips | node_ips
+    consul_ips = list(set(service_ips) | set(node_ips))
     ep_map = {}
     for each in consul_ips:
         if each in ep_ips:
@@ -1593,7 +1593,10 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
         if each in ep_map.keys():
             ep_map[each] = ep_map[each] + 1
 
-    total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
+    total_service_count = 0
+    if ep_map:
+        total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
+
     response['service'] = total_service_count
     response['non_service'] = len(ep_ips) - total_service_count
     return response
@@ -1624,12 +1627,12 @@ def get_performance_dashboard(tn):
 
         for service in services:
             if service[3]:
-                service_ips.add(service[3])
+                service_ips.append(service[3])
 
         for node in nodes:
             if node[2]:
                 for ip in node[2]:
-                    node_ips.add(ip)
+                    node_ips.append(ip)
 
         response['agents'] = get_agent_status()
         response['service'] = get_service_status(ep_ips)
