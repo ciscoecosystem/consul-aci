@@ -2,12 +2,18 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
 from datetime import datetime
 from sqlalchemy.sql import select
+from sqlalchemy.interfaces import PoolListener
 
 from custom_logger import CustomLogger
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
 DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
+
+
+class MyListener(PoolListener):
+    def connect(self, dbapi_con, con_record):
+        dbapi_con.execute('pragma journal_mode=WAL')
 
 
 class Database:
@@ -157,7 +163,7 @@ class Database:
 
     def __init__(self):
         try:
-            self.engine = create_engine(DATABASE_NAME)
+            self.engine = create_engine(DATABASE_NAME, listeners=[MyListener()])
             self.table_obj_meta = dict()
             self.table_pkey_meta = dict()
         except Exception as e:
@@ -607,7 +613,7 @@ class Database:
         if result is None:
             return []
         return_list = []
-        for each in result():
+        for each in result:
             return_list.append({
                 'node_id': each[0],
                 'node_name': each[1],
