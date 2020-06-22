@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Container from './Container'
+import './style.css'
 
 class App extends Component {
     constructor(props) {
@@ -7,8 +8,8 @@ class App extends Component {
     }
     render() {
         return (
-            <div>
-                <Container />
+            <div className="detail-container">
+                <Container tenantName={this.props.tenantName} dcName={this.props.dcName}/>
             </div>
         )
     }

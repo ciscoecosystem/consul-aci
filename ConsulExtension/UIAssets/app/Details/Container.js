@@ -1,12 +1,9 @@
 import React, { Component } from 'react'
-// import Header from './Header'
 import DataTable from "./DataTable"
 import DetailPanel from "./DetailPanel";
-import { PROFILE_NAME, DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
+import { toast } from 'react-toastify';
 // import { dummyData } from "./dummyData.js";
-import './style.css'
 
 var params_tn;
 var details_raw;
@@ -37,7 +34,7 @@ class Container extends Component {
         this.setSummaryDetail = this.setSummaryDetail.bind(this);
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
-        params_tn = result['tn'];
+        // params_tn = result['tn'];
 
         this.state = {
             "data": [],
@@ -101,7 +98,6 @@ class Container extends Component {
 
             return Object.assign({}, elem, { nodeChecksFilter, serviceChecksFilter, serviceTagFilter });
         })
-        console.log("Setdata adter adding filtercheck; ", data);
 
         this.setState({ data })
     }
@@ -118,19 +114,20 @@ class Container extends Component {
 
     notify(message, isSuccess = false, isWarning = false) {
         isWarning ? toast.warn(message, {
-            position: toast.POSITION.TOP_CENTER
+            position: toast.POSITION.BOTTOM_CENTER
         }) :
             isSuccess ? toast.success(message, {
-                position: toast.POSITION.TOP_CENTER
+                position: toast.POSITION.BOTTOM_CENTER
             }) :
                 toast.error(message, {
-                    position: toast.POSITION.TOP_CENTER
+                    position: toast.POSITION.BOTTOM_CENTER
                 });
     }
 
     // staticFetchDataCall() {
     //     setTimeout(() => {
     //         console.log("Got data");
+    //         this.notify("Fecthed the data");
     //         this.setData(dummyData);
     //         this.setState({
     //             loading: false
@@ -139,7 +136,7 @@ class Container extends Component {
     // }
 
     fetchDataCall() {
-        let payload = DC_DETAILS_QUERY_PAYLOAD(result['tn'], result[PROFILE_NAME]);
+        let payload = DC_DETAILS_QUERY_PAYLOAD(this.props.tenantName, this.props.dcName);
         let thiss = this;
         let xhr = new XMLHttpRequest();
         try {
@@ -155,7 +152,6 @@ class Container extends Component {
                     if (xhr.status == 200) {
                         let json = JSON.parse(xhr.responseText);
 
-                        console.log("DETAILS REPOSNSE ", json);
                         if ("errors" in json) {
                             // Error related to query
                             thiss.notify("Could not Fetch. The query may be invalid.");
@@ -210,15 +206,11 @@ class Container extends Component {
     }
 
     render() {
-        console.log("Render container ");
         let { summaryPaneIsOpen, summaryDetail } = this.state;
-
-        console.log("[render] Container", this.state);
-
 
         return (
             <div>
-                <ToastContainer />
+
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
                     title={summaryDetail["endPointName"]}
