@@ -14,6 +14,8 @@ import apic_utils
 import alchemy_core
 import custom_logger
 
+import functools
+
 
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
@@ -35,7 +37,9 @@ def set_polling_interval(interval):
 def get_new_mapping(tenant, datacenter):
     try:
         # Get APIC data
-        ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+        # ep_data = list(db_obj.select_from_table(db_obj.EP_TABLE_NAME))
+
+        ep_data = list(db_obj.select_from_ep_with_tenant(tenant))
         parsed_eps = []
         for ep in ep_data:
             cep_ip = int(ep[12])
@@ -110,7 +114,8 @@ def get_new_mapping(tenant, datacenter):
                     new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
                     break
 
-            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
+            db_obj.insert_and_update(
+                db_obj.MAPPING_TABLE_NAME,
                 (
                     new_map.get('ip'),
                     new_map.get('dn'),
@@ -151,7 +156,6 @@ def mapping(tenant, datacenter):
         current_mapping = get_new_mapping(tenant, datacenter)
 
         return json.dumps({
-            "agentIP": '',
             "payload": current_mapping,  # REturn current mapping
             "status_code": "200",
             "message": "OK"
@@ -176,7 +180,8 @@ def save_mapping(tenant, datacenter, mapped_data):
         mapped_data_dict = json.loads(mapped_data)
 
         for mapping in mapped_data_dict:
-            db_obj.insert_and_update(db_obj.MAPPING_TABLE_NAME,
+            db_obj.insert_and_update(
+                db_obj.MAPPING_TABLE_NAME,
                 (
                     mapping.get('ip'),
                     mapping.get('dn'),
@@ -223,7 +228,6 @@ def tree(tenant, datacenter):
     """Get correlated Tree view data.
 
     return: {
-        agentIP: string
         payload: list of tree(dict)/{}
         status_code: string: 200/300
         message: string
@@ -244,7 +248,6 @@ def tree(tenant, datacenter):
         logger.debug("Final Tree data: {}".format(response))
 
         return json.dumps({
-            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -279,7 +282,6 @@ def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
 
     return: {
-        agentIP: string
         payload: list of dict/[]
         status_code: string: 200/300
         message: string
@@ -305,7 +307,6 @@ def get_service_check(service_name, service_id, datacenter):
         logger.debug('Response of Service check: {}'.format(response))
 
         return json.dumps({
-            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -324,7 +325,6 @@ def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
 
     return: {
-        agentIP: string
         payload: list of dict/[]
         status_code: string: 200/300
         message: string
@@ -351,7 +351,6 @@ def get_node_checks(node_name, datacenter):
         logger.debug('Response of Node check: {}'.format(response))
 
         return json.dumps({
-            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -370,7 +369,6 @@ def get_multi_service_check(service_list, datacenter):
     """Service checks with all detailed info of multiple service
 
     return: {
-        agentIP: string
         payload: list of dict/[]
         status_code: string: 200/300
         message: string
@@ -400,7 +398,6 @@ def get_multi_service_check(service_list, datacenter):
                     })
 
         return json.dumps({
-            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -419,7 +416,6 @@ def get_multi_node_check(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
 
     return: {
-        agentIP: string
         payload: list of dict/[]
         status_code: string: 200/300
         message: string
@@ -448,7 +444,6 @@ def get_multi_node_check(node_list, datacenter):
                     })
 
         return json.dumps({
-            "agentIP": '',
             "payload": response,
             "status_code": "200",
             "message": "OK"
@@ -572,7 +567,7 @@ def get_audit_logs(dn):
 
 
 @time_it
-def get_children_ep_info(dn, mo_type, mac_list):
+def get_children_ep_info(dn, mo_type, mac_list, ip):
     aci_util_obj = apic_utils.AciUtils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
@@ -582,10 +577,9 @@ def get_children_ep_info(dn, mo_type, mac_list):
         mac_query_filter = ",".join(mac_query_filter_list)
 
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&query-target-filter=or(' + \
-            mac_query_filter + \
-            ')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
+            mac_query_filter + ')&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
     elif mo_type == "epg":
-        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm'
+        ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
     ep_info_list = []
@@ -601,8 +595,18 @@ def get_children_ep_info(dn, mo_type, mac_list):
             if mcast_addr == "not-applicable":
                 mcast_addr = "---"
 
+            if mo_type == "ep":
+                cep_ip = ip
+            elif mo_type == "epg":
+                ip_set = set()
+                for eachip in ep_children:
+                    if eachip.keys()[0] == 'fvIp':
+                        ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')))
+                ip_set.add(ep_attr.get('ip'))
+                cep_ip = ', '.join(ip_set)
+
             ep_info_dict = {
-                "ip": ep_attr.get("ip"),
+                "ip": cep_ip,
                 "mac": ep_attr.get("mac"),
                 "mcast_addr": mcast_addr,
                 "learning_source": ep_attr.get("lcC"),
@@ -1052,10 +1056,12 @@ def write_creds(new_agent):
     try:
         new_agent = json.loads(new_agent)[0]  # UI returns list of 1 object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
-        agents = list(db_obj.select_from_table(db_obj.LOGIN_TABLE_NAME, {
-            'agent_ip': new_agent.get('ip'),
-            'port': new_agent.get('port')
-        }))
+        agents = list(db_obj.select_from_table(
+            db_obj.LOGIN_TABLE_NAME,
+            {
+                'agent_ip': new_agent.get('ip'),
+                'port': new_agent.get('port')
+            }))
 
         if agents:
             message = 'Agent ' + new_agent.get('ip') + ':' + str(new_agent.get('port')) + ' already exists.'
@@ -1075,14 +1081,16 @@ def write_creds(new_agent):
         new_agent['status'] = status
         new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
 
-        db_obj.insert_into_table(db_obj.LOGIN_TABLE_NAME, [
-            new_agent.get('ip'),
-            new_agent.get('port'),
-            new_agent.get('protocol'),
-            new_agent.get('token'),
-            new_agent.get('status'),
-            new_agent.get('datacenter')
-        ])
+        db_obj.insert_into_table(
+            db_obj.LOGIN_TABLE_NAME,
+            [
+                new_agent.get('ip'),
+                new_agent.get('port'),
+                new_agent.get('protocol'),
+                new_agent.get('token'),
+                new_agent.get('status'),
+                new_agent.get('datacenter')
+            ])
 
         if status:
             return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
@@ -1112,7 +1120,10 @@ def update_creds(update_input):
         if not (old_agent.get('ip') == new_agent.get('ip') and old_agent.get('port') == new_agent.get('port')):
             new_agent_db_data = db_obj.select_from_table(
                 db_obj.LOGIN_TABLE_NAME,
-                {'agent_ip': new_agent.get('ip'), 'port': new_agent.get('port')})
+                {
+                    'agent_ip': new_agent.get('ip'),
+                    'port': new_agent.get('port')
+                })
             new_agent_db_data = new_agent_db_data.fetchone()
             if new_agent_db_data:
                 message = 'Agent ' + \
@@ -1138,7 +1149,8 @@ def update_creds(update_input):
                 new_agent['datacenter'] = datacenter
                 new_agent['status'] = status
                 new_agent['token'] = base64.b64encode(new_agent['token'].encode('ascii')).decode('ascii')
-                db_obj.insert_and_update(db_obj.LOGIN_TABLE_NAME,
+                db_obj.insert_and_update(
+                    db_obj.LOGIN_TABLE_NAME,
                     [
                         new_agent.get('ip'),
                         new_agent.get('port'),
@@ -1254,7 +1266,6 @@ def details_flattened(tenant, datacenter):
     """Get correlated Details view data
 
     return: {
-        agentIP: string
         payload: list of dict/{}
         status_code: string: 200/300
         message: string
@@ -1289,6 +1300,16 @@ def details_flattened(tenant, datacenter):
             }
 
             services = change_key(each.get('node_services'))
+            if not services:
+                services.append({
+                    'service': '',
+                    'serviceInstance': '',
+                    'port': '',
+                    'serviceTags': [],
+                    'serviceKind': '',
+                    'serviceNamespace': '',
+                    'serviceChecks': {}
+                })
             for service in services:
                 record = {}
                 record.update(ep)
@@ -1297,7 +1318,6 @@ def details_flattened(tenant, datacenter):
         logger.debug("Details final data ended: " + str(details_list))
 
         return json.dumps({
-            "agentIP": ' ',  # send ip if needed
             "payload": details_list,
             "status_code": "200",
             "message": "OK"
@@ -1554,18 +1574,31 @@ def get_nodes_status(ep_ips):
 def get_service_endpoints(ep_ips, service_ips, node_ips):
     """Function to return count of service and non service endpoint
 
-    Args:
-        ep_ips (set): Set of EP IPS
-        service_ips (set): Set of Service IPS
-        node_ips (set): Set og node_ips
+        Args:
+            ep_ips (set): Set of EP IPS
+            service_ips (set): Set of Service IPS
+            node_ips (set): Set og node_ips
 
-    Returns:
-        dict: Count of service and non service endpoint
-    """
+        Returns:
+            dict: Count of service and non service endpoint
+        """
     response = {'service': 0, 'non_service': 0}
-    response['non_service'] = len(ep_ips - service_ips - node_ips)
-    response['service'] = len(ep_ips) - response['non_service']
+    consul_ips = list(set(service_ips) | set(node_ips))
+    ep_map = {}
+    for each in consul_ips:
+        if each in ep_ips:
+            ep_map[each] = 0
 
+    for each in ep_ips:
+        if each in ep_map.keys():
+            ep_map[each] = ep_map[each] + 1
+
+    total_service_count = 0
+    if ep_map:
+        total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
+
+    response['service'] = total_service_count
+    response['non_service'] = len(ep_ips) - total_service_count
     return response
 
 
@@ -1586,20 +1619,20 @@ def get_performance_dashboard(tn):
         services = list(db_obj.select_from_table(db_obj.SERVICE_TABLE_NAME))
         nodes = list(db_obj.select_from_table(db_obj.NODE_TABLE_NAME))
         ep_ips = set()
-        service_ips = set()
-        node_ips = set()
+        service_ips = []
+        node_ips = []
         for ep in eps:
             if ep[1] and ep[2] == tn:
                 ep_ips.add(ep[1])
 
         for service in services:
             if service[3]:
-                service_ips.add(service[3])
+                service_ips.append(service[3])
 
         for node in nodes:
             if node[2]:
                 for ip in node[2]:
-                    node_ips.add(ip)
+                    node_ips.append(ip)
 
         response['agents'] = get_agent_status()
         response['service'] = get_service_status(ep_ips)

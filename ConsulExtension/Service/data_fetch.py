@@ -224,7 +224,8 @@ def data_fetch():
 
                 # Inserting Nodes data in DB
                 for node_id, node_val in nodes_dict.items():
-                    db_obj.insert_and_update(db_obj.NODE_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.NODE_TABLE_NAME,
                         (
                             node_val.get('node_id'),
                             node_val.get('node_name'),
@@ -270,7 +271,8 @@ def data_fetch():
 
                 # Inserting Nodes checks data in DB
                 for node in node_checks_dict.values():
-                    db_obj.insert_and_update(db_obj.NODECHECKS_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.NODECHECKS_TABLE_NAME,
                         (
                             node.get('CheckID'),
                             node.get('node_id'),
@@ -312,7 +314,8 @@ def data_fetch():
 
                 # Inserting Services into DB
                 for service in services_dict.values():
-                    db_obj.insert_and_update(db_obj.SERVICE_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.SERVICE_TABLE_NAME,
                         (
                             service.get('service_id'),
                             service.get('node_id'),
@@ -358,7 +361,8 @@ def data_fetch():
 
                 # Inserting Service Checks in DB
                 for service in service_checks_dict.values():
-                    db_obj.insert_and_update(db_obj.SERVICECHECKS_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.SERVICECHECKS_TABLE_NAME,
                         (
                             service.get('CheckID'),
                             service.get('service_id'),
@@ -424,7 +428,8 @@ def data_fetch():
                 epg_key = set()
 
                 for ep in ep_data:
-                    db_obj.insert_and_update(db_obj.EP_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.EP_TABLE_NAME,
                         (
                             ep.get('mac'),
                             ep.get('ip'),
@@ -458,7 +463,8 @@ def data_fetch():
 
                 epg_data = aci_obj.apic_fetch_epg_data(tenant)
                 for epg in epg_data:
-                    db_obj.insert_and_update(db_obj.EPG_TABLE_NAME,
+                    db_obj.insert_and_update(
+                        db_obj.EPG_TABLE_NAME,
                         (
                             epg.get('dn'),
                             epg.get('tenant'),

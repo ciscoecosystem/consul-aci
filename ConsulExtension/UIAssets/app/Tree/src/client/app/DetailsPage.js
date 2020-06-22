@@ -95,10 +95,10 @@ export default class DetailePage extends Component {
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
       let macList = "";
-      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
+      let ip = "";
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:"' + ip
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
-
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
 
       /**
@@ -154,8 +154,10 @@ export default class DetailePage extends Component {
     if (data.name == "EP") {
       let moType = data.name.toLowerCase();
       let macList = this.getMacList();
+      let ip = (data.attributes["IP"]) ? data.attributes["IP"] : "";
+      
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:"' + ip
 
-      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList
       let query = {
         param, type: "GetOperationalInfo",
         list: "{operationalList}"
