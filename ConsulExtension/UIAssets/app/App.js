@@ -46,7 +46,7 @@ export default class App extends React.Component {
             console.error("error in getting tenants ", err);
         }
 
-        console.log("Pathname ", window.location);
+
         // getting pathname for route
         let pathname = window.location.pathname;
         pathname = pathname.split("/");
@@ -201,7 +201,7 @@ export default class App extends React.Component {
         } catch (err) {
             console.log("setsidebar err ", err);
         }
-        console.log("Setted sidebar ", sidebarItems);
+
         this.setState({ details, sidebarItems })
     }
 
@@ -249,11 +249,9 @@ export default class App extends React.Component {
             xhrPostTenant.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrPostTenant.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrPostTenant.onreadystatechange = function () {
-                console.log("xhrPostTenant state ", xhrPostTenant.readyState);
 
                 if (xhrPostTenant.readyState == 4 && xhrPostTenant.status == 200) {
                     let responsejson = JSON.parse(xhrPostTenant.responseText);
-                    console.log("Response of dc: ", responsejson);
 
                     let datacenterData = JSON.parse(responsejson.data.PostTenant.tenant);
 
@@ -285,12 +283,10 @@ export default class App extends React.Component {
             xhrReadDc.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
             xhrReadDc.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
             xhrReadDc.onreadystatechange = function () {
-                console.log("chr== state ", xhrReadDc.readyState);
 
                 if (xhrReadDc.readyState == 4 && xhrReadDc.status == 200) {
                     let checkData = JSON.parse(xhrReadDc.responseText);
-                    console.log("Response of dc: ", checkData);
-                    // let datacenterData = JSON.parse(checkData.data.ReadCreds.creds);
+            
                     let datacenterData = JSON.parse(checkData.data.GetDatacenters.datacenters);
 
                     if (parseInt(datacenterData.status_code) === 200) {
@@ -318,7 +314,6 @@ export default class App extends React.Component {
     }
 
     render() {
-        console.log("Appb Render state ", this.state);
         return (
             <Router>
                 <div>

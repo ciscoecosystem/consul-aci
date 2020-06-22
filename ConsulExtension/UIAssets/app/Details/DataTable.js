@@ -184,8 +184,6 @@ export default class DataTable extends Component {
 
   componentDidMount(){
     const node = this.myRef.current;
-    console.log("==> filtertable ref ", node);
-
     node.filterFields.pop(); // remove anytext from filter
   }
 
@@ -193,11 +191,6 @@ export default class DataTable extends Component {
     this.setState({ loading: newprops.loading })
     this.setState({ row: newprops.data })
   }
-
-  // CONSUL_handleRowExpanded(newExpanded, index, event) {
-  //   // we override newExpanded, keeping only current selected row expanded
-  //   this.props.setExpand(index[0])
-  // }
 
   render() {
     return (
@@ -210,18 +203,11 @@ export default class DataTable extends Component {
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
           columns={this.state.columns}
-          // defaultFilters={[
-          //          {
-          //            category: 'endPointName',
-          //            operator: 'contains',
-          //            value: 'none',
-          //   }]}
-            getTrProps={(state, rowInfo) => {
+          getTrProps={(state, rowInfo) => {
               if (rowInfo && rowInfo.row) {
                 return {
                   onClick: (e) => {
                     this.props.setSummaryDetail(rowInfo.original)
-                    // console.log("Select row on click ", rowInfo );
                   }
                 }
               } else {

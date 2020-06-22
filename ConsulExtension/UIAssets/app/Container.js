@@ -30,8 +30,7 @@ export default class Container extends React.Component {
         this.pathname = pathname.join("/");
         this.closeHelpPopUp = this.closeHelpPopUp.bind(this)
         this.openHelpPopUp = this.openHelpPopUp.bind(this)
-        console.log("container constructor");
-        // <Redirect to={this.pathname + "/" + window.location.search} />
+
     }
     
     closeHelpPopUp() {
@@ -137,8 +136,6 @@ class OperationalViewComponent extends React.Component {
 
         this.paramsObject = getParamObject(window.location); // query string as object
 
-        console.log("extracted paramsObject ", this.paramsObject);
-
         this.handleIsListView = this.handleIsListView.bind(this);
         this.state = {
             isListView: true, // True signifies detailview and False for Treeview
@@ -152,12 +149,6 @@ class OperationalViewComponent extends React.Component {
             isListView: (selectedView.value === "detail")
         })
     }
-    componentWillMount() {
-        console.log("Mounting Operations view")
-    }
-    componentWillUnmount() {
-        console.log("Unmounting Operations view")
-    }
 
     render() {
         let { isListView, treeViewLocation, detailViewLocation } = this.state;
@@ -166,7 +157,6 @@ class OperationalViewComponent extends React.Component {
         let dcName = this.paramsObject[PROFILE_NAME];
         let tenantName = this.paramsObject["tn"];
 
-        console.log("Operations view Render", this.state);
 
         return (<div>
             <div className="page-container-header ">
