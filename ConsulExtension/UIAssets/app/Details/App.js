@@ -9,7 +9,7 @@ class App extends Component {
     render() {
         return (
             <div className="detail-container">
-                <Container tenantName={this.props.tenantName} dcName={this.props.dcName}/>
+                <Container tenantName={this.props.tenantName} dcName={this.props.dcName} isDeleted={this.props.isDeleted}/>
             </div>
         )
     }

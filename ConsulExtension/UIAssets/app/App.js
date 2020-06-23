@@ -4,7 +4,7 @@ import { Loader } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Mapping from "./Mapping/Mapping.js";
 import Agent from "./Agent/index.js"
-import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS, URL_TOKEN, DEV_TOKEN } from "../constants.js";
+import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS, URL_TOKEN, DEV_TOKEN, INTERVAL_API_CALL } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css'
@@ -46,6 +46,7 @@ export default class App extends React.Component {
             console.error("error in getting tenants ", err);
         }
 
+        this.intervalCall = null;
 
         // getting pathname for route
         let pathname = window.location.pathname;
@@ -123,6 +124,23 @@ export default class App extends React.Component {
         // this.setSidebar(dummyItems);
         this.postTenant();
         this.readDatacenter();
+        this.intervalCall  = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
+    }
+
+
+    componentWillUnmount() {
+        console.log("Component will unmount; intervalcall")
+        clearInterval(this.intervalCall); // this clears the interval calls
+        this.xhrCred.abort(); // cancel all apis
+    }
+
+    shouldComponentUpdate(nextProps, nextState){
+        console.log("In should component Update")
+        console.log(_.isEqual(this.state.details, nextState.details))
+        if(_.isEqual(this.state, nextState)){
+            return false
+        }
+        return true
     }
 
     readDatacenter() {
@@ -240,7 +258,7 @@ export default class App extends React.Component {
             return;
         }
         let payload = POST_TENANT_QUERY(this.tenantName)
-        let xhrPostTenant = new XMLHttpRequest();
+        let xhrPostTenant = this.xhrCred;
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");
@@ -274,7 +292,7 @@ export default class App extends React.Component {
 
     readDcCall() {
         let thiss = this;
-        let xhrReadDc = new XMLHttpRequest();
+        let xhrReadDc = this.xhrCred;
         try {
             xhrReadDc.open("POST", QUERY_URL, true);
             xhrReadDc.setRequestHeader("Content-type", "application/json");
@@ -321,7 +339,7 @@ export default class App extends React.Component {
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
-                    <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} />
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
                 </div >
             </Router>
         );
