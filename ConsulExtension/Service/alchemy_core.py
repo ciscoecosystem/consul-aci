@@ -150,6 +150,7 @@ class Database:
             'vrf',
             'epg_health',
             'app_profile',
+            'epg_alias',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -295,6 +296,7 @@ class Database:
             Column('VRF', String),
             Column('epg_health', String),
             Column('app_profile', String),
+            Column('epg_alias', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -471,7 +473,6 @@ class Database:
             logger.exception("Exception in {} Error:{}".format(
                 'create_tables()', str(e)))
 
-
     def insert_into_table(self, connection, table_name, field_values):
         field_values = list(field_values)
         try:
@@ -518,7 +519,6 @@ class Database:
             logger.exception("Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
 
-
     def update_in_table(self, connection, table_name, primary_key, new_record_dict):
         try:
             table_name = table_name.lower()
@@ -535,7 +535,6 @@ class Database:
             logger.exception(
                 "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
-
 
     def delete_from_table(self, connection, table_name, primary_key={}):
         try:
@@ -554,7 +553,6 @@ class Database:
             logger.exception(
                 "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
-
 
     def insert_and_update(self, connection, table_name, new_record, primary_key={}):
         table_name = table_name.lower()
@@ -600,7 +598,6 @@ class Database:
             logger.exception(
                 "Exception in joining tables: {} & {}, Error: {}".format(table_name1, table_name2, str(e)))
         return None
-
 
     def join(self, connection, datacenter=None, tenant=None):
         try:

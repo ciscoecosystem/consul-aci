@@ -854,7 +854,6 @@ def get_to_epg_traffic(epg_dn):
         try:
             for epg_traffic in epg_traffic_resp:
                 to_epg_children = epg_traffic["vzFromEPg"]["children"]
-                epg_alias = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("nameAlias", "")
                 type_mapping = {'prov': "Provider", 'cons': "Consumer"}
                 contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
                 contract_type = type_mapping.get(contract_type, contract_type)
@@ -872,7 +871,7 @@ def get_to_epg_traffic(epg_dn):
                             "filter_list": [],
                             "ingr_pkts": "",
                             "egr_pkts": "",
-                            "epg_alias": epg_alias,
+                            "alias": get_epg_alias(to_epg_dn),
                             "contract_type": "",
                             "type": contract_type
                         }
@@ -1789,3 +1788,17 @@ def get_performance_dashboard(tn):
     except Exception as e:
         logger.exception("Exception occurred. \n Error: {}".format(e))
         return json.dumps({"status": "300", "payload": {}, "message": "Could not load performance data"})
+
+
+def get_epg_alias(dn):
+    """This would return EPG alias from the db"""
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+    connection.close()
+
+    for epg in epg_data:
+        if dn == epg[0]:
+            return epg[8]
+    return ""

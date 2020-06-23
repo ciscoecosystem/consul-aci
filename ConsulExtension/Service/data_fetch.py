@@ -535,6 +535,7 @@ def data_fetch():
                                 epg.get('vrf'),
                                 epg.get('epg_health'),
                                 epg.get('app_profile'),
+                                epg.get('epg_alias')
                             ),
                             {
                                 'dn': epg.get('dn')
