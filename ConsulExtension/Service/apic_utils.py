@@ -422,8 +422,7 @@ class AciUtils(object):
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
                 data = response_json.get("imdata")
-                logger.debug(
-                    'Total EPGs fetched for Tenant: {} - {} EPGs'.format(str(tenant), str(len(data))))
+                logger.debug('Total EPGs fetched for Tenant: {} - {} EPGs'.format(str(tenant), str(len(data))))
                 parsed_data = self.parse_epg_data(data)
                 return parsed_data
             return None
@@ -585,6 +584,7 @@ class AciUtils(object):
         data['bd'] = self.apic_fetch_bd(data['dn'])
         data['app_profile'] = data['dn'].split('ap-')[1].split('/')[0]
         data['epg'] = epg_attr.get("name")
+        data['epg_alias'] = epg_attr.get("nameAlias")
         dn_split = data['dn'].split("/", 4)
         vrf_str = dn_split[0] + '/' + dn_split[1] + '/BD-' + data['bd']
         vrf_data = self.apic_fetch_vrf(vrf_str)
