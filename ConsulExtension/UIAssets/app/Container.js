@@ -28,9 +28,15 @@ export default class Container extends React.Component {
         pathname = pathname.split("/");
         pathname.pop();
         this.pathname = pathname.join("/");
-        this.closeHelpPopUp = this.closeHelpPopUp.bind(this)
-        this.openHelpPopUp = this.openHelpPopUp.bind(this)
+        this.closeHelpPopUp = this.closeHelpPopUp.bind(this);
+        this.openHelpPopUp = this.openHelpPopUp.bind(this);
+        this.getDataCenters = this.getDataCenters.bind(this);
+    }
 
+    getDataCenters(DataCentersObj){
+        let DataCenters = []
+        DataCentersObj.map((item)=>(DataCenters.push(item.datacenter)))
+        return DataCenters
     }
     
     closeHelpPopUp() {
@@ -108,7 +114,7 @@ export default class Container extends React.Component {
                                 }} />
 
                                 <Route path={this.pathname + "/operational"} component={function () {
-                                    return <OperationalViewComponent pathname={thiss.pathname} />
+                                    return <OperationalViewComponent pathname={thiss.pathname} availableDataCenter={thiss.getDataCenters(thiss.props.detailsItem)}/>
                                 }} />
 
 
@@ -156,6 +162,7 @@ class OperationalViewComponent extends React.Component {
 
         let dcName = this.paramsObject[PROFILE_NAME];
         let tenantName = this.paramsObject["tn"];
+        let isDeleted = !this.props.availableDataCenter.includes(dcName);
 
 
         return (<div>
@@ -172,7 +179,7 @@ class OperationalViewComponent extends React.Component {
                         onChange={this.handleIsListView} />
                 </div>
             </div>
-            {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName}/> : 
+            {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName} isDeleted={isDeleted}/> : 
                 <div style={{height:"84vh" }}>
                     <FrameComponent toLocation={toLocation} />
                 </div>}

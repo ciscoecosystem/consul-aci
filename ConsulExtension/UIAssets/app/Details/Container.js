@@ -1,5 +1,6 @@
-import React, { Component } from 'react'
-import DataTable from "./DataTable"
+import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
+import DataTable from "./DataTable";
 import DetailPanel from "./DetailPanel";
 import { DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
 import { toast } from 'react-toastify';
@@ -35,7 +36,10 @@ class Container extends Component {
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
         // params_tn = result['tn'];
-
+        let pathname = window.location.pathname;
+        pathname = pathname.split("/");
+        pathname.pop();
+        this.pathname = pathname.join("/");
         this.state = {
             "data": [],
             loading: false,
@@ -226,6 +230,7 @@ class Container extends Component {
                         setSummaryDetail={this.setSummaryDetail}>
                     </DataTable>
                 </div>
+                {this.props.isDeleted === true?this.notify("Datacenter was already deleted") || <Redirect to={this.pathname + "/"}></Redirect>:null}
             </div>
         )
     }

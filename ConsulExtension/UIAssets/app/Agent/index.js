@@ -229,7 +229,8 @@ export default class Agent extends React.Component {
                         // thiss.setState({ details: credsData.payload })
                     } else if (parseInt(credsData.status_code) === 300) {
                         try {
-                            thiss.notify(credsData.message)
+                            thiss.setDetails(credsData.payload, isReloaded);
+                            thiss.notify(credsData.message);
                         } catch (e) {
                             console.log("message error", e)
                         }
