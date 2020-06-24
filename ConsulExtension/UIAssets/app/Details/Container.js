@@ -36,7 +36,10 @@ class Container extends Component {
         this.setSummaryIsOpen = this.setSummaryIsOpen.bind(this);
 
         // params_tn = result['tn'];
-
+        let pathname = window.location.pathname;
+        pathname = pathname.split("/");
+        pathname.pop();
+        this.pathname = pathname.join("/");
         this.state = {
             "data": [],
             loading: false,
@@ -227,7 +230,7 @@ class Container extends Component {
                         setSummaryDetail={this.setSummaryDetail}>
                     </DataTable>
                 </div>
-                {this.props.isDeleted === true?this.notify("Data center was already deleted") || <Redirect to={"/"}></Redirect>:null}
+                {this.props.isDeleted === true?this.notify("Datacenter was already deleted") || <Redirect to={this.pathname + "/"}></Redirect>:null}
             </div>
         )
     }

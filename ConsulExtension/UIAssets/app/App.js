@@ -36,6 +36,7 @@ export default class App extends React.Component {
         super(props);
         // // Fetching TenantName 'tn' from url
         this.tenantName = null;
+        this.xhrCred = new XMLHttpRequest();
         try {
             const rx = /Tenants:(.*)\|/g;
             const topUrl = window.top.location;

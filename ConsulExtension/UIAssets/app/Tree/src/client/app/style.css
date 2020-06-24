@@ -302,3 +302,7 @@ body {
 .cui .form-group.dropdown .dropdown__menu {
   margin-bottom: 50px !important;
 }
+
+.ReactTable {
+  margin-bottom: 50px !important;
+}
