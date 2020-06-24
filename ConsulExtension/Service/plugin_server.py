@@ -817,7 +817,7 @@ def get_subnets(dn):
             dn = subnet_attr.get("dn")
             subnet_dict["to_epg"] = get_to_epg(dn)
             subnet_dict["ip"] = subnet_attr["ip"]
-            subnet_dict["epg_alias"] = get_epg_alias(dn)
+            subnet_dict["epg_alias"] = get_epg_alias(dn.split('/subnet')[0])
             subnet_list.append(subnet_dict)
 
         return json.dumps({
