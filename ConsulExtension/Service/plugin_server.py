@@ -777,6 +777,7 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
+    logger.debug('=Data returned by API call for get_children: {}'.format(str(len(ep_list))))
     ep_info_list = []
     try:
         for ep in ep_list:
@@ -845,6 +846,7 @@ def get_configured_access_policies(tn, ap, epg):
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
     cap_resp = aci_util_obj.get_mo_related_item("", cap_url, "other_url")
+    logger.debug('=Data returned by API call for config access policy: {}'.format(str(len(cap_resp))))
     cap_list = []
     try:
         for cap in cap_resp:
@@ -1032,112 +1034,102 @@ def get_to_epg_traffic(epg_dn):
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
     epg_traffic_resp = aci_util_obj.get_all_mo_instances("vzFromEPg", epg_traffic_query_string)
-    if epg_traffic_resp:
+    logger.debug("=Data returned by API call for to epg traffic {}".format(str(len(epg_traffic_resp))))
+    from_epg_dn = epg_dn
+    to_epg_traffic_list = []
+    to_epg_traffic_set = set()
+    try:
+        for epg_traffic in epg_traffic_resp:
+            to_epg_children = epg_traffic["vzFromEPg"]["children"]
+            type_mapping = {'prov': "Provider", 'cons': "Consumer"}
+            contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
+            contract_type = type_mapping.get(contract_type, contract_type)
+            for to_epg_child in to_epg_children:
 
-        from_epg_dn = epg_dn
+                vz_to_epg_child = to_epg_child["vzToEPg"]
+                to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
+                parsed_to_epg_dn = get_to_epg(to_epg_dn)
 
-        to_epg_traffic_list = []
-        to_epg_traffic_set = set()
+                flt_attr_children = vz_to_epg_child["children"]
+                for flt_attr in flt_attr_children:
+                    to_epg_traffic_dict = {
+                        "to_epg": parsed_to_epg_dn,
+                        "contract_subj": "",
+                        "filter_list": [],
+                        "ingr_pkts": "",
+                        "egr_pkts": "",
+                        "alias": get_epg_alias(to_epg_dn),
+                        "contract_type": "",
+                        "type": contract_type
+                    }
 
-        try:
-            for epg_traffic in epg_traffic_resp:
-                to_epg_children = epg_traffic["vzFromEPg"]["children"]
-                type_mapping = {'prov': "Provider", 'cons': "Consumer"}
-                contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
-                contract_type = type_mapping.get(contract_type, contract_type)
-                for to_epg_child in to_epg_children:
+                    flt_attr_child = flt_attr["vzRsRFltAtt"]
+                    flt_attr_tdn = flt_attr_child["attributes"]["tDn"]
 
-                    vz_to_epg_child = to_epg_child["vzToEPg"]
-                    to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
-                    parsed_to_epg_dn = get_to_epg(to_epg_dn)
+                    traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn + "||" + contract_type
 
-                    flt_attr_children = vz_to_epg_child["children"]
-                    for flt_attr in flt_attr_children:
-                        to_epg_traffic_dict = {
-                            "to_epg": parsed_to_epg_dn,
-                            "contract_subj": "",
-                            "filter_list": [],
-                            "ingr_pkts": "",
-                            "egr_pkts": "",
-                            "alias": get_epg_alias(to_epg_dn),
-                            "contract_type": "",
-                            "type": contract_type
-                        }
-
-                        flt_attr_child = flt_attr["vzRsRFltAtt"]
-                        flt_attr_tdn = flt_attr_child["attributes"]["tDn"]
-
-                        traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn + "||" + contract_type
-
-                        # Check if we have already encountered the filter for a particular destination EPG
-                        if traffic_id in to_epg_traffic_set:
-                            to_epg_traffic_set.add(traffic_id)
-                            continue
-                        if re.search("/fp-", flt_attr_tdn):
-                            flt_name = flt_attr_tdn.split("/fp-")[1]
-                        else:
-                            logger.error("filter not found")
-                            flt_name = ''
-                        flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
-                        if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
-                            subj_dn = flt_attr_subj_dn.split(
-                                "/rssubjFiltAtt-")[0]
-                        else:
-                            logger.error("filter attribute subject not found")
-                            subj_dn = ''
-                        if re.search("/tn-", flt_attr_subj_dn):
-                            subj_tn = flt_attr_subj_dn.split(
-                                "/tn-")[1].split("/")[0]
-                        else:
-                            logger.error(
-                                "filter attribute subject dn not found")
-                            subj_tn = ''
-
-                        if re.search("/brc-", flt_attr_subj_dn):
-                            subj_ctrlr = flt_attr_subj_dn.split(
-                                "/brc-")[1].split("/")[0]
-                        else:
-                            logger.error("filter attribute ctrlr not found")
-                            subj_ctrlr = ''
-
-                        if re.search("/subj-", flt_attr_subj_dn):
-                            subj_name = flt_attr_subj_dn.split(
-                                "/subj-")[1].split("/")[0]
-                        else:
-                            logger.error(
-                                "filter attribute subj_name not found")
-                            subj_name = ''
-
-                        contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
-                        flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
-                        ingr_pkts, egr_pkts = get_ingress_egress(
-                            from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
-
-                        to_epg_traffic_dict["contract_subj"] = contract_subject
-                        to_epg_traffic_dict["filter_list"] = flt_list
-                        to_epg_traffic_dict["ingr_pkts"] = ingr_pkts
-                        to_epg_traffic_dict["egr_pkts"] = egr_pkts
-
+                    # Check if we have already encountered the filter for a particular destination EPG
+                    if traffic_id in to_epg_traffic_set:
                         to_epg_traffic_set.add(traffic_id)
-                        to_epg_traffic_list.append(to_epg_traffic_dict)
+                        continue
+                    if re.search("/fp-", flt_attr_tdn):
+                        flt_name = flt_attr_tdn.split("/fp-")[1]
+                    else:
+                        logger.error("filter not found")
+                        flt_name = ''
+                    flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
+                    if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
+                        subj_dn = flt_attr_subj_dn.split(
+                            "/rssubjFiltAtt-")[0]
+                    else:
+                        logger.error("filter attribute subject not found")
+                        subj_dn = ''
+                    if re.search("/tn-", flt_attr_subj_dn):
+                        subj_tn = flt_attr_subj_dn.split(
+                            "/tn-")[1].split("/")[0]
+                    else:
+                        logger.error(
+                            "filter attribute subject dn not found")
+                        subj_tn = ''
 
-            return json.dumps({
-                "status_code": "200",
-                "message": "",
-                "payload": to_epg_traffic_list
-            })
+                    if re.search("/brc-", flt_attr_subj_dn):
+                        subj_ctrlr = flt_attr_subj_dn.split(
+                            "/brc-")[1].split("/")[0]
+                    else:
+                        logger.error("filter attribute ctrlr not found")
+                        subj_ctrlr = ''
 
-        except Exception as ex:
-            logger.exception(
-                "Exception while fetching To EPG Traffic List : " + str(ex))
+                    if re.search("/subj-", flt_attr_subj_dn):
+                        subj_name = flt_attr_subj_dn.split(
+                            "/subj-")[1].split("/")[0]
+                    else:
+                        logger.error(
+                            "filter attribute subj_name not found")
+                        subj_name = ''
 
-            return json.dumps({
-                "status_code": "300",
-                "message": "Could not get Traffic Data related to EPG",
-                "payload": []
-            })
-    else:
-        logger.error("Could not get Traffic Data related to EPG")
+                    contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
+                    flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
+                    ingr_pkts, egr_pkts = get_ingress_egress(
+                        from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
+
+                    to_epg_traffic_dict["contract_subj"] = contract_subject
+                    to_epg_traffic_dict["filter_list"] = flt_list
+                    to_epg_traffic_dict["ingr_pkts"] = ingr_pkts
+                    to_epg_traffic_dict["egr_pkts"] = egr_pkts
+
+                    to_epg_traffic_set.add(traffic_id)
+                    to_epg_traffic_list.append(to_epg_traffic_dict)
+
+        return json.dumps({
+            "status_code": "200",
+            "message": "",
+            "payload": to_epg_traffic_list
+        })
+
+    except Exception as ex:
+        logger.exception(
+            "Exception while fetching To EPG Traffic List : " + str(ex))
+
         return json.dumps({
             "status_code": "300",
             "message": "Could not get Traffic Data related to EPG",
