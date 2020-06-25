@@ -140,7 +140,7 @@ export default class DataTable extends Component {
 
                 if (response.status_code != "200") {
                   // Problem with backend fetching data
-                  this.handleError(response.message.errors);
+                  this.handleError(response.message);
                 } else {
                   // Success
                   this.setState({ rows: response.payload });

@@ -230,7 +230,7 @@ class Container extends Component {
                         setSummaryDetail={this.setSummaryDetail}>
                     </DataTable>
                 </div>
-                {this.props.isDeleted === true?this.notify("Datacenter was already deleted") || <Redirect to={this.pathname + "/"}></Redirect>:null}
+                {this.props.isDeleted === true?this.notify("Datacenter has been deleted") || <Redirect to={this.pathname + "/"}></Redirect>:null}
             </div>
         )
     }
