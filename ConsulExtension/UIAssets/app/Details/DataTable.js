@@ -122,7 +122,7 @@ export default class DataTable extends Component {
         sortMethod: (a, b) => Number(a)-Number(b),// sorting numerically
         Cell: row => {
 
-          let epgcolor = "56b72a";
+          let epgcolor = "#56b72a";
           if (row.value < 70) {
             epgcolor = "#ffcc00";
           }
