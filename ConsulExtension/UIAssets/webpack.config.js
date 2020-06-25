@@ -1,7 +1,6 @@
 
 module.exports = {
 	'entry': {
-		'details': __dirname + "/details.js",
 		'app': __dirname + "/app.js",
 	},
 	'module': {
@@ -23,7 +22,7 @@ module.exports = {
 		},
 		{
 			'test': /\.css$/,
-			'loaders': ['style-loader', 'css-loader'],
+			'use': [ 'style-loader', 'css-loader' ]
 		},
 		{
 			'test': /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,

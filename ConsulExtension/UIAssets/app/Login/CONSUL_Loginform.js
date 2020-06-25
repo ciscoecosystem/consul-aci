@@ -138,6 +138,12 @@ class CONSUL_LoginForm extends React.Component {
                 } catch(e){
                     console.log("message error", e)
                 }
+            } else if (credsData.status_code == "301"){
+                try{
+                    console.log("301 for backend:", credsData.message)
+                }catch(e){
+                    console.log("message error", e)
+                }
             }
         }
         catch(e) {

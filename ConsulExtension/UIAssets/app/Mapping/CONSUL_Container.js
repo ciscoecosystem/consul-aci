@@ -247,7 +247,6 @@ export default class CONSUL_Container extends React.Component {
             accessor: 'enabled',
             filterable: false,
             Cell: row => {
-                console.log("==> action ", row);
                 let { enabled } = row.original;
                 return <div>
                     <Switch key={"clustr-" + row.index} checked={enabled}

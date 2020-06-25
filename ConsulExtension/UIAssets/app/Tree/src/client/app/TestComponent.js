@@ -1,7 +1,6 @@
 import React from 'react';
 import Tree from './Tree.js';
 import Legend from './Legend.js'
-import './style.css';
 
 let treeNumber = 0
 export default class TestComponent extends React.Component {
