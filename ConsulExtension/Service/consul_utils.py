@@ -139,7 +139,7 @@ class Consul(object):
     def nodes_services(self, node_name):
         """This will return all the services of a node
 
-        node_name: name of nodes for services
+        :node_name: name of nodes for services
 
         return: [
                     {
@@ -187,7 +187,7 @@ class Consul(object):
     def node_checks(self, node_name):
         """Get node checks
 
-        node_name: name of the node for checks
+        :node_name: name of the node for checks
 
         return: {
                 passing: int: if val > 0
@@ -233,7 +233,7 @@ class Consul(object):
     def service_checks(self, service_name):
         """Get all the serveice checks
 
-        service_name: name of the service for checks
+        :service_name: name of the service for checks
 
         return: {
                 passing: int: if val > 0
@@ -276,7 +276,7 @@ class Consul(object):
     def service_info(self, service_name):
         """Get tag and kind info from details of a service
 
-        service_name: name of the service for checks
+        :service_name: name of the service for checks
 
         return: tuple(tag_list, kind, namespace)
                     tag_list: string list
@@ -330,7 +330,7 @@ class Consul(object):
     def detailed_service_check(self, service_name, service_id):
         """Get serveice checks details
 
-        service_name: name of the service for checks
+        :service_name: name of the service for checks
 
         return: [{
             ServiceName: string
@@ -373,7 +373,7 @@ class Consul(object):
     def detailed_node_check(self, node_name):
         """Get node checks details
 
-        node_name: name of the node for checks
+        :node_name: name of the node for checks
 
         return: [{
             Name: string

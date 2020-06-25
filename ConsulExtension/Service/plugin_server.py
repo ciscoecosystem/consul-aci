@@ -28,6 +28,7 @@ db_obj = alchemy_core.Database()
 db_obj.create_tables()
 
 
+@time_it
 def set_polling_interval(interval):
     """Sets the polling interval for data fetch"""
 
@@ -35,6 +36,27 @@ def set_polling_interval(interval):
 
 
 def get_new_mapping(tenant, datacenter):
+    """Generate new mapping(recommendation)
+
+    This fetches the APIC data for the tenant and Consul
+    data for the datacenter; gets the recommendations,
+    looks up db for enabled/disabled mapping(recommendations).
+
+    :tenant: tenant for APIC data
+    :datacenter: datacenter for Consul data
+
+    return: [
+        ip:            string: ip of the Mapped Node
+        enabled:       boolean: toggled or not
+        recommended:   boolean: recommendation as per the logic
+        dn:            string: Mapped Node's dn
+        vrf:           string: Mapped Node's VRF(Virtual routing and forwarding network)
+        bd:            string: Mapped Node's Bridge Domain
+        ap:            string: Mapped Node's Application Profile
+        tenant:        string: Mapped Node's tenant
+        epg:           string: Mapped Node's Endpoint Group
+    ]
+    """
     try:
         # Get APIC data
         connection = db_obj.engine.connect()
@@ -105,7 +127,6 @@ def get_new_mapping(tenant, datacenter):
             already_mapped_data = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
         connection.close()
 
-
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
@@ -162,14 +183,25 @@ def get_new_mapping(tenant, datacenter):
         return []
 
 
+@time_it
 def mapping(tenant, datacenter):
-    """Returns mapping to UI and saves recommended mapping to db"""
+    """Returns mapping to UI and saves recommended mapping to db
+
+    :tenant: tenant for APIC data
+    :datacenter: datacenter for Consul data
+
+    return: {
+        payload: list of mapped Nodes/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
 
     try:
         current_mapping = get_new_mapping(tenant, datacenter)
 
         return json.dumps({
-            "payload": current_mapping,  # REturn current mapping
+            "payload": current_mapping,  # Return current mapping
             "status_code": "200",
             "message": "OK"
         })
@@ -184,7 +216,18 @@ def mapping(tenant, datacenter):
 
 @time_it
 def save_mapping(tenant, datacenter, mapped_data):
-    """Save mapping to database"""
+    """Save mapping to database
+
+    :tenant: tenant for APIC data
+    :datacenter: datacenter for Consul data
+    :mapped_data: mapping from UI
+
+    return: {
+        payload: "Saved Mappings"/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
 
     try:
         logger.info("Saving mappings for datacenter : " + str(datacenter))
@@ -215,34 +258,26 @@ def save_mapping(tenant, datacenter, mapped_data):
                     })
         connection.close()
 
-        return json.dumps({"payload": "Saved Mappings", "status_code": "200", "message": "OK"})
+        return json.dumps({
+            "payload": "Saved Mappings",
+            "status_code": "200",
+            "message": "OK"
+        })
     except Exception as e:
         logger.exception("Could not save mappings to the database. Error: {}".format(str(e)))
-        return json.dumps({"payload": {}, "status_code": "300", "message": "Could not save mappings to the database."})
-
-
-def parse_mapping_before_save(already_mapped_data, data_list):
-    """
-    Set disabled value true if user has disabled particular node manually.
-    """
-    for previous_mapping in already_mapped_data:
-        is_node_exist = False
-        for current_mapping in data_list:
-            if current_mapping.get('ipaddress') == previous_mapping.get('ipaddress') and current_mapping.get('domainName') == previous_mapping.get('domainName'):
-                is_node_exist = True
-                break
-
-        # Append removed node by user as disabled
-        if not is_node_exist:
-            previous_mapping['disabled'] = True
-            data_list.append(previous_mapping)
-
-    return data_list
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not save mappings to the database."
+        })
 
 
 @time_it
 def tree(tenant, datacenter):
     """Get correlated Tree view data.
+
+    :tenant: tenant for APIC data
+    :datacenter: datacenter for Consul data
 
     return: {
         payload: list of tree(dict)/{}
@@ -274,11 +309,91 @@ def tree(tenant, datacenter):
         return json.dumps({
             "payload": {},
             "status_code": "300",
-            "message": "Could not load the View."
+            "message": "Could not load the Tree."
+        })
+
+
+@time_it
+def details_flattened(tenant, datacenter):
+    """Get correlated Details view data
+
+    :tenant: tenant for APIC data
+    :datacenter: datacenter for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+
+    logger.info("Details view for tenant: {}".format(tenant))
+    try:
+        aci_consul_mappings = get_new_mapping(tenant, datacenter)
+
+        apic_data = get_apic_data(tenant)
+        consul_data = get_consul_data(datacenter)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+
+        details_list = []
+        for each in merged_data:
+            ep = {
+                'interface': each.get('Interfaces'),
+                'endPointName': each.get('VM-Name'),
+                'ip': each.get('IP'),
+                'mac': each.get('CEP-Mac'),
+                'learningSource': each.get('learningSource'),
+                'hostingServer': each.get('hostingServerName'),
+                'reportingController': each.get('controllerName'),
+                'vrf': each.get('VRF'),
+                'bd': each.get('BD'),
+                'ap': each.get('AppProfile'),
+                'epgName': each.get('EPG'),
+                'epgHealth': int(each.get('epg_health')),
+                'consulNode': each.get('node_name'),
+                'nodeChecks': each.get('node_check'),
+            }
+
+            services = change_key(each.get('node_services'))
+            if not services:
+                services.append({
+                    'service': '',
+                    'serviceInstance': '',
+                    'port': '',
+                    'serviceTags': [],
+                    'serviceKind': '',
+                    'serviceNamespace': '',
+                    'serviceChecks': {}
+                })
+            for service in services:
+                record = {}
+                record.update(ep)
+                record.update(service)
+                details_list.append(record)
+        logger.debug("Details final data ended: " + str(details_list))
+
+        return json.dumps({
+            "payload": details_list,
+            "status_code": "200",
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Could not load the Details. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the Details."
         })
 
 
 def change_key(services):
+    """Function used for changing as per the UI
+
+    :services: list of services
+
+    return: list of services with changed keys
+    """
+
     final_list = []
     if services:
         for service in services:
@@ -297,6 +412,10 @@ def change_key(services):
 @time_it
 def get_service_check(service_name, service_id, datacenter):
     """Service checks with all detailed info
+
+    :service_name: service name
+    :service_id: service id
+    :datacenter: datacenter for Consul data
 
     return: {
         payload: list of dict/[]
@@ -326,8 +445,6 @@ def get_service_check(service_name, service_id, datacenter):
                     'Status': check[7]
                 })
 
-        logger.debug('Response of Service check: {}'.format(response))
-
         return json.dumps({
             "payload": response,
             "status_code": "200",
@@ -345,6 +462,9 @@ def get_service_check(service_name, service_id, datacenter):
 @time_it
 def get_node_checks(node_name, datacenter):
     """Node checks with all detailed info
+
+    :node_name: node name
+    :datacenter: datacenter for Consul data
 
     return: {
         payload: list of dict/[]
@@ -393,6 +513,9 @@ def get_node_checks(node_name, datacenter):
 @time_it
 def get_multi_service_check(service_list, datacenter):
     """Service checks with all detailed info of multiple service
+
+    :service_list: list of servie id and service name
+    :datacenter: datacenter for Consul data
 
     return: {
         payload: list of dict/[]
@@ -444,6 +567,9 @@ def get_multi_service_check(service_list, datacenter):
 def get_multi_node_check(node_list, datacenter):
     """Node checks with all detailed info of multiple Node
 
+    :node_list: list of node name
+    :datacenter: datacenter for Consul data
+
     return: {
         payload: list of dict/[]
         status_code: string: 200/300
@@ -493,6 +619,14 @@ def get_multi_node_check(node_list, datacenter):
 def get_faults(dn):
     """
     Get List of Faults from APIC related to the given Modular object.
+
+    :dn: dn of epg
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
     """
     aci_util_obj = apic_utils.AciUtils()
     faults_resp = aci_util_obj.get_ap_epg_faults(dn)
@@ -529,6 +663,14 @@ def get_faults(dn):
 def get_events(dn):
     """
     Get List of Events related to the given MO.
+
+    :dn: dn of epg
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
     """
     aci_util_obj = apic_utils.AciUtils()
     events_resp = aci_util_obj.get_ap_epg_events(dn)
@@ -565,8 +707,15 @@ def get_events(dn):
 def get_audit_logs(dn):
     """
     Get List of Audit Log Records related to the given MO.
-    """
 
+    :dn: dn of epg
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
+    """
     aci_util_obj = apic_utils.AciUtils()
     audit_logs_resp = aci_util_obj.get_ap_epg_audit_logs(dn)
 
@@ -600,6 +749,20 @@ def get_audit_logs(dn):
 
 @time_it
 def get_children_ep_info(dn, mo_type, mac_list, ip):
+    """
+    Get Operational for EP and Client EP for EPG
+
+    :dn: dn of epg
+    :mo_type: ep/epg
+    :mac_list: mac list of EP
+    :ip: ip in case of ep/""
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
+    """
     aci_util_obj = apic_utils.AciUtils()
     if mo_type == "ep":
         mac_list = mac_list.split(",")
@@ -614,6 +777,7 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
+    logger.debug('=Data returned by API call for get_children: {}'.format(str(len(ep_list))))
     ep_info_list = []
     try:
         for ep in ep_list:
@@ -655,21 +819,34 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
             "payload": ep_info_list
         })
     except Exception as e:
-        logger.exception(
-            "Exception while getting Children Ep Info : " + str(e))
+        logger.exception("Exception while getting Children Ep Info : " + str(e))
         return json.dumps({
             "status_code": "300",
-            "message": {'errors': str(e)},
+            "message": "Could not get Operational info",
             "payload": []
         })
 
 
 @time_it
 def get_configured_access_policies(tn, ap, epg):
+    """
+    Get config access policy
+
+    :tn: tenant for APIC
+    :ap: Application Policy
+    :epg: End Point Group
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
+    """
     aci_util_obj = apic_utils.AciUtils()
     cap_url = "/mqapi2/deployment.query.json?mode=epgtoipg&tn=" + \
         tn + "&ap=" + ap + "&epg=" + epg
     cap_resp = aci_util_obj.get_mo_related_item("", cap_url, "other_url")
+    logger.debug('=Data returned by API call for config access policy: {}'.format(str(len(cap_resp))))
     cap_list = []
     try:
         for cap in cap_resp:
@@ -747,13 +924,14 @@ def get_configured_access_policies(tn, ap, epg):
 
         return json.dumps({
             "status_code": "200",
-            "message": "",
+            "message": "Ok",
             "payload": cap_list
         })
     except Exception as ex:
+        logger.exception("Exception while getting config access policy: " + str(ex))
         return json.dumps({
             "status_code": "300",
-            "message": {'errors': str(ex)},
+            "message": "Could not get Configured access policies",
             "payload": []
         })
 
@@ -761,13 +939,9 @@ def get_configured_access_policies(tn, ap, epg):
 def get_to_epg(dn):
     """Function to get TO_EPG from dn
 
-    Arguments:
-        dn {str} -- domain name str
-        eg: "uni/tn-Tenant1/ap-AppProfile1/epg-EPG1"
+    :dn: dn of EPG(uni/tn-Tenant1/ap-AppProfile1/epg-EPG1)
 
-    Returns:
-        str -- TO EPG str
-        eg: Tenant1/AppProfile1/EPG1"
+    return: epg dn(Tenant1/AppProfile1/EPG1)
     """
     epg = ''
     tn = ''
@@ -801,6 +975,14 @@ def get_to_epg(dn):
 def get_subnets(dn):
     """
     Gets the Subnets Information for an EPG
+
+    :dn: epg dn
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
     """
     aci_util_obj = apic_utils.AciUtils()
     subnet_query_string = "query-target=children&target-subtree-class=fvSubnet"
@@ -826,9 +1008,10 @@ def get_subnets(dn):
             "payload": subnet_list
         })
     except Exception as ex:
+        logger.exception("Exception while getting subnets: " + str(ex))
         return json.dumps({
             "status_code": "300",
-            "message": str(ex),
+            "message": "Could not get subnets",
             "payload": []
         })
 
@@ -837,122 +1020,119 @@ def get_subnets(dn):
 def get_to_epg_traffic(epg_dn):
     """
     Gets the Traffic Details from the given EPG to other EPGs
+
+    :epg_dn: epg dn
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300
+        message: string
+    }
     """
 
     aci_util_obj = apic_utils.AciUtils()
     epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + epg_dn + \
         '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
-    epg_traffic_resp = aci_util_obj.get_all_mo_instances(
-        "vzFromEPg", epg_traffic_query_string)
-    if epg_traffic_resp:
+    epg_traffic_resp = aci_util_obj.get_all_mo_instances("vzFromEPg", epg_traffic_query_string)
+    logger.debug("=Data returned by API call for to epg traffic {}".format(str(len(epg_traffic_resp))))
+    from_epg_dn = epg_dn
+    to_epg_traffic_list = []
+    to_epg_traffic_set = set()
+    try:
+        for epg_traffic in epg_traffic_resp:
+            to_epg_children = epg_traffic["vzFromEPg"]["children"]
+            type_mapping = {'prov': "Provider", 'cons': "Consumer"}
+            contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
+            contract_type = type_mapping.get(contract_type, contract_type)
+            for to_epg_child in to_epg_children:
 
-        from_epg_dn = epg_dn
+                vz_to_epg_child = to_epg_child["vzToEPg"]
+                to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
+                parsed_to_epg_dn = get_to_epg(to_epg_dn)
 
-        to_epg_traffic_list = []
-        to_epg_traffic_set = set()
+                flt_attr_children = vz_to_epg_child["children"]
+                for flt_attr in flt_attr_children:
+                    to_epg_traffic_dict = {
+                        "to_epg": parsed_to_epg_dn,
+                        "contract_subj": "",
+                        "filter_list": [],
+                        "ingr_pkts": "",
+                        "egr_pkts": "",
+                        "alias": get_epg_alias(to_epg_dn),
+                        "contract_type": "",
+                        "type": contract_type
+                    }
 
-        try:
-            for epg_traffic in epg_traffic_resp:
-                to_epg_children = epg_traffic["vzFromEPg"]["children"]
-                type_mapping = {'prov': "Provider", 'cons': "Consumer"}
-                contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
-                contract_type = type_mapping.get(contract_type, contract_type)
-                for to_epg_child in to_epg_children:
+                    flt_attr_child = flt_attr["vzRsRFltAtt"]
+                    flt_attr_tdn = flt_attr_child["attributes"]["tDn"]
 
-                    vz_to_epg_child = to_epg_child["vzToEPg"]
-                    to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
-                    parsed_to_epg_dn = get_to_epg(to_epg_dn)
+                    traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn + "||" + contract_type
 
-                    flt_attr_children = vz_to_epg_child["children"]
-                    for flt_attr in flt_attr_children:
-                        to_epg_traffic_dict = {
-                            "to_epg": parsed_to_epg_dn,
-                            "contract_subj": "",
-                            "filter_list": [],
-                            "ingr_pkts": "",
-                            "egr_pkts": "",
-                            "alias": get_epg_alias(to_epg_dn),
-                            "contract_type": "",
-                            "type": contract_type
-                        }
-
-                        flt_attr_child = flt_attr["vzRsRFltAtt"]
-                        flt_attr_tdn = flt_attr_child["attributes"]["tDn"]
-
-                        traffic_id = parsed_to_epg_dn + "||" + flt_attr_tdn + "||" + contract_type
-
-                        # Check if we have already encountered the filter for a particular destination EPG
-                        if traffic_id in to_epg_traffic_set:
-                            to_epg_traffic_set.add(traffic_id)
-                            continue
-                        if re.search("/fp-", flt_attr_tdn):
-                            flt_name = flt_attr_tdn.split("/fp-")[1]
-                        else:
-                            logger.error("filter not found")
-                            flt_name = ''
-                        flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
-                        if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
-                            subj_dn = flt_attr_subj_dn.split(
-                                "/rssubjFiltAtt-")[0]
-                        else:
-                            logger.error("filter attribute subject not found")
-                            subj_dn = ''
-                        if re.search("/tn-", flt_attr_subj_dn):
-                            subj_tn = flt_attr_subj_dn.split(
-                                "/tn-")[1].split("/")[0]
-                        else:
-                            logger.error(
-                                "filter attribute subject dn not found")
-                            subj_tn = ''
-
-                        if re.search("/brc-", flt_attr_subj_dn):
-                            subj_ctrlr = flt_attr_subj_dn.split(
-                                "/brc-")[1].split("/")[0]
-                        else:
-                            logger.error("filter attribute ctrlr not found")
-                            subj_ctrlr = ''
-
-                        if re.search("/subj-", flt_attr_subj_dn):
-                            subj_name = flt_attr_subj_dn.split(
-                                "/subj-")[1].split("/")[0]
-                        else:
-                            logger.error(
-                                "filter attribute subj_name not found")
-                            subj_name = ''
-
-                        contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
-                        flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
-                        ingr_pkts, egr_pkts = get_ingress_egress(
-                            from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
-
-                        to_epg_traffic_dict["contract_subj"] = contract_subject
-                        to_epg_traffic_dict["filter_list"] = flt_list
-                        to_epg_traffic_dict["ingr_pkts"] = ingr_pkts
-                        to_epg_traffic_dict["egr_pkts"] = egr_pkts
-
+                    # Check if we have already encountered the filter for a particular destination EPG
+                    if traffic_id in to_epg_traffic_set:
                         to_epg_traffic_set.add(traffic_id)
-                        to_epg_traffic_list.append(to_epg_traffic_dict)
+                        continue
+                    if re.search("/fp-", flt_attr_tdn):
+                        flt_name = flt_attr_tdn.split("/fp-")[1]
+                    else:
+                        logger.error("filter not found")
+                        flt_name = ''
+                    flt_attr_subj_dn = flt_attr_child["children"][0]["vzCreatedBy"]["attributes"]["ownerDn"]
+                    if re.search("/rssubjFiltAtt-", flt_attr_subj_dn):
+                        subj_dn = flt_attr_subj_dn.split(
+                            "/rssubjFiltAtt-")[0]
+                    else:
+                        logger.error("filter attribute subject not found")
+                        subj_dn = ''
+                    if re.search("/tn-", flt_attr_subj_dn):
+                        subj_tn = flt_attr_subj_dn.split(
+                            "/tn-")[1].split("/")[0]
+                    else:
+                        logger.error(
+                            "filter attribute subject dn not found")
+                        subj_tn = ''
 
-            return json.dumps({
-                "status_code": "200",
-                "message": "",
-                "payload": to_epg_traffic_list
-            })
+                    if re.search("/brc-", flt_attr_subj_dn):
+                        subj_ctrlr = flt_attr_subj_dn.split(
+                            "/brc-")[1].split("/")[0]
+                    else:
+                        logger.error("filter attribute ctrlr not found")
+                        subj_ctrlr = ''
 
-        except Exception as ex:
-            logger.exception(
-                "Exception while fetching To EPG Traffic List : \n" + str(ex))
+                    if re.search("/subj-", flt_attr_subj_dn):
+                        subj_name = flt_attr_subj_dn.split(
+                            "/subj-")[1].split("/")[0]
+                    else:
+                        logger.error(
+                            "filter attribute subj_name not found")
+                        subj_name = ''
 
-            return json.dumps({
-                "status_code": "300",
-                "message": {'errors': str(ex)},
-                "payload": []
-            })
-    else:
-        logger.error("Could not get Traffic Data related to EPG")
+                    contract_subject = subj_tn + "/" + subj_ctrlr + "/" + subj_name
+                    flt_list = get_filter_list(flt_attr_tdn, aci_util_obj)
+                    ingr_pkts, egr_pkts = get_ingress_egress(
+                        from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj)
+
+                    to_epg_traffic_dict["contract_subj"] = contract_subject
+                    to_epg_traffic_dict["filter_list"] = flt_list
+                    to_epg_traffic_dict["ingr_pkts"] = ingr_pkts
+                    to_epg_traffic_dict["egr_pkts"] = egr_pkts
+
+                    to_epg_traffic_set.add(traffic_id)
+                    to_epg_traffic_list.append(to_epg_traffic_dict)
+
+        return json.dumps({
+            "status_code": "200",
+            "message": "",
+            "payload": to_epg_traffic_list
+        })
+
+    except Exception as ex:
+        logger.exception(
+            "Exception while fetching To EPG Traffic List : " + str(ex))
+
         return json.dumps({
             "status_code": "300",
-            "message": "Exception while fetching Traffic Data related to EPG",
+            "message": "Could not get Traffic Data related to EPG",
             "payload": []
         })
 
@@ -1021,26 +1201,16 @@ def get_filter_list(flt_dn, aci_util_obj):
     return flt_list
 
 
-def get_all_interfaces(interfaces):
-    interface_list = ''
-    for interface in interfaces:
-        if re.search("/pathep-\[", interface):
-            if interface_list != '':
-                interface_list += (', ' + str(interface.split("/pathep-")[1][1:-1]))
-            else:
-                interface_list += str(interface.split("/pathep-")[1][1:-1])
-        elif re.search("/pathgrp-", interface):
-            if interface_list != '':
-                interface_list += (', ' + str(interface.split("/pathgrp-")[1][1:-1]) + "(vmm)")
-            else:
-                interface_list += str(interface.split("/pathgrp-")[1][1:-1] + "(vmm)")
-        else:
-            logger.error("Incompatible format of Interfaces found")
-    return interface_list
-
-
 @time_it
 def read_creds():
+    """Returns list of all agents in DB with connection status
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300/301
+        message: string
+    }
+    """
     try:
         logger.info('Reading agents.')
 
@@ -1052,7 +1222,7 @@ def read_creds():
 
         if not agents:
             logger.info('Agents List Empty.')
-            return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
+            return json.dumps({'payload': [], 'status_code': '301', 'message': 'Agents not found'})
         payload = []
 
         connection = db_obj.engine.connect()
@@ -1083,17 +1253,35 @@ def read_creds():
         connection.close()
 
         logger.debug('Read creds response: {}'.format(str(payload)))
-        return json.dumps({'payload': payload, 'status_code': '200', 'message': 'OK'})
-
+        return json.dumps({
+            'payload': payload,
+            'status_code': '200',
+            'message': 'OK'
+        })
     except Exception as e:
         logger.exception('Error in read credentials: ' + str(e))
-        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not load the credentials.'})
+        return json.dumps({
+            'payload': [],
+            'status_code': '300',
+            'message': 'Could not load the credentials.'
+        })
 
 
 @time_it
 def write_creds(new_agent):
+    """Writes an Agent to DB and returns it status
+    to UI with encripted token
+
+    :new_agent: list agent with one agent in it
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300/301
+        message: string
+    }
+    """
     try:
-        new_agent = json.loads(new_agent)[0]  # UI returns list of 1 object
+        new_agent = json.loads(new_agent)[0]  # UI returns list of one object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
 
         connection = db_obj.engine.connect()
@@ -1141,17 +1329,38 @@ def write_creds(new_agent):
         connection.close()
 
         if status:
-            return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
+            return json.dumps({
+                'payload': new_agent,
+                'status_code': '200',
+                'message': 'OK'
+            })
         else:
-            return json.dumps({'payload': new_agent, 'status_code': '301', 'message': str(message)})
-
+            return json.dumps({
+                'payload': new_agent,
+                'status_code': '301',
+                'message': str(message)
+            })
     except Exception as e:
         logger.exception('Error in write credentials: ' + str(e))
-        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not write the credentials.'})
+        return json.dumps({
+            'payload': [],
+            'status_code': '300',
+            'message': 'Could not write the credentials.'
+        })
 
 
 @time_it
 def update_creds(update_input):
+    """Update an Agent to DB and returns it status to UI
+
+    :update_input: json with old agents data and new agents data
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300/301
+        message: string
+    }
+    """
     try:
         logger.info('Updating agent: {}'.format(update_input))
 
@@ -1161,8 +1370,7 @@ def update_creds(update_input):
 
         connection = db_obj.engine.connect()
         with connection.begin():
-            agents = list(db_obj.select_from_table(connection,
-                db_obj.LOGIN_TABLE_NAME))
+            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
         connection.close()
         if not agents:
             logger.info('Agents List Empty.')
@@ -1224,17 +1432,38 @@ def update_creds(update_input):
                 connection.close()
 
                 if status:
-                    return json.dumps({'payload': new_agent, 'status_code': '200', 'message': 'OK'})
+                    return json.dumps({
+                        'payload': new_agent,
+                        'status_code': '200',
+                        'message': 'OK'
+                    })
                 else:
-                    return json.dumps({'payload': new_agent, 'status_code': '301', 'message': message})
-
+                    return json.dumps({
+                        'payload': new_agent,
+                        'status_code': '301',
+                        'message': message
+                    })
     except Exception as e:
         logger.exception('Error in update credentials: ' + str(e))
-        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not update the credentials.'})
+        return json.dumps({
+            'payload': [],
+            'status_code': '300',
+            'message': 'Could not update the credentials.'
+        })
 
 
 @time_it
 def delete_creds(agent_data):
+    """Update an Agent to DB and returns it status to UI
+
+    :update_input: json with old agents data and new agents data
+
+    return: {
+        payload: list of dict/[]
+        status_code: string: 200/300/301
+        message: string
+    }
+    """
     try:
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
@@ -1244,7 +1473,6 @@ def delete_creds(agent_data):
         with connection.begin():
             db_obj.delete_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
         connection.close()
-
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
 
@@ -1356,84 +1584,28 @@ def delete_creds(agent_data):
         logger.info('Agent {}\'s ServiceChecks data deleted'.format(str(agent_addr)))
 
         # it is assumed that no delete call to db would fail
-        return json.dumps({'status_code': '200', 'message': 'OK'})
-    except Exception as e:
-        logger.exception('Error in delete credentials: ' + str(e))
-        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Could not delete the credentials.'})
-
-
-@time_it
-def details_flattened(tenant, datacenter):
-    """Get correlated Details view data
-
-    return: {
-        payload: list of dict/{}
-        status_code: string: 200/300
-        message: string
-    }
-    """
-
-    logger.info("Details view for tenant: {}".format(tenant))
-    try:
-        aci_consul_mappings = get_new_mapping(tenant, datacenter)
-
-        apic_data = get_apic_data(tenant)
-        consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
-
-        details_list = []
-        for each in merged_data:
-            ep = {
-                'interface': each.get('Interfaces'),
-                'endPointName': each.get('VM-Name'),
-                'ip': each.get('IP'),
-                'mac': each.get('CEP-Mac'),
-                'learningSource': each.get('learningSource'),
-                'hostingServer': each.get('hostingServerName'),
-                'reportingController': each.get('controllerName'),
-                'vrf': each.get('VRF'),
-                'bd': each.get('BD'),
-                'ap': each.get('AppProfile'),
-                'epgName': each.get('EPG'),
-                'epgHealth': int(each.get('epg_health')),
-                'consulNode': each.get('node_name'),
-                'nodeChecks': each.get('node_check'),
-            }
-
-            services = change_key(each.get('node_services'))
-            if not services:
-                services.append({
-                    'service': '',
-                    'serviceInstance': '',
-                    'port': '',
-                    'serviceTags': [],
-                    'serviceKind': '',
-                    'serviceNamespace': '',
-                    'serviceChecks': {}
-                })
-            for service in services:
-                record = {}
-                record.update(ep)
-                record.update(service)
-                details_list.append(record)
-        logger.debug("Details final data ended: " + str(details_list))
-
         return json.dumps({
-            "payload": details_list,
-            "status_code": "200",
-            "message": "OK"
+            'status_code': '200',
+            'message': 'OK'
         })
     except Exception as e:
-        logger.exception("Could not load the Details. Error: {}".format(str(e)))
+        logger.exception('Error in delete credentials: ' + str(e))
         return json.dumps({
-            "payload": {},
-            "status_code": "300",
-            "message": "Could not load the Details."
+            'payload': [],
+            'status_code': '300',
+            'message': 'Could not delete the credentials.'
         })
 
 
 @time_it
 def get_datacenters():
+    """Return list of datacenter with connection status
+
+    return: [{
+        datacenter: string: datacenter name
+        status:     boolean: True(Connected)/False(Disconnected)
+    }]
+    """
     logger.info('In get datacenters')
     datacenters = []
     try:
@@ -1465,13 +1637,33 @@ def get_datacenters():
                 )
 
         logger.info("Datacenters found: {}".format(str(datacenters)))
-        return json.dumps({'payload': datacenters, 'status_code': '200', 'message': 'OK'})
+        return json.dumps({
+            'payload': datacenters,
+            'status_code': '200',
+            'message': 'OK'
+        })
     except Exception as e:
         logger.exception('Error in get datacenters: ' + str(e))
-        return json.dumps({'payload': [], 'status_code': '300', 'message': 'Error in fetching datacenters.'})
+        return json.dumps({
+            'payload': [],
+            'status_code': '300',
+            'message': 'Error in fetching datacenters.'
+        })
 
 
 def post_tenant(tn):
+    """Put tenant in DB
+
+    This returns the tenant name when the app is opened first time.
+    This helps fetch tenant specific data
+
+    :tn: tenant name to be put into DB
+
+    return: {
+        status: 200/300
+        message: Ok/Tenant not saved
+    }
+    """
     logger.info('Tenant received: {}'.format(str(tn)))
     try:
         connection = db_obj.engine.connect()
@@ -1745,11 +1937,13 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
 def get_performance_dashboard(tn):
     """Function to get payload for performance dashboard
 
-    Args:
-        tn (str): Name of tenant
+    :tn: Name of tenant
 
-    Returns:
-        dict: Payload for performance dashboard
+    return: {
+        status: 200/300
+        payload: response/{}
+        message: message
+    }
     """
 
     try:
@@ -1784,10 +1978,18 @@ def get_performance_dashboard(tn):
         response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips)
         # Send the agents
 
-        return json.dumps({"status": "200", "payload": response, "message": "OK"})
+        return json.dumps({
+            "status": "200",
+            "payload": response,
+            "message": "OK"
+        })
     except Exception as e:
-        logger.exception("Exception occurred. \n Error: {}".format(e))
-        return json.dumps({"status": "300", "payload": {}, "message": "Could not load performance data"})
+        logger.exception("Exception occurred, Error: {}".format(e))
+        return json.dumps({
+            "status": "300",
+            "payload": {},
+            "message": "Could not load performance data"
+        })
 
 
 def get_epg_alias(dn):

@@ -28,6 +28,25 @@ STATIC_IP = get_conf_value('APIC', 'STATIC_IP')
 APIC_THREAD_POOL = int(get_conf_value('APIC', 'APIC_THREAD_POOL'))
 
 
+def create_cert_session():
+    """
+    Create user certificate and session.
+    """
+
+    cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
+    # static generated upon install
+    plugin_key_file = '/home/app/credentials/plugin.key'
+    pol_uni = PolUni('')
+    aaa_user_ep = AaaUserEp(pol_uni)
+    aaa_app_user = AaaAppUser(aaa_user_ep, cert_user)
+    aaa_user_cert = AaaUserCert(aaa_app_user, cert_user)
+
+    with open(plugin_key_file, "r") as file:
+        plugin_key = file.read()
+
+    return (aaa_user_cert, plugin_key)
+
+
 class AciUtils(object):
     __instance = None
 
@@ -94,25 +113,6 @@ class AciUtils(object):
         except Exception as e:
             logger.exception('Unable to connect with APIC. Exception: {}'.format(str(e)))
             self.apic_token = None
-
-    @staticmethod
-    def create_cert_session():
-        """
-        Create user certificate and session.
-        """
-
-        cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
-        # static generated upon install
-        plugin_key_file = '/home/app/credentials/plugin.key'
-        pol_uni = PolUni('')
-        aaa_user_ep = AaaUserEp(pol_uni)
-        aaa_app_user = AaaAppUser(aaa_user_ep, cert_user)
-        aaa_user_cert = AaaUserCert(aaa_app_user, cert_user)
-
-        with open(plugin_key_file, "r") as file:
-            plugin_key = file.read()
-
-        return (aaa_user_cert, plugin_key)
 
     @time_it
     def aci_get(self, url, retry=1):
@@ -685,6 +685,7 @@ class AciUtils(object):
                 response_json = self.aci_get(url)
                 if response_json and response_json.get("imdata"):
                     item_list = response_json.get("imdata")
+            # logger.debug("get mo returns: {}".format(str(item_list)))
             return item_list
         except Exception as ex:
             logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
