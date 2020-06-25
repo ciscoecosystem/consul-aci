@@ -5,6 +5,7 @@ import { Loader } from "blueprint-react"
 import TestComponent from './TestComponent.js';
 import { TREE_VIEW_QUERY_PAYLOAD, PROFILE_NAME, INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from "../../../../../constants.js"
 import 'react-toastify/dist/ReactToastify.css';
+import './style.css';
 var key = 0;
 
 function loadingBoxShow() {
