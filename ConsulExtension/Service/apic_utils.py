@@ -209,7 +209,6 @@ class AciUtils(object):
         data_list = []
         data = {}
         ep_attr = item.get('fvCEp').get('attributes')
-        ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
         data['dn'] = ep_attr.get('dn')
         data['learning_src'] = ep_attr.get("lcC")
         data['tenant'] = data['dn'].split('tn-')[1].split('/')[0]
@@ -218,11 +217,11 @@ class AciUtils(object):
         data['multi_cast_addr'] = ep_attr.get("mcastAddr")
         if data['multi_cast_addr'] == "not-applicable":
             data['multi_cast_addr'] = "---"
-
         ep_child_attr = item.get('fvCEp').get('children')
         ep_info = self.get_ep_info(ep_child_attr)
-        for ip_mac in ip_mac_list:
-            data['ip'] = ip_mac  # TODO: if mac, then add ''
+
+        for each in AciUtils.get_ip_mac_list(item):
+            data['ip'], data['is_cep'] = each # TODO: if mac, then add ''
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -605,23 +604,30 @@ class AciUtils(object):
         """
         is_cep = False
         is_ip_list = False
-        ip_set = set()
-        mac_set = set()
+        ip_set = []
+        is_cep_list = []
+        response = []
         for eachip in item.get('fvCEp').get('children'):
             # If first key is 'fvIp' than add IP to list otherwise add mac address
             if eachip.keys()[0] == 'fvIp':
                 is_ip_list = True
-                ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')).lower())
+                ip_set.append(str(eachip.get('fvIp').get('attributes').get('addr')).lower())
+                is_cep_list.append(is_cep)
 
         # Below if condition adds all valid ip and mac to the list
         cep_ip = str(item.get('fvCEp').get('attributes').get('ip')).lower()
-        if cep_ip != STATIC_IP and not is_ip_list:
+        if cep_ip != STATIC_IP:
             is_cep = True
-            ip_set.add(cep_ip)
+            ip_set.append(cep_ip)
+            is_cep_list.append(is_cep)
         elif not is_ip_list:
-            mac_set.add(item.get('fvCEp').get('attributes').get('mac').lower())
-
-        return (list(ip_set) + list(mac_set)), is_cep
+            ip_set.append(item.get('fvCEp').get('attributes').get('mac').lower())
+            is_cep_list.append(is_cep)
+        
+        for i, value in enumerate(ip_set):
+            if value not in ip_set[:i]:
+                response.append([value, is_cep_list[i]])
+        return response
 
     @time_it
     def get_ap_epg_faults(self, dn):

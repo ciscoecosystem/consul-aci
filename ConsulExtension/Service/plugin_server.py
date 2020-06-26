@@ -128,7 +128,6 @@ def get_new_mapping(tenant, datacenter):
         connection.close()
 
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
-        logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
         new_map_list = []
 
