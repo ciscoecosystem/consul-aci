@@ -1902,7 +1902,7 @@ def get_nodes_status(ep_ips):
     return nodes_res
 
 
-def get_service_endpoints(ep_ips, service_ips, node_ips):
+def get_service_endpoints(ep_ips, service_ips, node_ips, tn):
     """Function to return count of service and non service endpoint
 
         Args:
@@ -1924,11 +1924,22 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
         if each in ep_map.keys():
             ep_map[each] = ep_map[each] + 1
 
+    unmapped_eps = None
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        unmapped_eps = list(db_obj.select_disabled_eps(connection, tn))
+    connection.close()
+
+    logger.debug("Disabled eps in the mapping table {} ".format(str(unmapped_eps)))
+
+    total_service_count = 0
     total_service_count = 0
     if ep_map:
         total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
 
     response['service'] = total_service_count
+    total_service_count = total_service_count - len(unmapped_eps)
     response['non_service'] = len(ep_ips) - total_service_count
     return response
 
@@ -1975,7 +1986,7 @@ def get_performance_dashboard(tn):
         response['agents'] = get_agent_status()
         response['service'] = get_service_status(ep_ips)
         response['nodes'] = get_nodes_status(ep_ips)
-        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips)
+        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips, tn)
         # Send the agents
 
         return json.dumps({
