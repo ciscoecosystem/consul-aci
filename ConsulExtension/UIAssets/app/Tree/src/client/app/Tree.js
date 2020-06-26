@@ -377,7 +377,7 @@ export default class Tree extends React.Component {
     }
 
     return (
-      <div>
+      <div style={{height:"100%"}}>
         <div
           className={`rd3t-tree-container ${
             zoomable ? "rd3t-grabbable" : undefined
