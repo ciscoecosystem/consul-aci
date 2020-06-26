@@ -206,9 +206,7 @@ class AciUtils(object):
         Returns:
             dict -- Parsed EP data
         """
-        logger.info("item {}".format(str(item)))
         data_list = []
-        # ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
         data = {}
         ep_attr = item.get('fvCEp').get('attributes')
         data['dn'] = ep_attr.get('dn')
