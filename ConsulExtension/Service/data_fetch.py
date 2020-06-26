@@ -514,7 +514,7 @@ def data_fetch():
                 with connection.begin():
                     for ep in ep_data:
                         if ep[2] == tenant and (ep[0], ep[1]) not in ep_key:
-                            db_obj.delete_from_table(connection, db_obj.EP_TABLE_NAME, ep, {'mac': ep[0], 'ip': ep[1]})
+                            db_obj.delete_from_table(connection, db_obj.EP_TABLE_NAME, {'mac': ep[0], 'ip': ep[1]})
                 connection.close()
 
                 logger.info("Data update in EP Complete.")
@@ -555,7 +555,7 @@ def data_fetch():
                 with connection.begin():
                     for epg in epg_data:
                         if epg[1] == tenant and epg[0] not in epg_key:
-                            db_obj.delete_from_table(connection, db_obj.EPG_TABLE_NAME, epg, {'dn': epg[0]})
+                            db_obj.delete_from_table(connection, db_obj.EPG_TABLE_NAME, {'dn': epg[0]})
                 connection.close()
 
                 logger.info("Data update in EPG Complete.")
