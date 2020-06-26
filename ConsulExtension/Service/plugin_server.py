@@ -985,22 +985,38 @@ def get_subnets(dn):
     }
     """
     aci_util_obj = apic_utils.AciUtils()
-    subnet_query_string = "query-target=children&target-subtree-class=fvSubnet"
-    subnet_resp = aci_util_obj.get_mo_related_item(dn, subnet_query_string, "")
-    subnet_list = []
     try:
-        for subnet in subnet_resp:
-            subnet_dict = {
-                "ip": "",
-                "to_epg": "",
-                "epg_alias": ""
-            }
-            subnet_attr = subnet.get("fvSubnet").get("attributes")
-            dn = subnet_attr.get("dn")
-            subnet_dict["to_epg"] = get_to_epg(dn)
-            subnet_dict["ip"] = subnet_attr["ip"]
-            subnet_dict["epg_alias"] = get_epg_alias(dn.split('/subnet')[0])
-            subnet_list.append(subnet_dict)
+        epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + dn + \
+            '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
+        epg_traffic_resp = aci_util_obj.get_all_mo_instances("vzFromEPg", epg_traffic_query_string)
+        logger.debug("=Data returned by API call for to epg traffic {}".format(str(len(epg_traffic_resp))))
+
+        to_epg_set = set()
+
+        for epg_traffic in epg_traffic_resp:
+            to_epg_children = epg_traffic["vzFromEPg"]["children"]
+            for to_epg_child in to_epg_children:
+                vz_to_epg_child = to_epg_child["vzToEPg"]
+                to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
+                flt_attr_children = vz_to_epg_child["children"]
+                for flt_attr in flt_attr_children:
+                    to_epg_set.add(to_epg_dn)
+
+        subnet_list = []
+        for epg in to_epg_set:
+            subnet_resp = aci_util_obj.get_mo_related_item(epg, "query-target=children&target-subtree-class=fvSubnet", "")
+            for subnet in subnet_resp:
+                subnet_dict = {
+                    "ip": "",
+                    "to_epg": "",
+                    "epg_alias": ""
+                }
+                subnet_attr = subnet.get("fvSubnet").get("attributes")
+                dn = subnet_attr.get("dn")
+                subnet_dict["to_epg"] = get_to_epg(dn)
+                subnet_dict["ip"] = subnet_attr["ip"]
+                subnet_dict["epg_alias"] = get_epg_alias(dn.split('/subnet')[0])
+                subnet_list.append(subnet_dict)
 
         return json.dumps({
             "status_code": "200",
