@@ -570,18 +570,19 @@ class Database:
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
-    def select_from_table(self, connection, table_name, field_arg_dict={}):
+    def select_from_table(self, connection, table_name, field_arg_dict={}, required_fields=[]):
         try:
             select_query = None
             table_name = table_name.lower()
+            field_list = [self.table_key_meta[table_name][each.lower()] for each in required_fields]
             if field_arg_dict:
                 table_obj = self.table_obj_meta[table_name]
-                select_query = table_obj.select()
+                select_query = table_obj.select(field_list)
                 for key in field_arg_dict:
                     select_query = select_query.where(
                         self.table_key_meta[table_name][key] == field_arg_dict[key])
             else:
-                select_query = self.table_obj_meta[table_name].select()
+                select_query = self.table_obj_meta[table_name].select(field_list)
 
             if select_query is not None:
                 result = connection.execute(select_query)

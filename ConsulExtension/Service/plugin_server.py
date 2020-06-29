@@ -1957,7 +1957,8 @@ def get_service_endpoints(ep_ips, service_ips, node_ips, tn):
         unmapped_eps = [each[0] for each in db_obj.select_from_table(
             connection,
             db_obj.MAPPING_TABLE_NAME,
-            {'enabled': 1, 'tenant': tn}
+            {'enabled': 1, 'tenant': tn},
+            ['ip']
         )]
     connection.close()
 
@@ -2001,7 +2002,8 @@ def get_performance_dashboard(tn):
             temp_list = [each[0] for each in db_obj.select_from_table(
                 connection,
                 db_obj.MAPPING_TABLE_NAME,
-                {'enabled': 1, 'tenant': tn}
+                {'enabled': 1, 'tenant': tn},
+                ['ip']
             )]
 
         connection.close()
