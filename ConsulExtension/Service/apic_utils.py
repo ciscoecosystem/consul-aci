@@ -83,7 +83,7 @@ class AciUtils(object):
         Returns:
             auth_token -- Authentication token from Cisco APIC API
         """
-        user_cert, plugin_key = AciUtils.create_cert_session()
+        user_cert, plugin_key = create_cert_session()
         app_token_payload = {"aaaAppToken": {
             "attributes": {"appName": "CiscoHashiCorp_ConsulExtensionforACI"}}}
         data = json.dumps(app_token_payload)
@@ -221,7 +221,7 @@ class AciUtils(object):
         ep_info = self.get_ep_info(ep_child_attr)
 
         for each in AciUtils.get_ip_mac_list(item):
-            data['ip'], data['is_cep'] = each # TODO: if mac, then add ''
+            data['ip'], data['is_cep'] = each  # TODO: if mac, then add ''
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
