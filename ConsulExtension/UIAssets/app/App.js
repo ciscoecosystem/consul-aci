@@ -61,15 +61,17 @@ export default class App extends React.Component {
         this.readDcCall = this.readDcCall.bind(this);
         this.postTenant = this.postTenant.bind(this);
         this.handleAgent = this.handleAgent.bind(this);
-        this.handleMapping = this.handleMapping.bind(this)
+        this.handleMapping = this.handleMapping.bind(this);
         this.setSidebar = this.setSidebar.bind(this);
+        this.handlePollingIntervalPopUp = this.handlePollingIntervalPopUp.bind(this);
         this.state = {
             agentPopup: false,
+            pollingIntervalPopup: false,
             mappingDcname: undefined,
             mappingPopup: false,
             items: [
                 { label: AGENTS , action: this.handleAgent },
-                { label: "Polling interval", action: function () { console.log("polling interval") } }
+                { label: "Polling interval", action: this.handlePollingIntervalPopUp }
             ],
             details: [],
             tenantApiCallCnt: 2, // indicates no of time "PostTenant" api could be called.
@@ -251,6 +253,10 @@ export default class App extends React.Component {
         this.setState({ mappingPopup, mappingDcname  })
     }
 
+    handlePollingIntervalPopUp(pollingIntervalPopup = true){
+        this.setState({ pollingIntervalPopup })
+    }
+
     postTenant() {
         let thiss = this;
         let { tenantApiCallCnt } = this.state;
@@ -340,6 +346,7 @@ export default class App extends React.Component {
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
+                    
                     {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
                 </div >
             </Router>
