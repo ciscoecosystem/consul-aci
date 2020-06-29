@@ -488,6 +488,15 @@ class Database:
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
+    def select_eps_from_mapping(self, connection, tn, is_enabled):
+        try:
+            result = connection.execute(
+                "Select ip from mapping where enabled=" + str(is_enabled) + " and tenant='" + tn + "'")
+            return result
+        except Exception as e:
+            logger.exception("Exception in selecting data from {} Error:{}".format(self.MAPPING_TABLE_NAME, str(e)))
+        return None
+
     def select_from_ep_with_tenant(self, connection, tn):
         try:
             table_obj = self.table_obj_meta[self.EP_TABLE_NAME]
