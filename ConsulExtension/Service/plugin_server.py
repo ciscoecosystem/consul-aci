@@ -61,7 +61,11 @@ def get_new_mapping(tenant, datacenter):
         # Get APIC data
         connection = db_obj.engine.connect()
         with connection.begin():
-            ep_data = list(db_obj.select_from_ep_with_tenant(connection, tenant))
+            ep_data = list(db_obj.select_from_table(
+                connection,
+                db_obj.EP_TABLE_NAME,
+                {'tenant': tenant}
+            ))
         connection.close()
 
         parsed_eps = []
@@ -1950,7 +1954,11 @@ def get_service_endpoints(ep_ips, service_ips, node_ips, tn):
 
     connection = db_obj.engine.connect()
     with connection.begin():
-        unmapped_eps = list(db_obj.select_eps_from_mapping(connection, tn, 0))
+        unmapped_eps = [each[0] for each in db_obj.select_from_table(
+            connection,
+            db_obj.MAPPING_TABLE_NAME,
+            {'enabled': 0}
+        )]
     connection.close()
 
     logger.debug("Disabled eps in the mapping table {} ".format(str(unmapped_eps)))
@@ -1990,7 +1998,12 @@ def get_performance_dashboard(tn):
             eps = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
             services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
             nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-            temp_list = list(db_obj.select_eps_from_mapping(connection, tn, 1))
+            temp_list = [each[0] for each in db_obj.select_from_table(
+                connection,
+                db_obj.MAPPING_TABLE_NAME,
+                {'enabled': 1}
+            )]
+
         connection.close()
 
         ep_ips = set()
