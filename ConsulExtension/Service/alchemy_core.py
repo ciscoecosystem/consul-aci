@@ -2,12 +2,18 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
 from datetime import datetime
 from sqlalchemy.sql import select
+from sqlalchemy.interfaces import PoolListener
 
 from custom_logger import CustomLogger
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
 DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
+
+
+class MyListener(PoolListener):
+    def connect(self, dbapi_con, con_record):
+        dbapi_con.execute('pragma journal_mode=WAL')
 
 
 class Database:
@@ -144,6 +150,7 @@ class Database:
             'vrf',
             'epg_health',
             'app_profile',
+            'epg_alias',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -157,8 +164,7 @@ class Database:
 
     def __init__(self):
         try:
-            self.engine = create_engine(DATABASE_NAME)
-            self.conn = self.engine.connect()
+            self.engine = create_engine(DATABASE_NAME, listeners=[MyListener()])
             self.table_obj_meta = dict()
             self.table_pkey_meta = dict()
         except Exception as e:
@@ -287,9 +293,10 @@ class Database:
             Column('EPG', String),
             Column('BD', String),
             Column('contracts', PickleType),
-            Column('VRF', String),
+            Column('vrf', String),
             Column('epg_health', String),
             Column('app_profile', String),
+            Column('epg_alias', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -391,7 +398,7 @@ class Database:
             Column('EPG', String),
             Column('BD', String),
             Column('contracts', PickleType),
-            Column('VRF', String),
+            Column('vrf', String),
             Column('epg_health', String),
             Column('app_profile', String),
             Column('created_ts', DateTime),
@@ -466,7 +473,7 @@ class Database:
             logger.exception("Exception in {} Error:{}".format(
                 'create_tables()', str(e)))
 
-    def insert_into_table(self, table_name, field_values):
+    def insert_into_table(self, connection, table_name, field_values):
         field_values = list(field_values)
         try:
             ins = None
@@ -474,25 +481,34 @@ class Database:
             field_values.append(datetime.now())
             ins = self.table_obj_meta[table_name].insert().values(field_values)
             if ins is not None:
-                self.conn.execute(ins)
+                connection.execute(ins)
                 return True
         except Exception as e:
             logger.exception(
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
-    def select_from_ep_with_tenant(self, tn):
+    def select_eps_from_mapping(self, connection, tn, is_enabled):
+        try:
+            result = connection.execute(
+                "Select ip from mapping where enabled=" + str(is_enabled) + " and tenant='" + tn + "'")
+            return result
+        except Exception as e:
+            logger.exception("Exception in selecting data from {} Error:{}".format(self.MAPPING_TABLE_NAME, str(e)))
+        return None
+
+    def select_from_ep_with_tenant(self, connection, tn):
         try:
             table_obj = self.table_obj_meta[self.EP_TABLE_NAME]
             select_query = table_obj.select()
             select_query = select_query.where(('tenant' == tn))
-            result = self.conn.execute("Select * from ep where tenant='" + tn + "'")
+            result = connection.execute("Select * from ep where tenant='" + tn + "'")
             return result
         except Exception as e:
             logger.exception("Exception in selecting data from {} Error:{}".format(self.EP_TABLE_NAME, str(e)))
         return None
 
-    def select_from_table(self, table_name, primary_key={}):
+    def select_from_table(self, connection, table_name, primary_key={}):
         try:
             select_query = None
             table_name = table_name.lower()
@@ -506,13 +522,13 @@ class Database:
                 select_query = self.table_obj_meta[table_name].select()
 
             if select_query is not None:
-                result = self.conn.execute(select_query)
-                return result
+                result = connection.execute(select_query)
+                return result.fetchall()
         except Exception as e:
             logger.exception("Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
 
-    def update_in_table(self, table_name, primary_key, new_record_dict):
+    def update_in_table(self, connection, table_name, primary_key, new_record_dict):
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
@@ -522,14 +538,14 @@ class Database:
                 update_query = update_query.where(
                     self.table_pkey_meta[table_name][key] == primary_key[key])
             update_query = update_query.values(new_record_dict)
-            self.conn.execute(update_query)
+            connection.execute(update_query)
             return True
         except Exception as e:
             logger.exception(
                 "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
 
-    def delete_from_table(self, table_name, primary_key={}):
+    def delete_from_table(self, connection, table_name, primary_key={}):
         try:
             table_name = table_name.lower()
             if primary_key:
@@ -540,20 +556,20 @@ class Database:
                         self.table_pkey_meta[table_name][key] == primary_key[key])
             else:
                 delete_query = self.table_obj_meta[table_name].delete()
-            self.conn.execute(delete_query)
+            connection.execute(delete_query)
             return True
         except Exception as e:
             logger.exception(
                 "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
 
-    def insert_and_update(self, table_name, new_record, primary_key={}):
+    def insert_and_update(self, connection, table_name, new_record, primary_key={}):
         table_name = table_name.lower()
         if primary_key:
-            old_data = self.select_from_table(table_name, primary_key)
-            if old_data:
-                old_data = old_data.fetchone()
-                if old_data:
+            old_data = self.select_from_table(connection, table_name, primary_key)
+            if old_data != None:
+                if len(old_data) > 0:
+                    old_data = old_data[0]
                     new_record_dict = dict()
                     index = []
                     for i in range(len(new_record)):
@@ -567,13 +583,13 @@ class Database:
 
                     if new_record_dict:
                         new_record_dict['updated_ts'] = datetime.now()
-                    self.update_in_table(table_name, primary_key, new_record_dict)
+                    self.update_in_table(connection, table_name, primary_key, new_record_dict)
                 else:
-                    self.insert_into_table(table_name, new_record)
+                    self.insert_into_table(connection, table_name, new_record)
             else:
                 return False
         else:
-            self.insert_into_table(table_name, new_record)
+            self.insert_into_table(connection, table_name, new_record)
         return True
 
     def get_join_obj(self, table_name1, table_name2, datacenter=None):
@@ -592,7 +608,7 @@ class Database:
                 "Exception in joining tables: {} & {}, Error: {}".format(table_name1, table_name2, str(e)))
         return None
 
-    def join(self, datacenter=None, tenant=None):
+    def join(self, connection, datacenter=None, tenant=None):
         try:
             if datacenter:
                 obj1 = self.get_join_obj("node", "nodechecks", datacenter)
@@ -602,7 +618,7 @@ class Database:
             elif tenant:
                 join_obj = self.get_join_obj("ep", "epg")
                 smt = select([self.ep, self.epg]).select_from(join_obj)
-            result = self.conn.execute(smt)
+            result = connection.execute(smt)
             return result
         except Exception as e:
             logger.exception(
@@ -613,7 +629,7 @@ class Database:
         if result is None:
             return []
         return_list = []
-        for each in result.fetchall():
+        for each in result:
             return_list.append({
                 'node_id': each[0],
                 'node_name': each[1],

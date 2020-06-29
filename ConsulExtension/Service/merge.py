@@ -86,14 +86,14 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if (aci['IP'], aci['CEP-Mac'], aci['dn']) in merged_eps:
                 continue
             else:
-                if aci['EPG'] not in non_merged_ep_dict:
-                    non_merged_ep_dict[aci['EPG']] = {aci['CEP-Mac']: str(aci['IP'])}
+                if aci['dn'] not in non_merged_ep_dict:
+                    non_merged_ep_dict[aci['dn']] = {aci['CEP-Mac']: str(aci['IP'])}
 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']].keys() and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
-                    multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']] + ", " + str(aci['IP'])
-                    non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci['dn']].keys() and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['dn']][aci['CEP-Mac']]:
+                    multipleips = non_merged_ep_dict[aci['dn']][aci['CEP-Mac']] + ", " + str(aci['IP'])
+                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: multipleips})
                 else:
-                    non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: str(aci['IP'])})
 
         final_non_merged = {}
         if non_merged_ep_dict:
@@ -115,7 +115,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 for each in merge_list:
                     if key == each['EPG']:
                         each['fraction'] = value
-                        each['Non_IPs'] = final_non_merged.get(key, {})
+                        each['Non_IPs'] = final_non_merged.get(each['dn'], {})
                         updated_merged_list.append(each)
 
         final_list = []
