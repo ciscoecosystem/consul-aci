@@ -180,7 +180,7 @@ class OperationalViewComponent extends React.Component {
                 </div>
             </div>
             {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName} isDeleted={isDeleted}/> : 
-                <div style={{height:"84vh" }}>
+                <div style={{height:"90vh" }}>
                     <FrameComponent toLocation={toLocation} />
                 </div>}
 
