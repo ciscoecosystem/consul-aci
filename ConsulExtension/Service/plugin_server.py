@@ -1878,7 +1878,14 @@ def get_service_status(ep_ips):
         logger.info("Service check is empty")
         return service_res
     for service in services:
-        service_ip = service[5].split(':')[0]
+        service_ip = service[5].split(':')
+        if len(service_ip) > 2:
+            del service_ip[len(service_ip) - 1]
+            service_ip = ':'.join(service_ip)
+        else:
+            service_ip = service[5].split(':')[0]
+        logger.debug("service_ip {} ".format(service_ip))
+
         for service_check in service_checks:
             if service[0] == service_check[1] and service_ip in ep_ips and service_check[7].lower():
                 service_res[service_check[7].lower()] += 1
@@ -1917,7 +1924,7 @@ def get_nodes_status(ep_ips):
     return nodes_res
 
 
-def get_service_endpoints(ep_ips, service_ips, node_ips):
+def get_service_endpoints(ep_ips, service_ips, node_ips, tn):
     """Function to return count of service and non service endpoint
 
         Args:
@@ -1939,11 +1946,25 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
         if each in ep_map.keys():
             ep_map[each] = ep_map[each] + 1
 
+    unmapped_eps = None
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        unmapped_eps = list(db_obj.select_eps_from_mapping(connection, tn, 0))
+    connection.close()
+
+    logger.debug("Disabled eps in the mapping table {} ".format(str(unmapped_eps)))
+
+    unmapped_eps_set = set()
+    for ip in unmapped_eps:
+        unmapped_eps_set.add(ip[0])
+
     total_service_count = 0
     if ep_map:
         total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
 
     response['service'] = total_service_count
+    total_service_count = total_service_count - len(unmapped_eps_set)
     response['non_service'] = len(ep_ips) - total_service_count
     return response
 
@@ -1969,9 +1990,11 @@ def get_performance_dashboard(tn):
             eps = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
             services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
             nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+            temp_list = list(db_obj.select_eps_from_mapping(connection, tn, 1))
         connection.close()
 
         ep_ips = set()
+        mapped_eps = set()
         service_ips = []
         node_ips = []
         for ep in eps:
@@ -1987,10 +2010,13 @@ def get_performance_dashboard(tn):
                 for ip in node[2]:
                     node_ips.append(ip)
 
+        for ip in temp_list:
+            mapped_eps.add(ip[0])
+
         response['agents'] = get_agent_status()
-        response['service'] = get_service_status(ep_ips)
-        response['nodes'] = get_nodes_status(ep_ips)
-        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips)
+        response['service'] = get_service_status(mapped_eps)
+        response['nodes'] = get_nodes_status(mapped_eps)
+        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips, tn)
         # Send the agents
 
         return json.dumps({
