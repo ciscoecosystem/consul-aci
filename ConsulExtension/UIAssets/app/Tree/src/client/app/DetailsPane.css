@@ -19,11 +19,6 @@
   border: 1px solid #dbdada
 }
 
-@-moz-document url-prefix() {
-  .overlay-pane {
-    scrollbar-width: none;
-  }
-}
 
 .overlay-content {
   position: relative;

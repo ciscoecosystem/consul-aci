@@ -60,7 +60,7 @@ export default class DetailePage extends Component {
   }
   getMacList() {
     if (this.state.data.type === "grey") {
-      return Object.keys(this.state.data.attributes) || ""
+      return Object.keys(this.state.data.attributes)
     }
     else {
       return this.state.data.attributes.Mac || ""
