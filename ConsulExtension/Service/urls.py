@@ -19,7 +19,7 @@ FETCH_EPG_DATA_URL      = '{0}?query-target-filter=wcard(fvCEp.dn, "tn-{1}")'
 
 FETCH_BD_URL            = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsBd'
 FETCH_VRF_URL           = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsCtx'
-FETCH_CONTRACT_URL      = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsCons,fvRsProv,fvRsConsIf,fvRsProtBy,fvRsConsIf'
+FETCH_CONTRACT_URL      = '{0}{1}/api/node/mo/{2}.json?query-target=children&target-subtree-class=fvRsCons,fvRsProv,fvRsConsIf,fvRsProtBy,fvRsIntraEpg'
 
 CHECK_UNICAST_URL       = '{0}{1}/api/node/class/fvBD.json?query-target-filter=eq(fvBD.name,"{2}")'
 FETCH_EP_MAC_URL        = '{0}{1}/api/node/class/fvCEp.json?query-target-filter=eq(fvCEp.mac,"{2}")'

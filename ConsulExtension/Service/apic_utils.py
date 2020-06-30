@@ -492,7 +492,7 @@ class AciUtils(object):
             contract_list = []
             mapping_dict = {
                 'fvRsCons': "Consumer",
-                'fvRsIntraEpg': "IntraEpg",
+                'fvRsIntraEpg': "Intra EPG",
                 'fvRsProv': "Provider",
                 'fvRsConsIf': "Consumer Interface",
                 'fvRsProtBy': "Taboo"

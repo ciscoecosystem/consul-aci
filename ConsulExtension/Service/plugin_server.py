@@ -1057,7 +1057,7 @@ def get_to_epg_traffic(epg_dn):
     try:
         for epg_traffic in epg_traffic_resp:
             to_epg_children = epg_traffic["vzFromEPg"]["children"]
-            type_mapping = {'prov': "Provider", 'cons': "Consumer"}
+            type_mapping = {'prov': "Provider", 'cons': "Consumer", 'intra': "Intra EPG"}
             contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
             contract_type = type_mapping.get(contract_type, contract_type)
             for to_epg_child in to_epg_children:
