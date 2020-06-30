@@ -567,7 +567,7 @@ class Database:
         table_name = table_name.lower()
         if primary_key:
             old_data = self.select_from_table(connection, table_name, primary_key)
-            if not old_data:
+            if old_data:
                 if len(old_data) > 0:
                     old_data = old_data[0]
                     new_record_dict = dict()

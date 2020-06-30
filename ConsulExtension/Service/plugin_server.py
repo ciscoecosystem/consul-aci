@@ -1855,11 +1855,11 @@ def get_agent_status(datacenter=""):
     return agents_res
 
 
-def add_check(add_check, to_check):
+def add_check(add_check, add_to):
     """Adds consul checks"""
 
     for status, check_value in add_check.iteritems():
-        to_check[status] += check_value
+        add_to[status] += check_value
 
 
 @time_it
@@ -1884,16 +1884,17 @@ def get_performance_dashboard(tn):
             ep_len = len(list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)))
         connection.close()
 
-        mapped_ep = []
+        mapped_ep = {}
         for map in mappings:
             if map[3] is True and map[8] == tn:
                 dc = map[2]
-                if dc in mapped_ep:
-                    mapped_ep[dc].append({
-                        'ip': map[0],
-                        'dn': map[1],
-                        'enabled': map[3]
-                    })
+                if dc not in mapped_ep:
+                    mapped_ep[dc] = []
+                mapped_ep[dc].append({
+                    'ip': map[0],
+                    'dn': map[1],
+                    'enabled': map[3]
+                })
 
         apic_data = get_apic_data(tn)
         ep_res = {'service': 0, 'non_service': 0}
@@ -1913,13 +1914,14 @@ def get_performance_dashboard(tn):
                     ep_res['service'] += 1
 
                 if ep['node_ips'][0] not in node_ip_list:
-                    nodes_res = add_check(ep['node_check'], nodes_res)
                     node_ip_list.append(ep['node_ips'][0])
+                    add_check(ep['node_check'], nodes_res)
 
                 for service in ep['node_services']:
                     if service['service_address'] not in service_addr_list:
-                        service_res = add_check(service['service_checks'], service_res)
                         service_addr_list.append(service['service_address'])
+                        add_check(service['service_checks'], service_res)
+
         ep_res['non_service'] = ep_len - ep_res['service']
 
         response['agents'] = get_agent_status()
