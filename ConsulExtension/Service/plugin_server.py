@@ -77,6 +77,7 @@ def get_new_mapping(tenant, datacenter):
                 }
             )
 
+        apic_data = get_apic_data(tenant)
         # Get consul data
         consul_data = get_consul_data(datacenter)
         ip_list = []
@@ -89,7 +90,7 @@ def get_new_mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommended_eps(
-            list(set(ip_list)), parsed_eps)
+            list(set(ip_list)), parsed_eps, apic_data)
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
@@ -106,7 +107,7 @@ def get_new_mapping(tenant, datacenter):
                     'enabled': entry.get('recommended')  # Initially only the recommended are true
                 })
 
-        apic_data = get_apic_data(tenant)
+
         for mapped_obj in current_mapping:
             for ep in apic_data:
                 if ep.get('dn') == mapped_obj.get('dn'):
