@@ -1054,14 +1054,21 @@ def get_to_epg_traffic(epg_dn):
     try:
         for epg_traffic in epg_traffic_resp:
             to_epg_children = epg_traffic["vzFromEPg"]["children"]
-            type_mapping = {'prov': "Provider", 'cons': "Consumer", 'intra': "Intra EPG"}
-            contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
-            contract_type = type_mapping.get(contract_type, contract_type)
             for to_epg_child in to_epg_children:
 
                 vz_to_epg_child = to_epg_child["vzToEPg"]
                 to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
                 parsed_to_epg_dn = get_to_epg(to_epg_dn)
+                def_dn = vz_to_epg_child["attributes"]["epgDefDn"]
+                contract_type = ""
+                if re.search("/cons-", def_dn):
+                    contract_type = "Consumer"
+                elif re.search("/prov-", def_dn):
+                    contract_type = "Provider"
+                elif re.search("/intra-", def_dn):
+                    contract_type = "Intra EPG"
+                else:
+                    logger.error("Contract type not prov/cons/intra")
 
                 flt_attr_children = vz_to_epg_child["children"]
                 for flt_attr in flt_attr_children:
