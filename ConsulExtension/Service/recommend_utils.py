@@ -45,6 +45,7 @@ def sort_eps(each):
     else:
         return each['mac']
 
+
 def extract_vrf(apic_data):
     vrf_dict = {}
     for each in apic_data:
@@ -60,8 +61,8 @@ def extract_vrf(apic_data):
 
     return vrf_dict
 
+
 def search_ep_in_apic(apic_data, search_param):
-    # logger.debug(' ============= kwargs ========= {} '.format(search_param))
     for each in apic_data:
         flag = False
         for key, val in search_param.items():
