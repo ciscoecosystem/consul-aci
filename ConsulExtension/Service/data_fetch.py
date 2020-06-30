@@ -229,7 +229,9 @@ def data_fetch():
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for node_id, node_val in nodes_dict.items():
-                        db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME,
+                        db_obj.insert_and_update(
+                            connection,
+                            db_obj.NODE_TABLE_NAME,
                             (
                                 node_val.get('node_id'),
                                 node_val.get('node_name'),
@@ -263,7 +265,7 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and node[0] not in nodes_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.NODE_TABLE_NAME,{'node_id': node[0]})
+                                    db_obj.delete_from_table(connection, db_obj.NODE_TABLE_NAME, {'node_id': node[0]})
                                 elif len(agents) > 1:
                                     node[4].remove(agent)
                                     db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
@@ -285,7 +287,9 @@ def data_fetch():
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for node in node_checks_dict.values():
-                        db_obj.insert_and_update(connection, db_obj.NODECHECKS_TABLE_NAME,
+                        db_obj.insert_and_update(
+                            connection,
+                            db_obj.NODECHECKS_TABLE_NAME,
                             (
                                 node.get('CheckID'),
                                 node.get('node_id'),
@@ -320,7 +324,7 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and (node[0], node[1]) not in node_checks_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.NODECHECKS_TABLE_NAME,{'check_id': node[0], 'node_id': node[1]})
+                                    db_obj.delete_from_table(connection, db_obj.NODECHECKS_TABLE_NAME, {'check_id': node[0], 'node_id': node[1]})
                                 elif len(agents) > 1:
                                     node[9].remove(agent)
                                     db_obj.insert_and_update(connection, db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
@@ -431,10 +435,10 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and (service[0], service[1]) not in service_checks_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0], 'service_id': service[1]})
                                 elif len(agents) > 1:
                                     service[8].remove(agent)
-                                    db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0],'service_id': service[1]})
+                                    db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
                 connection.close()
 
                 logger.info("Data update in Service Checks Complete.")
