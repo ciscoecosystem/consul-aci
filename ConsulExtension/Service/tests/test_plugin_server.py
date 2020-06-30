@@ -38,5 +38,5 @@ def test_get_new_mapping(case):
 
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
     original_mapping = get_data('{}.json'.format(case))
-
+    os.remove('./ConsulDatabase.db')
     assert new_mapping == original_mapping
