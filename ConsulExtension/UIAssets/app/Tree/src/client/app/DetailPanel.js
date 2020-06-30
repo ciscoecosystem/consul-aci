@@ -65,9 +65,8 @@ export default function DetailPanel(props) {
     { name: "VRF", label: "vrf" },
     { name: "BD", label: "bd" }]
 
-    let constractInfoOrder = [];
-    {summaryDetail.attributes && summaryDetail.attributes.Contracts && Object.keys(summaryDetail.attributes.Contracts).map((item)=>(constractInfoOrder.push({name: item, label: item})))} // add key, value pair from data coming from backend.
-
+    let constractInfoOrder = [{ name: "Consumer", label: "consumer" },
+    { name: "Provider", label: "Provider" }]
 
     let consulNodeOrder = [{ name: "Node", label: "node" },
     { name: "Node Checks", label: "Node Checks" },
@@ -103,6 +102,7 @@ export default function DetailPanel(props) {
             return infoOrder.map(function (elem) {
                 let { name, label } = elem
                 let detailValue = showDetails[name];
+
                 if (name === "nodeChecks" || name === "serviceChecks" || name === "Node Checks" || name === "Service Checks") {
                     let { formattedData, totalCnt } = formateDataToChartData(showDetails[name])
                     detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
