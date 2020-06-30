@@ -1,5 +1,5 @@
 import json
-import plugin_server
+from Service import plugin_server
 import os
 import pytest
 
