@@ -623,7 +623,7 @@ class AciUtils(object):
         elif not is_ip_list:
             ip_set.append(item.get('fvCEp').get('attributes').get('mac').lower())
             is_cep_list.append(is_cep)
-        
+
         for i, value in enumerate(ip_set):
             if value not in ip_set[:i]:
                 response.append([value, is_cep_list[i]])
