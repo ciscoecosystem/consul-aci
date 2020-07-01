@@ -1888,21 +1888,20 @@ def get_performance_dashboard(tn):
 
         connection = db_obj.engine.connect()
         with connection.begin():
-            mappings = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
             ep_len = len(list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)))
         connection.close()
 
         mapped_ep = {}
-        for map in mappings:
-            if map[3] is True and map[8] == tn:
-                dc = map[2]
-                if dc not in mapped_ep:
-                    mapped_ep[dc] = []
-                mapped_ep[dc].append({
-                    'ip': map[0],
-                    'dn': map[1],
-                    'enabled': map[3]
-                })
+        datacenters = json.loads(get_datacenters())['payload']
+        for dc in datacenters:
+            datacenter = dc['datacenter']
+            if datacenter not in mapped_ep:
+                mapped_ep[datacenter] = []
+
+        for dc in mapped_ep:
+            mapped_dc = get_new_mapping(tn, dc)
+            for map in mapped_dc:
+                mapped_ep[dc].append(map)
 
         apic_data = get_apic_data(tn)
         ep_res = {'service': 0, 'non_service': 0}
