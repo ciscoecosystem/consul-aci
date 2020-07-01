@@ -126,7 +126,7 @@ def consul_tree_dict(data):
                         if service['service_ip']:
                             service_address = str(service['service_ip']) + ':' + str(service['service_port'])
                         else:
-                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port'])  # for now 0th is taken, will change
+                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port'])
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
@@ -187,7 +187,6 @@ def consul_tree_dict(data):
                         # UI only 1 is shown with ellipsis
                         if not epg_dict['label']:
                             epg_dict['label'] = service['service_id'] + ', ...'
-
 
                         # Add service checks to EPG checks, only if
                         # the check for that service has not been

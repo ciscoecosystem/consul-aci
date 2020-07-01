@@ -14,8 +14,6 @@ import apic_utils
 import alchemy_core
 import custom_logger
 
-import functools
-
 
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
@@ -79,6 +77,7 @@ def get_new_mapping(tenant, datacenter):
                 }
             )
 
+        apic_data = get_apic_data(tenant)
         # Get consul data
         consul_data = get_consul_data(datacenter)
         ip_list = []
@@ -91,7 +90,7 @@ def get_new_mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommended_eps(
-            list(set(ip_list)), parsed_eps)
+            list(set(ip_list)), parsed_eps, apic_data)
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
@@ -108,7 +107,7 @@ def get_new_mapping(tenant, datacenter):
                     'enabled': entry.get('recommended')  # Initially only the recommended are true
                 })
 
-        apic_data = get_apic_data(tenant)
+
         for mapped_obj in current_mapping:
             for ep in apic_data:
                 if ep.get('dn') == mapped_obj.get('dn'):
@@ -531,7 +530,7 @@ def get_multi_service_check(service_list, datacenter):
         connection = db_obj.engine.connect()
         with connection.begin():
             service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
-        connection.close()        
+        connection.close()
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
@@ -1056,14 +1055,21 @@ def get_to_epg_traffic(epg_dn):
     try:
         for epg_traffic in epg_traffic_resp:
             to_epg_children = epg_traffic["vzFromEPg"]["children"]
-            type_mapping = {'prov': "Provider", 'cons': "Consumer"}
-            contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
-            contract_type = type_mapping.get(contract_type, contract_type)
             for to_epg_child in to_epg_children:
 
                 vz_to_epg_child = to_epg_child["vzToEPg"]
                 to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
                 parsed_to_epg_dn = get_to_epg(to_epg_dn)
+                def_dn = vz_to_epg_child["attributes"]["epgDefDn"]
+                contract_type = ""
+                if re.search("/cons-", def_dn):
+                    contract_type = "Consumer"
+                elif re.search("/prov-", def_dn):
+                    contract_type = "Provider"
+                elif re.search("/intra-", def_dn):
+                    contract_type = "Intra EPG"
+                else:
+                    logger.error("Contract type not prov/cons/intra")
 
                 flt_attr_children = vz_to_epg_child["children"]
                 for flt_attr in flt_attr_children:
@@ -1431,7 +1437,7 @@ def update_creds(update_input):
                 with connection.begin():
                     db_obj.insert_and_update(
                         connection,
-                        db_obj.LOGIN_TABLE_NAME, 
+                        db_obj.LOGIN_TABLE_NAME,
                         [
                             new_agent.get('ip'),
                             new_agent.get('port'),
@@ -1439,7 +1445,7 @@ def update_creds(update_input):
                             new_agent.get('token'),
                             new_agent.get('status'),
                             new_agent.get('datacenter')
-                        ], 
+                        ],
                         {
                             'agent_ip': old_agent.get('ip'),
                             'port': old_agent.get('port')
@@ -1591,7 +1597,7 @@ def delete_creds(agent_data):
                 if agent_addr not in agents:
                     continue
                 if len(agents) == 1:
-                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0], 'service_id': service[1]})
                 else:
                     service[8].remove(agent_addr)
                     db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
@@ -1857,116 +1863,11 @@ def get_agent_status(datacenter=""):
     return agents_res
 
 
-def get_service_status(ep_ips):
-    """Function to get status of service
+def add_check(add_check, add_to):
+    """Adds consul checks"""
 
-    Args:
-        ep_ips (set): Set of EP IPs
-
-    Returns:
-        dict: Dictionary with count of passing, warning and critical services
-    """
-    service_res = {'passing': 0, 'warning':0, 'failing':0}
-
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-        service_checks = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
-    connection.close()
-
-    if not service_checks:
-        logger.info("Service check is empty")
-        return service_res
-    for service in services:
-        service_ip = service[5].split(':')
-        if len(service_ip) > 2:
-            del service_ip[len(service_ip) - 1]
-            service_ip = ':'.join(service_ip)
-        else:
-            service_ip = service[5].split(':')[0]
-        logger.debug("service_ip {} ".format(service_ip))
-
-        for service_check in service_checks:
-            if service[0] == service_check[1] and service_ip in ep_ips and service_check[7].lower():
-                service_res[service_check[7].lower()] += 1
-                break
-
-    return service_res
-
-
-def get_nodes_status(ep_ips):
-    """Function to get status of nodes
-
-    Args:
-        ep_ips (set): Set of EP ips
-
-    Returns:
-        dict: Dictionary with count of passing, warning and critical nodes
-    """
-    nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-        node_checks = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
-    connection.close()
-
-    if not node_checks:
-        logger.info("Node check is empty")
-        return nodes_res
-
-    for node in nodes:
-        for node_ip in node[2]:
-            for node_check in node_checks:
-                if node[0] == node_check[1] and node_ip in ep_ips and node_check[8].lower():
-                    nodes_res[node_check[8].lower()] += 1
-                    break
-    return nodes_res
-
-
-def get_service_endpoints(ep_ips, service_ips, node_ips, tn):
-    """Function to return count of service and non service endpoint
-
-        Args:
-            ep_ips (set): Set of EP IPS
-            service_ips (set): Set of Service IPS
-            node_ips (set): Set og node_ips
-
-        Returns:
-            dict: Count of service and non service endpoint
-        """
-    response = {'service': 0, 'non_service': 0}
-    consul_ips = list(set(service_ips) | set(node_ips))
-    ep_map = {}
-    for each in consul_ips:
-        if each in ep_ips:
-            ep_map[each] = 0
-
-    for each in ep_ips:
-        if each in ep_map.keys():
-            ep_map[each] = ep_map[each] + 1
-
-    unmapped_eps = None
-
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        unmapped_eps = list(db_obj.select_eps_from_mapping(connection, tn, 0))
-    connection.close()
-
-    logger.debug("Disabled eps in the mapping table {} ".format(str(unmapped_eps)))
-
-    unmapped_eps_set = set()
-    for ip in unmapped_eps:
-        unmapped_eps_set.add(ip[0])
-
-    total_service_count = 0
-    if ep_map:
-        total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
-
-    response['service'] = total_service_count
-    total_service_count = total_service_count - len(unmapped_eps_set)
-    response['non_service'] = len(ep_ips) - total_service_count
-    return response
+    for status, check_value in add_check.iteritems():
+        add_to[status] += check_value
 
 
 @time_it
@@ -1987,37 +1888,53 @@ def get_performance_dashboard(tn):
 
         connection = db_obj.engine.connect()
         with connection.begin():
-            eps = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
-            services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-            nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-            temp_list = list(db_obj.select_eps_from_mapping(connection, tn, 1))
+            ep_len = len(list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)))
         connection.close()
 
-        ep_ips = set()
-        mapped_eps = set()
-        service_ips = []
-        node_ips = []
-        for ep in eps:
-            if ep[1] and ep[2] == tn:
-                ep_ips.add(ep[1])
+        mapped_ep = {}
+        datacenters = json.loads(get_datacenters())['payload']
+        for dc in datacenters:
+            datacenter = dc['datacenter']
+            if datacenter not in mapped_ep:
+                mapped_ep[datacenter] = []
 
-        for service in services:
-            if service[3]:
-                service_ips.append(service[3])
+        for dc in mapped_ep:
+            mapped_dc = get_new_mapping(tn, dc)
+            for map in mapped_dc:
+                mapped_ep[dc].append(map)
 
-        for node in nodes:
-            if node[2]:
-                for ip in node[2]:
-                    node_ips.append(ip)
+        apic_data = get_apic_data(tn)
+        ep_res = {'service': 0, 'non_service': 0}
+        service_res = {'passing': 0, 'warning': 0, 'failing': 0}
+        nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
+        ep_list = []
+        node_ip_list = []
+        service_addr_list = []
+        for dc in mapped_ep:
+            consul_data = get_consul_data(dc)
+            merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])
 
-        for ip in temp_list:
-            mapped_eps.add(ip[0])
+            for ep in merged_data:
+                # Add service eps to ep_resp
+                if (ep['IP'], ep['dn']) not in ep_list:
+                    ep_list.append((ep['IP'], ep['dn']))
+                    ep_res['service'] += 1
+
+                if ep['node_ips'][0] not in node_ip_list:
+                    node_ip_list.append(ep['node_ips'][0])
+                    add_check(ep['node_check'], nodes_res)
+
+                for service in ep['node_services']:
+                    if service['service_address'] not in service_addr_list:
+                        service_addr_list.append(service['service_address'])
+                        add_check(service['service_checks'], service_res)
+
+        ep_res['non_service'] = ep_len - ep_res['service']
 
         response['agents'] = get_agent_status()
-        response['service'] = get_service_status(mapped_eps)
-        response['nodes'] = get_nodes_status(mapped_eps)
-        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips, tn)
-        # Send the agents
+        response['service'] = service_res
+        response['nodes'] = nodes_res
+        response['service_endpoint'] = ep_res
 
         return json.dumps({
             "status": "200",
