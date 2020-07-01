@@ -572,21 +572,21 @@ class Database:
 
     def select_from_table(self, connection, table_name, field_arg_dict={}, required_fields=[]):
         try:
-            select_query = None
             table_name = table_name.lower()
             field_list = [self.table_key_meta[table_name][each.lower()] for each in required_fields]
+            if not field_list:
+                field_list = [self.table_obj_meta[table_name]]
+
             if field_arg_dict:
-                table_obj = self.table_obj_meta[table_name]
-                select_query = table_obj.select(field_list)
+                select_query = select(field_list)
                 for key in field_arg_dict:
                     select_query = select_query.where(
                         self.table_key_meta[table_name][key] == field_arg_dict[key])
             else:
-                select_query = self.table_obj_meta[table_name].select(field_list)
+                select_query = select(field_list)
 
-            if select_query is not None:
-                result = connection.execute(select_query)
-                return result.fetchall()
+            result = connection.execute(select_query)
+            return result.fetchall()
         except Exception as e:
             logger.exception("Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
