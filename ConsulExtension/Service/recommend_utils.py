@@ -1,6 +1,7 @@
 """"""
 
 import custom_logger
+import functools
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
@@ -97,8 +98,8 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
         ap_rec, epg_rec = extract(recommended_ep['dn'])
         ap_each, epg_each = extract(each['dn'])
 
-        ap_rec_count = len(extract_ap_epgs[ap_rec])
-        ap_each_count = len(extract_ap_epgs[ap_each])
+        ap_rec_count = functools.reduce(lambda a, b: a + b, [v for v in extract_ap_epgs[ap_rec].values()])
+        ap_each_count = functools.reduce(lambda a, b: a + b, [v for v in extract_ap_epgs[ap_each].values()])
 
         epg_rec_count = extract_ap_epgs[ap_rec][epg_rec]
         epg_each_count = extract_ap_epgs[ap_each][epg_each]
