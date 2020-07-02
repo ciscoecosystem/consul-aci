@@ -1,0 +1,308 @@
+@font-face {
+  font-family: 'CiscoSans';
+  src: url('CiscoSansTTRegular.ttf') format('ttf');
+}
+
+.d3-tip {
+  line-height: 1;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-shadow: 0px 0px 2px !important;
+  font-size: 9pt;
+  font-weight: normal;
+  padding: 5px;
+  background: rgba(255, 255, 255, 1);
+  color: rgb(92, 92, 95);
+  stroke: rgb(0, 0, 0);
+  white-space: pre;
+}
+
+/* Creates a small triangle extender for the tooltip */
+
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: smaller;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0);
+  content: "\25BC";
+  position: absolute;
+  text-align: left;
+}
+
+/* Style northward tooltips differently */
+
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 10;
+  visibility: hidden;
+}
+
+.rd3t-tree-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.rd3t-grabbable {
+  cursor: move;
+  /* fallback if grab cursor is unsupported */
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+}
+
+.rd3t-grabbable:active {
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+}
+
+.nodeBase {
+  cursor: pointer;
+  fill: rgb(73, 73, 73);
+}
+
+.nodeBase circle {
+  stroke-width: 6;
+}
+
+.nodeBase:hover {
+  fill: #009de0;
+}
+
+.leafNodeBase:hover {
+  fill: #009de0;
+}
+
+.leafNodeBase {
+  cursor: pointer;
+  fill: rgb(75, 75, 75);
+}
+
+.leafNodeBase circle {
+  stroke-width: 6;
+}
+
+.leafNodeBase1 {
+  fill: rgb(75, 75, 75);
+}
+
+.leafNodeBase1 circle {
+  stroke-width: 6;
+}
+
+.nodeNameBase {
+  fill: rgb(255, 255, 255);
+  stroke: #000;
+  stroke-width: 0;
+  font-family: "CiscoSans", Helvetica, Arial, sans-serif;
+  font-size: large;
+}
+
+.nodeAttributesBase {
+  color: rgb(92, 92, 95) !important;
+  font-weight: 700;
+  font-size: 10pt;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.nodeSubLabel {
+  color: rgb(92, 92, 95) !important;
+  stroke: #000;
+  stroke-width: 0;
+  font-size: 10pt;
+  font-weight: lighter;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.linkBase {
+  fill: none;
+  stroke-width: 1;
+  stroke: rgb(54, 126, 233);
+}
+
+.back-button {
+  background-color: #5092fb;
+  border: 1px solid #5092fb;
+  color: #ffffff;
+  height: 2em;
+  line-height: 2em;
+  border-radius: 5px;
+  margin-top: 1em;
+  cursor: pointer;
+  margin-right: 0em;
+}
+
+.back-button-grey {
+  background-color: grey;
+  border: 1px solid grey;
+  color: #ffffff;
+  height: 2em;
+  line-height: 2em;
+  border-radius: 0px;
+  margin-top: 1em;
+  margin-left: 10px;
+  cursor: pointer;
+  margin-right: 0em;
+}
+
+.navigation-panel-bottom {
+  background-color: #e6e6e8;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  height: 10%;
+  text-align: right;
+}
+
+.health-indicators {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #3f3f3f;
+  width: 200px;
+  height: 100px;
+  position: absolute;
+  margin-top: 2em;
+  right: 0px;
+  top: 15%;
+}
+
+.health-indicators-table {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #f0f0f0;
+  background-color: #f2f2f2;
+}
+
+.health-cell {
+  padding: 20%;
+}
+
+.health-normal {
+  background-color: #f2f2f2;
+  color: seagreen;
+  border-radius: 50%;
+  border: 3px solid seagreen;
+}
+
+.health-warning_ {
+  background-color: #f2f2f2;
+  /* height : 50%; */
+  border-radius: 50%;
+  border: 3px solid orange;
+}
+
+.health-critical_ {
+  color: red;
+  background-color: #f2f2f2;
+  border-radius: 50%;
+  border: 3px solid red;
+}
+
+.health-text {
+  padding-top: 2em;
+}
+
+.health-row {
+  border-bottom: 1px solid #a0a0a0;
+}
+
+.tree-back-button {
+  height: 30px;
+  line-height: 30px;
+  border-radius: 100px;
+  background-color: #009de0;
+  text-align: center;
+  width: 90px;
+  color: #f0f0f0;
+  margin: 5px;
+}
+
+.icon {
+  display: inline-block;
+  font-size: 5px;
+  fill: #0f0;
+  background-color: #00ff00;
+}
+
+.legend-icon {
+  background-color: #7f7f86;
+  border-radius: 200px;
+  font-size: 12px;
+  height: 2em;
+  width: 2em;
+  line-height: 2em;
+  text-align: center;
+  vertical-align: center;
+  color: #f0f0f0;
+  cursor: pointer;
+  margin-top: 3.5em;
+}
+
+.icon-text {
+  color: #f0f0f0;
+}
+
+.zoom-in-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.zoom-out-icon {
+  position: absolute;
+  top: 20px;
+  right: 50px;
+}
+
+.reload-icon {
+  position: absolute;
+  top: 20px;
+  right: 80px;
+}
+
+.loading-box {
+  height: 200px;
+  width: 400px;
+  line-height: 100%;
+  text-align: center;
+  background-color: #a0a0a0;
+  color: #000;
+}
+
+.node-icon {
+  text-align: center;
+  font-size: 12px !important
+}
+
+.cui .node-icon .icon-tiny:before {
+  font-size: 13px!important;
+}
+
+.ReactTable .rt-noData {
+  color: black;
+  font-size: 16px;
+}
+
+.ReactTable .rt-tbody {
+  overflow: hidden;
+}
+
+body {
+  overflow-x: auto;
+  overflow-y: scroll;
+}
+
+.cui .form-group.dropdown .dropdown__menu {
+  margin-bottom: 50px !important;
+}
+
+.ReactTable {
+  margin-bottom: 50px !important;
+}

@@ -1,0 +1,54 @@
+.custom-tabs .active a {
+  /* background: #00BCEB!important;*/
+  color: white!important;
+  background-color: #00BCEB !important;
+  box-shadow: inset 5px 0 #00bceb!important;
+}
+
+.events-tab .tabs--vertical>li:hover>a {
+  box-shadow: inset 5px 0 #00bceb!important;
+}
+
+button.Toastify__close-button.Toastify__close-button--error {
+  color: white;
+}
+
+.sub-table {
+  font-size: 13px;
+  padding: 11px;
+  background: #d5d5d5;
+}
+
+.table-cell-output {
+  margin: 8px 32px;
+}
+
+.table-cell-output .cell-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cell-code {
+  margin-left: 6px;
+}
+
+.cell-code>span {
+  height: unset !important;
+  line-height: 16px !important;
+  padding: 8px !important;
+}
+
+.cell-code span pre code {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.ReactTable .rt-noData {
+  color: black;
+  font-size: 16px;
+}

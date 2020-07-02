@@ -1,0 +1,60 @@
+
+.d-flex {
+    display: flex;
+}
+
+.piechart-wrapper {
+    position: relative;
+    text-align: center;
+    width: 35%;
+}
+.piechart-wrapper>.pie-labels {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    -ms-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+    font-weight: lighter;
+}
+
+
+.counters {
+    margin: auto 1px;
+}
+
+.counters .info-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    color: #9e9ea2;
+    height: 20px;
+    font-size: 14px;
+    line-height: 16px;
+}
+.counters .info-container .info-title {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    justify-self: flex-start;
+}
+.counters .info-container .info-count {
+    font-weight: 600;
+    margin-left: 4px;
+}
+.counters .info-container .info-title .info-bullet {
+    border-radius: 50%;
+    width: 4px;
+    height: 4px;
+    display: inline-block;
+    margin-right: 4px;
+}
