@@ -3,7 +3,7 @@
 import pytest
 from Service.recommend_utils import (determine_recommendation,
                                      recommended_eps)
-from Service import plugin_server
+from Service.plugin_server import get_apic_data
 import os
 
 
@@ -11,7 +11,7 @@ DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
                'uni/tn-tn0/ap-ap0/epg-epg2',
                'uni/tn-tn0/ap-ap1/epg-epg1']
 
-IP_LIST = ['192.168.63.241']
+IP_LIST = []
 
 
 class FileCopyException(Exception):
@@ -19,7 +19,7 @@ class FileCopyException(Exception):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def copy_db(request):
+def pre_test_setup(request):
     # factory will only be invoked once per session -
     try:
         os_cmd = os.system(
@@ -29,6 +29,8 @@ def copy_db(request):
         print('Test DB successfully copied')
     except FileCopyException as e:
         print('Exception {}'.format(e))
+
+    IP_LIST.append('192.168.63.241')
 
     def delete_db():
         os.remove('./ConsulDatabase.db')
@@ -48,7 +50,7 @@ def cef_ip_and_fvip_data():
                        'IP': IP_LIST[0], 'cep_ip': False})
     common_eps.append({'dn': DOMAIN_LIST[2],
                        'IP': IP_LIST[0], 'cep_ip': True})
-    apic_data = plugin_server.get_apic_data('tn0')
+    apic_data = get_apic_data('tn0')
     return extract_ap_epgs, common_eps, apic_data
 
 
@@ -64,7 +66,7 @@ def vrf_data():
                        'IP': IP_LIST[0], 'cep_ip': False})
     common_eps.append({'dn': DOMAIN_LIST[2],
                        'IP': IP_LIST[0], 'cep_ip': False})
-    apic_data = plugin_server.get_apic_data('tn0')
+    apic_data = get_apic_data('tn0')
     return extract_ap_epgs, common_eps, apic_data
 
 
@@ -80,7 +82,7 @@ def ap_data():
                        'IP': IP_LIST[0], 'cep_ip': False})
     common_eps.append({'dn': DOMAIN_LIST[2],
                        'IP': IP_LIST[0], 'cep_ip': False})
-    apic_data = plugin_server.get_apic_data('tn0')
+    apic_data = get_apic_data('tn0')
     return extract_ap_epgs, common_eps, apic_data
 
 
@@ -96,7 +98,7 @@ def ap_same_count_data(scope='class'):
                        'IP': IP_LIST[0], 'cep_ip': False})
     common_eps.append({'dn': DOMAIN_LIST[2],
                        'IP': IP_LIST[0], 'cep_ip': False})
-    apic_data = plugin_server.get_apic_data('tn0')
+    apic_data = get_apic_data('tn0')
     return extract_ap_epgs, common_eps, apic_data
 
 
