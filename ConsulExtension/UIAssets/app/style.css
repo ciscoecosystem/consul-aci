@@ -201,3 +201,8 @@ main {
 .cui .slideInLeftSmall{
     animation: none !important;
 }
+
+.polling-interval .dropdown__menu a{
+    height: 25px !important;
+    line-height: 25px !important;
+}
