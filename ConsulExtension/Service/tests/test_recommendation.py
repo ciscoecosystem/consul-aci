@@ -5,6 +5,7 @@ from Service.recommend_utils import (determine_recommendation,
                                      recommended_eps)
 from Service.plugin_server import get_apic_data
 import os
+import configparser
 
 
 DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
@@ -12,10 +13,30 @@ DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
                'uni/tn-tn0/ap-ap1/epg-epg1']
 
 IP_LIST = []
+STATIC_IP_KEY = 'RECOMMENDATION_TEST_IP'
 
 
 class FileCopyException(Exception):
     pass
+
+
+def get_conf_value(section, key_name):
+    """Function to return value from configuration
+    File
+
+    Args:
+        key_name (str): Name of key
+    """
+
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    print('Dir path : {}'.format(dir_path))
+    file_path = r''.join([dir_path,
+                          '/recommendation/recommendation_config.cfg'])
+    print('file_path : {}'.format(file_path))
+    config = configparser.ConfigParser()
+
+    config.read(file_path)
+    return config.get(section, key_name)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -30,7 +51,7 @@ def pre_test_setup(request):
     except FileCopyException as e:
         print('Exception {}'.format(e))
 
-    IP_LIST.append('192.168.63.241')
+    IP_LIST.append(get_conf_value('IP', STATIC_IP_KEY))
 
     def delete_db():
         os.remove('./ConsulDatabase.db')
