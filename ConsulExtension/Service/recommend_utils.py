@@ -1,7 +1,6 @@
 """"""
 
 import custom_logger
-import functools
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 
