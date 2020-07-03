@@ -1,6 +1,8 @@
 # Test the recommendation logic
 
 import pytest
+import sys
+from mock import Mock
 
 sys.modules['cobra'] = 'cobra'
 sys.modules['cobra.model'] = 'cobra.model'
