@@ -20,11 +20,22 @@
     transition: opacity .3s ease;
 }
 
-.modal-layout>main.scrollable {
-    width: 100%;
-    display: table;
-    height: auto;
+
+
+@media only screen and (max-height: 100px) and (max-height: 500px) {
+    .modal-layout>main.scrollable {
+        height: max-content;
+    }
 }
+
+@media only screen and (min-height:500px) {
+    .modal-layout>main.scrollable {
+        width: 100%;
+        display: table;
+        height: auto;
+    }
+}
+
 
 .modal-layout>header {
     border-top-left-radius: 5px;

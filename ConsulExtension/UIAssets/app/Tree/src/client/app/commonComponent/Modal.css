@@ -23,9 +23,7 @@
 }
 
 .modal-layout>main.scrollable {
-    width: 100%;
-    display: table;
-    height: auto;
+    max-height: fit-content;
 }
 
 .modal-layout>header {
