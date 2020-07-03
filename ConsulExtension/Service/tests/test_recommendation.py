@@ -1,14 +1,6 @@
 # Test the recommendation logic
 
 import pytest
-import sys
-from mock import Mock
-
-sys.modules['cobra'] = 'cobra'
-sys.modules['cobra.model'] = 'cobra.model'
-sys.modules['cobra.model.pol'] = Mock(name='Uni')
-sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
-
 from Service.recommend_utils import (determine_recommendation,
                                      recommended_eps)
 from Service.plugin_server import get_apic_data
@@ -103,7 +95,7 @@ def vrf_data():
 def ap_data():
     extract_ap_epgs = {'ap2': {'epg3': 2, 'epg0': 1, 'epg1': 2, 'epg4': 2},
                        'ap0': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1},
-                       'ap1': {'epg2': 2, 'epg1': 5, 'epg4': 2}}
+                       'ap1': {'epg2': 2, 'epg1': 5, 'epg4': 2, }}
     common_eps = []
     common_eps.append({'dn': DOMAIN_LIST[0],
                        'IP': IP_LIST[0], 'cep_ip': False})
@@ -119,7 +111,7 @@ def ap_data():
 def ap_same_count_data(scope='class'):
     extract_ap_epgs = {'ap2': {'epg3': 2, 'epg0': 1, 'epg1': 2, 'epg4': 2},
                        'ap0': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1},
-                       'ap1': {'epg2': 2, 'epg1': 2, 'epg4': 2}}
+                       'ap1': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1}}
     common_eps = []
     common_eps.append({'dn': DOMAIN_LIST[0],
                        'IP': IP_LIST[0], 'cep_ip': False})
@@ -177,11 +169,15 @@ def test_determine_recommendation_ap(ap_data):
     expected_eps.append([IP_LIST[0],
                          DOMAIN_LIST[0], 'No', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'Yes', 'IP'])
+                         DOMAIN_LIST[2], 'No', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], 'No', 'IP'])
+                         DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
+
+    print('expected {}'.format(expected_eps))
+    print('expected {}'.format(actual_eps))
+
 
     assert len(actual_eps) == len(expected_eps)
     assert all(item in actual_eps for item in expected_eps)
@@ -198,6 +194,5 @@ def test_determine_recommendation_same_ap_count(ap_same_count_data):
                          DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
-
     assert len(actual_eps) == len(expected_eps)
     assert all(item in actual_eps for item in expected_eps)
