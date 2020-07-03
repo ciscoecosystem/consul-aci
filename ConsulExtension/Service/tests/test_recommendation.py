@@ -1,6 +1,12 @@
-# Test the recommendation logic
-
 import pytest
+import sys
+from mock import Mock
+
+sys.modules['cobra'] = 'cobra'
+sys.modules['cobra.model'] = 'cobra.model'
+sys.modules['cobra.model.pol'] = Mock(name='Uni')
+sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
+
 from Service.recommend_utils import (determine_recommendation,
                                      recommended_eps)
 from Service.plugin_server import get_apic_data
@@ -177,7 +183,6 @@ def test_determine_recommendation_ap(ap_data):
 
     print('expected {}'.format(expected_eps))
     print('expected {}'.format(actual_eps))
-
 
     assert len(actual_eps) == len(expected_eps)
     assert all(item in actual_eps for item in expected_eps)
