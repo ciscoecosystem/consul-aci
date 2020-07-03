@@ -1,6 +1,12 @@
 # Test the recommendation logic
 
 import pytest
+
+sys.modules['cobra'] = 'cobra'
+sys.modules['cobra.model'] = 'cobra.model'
+sys.modules['cobra.model.pol'] = Mock(name='Uni')
+sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
+
 from Service.recommend_utils import (determine_recommendation,
                                      recommended_eps)
 from Service.plugin_server import get_apic_data
