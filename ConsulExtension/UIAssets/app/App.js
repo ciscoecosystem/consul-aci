@@ -279,6 +279,40 @@ export default class App extends React.Component {
         this.setState({ pollingIntervalPopup })
     }
 
+    pollingIntervalCall(){
+        let xhrPostPollingIntervalCall = this.xhrCred;
+        const payload = {
+            query: 'query{SetPullingInterval(interval:' + this.state.selectedPollingInterval + '){response}}'
+        }
+        try{
+            xhrPostPollingIntervalCall.open("POST", QUERY_URL, true);
+            xhrPostPollingIntervalCall.setRequestHeader("Content-type", "application/json");
+            // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+            xhrPostPollingIntervalCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrPostPollingIntervalCall.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+            xhrPostPollingIntervalCall.onreadystatechange =  () => {
+
+                if (xhrPostPollingIntervalCall.readyState == 4 && xhrPostPollingIntervalCall.status == 200) {
+
+                    let apiResponse = JSON.parse(xhrPostPollingIntervalCall.responseText);
+                    let pollingApiResponse = JSON.parse(apiResponse.data.SetPullingInterval.response)
+                    if(parseInt(pollingApiResponse.status) === 200){
+                        this.notify(pollingApiResponse.payload.message, true, false)
+                    }
+                    else if(parseInt(pollingApiResponse.status) === 300){
+                        this.notify(pollingApiResponse.payload.message)
+                    }
+                    this.handlePollingIntervalPopUp(false);
+                }
+            }
+            xhrPostPollingIntervalCall.send(JSON.stringify(payload));
+        }catch(e){
+            console.error('Error getting agents', e);
+        }
+    }
+
     postTenant() {
         let thiss = this;
         let { tenantApiCallCnt } = this.state;
@@ -379,7 +413,7 @@ export default class App extends React.Component {
                                             <Button key={"configurePollingInterval"}
                                                     size="btn--small"
                                                     type="btn--primary"
-                                                    onClick={()=>{console.log("Selected polling interval: ", this.state.selectedPollingInterval )}}
+                                                    onClick={()=>{this.pollingIntervalCall()}}
                                             >Save</Button>
                                         </div>
                                     </div>
