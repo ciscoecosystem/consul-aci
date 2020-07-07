@@ -1,0 +1,66 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "VMM-Domain": "ESX0-leaf106",
+        "CEP-Mac": "a6:62:cc:f7:4c:87",
+        "node_services": [
+            {
+                "service_address": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b:9000",
+                "service_name": "servicename0",
+                "service_ip": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
+                "service_tags": [
+                    "cache",
+                    "global"
+                ],
+                "service_checks": {
+                    "warning": 1
+                },
+                "node_id": "nodeid0",
+                "service_port": "9000",
+                "service_namespace": "namespace0",
+                "service_id": "serviceid0",
+                "service_kind": "servicekind0"
+            }
+        ],
+        "EPG": "epg0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-0/Node-103/eth4/6"
+        ],
+        "epg_health": "8",
+        "VRF": "tn0/",
+        "fraction": 0,
+        "node_ips": [
+            "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b"
+        ],
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "Non_IPs": {},
+        "learningSource": "vmm",
+        "VM-Name": "She.",
+        "IP": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
+        "node_check": {
+            "warning": 1
+        },
+        "AppProfile": "ap0",
+        "node_name": "nodename0",
+        "node_id": "nodeid0",
+        "controllerName": "vcenter106"
+    }
+]
