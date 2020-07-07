@@ -10,14 +10,14 @@ def get_data(case, file_name):
 
 
 '''
-Dangeling node 									                            dangling
-All the data having ipv6 addresses                                          ipv6
-Service with different ip as that of Node which mappes to Some EP	    	nodeservicetoep
-Service with different ip as that of Node which DOES NOT map to any EP		notnodeservicetoep
-Service with no ip								                            servicewithoutip
-All above combinations								                        general20
+Case1: Dangeling node
+Case2: All the data having ipv6 addresses
+Case3: Service with different ip as that of Node which mappes to Some EP
+Case4: Service with different ip as that of Node which DOES NOT map to any EP
+Case5: Service with no ip
+Case6: All above combinations
 '''
-cases = ['dangling', 'ipv6', 'nodeservicetoep', 'notnodeservicetoep', 'servicewithoutip', 'general20']
+cases = [1, 2, 3, 4, 5, 6]
 
 
 @pytest.mark.parametrize("case", cases)
