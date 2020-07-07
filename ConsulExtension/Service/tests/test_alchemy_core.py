@@ -270,29 +270,4 @@ def test_insert_and_update(table):
         for each in records:
             assert each[-2] is None
 
-        dummy[0][2] = 'new'
-        dummy[1][2] = 'new'
-        dummy[2][2] = 'new'
-
-        connection = db_obj.engine.connect()
-
-        for each in dummy:
-            assert db_obj.insert_and_update(
-                connection,
-                table,
-                each,
-                {
-                    dc[table][0]: each[0]
-                }
-            )
-        connection.close()
-        connection = db_obj.engine.connect()
-
-        records = db_obj.select_from_table(connection, table)
-        connection.close()
-        assert len(records) == 3
-
-        for each in records:
-            assert each[-2] is not None
-
     os.remove('.\\ConsulDatabase.db')
