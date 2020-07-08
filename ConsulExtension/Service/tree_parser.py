@@ -126,7 +126,7 @@ def consul_tree_dict(data):
                         if service['service_ip']:
                             service_address = str(service['service_ip']) + ':' + str(service['service_port'])
                         else:
-                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port'])  # for now 0th is taken, will change
+                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port'])
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
@@ -147,7 +147,6 @@ def consul_tree_dict(data):
 
                         # Add Service to EP
                         ep_dict['children'].append(service_dict)
-
 
                         # Now adding the service info in EP and EPG attributes
                         # for the Side Pane info,
@@ -188,14 +187,12 @@ def consul_tree_dict(data):
                         if not epg_dict['label']:
                             epg_dict['label'] = service['service_id'] + ', ...'
 
-
                         # Add service checks to EPG checks, only if
                         # the check for that service has not been
                         # added before.
                         if service_address not in ap_service_addr_list:
                             ap_dict['checks'] = add_checks(ap_dict['checks'], service_dict['checks'])
                             ap_service_addr_list.append(service_address)
-
 
                     # Add EP to EPG
                     epg_dict['children'].append(ep_dict)
