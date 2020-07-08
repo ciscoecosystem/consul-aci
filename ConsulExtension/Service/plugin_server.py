@@ -1686,7 +1686,7 @@ def post_tenant(tn):
         return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
 
 
-def checks_data_formatter(data, key_index):
+def list_data_formatter(data, key_index):
     dc = dict()
     for each in data:
         if each[key_index] in dc:
@@ -1705,25 +1705,25 @@ def get_consul_data(datacenter):
     node_data = list(db_obj.select_from_table(
         connection,
         db_obj.NODE_TABLE_NAME,
-        {'datacenter': datacenter})
-    )
+        {'datacenter': datacenter}
+    ))
     service_data = list(db_obj.select_from_table(
         connection,
         db_obj.SERVICE_TABLE_NAME,
-        {'datacenter': datacenter})
-    )
+        {'datacenter': datacenter}
+    ))
     node_checks_data = list(db_obj.select_from_table(
         connection,
-        db_obj.NODECHECKS_TABLE_NAME)
-    )
+        db_obj.NODECHECKS_TABLE_NAME
+    ))
     service_checks_data = list(db_obj.select_from_table(
         connection,
-        db_obj.SERVICECHECKS_TABLE_NAME)
-    )
+        db_obj.SERVICECHECKS_TABLE_NAME
+    ))
     connection.close()
 
-    node_checks_data = checks_data_formatter(node_checks_data, 1)
-    service_checks_data = checks_data_formatter(service_checks_data, 1)
+    node_checks_data = list_data_formatter(node_checks_data, 1)
+    service_checks_data = list_data_formatter(service_checks_data, 1)
 
     for service in service_data:
         service_dict = {
@@ -1799,38 +1799,43 @@ def get_apic_data(tenant):
     apic_data = []
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
-        epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+    ep_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.EP_TABLE_NAME,
+        {'tenant': tenant}
+    ))
+    epg_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.EPG_TABLE_NAME,
+        {'tenant': tenant}
+    ))
     connection.close()
 
+    epg_data = list_data_formatter(epg_data, 0)
+
     for ep in ep_data:
-        if ep[2] != tenant:
-            continue
-        for epg in epg_data:
-            ep_dn = '/'.join(ep[3].split('/')[:4])
-            if ep_dn == epg[0]:
-                apic_data.append({
-                    'AppProfile': epg[7],
-                    'EPG': epg[2],
-                    'CEP-Mac': ep[0],
-                    'IP': ep[1],
-                    'Interfaces': ep[5],
-                    'VM-Name': ep[4],
-                    'BD': epg[3],
-                    'VMM-Domain': ep[6],
-                    'Contracts': epg[4],
-                    'VRF': epg[5],
-                    'dn': ep_dn,
-                    'controllerName': ep[7],
-                    'hostingServerName': ep[11],
-                    'learningSource': ep[8],
-                    'epg_health': epg[6]
-                })
-                break
+        ep_dn = '/'.join(ep[3].split('/')[:4])
+        epgs = epg_data.get(ep_dn, [])
+        for epg in epgs:
+            apic_data.append({
+                'AppProfile': epg[7],
+                'EPG': epg[2],
+                'CEP-Mac': ep[0],
+                'IP': ep[1],
+                'Interfaces': ep[5],
+                'VM-Name': ep[4],
+                'BD': epg[3],
+                'VMM-Domain': ep[6],
+                'Contracts': epg[4],
+                'VRF': epg[5],
+                'dn': ep_dn,
+                'controllerName': ep[7],
+                'hostingServerName': ep[11],
+                'learningSource': ep[8],
+                'epg_health': epg[6]
+            })
 
     return apic_data
-
 
 def get_agent_status(datacenter=""):
     """Function to get overview agent
