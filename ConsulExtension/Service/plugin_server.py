@@ -1686,22 +1686,46 @@ def post_tenant(tn):
         return json.dumps({'status_code': '300', 'message': 'Tenant not saved'})
 
 
+def checks_data_formatter(data, key_index):
+    dc = dict()
+    for each in data:
+        if each[key_index] in dc:
+            dc[each[key_index]].append(each)
+        else:
+            dc[each[key_index]] = [each]
+    return dc
+
+
 @time_it
 def get_consul_data(datacenter):
     consul_data = []
     services = []
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-        service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-        node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
-        service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+    node_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.NODE_TABLE_NAME,
+        {'datacenter': datacenter})
+    )
+    service_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.SERVICE_TABLE_NAME,
+        {'datacenter': datacenter})
+    )
+    node_checks_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.NODECHECKS_TABLE_NAME)
+    )
+    service_checks_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.SERVICECHECKS_TABLE_NAME)
+    )
     connection.close()
 
+    node_checks_data = checks_data_formatter(node_checks_data, 1)
+    service_checks_data = checks_data_formatter(service_checks_data, 1)
+
     for service in service_data:
-        if service[9] != datacenter:
-            continue
         service_dict = {
             'service_id': service[0],
             'node_id': service[1],
@@ -1712,63 +1736,59 @@ def get_consul_data(datacenter):
             'service_tags': service[6],
             'service_kind': service[7],
             'service_namespace': service[8],
-            'service_checks': {}
+            'service_checks': {
+                'passing': 0,
+                'warning': 0,
+                'failing': 0
+            }
         }
-        for check in service_checks_data:
-            if check[1] == service[0]:
-                status = check[7]
-                check_dict = service_dict['service_checks']
-                if 'passing' == status.lower():
-                    if check_dict.get('passing'):
-                        check_dict['passing'] += 1
-                    else:
-                        check_dict['passing'] = 1
-                elif 'warning' == status.lower():
-                    if check_dict.get('warning'):
-                        check_dict['warning'] += 1
-                    else:
-                        check_dict['warning'] = 1
-                else:
-                    if check_dict.get('failing'):
-                        check_dict['failing'] += 1
-                    else:
-                        check_dict['failing'] = 1
-                service_dict['service_checks'] = check_dict
+        check_list = service_checks_data.get(service[0], [])
+        for check in check_list:
+            status = check[7]
+            check_dict = service_dict['service_checks']
+            if 'passing' == status.lower():
+                check_dict['passing'] += 1
+            elif 'warning' == status.lower():
+                check_dict['warning'] += 1
+            else:
+                check_dict['failing'] += 1
+            service_dict['service_checks'] = check_dict
+        keys = service_dict['service_checks'].keys()
+        for key in keys:
+            if not service_dict['service_checks'][key]:
+                del service_dict['service_checks'][key]
         services.append(service_dict)
 
     for node in node_data:
-        if node[3] != datacenter:
-            continue
         node_dict = {
             'node_id': node[0],
             'node_name': node[1],
             'node_ips': node[2],
-            'node_check': {},
+            'node_check': {
+                'passing': 0,
+                'warning': 0,
+                'failing': 0
+            },
             'node_services': []
         }
-        for check in node_checks_data:
-            if check[1] == node[0]:
-                status = check[8]
-                check_dict = node_dict['node_check']
-                if 'passing' == status.lower():
-                    if check_dict.get('passing'):
-                        check_dict['passing'] += 1
-                    else:
-                        check_dict['passing'] = 1
-                elif 'warning' == status.lower():
-                    if check_dict.get('warning'):
-                        check_dict['warning'] += 1
-                    else:
-                        check_dict['warning'] = 1
-                else:
-                    if check_dict.get('failing'):
-                        check_dict['failing'] += 1
-                    else:
-                        check_dict['failing'] = 1
-                node_dict['node_check'] = check_dict
+        check_list = node_checks_data.get(node[0], [])
+        for check in check_list:
+            status = check[8]
+            check_dict = node_dict['node_check']
+            if 'passing' == status.lower():
+                check_dict['passing'] += 1
+            elif 'warning' == status.lower():
+                check_dict['warning'] += 1
+            else:
+                check_dict['failing'] += 1
+            node_dict['node_check'] = check_dict
         for service in services:
             if service['node_id'] == node[0]:
                 node_dict['node_services'].append(service)
+        keys = node_dict['node_check'].keys()
+        for key in keys:
+            if not node_dict['node_check'][key]:
+                del node_dict['node_check'][key]
         consul_data.append(node_dict)
 
     return consul_data
