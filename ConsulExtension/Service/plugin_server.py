@@ -429,21 +429,26 @@ def get_service_check(service_name, service_id, datacenter):
         response = []
 
         connection = db_obj.engine.connect()
-        with connection.begin():
-            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        service_checks_data = list(db_obj.select_from_table(
+            connection,
+            db_obj.SERVICECHECKS_TABLE_NAME,
+            {
+                "service_id": service_id,
+                "service_name": service_name
+            }
+        ))
         connection.close()
 
         for check in service_checks_data:
-            if check[1] == service_id and check[2] == service_name:
-                response.append({
-                    'ServiceName': check[2],
-                    'CheckID': check[0],
-                    'Type': check[4],
-                    'Notes': check[5],
-                    'Output': check[6],
-                    'Name': check[3],
-                    'Status': check[7]
-                })
+            response.append({
+                'ServiceName': check[2],
+                'CheckID': check[0],
+                'Type': check[4],
+                'Notes': check[5],
+                'Output': check[6],
+                'Name': check[3],
+                'Status': check[7]
+            })
 
         return json.dumps({
             "payload": response,
@@ -477,22 +482,24 @@ def get_node_checks(node_name, datacenter):
     try:
         response = []
         connection = db_obj.engine.connect()
-        with connection.begin():
-            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        node_checks_data = list(db_obj.select_from_table(
+            connection,
+            db_obj.NODECHECKS_TABLE_NAME,
+            {'node_name': node_name}
+        ))
         connection.close()
 
         for check in node_checks_data:
-            if check[2] == node_name:
-                response.append({
-                    'NodeName': node_name,
-                    'Name': check[3],
-                    'ServiceName': check[4],
-                    'CheckID': check[0],
-                    'Type': check[5],
-                    'Notes': check[6],
-                    'Output': check[7],
-                    'Status': check[8]
-                })
+            response.append({
+                'NodeName': node_name,
+                'Name': check[3],
+                'ServiceName': check[4],
+                'CheckID': check[0],
+                'Type': check[5],
+                'Notes': check[6],
+                'Output': check[7],
+                'Status': check[8]
+            })
 
         logger.debug('Response of Node check: {}'.format(response))
 
@@ -530,24 +537,28 @@ def get_multi_service_check(service_list, datacenter):
         service_list = json.loads(service_list)
         response = []
         connection = db_obj.engine.connect()
-        with connection.begin():
-            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
-        connection.close()        
+        service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        connection.close()
+
+        service_checks_data = list_data_formatter(service_checks_data, [1, 2])
 
         for service_dict in service_list:
             service_name = service_dict["Service"]
             service_id = service_dict["ServiceID"]
-            for check in service_checks_data:
-                if check[1] == service_id and check[2] == service_name:
-                    response.append({
-                        'ServiceName': check[2],
-                        'CheckID': check[0],
-                        'Type': check[4],
-                        'Notes': check[5],
-                        'Output': check[6],
-                        'Name': check[3],
-                        'Status': check[7]
-                    })
+            checks = service_checks_data.get(
+                ''.join([service_id, service_name]),
+                []
+            )
+            for check in checks:
+                response.append({
+                    'ServiceName': check[2],
+                    'CheckID': check[0],
+                    'Type': check[4],
+                    'Notes': check[5],
+                    'Output': check[6],
+                    'Name': check[3],
+                    'Status': check[7]
+                })
 
         return json.dumps({
             "payload": response,
@@ -1689,10 +1700,11 @@ def post_tenant(tn):
 def list_data_formatter(data, key_index):
     dc = dict()
     for each in data:
-        if each[key_index] in dc:
-            dc[each[key_index]].append(each)
+        key = ''.join([each[i] for i in key_index])
+        if key in dc:
+            dc[key].append(each)
         else:
-            dc[each[key_index]] = [each]
+            dc[key] = [each]
     return dc
 
 
@@ -1722,8 +1734,8 @@ def get_consul_data(datacenter):
     ))
     connection.close()
 
-    node_checks_data = list_data_formatter(node_checks_data, 1)
-    service_checks_data = list_data_formatter(service_checks_data, 1)
+    node_checks_data = list_data_formatter(node_checks_data, [1])
+    service_checks_data = list_data_formatter(service_checks_data, [1])
 
     for service in service_data:
         service_dict = {
@@ -1811,7 +1823,7 @@ def get_apic_data(tenant):
     ))
     connection.close()
 
-    epg_data = list_data_formatter(epg_data, 0)
+    epg_data = list_data_formatter(epg_data, [0])
 
     for ep in ep_data:
         ep_dn = '/'.join(ep[3].split('/')[:4])
@@ -1879,20 +1891,24 @@ def get_service_status(ep_ips):
     service_res = {'passing': 0, 'warning':0, 'failing':0}
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-        service_checks = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+    services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+    service_checks = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
     connection.close()
 
     if not service_checks:
         logger.info("Service check is empty")
         return service_res
+
+    service_checks = list_data_formatter(service_checks, [1])
+
     for service in services:
         service_ip = service[5].split(':')[0]
-        for service_check in service_checks:
-            if service[0] == service_check[1] and service_ip in ep_ips and service_check[7].lower():
-                service_res[service_check[7].lower()] += 1
-                break
+        if service_ip in ep_ips:
+            service_checks_list = service_checks.get(service[0], [])
+            for service_check in service_checks_list:
+                if service_check[7].lower():
+                    service_res[service_check[7].lower()] += 1
+                    break
 
     return service_res
 
@@ -1909,21 +1925,24 @@ def get_nodes_status(ep_ips):
     nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-        node_checks = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+    nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+    node_checks = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
     connection.close()
 
     if not node_checks:
         logger.info("Node check is empty")
         return nodes_res
 
+    node_checks = list_data_formatter(node_checks, [1])
+
     for node in nodes:
         for node_ip in node[2]:
-            for node_check in node_checks:
-                if node[0] == node_check[1] and node_ip in ep_ips and node_check[8].lower():
-                    nodes_res[node_check[8].lower()] += 1
-                    break
+            if node_ip in ep_ips:
+                node_checks_list = node_checks.get(node[0], [])
+                for node_check in node_checks_list:
+                    if node_check[8].lower():
+                        nodes_res[node_check[8].lower()] += 1
+                        break
     return nodes_res
 
 
@@ -1937,7 +1956,7 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
 
         Returns:
             dict: Count of service and non service endpoint
-        """
+    """
     response = {'service': 0, 'non_service': 0}
     consul_ips = list(set(service_ips) | set(node_ips))
     ep_map = {}
@@ -1946,7 +1965,7 @@ def get_service_endpoints(ep_ips, service_ips, node_ips):
             ep_map[each] = 0
 
     for each in ep_ips:
-        if each in ep_map.keys():
+        if each in ep_map:
             ep_map[each] = ep_map[each] + 1
 
     total_service_count = 0
@@ -1975,17 +1994,20 @@ def get_performance_dashboard(tn):
         response = {}
 
         connection = db_obj.engine.connect()
-        with connection.begin():
-            eps = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
-            services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-            nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        eps = list(db_obj.select_from_table(
+            connection,
+            db_obj.EP_TABLE_NAME,
+            {'tenant': tn}
+        ))
+        services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+        nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
         connection.close()
 
         ep_ips = set()
         service_ips = []
         node_ips = []
         for ep in eps:
-            if ep[1] and ep[2] == tn:
+            if ep[1]:
                 ep_ips.add(ep[1])
 
         for service in services:
