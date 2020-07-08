@@ -169,8 +169,7 @@ def data_fetch():
 
             # get agent list from db
             connection = db_obj.engine.connect()
-            with connection.begin():
-                agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
             connection.close()
             agent_list = []
             for agent in agents:
@@ -254,8 +253,7 @@ def data_fetch():
 
                 # Remove deleted Node data.
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+                node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -313,8 +311,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+                node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -371,8 +368,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+                service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -424,8 +420,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+                service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -452,8 +447,7 @@ def data_fetch():
 
             # get tenant list from db
             connection = db_obj.engine.connect()
-            with connection.begin():
-                tenants = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME))
+            tenants = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME))
             connection.close()
 
             tenant_list = []
@@ -510,8 +504,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
+                ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -551,8 +544,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+                epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
