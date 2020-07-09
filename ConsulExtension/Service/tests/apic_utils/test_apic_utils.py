@@ -1,6 +1,7 @@
 import pytest
 import time
 from requests import Session
+from Service import apic_utils
 from Service.apic_utils import AciUtils
 from Service.tests.utils import DummyClass
 
@@ -999,3 +1000,29 @@ def test_parse_epg_data():
     response = obj.parse_and_return_epg_data([{"fvAEPg": {}}])    
 
     assert response == {"dummy-key": "dummy-val"}
+
+
+def test_login():
+
+    def dummy_create_cert_session():
+        obj = DummyClass()
+        obj.dn = 'dummy-dn'
+        return (obj, 'dummy-key')
+
+    def json():
+        return {'imdata': [{'aaaLogin': {'attributes': {'token': 'dummy-token'}}}]}
+
+    def dummy_post(self, url, data, headers, timeout, verify):
+        obj = DummyClass()
+        obj.status_code = 200
+        obj.json = json
+        return obj
+
+    Session.get = dummy_post
+
+    apic_utils.create_cert_session = dummy_create_cert_session
+
+    obj = AciUtils()
+    response = obj.login()
+
+    assert response == 'dummy-token'
