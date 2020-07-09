@@ -20,6 +20,23 @@ Case6: All above combinations
 cases = [1, 2, 3, 4, 5, 6]
 
 
+def gen_keys_ls(data):
+    ls = []
+    for each in data:
+        ls.append("{}{}".format(
+            each.get("dn", ""),
+            each.get("IP", "")
+        ))
+    return ls
+
+
+def get_final_output(original_response, generated_response):
+    for each in generated_response:
+        if each not in original_response:
+            return False
+    return True
+
+
 @pytest.mark.parametrize("case", cases)
 def test_merge_aci_consul(case):
     tenant = 'tn0'
@@ -32,4 +49,6 @@ def test_merge_aci_consul(case):
                                                 consul_data,
                                                 aci_consul_mappings
                                                 )
-    assert original_response == generated_response
+    original_response = gen_keys_ls(original_response)
+    generated_response = gen_keys_ls(generated_response)
+    assert get_final_output(original_response, generated_response)
