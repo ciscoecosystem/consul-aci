@@ -1,0 +1,30 @@
+[
+  {
+    "service_id": "serviceid16",
+    "service_address": "172.21.5.192:1071",
+    "service_port": "1071",
+    "service_ip": "172.21.5.192",
+    "service_name": "servicename16"
+  },
+  {
+    "service_id": "serviceid25",
+    "service_address": "172.28.148.48:1072",
+    "service_port": "1072",
+    "service_ip": "172.28.148.48",
+    "service_name": "servicename25"
+  },
+  {
+    "service_id": "serviceid0",
+    "service_address": ":1073",
+    "service_port": "1073",
+    "service_ip": "",
+    "service_name": "servicename0"
+  },
+  {
+    "service_id": "serviceid9",
+    "service_address": "172.21.5.192:1074",
+    "service_port": "1074",
+    "service_ip": "172.21.5.192",
+    "service_name": "servicename9"
+  }
+]
