@@ -2,7 +2,7 @@ import pytest
 import time
 from requests import Session
 from Service.apic_utils import AciUtils
-from ..utils import DummyClass  # TODO: verify the import
+from Service.tests.utils import DummyClass
 
 
 aci_get_cases = [(200, {'dummy_key': 'dummy_val'}), (400, None)]
