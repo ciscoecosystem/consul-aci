@@ -779,7 +779,7 @@ def get_children_ep_info(dn, mo_type, mac_list, ip_list, ip):
     if mo_type == "ep" and ip == "":
         mac_ip_dict = dict()
         mac_list = mac_list.split(",")
-        ip_list = ip_list.split(",")
+        ip_list = ip_list.split("-")
         for index, mac in enumerate(mac_list):
             mac_ip_dict[mac] = ip_list[index]
     try:
