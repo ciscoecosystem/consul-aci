@@ -6,7 +6,6 @@
   top: 0;
   right: 0;
   background-color: rgb(255, 255, 255);
-  overflow-x: hidden;
   transition: 0.5s;
   box-shadow: 1px 1px 17px 0px;
 }
