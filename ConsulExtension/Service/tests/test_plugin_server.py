@@ -104,25 +104,25 @@ epg_alias_data = get_data('get_epg_alias.json')
 
 
 @pytest.mark.parametrize("case", get_new_mapping_cases)
-def mtest_get_new_mapping(case):
+def test_get_new_mapping(case):
     tenant = 'tn0'
     datacenter = 'dc1'
 
     try:
         os.system(
-            'copy .\\tests\\plugin_server\\{}.db .\\ConsulDatabase.db'.format(case)
+            'cp ./tests/plugin_server/{}.db ./ConsulDatabase.db'.format(case)
         )
     except Exception:
         assert False
 
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
     original_mapping = get_data('{}.json'.format(case))
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
     assert new_mapping == original_mapping
 
 
 @pytest.mark.parametrize("mapped_data", mapping_data)
-def mtest_save_mapping(mapped_data):
+def test_save_mapping(mapped_data):
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     tenant = 'tn0'
@@ -160,11 +160,11 @@ def mtest_save_mapping(mapped_data):
         ))
         assert response == failed_response
 
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("case", read_creds_cases)
-def mtest_read_creds(case):
+def test_read_creds(case):
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     empty_agent_response = {
@@ -193,7 +193,7 @@ def mtest_read_creds(case):
         db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
         connection.close()
         assert read_creds_checker(response, db_data)
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("case", epg_alias_data)
@@ -224,4 +224,4 @@ def test_get_epg_alias(case):
     connection.close()
     response = plugin_server.get_epg_alias(arg)
     assert response == expected
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
