@@ -319,3 +319,199 @@ def test_get_filter_list(data, expected):
     response = plugin_server.get_filter_list("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", obj)
 
     assert response == expected
+
+
+@pytest.mark.parametrize("data, dn, mo_type, mac_list, ip, expected", [
+    ([{
+        "fvCEp": {
+            "attributes": {
+                "encap": "dummy-encap",
+                "mac": "00:00:00:00:00:AA",
+                "mcastAddr": "not-applicable",
+                "lcC": "dummy-lcc",
+            },
+            "children": []
+        }
+    }], "", "ep", "00:00:00:00:00:AA", "1.1.1.1", json.dumps({
+        "status_code": "200",
+        "message": "OK",
+        "payload": [{
+            "ip": "1.1.1.1",
+            "mac": "00:00:00:00:00:AA",
+            "mcast_addr": "---",
+            "learning_source": "dummy-lcc",
+            "encap": "dummy-encap",
+            "ep_name": "dummy-vm-name",
+            "hosting_server_name": "1.1.1.1",
+            "iface_name": ["Pod-0/Node-111/eth0/0"],
+            "ctrlr_name": "hyper000"
+        }]
+    })),
+    ([{
+        "fvCEp": {
+            "attributes": {
+                "encap": "dummy-encap",
+                "mac": "00:00:00:00:00:AA",
+                "mcastAddr": "not-applicable",
+                "lcC": "dummy-lcc",
+                "ip": "2.2.2.2"
+            },
+            "children": [{
+                "fvIp": {
+                    "attributes": {
+                        "addr": "2.2.2.2",
+                    }
+                }
+            }]
+        }
+    }], "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "epg", "", "", json.dumps({
+        "status_code": "200",
+        "message": "OK",
+        "payload": [{
+            "ip": "2.2.2.2",
+            "mac": "00:00:00:00:00:AA",
+            "mcast_addr": "---",
+            "learning_source": "dummy-lcc",
+            "encap": "dummy-encap",
+            "ep_name": "dummy-vm-name",
+            "hosting_server_name": "1.1.1.1",
+            "iface_name": ["Pod-0/Node-111/eth0/0"],
+            "ctrlr_name": "hyper000"
+        }]
+    }))
+])
+def test_get_children_ep_info(data, dn, mo_type, mac_list, ip, expected):
+
+    def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
+        return data
+
+    def dummy_login(self):
+        return "dummy-token"
+
+    def dummy_get_ep_info(self, ep_attr):
+        return {
+            "controller": "hyper000",
+            "hosting_servername": "1.1.1.1",
+            "interfaces": ["Pod-0/Node-111/eth0/0"],
+            "vm_name": "dummy-vm-name",
+            "vmm_domain": "DUMMY0-leaf000"
+        }
+
+    AciUtils.login = dummy_login
+    AciUtils.get_ep_info = dummy_get_ep_info
+    AciUtils.get_mo_related_item = dummy_get_mo_related_item
+
+    response = plugin_server.get_children_ep_info(dn, mo_type, mac_list, ip)
+
+    assert response == expected
+
+
+def test_get_configured_access_policies():
+
+    def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
+        return [{
+            "syntheticAccessPolicyInfo": {
+                "attributes": {
+                    "domain": "uni/vmmp-DummyHost/dom-DummyDom",
+                    "accBndlGrp": "uni/dummy/dummy/accportgrp-Dummy-Group",
+                    "vLanPool": "uni/dummy/dummy/from-[dummy-lan1]-to-[dummy-lan2]",
+                    "accPortP": "uni/dummy/accportprof-Dummy-Profile",
+                    "attEntityP": "uni/dummy/attentp-Dummy-AttEntryP",
+                    "nodeP": "uni/dummy/nprof-Dummy-Switch",
+                    "pathEp": "topology/pod-1/paths-111/pathep-[dummy-path]",
+                }
+            }
+        }]
+
+    def dummy_login(self):
+        return "dummy-token"
+
+    AciUtils.login = dummy_login
+    AciUtils.get_mo_related_item = dummy_get_mo_related_item
+
+    response = plugin_server.get_configured_access_policies("DummyTn", "DummyAp", "DummyEpg")
+
+    assert response == json.dumps({
+        "status_code": "200",
+        "message": "Ok",
+        "payload": [{
+            "domain": "DummyHost/DummyDom",
+            "switch_prof": "Dummy-Switch",
+            "aep": "Dummy-AttEntryP",
+            "iface_prof": "Dummy-Profile",
+            "pc_vpc": "Dummy-Group",
+            "node": "111",
+            "path_ep": "dummy-path",
+            "vlan_pool": "[dummy-lan1]-to-[dummy-lan2]"
+        }]
+    })
+
+
+def test_get_to_epg_traffic():
+
+    def dummy_get_all_mo_instances(self, mo_dn, item_query_string):
+        return [{
+            "vzFromEPg": {
+                "children": [{
+                    "vzToEPg": {
+                        "attributes": {
+                            "epgDefDn": "uni/tn-DummyTn/brc-DummyBrc/dummy/cons-dummy",
+                            "epgDn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg"
+                        },
+                        "children": [{
+                            "vzRsRFltAtt": {
+                                "attributes": {
+                                    "tDn": "uni/tn-common/fp-default",
+                                },
+                                "children": [{
+                                    "vzCreatedBy": {
+                                        "attributes": {
+                                            "ownerDn": "uni/tn-DummyTn/brc-DummyBrc/subj-DummySubj/rssubjFiltAtt-DummyFilt"
+                                        }
+                                    }
+                                }]
+                            }
+                        }]
+                    }
+                }]
+            }
+        }]
+
+    def dummy_login(self):
+        return "dummy-token"
+
+    def dummy_get_filter_list(flt_attr_tdn, aci_util_obj):
+        return ["flt1", "flt1"]
+
+    def dummy_get_ingress_egress(from_epg_dn, to_epg_dn, subj_dn, flt_name, aci_util_obj):
+        return ("1", "1")
+
+    def dummy_get_epg_alias(dn):
+        return "DummyAlias"
+
+    def dummy_get_to_epg(dn):
+        return "DummyTn/DummyAp/DummyEpg"
+
+    AciUtils.login = dummy_login
+    AciUtils.get_to_epg = dummy_get_to_epg
+    AciUtils.get_all_mo_instances = dummy_get_all_mo_instances
+    plugin_server.get_filter_list = dummy_get_filter_list
+    plugin_server.get_ingress_egress = dummy_get_ingress_egress
+    plugin_server.get_epg_alias = dummy_get_epg_alias
+
+    response = plugin_server.get_to_epg_traffic("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg")
+
+    assert response == json.dumps({
+        "status_code": "200",
+        "message": "",
+        "payload": [{
+            "to_epg": "DummyTn/DummyAp/DummyEpg",
+            "contract_subj": "DummyTn/DummyBrc/DummySubj",
+            "filter_list": ["flt1", "flt1"],
+            "ingr_pkts": "1",
+            "egr_pkts": "1",
+            "alias": "DummyAlias",
+            "contract_type": "",
+            "type": "Consumer"
+        }]
+    })
