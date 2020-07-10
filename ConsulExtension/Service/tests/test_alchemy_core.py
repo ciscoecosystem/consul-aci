@@ -137,7 +137,7 @@ def test_insert_into_table(table):
     assert db_obj.insert_into_table(connection, '', []) is False
 
     connection.close()
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("table", tables)
@@ -158,7 +158,7 @@ def test_select_from_table(table):
             assert value == records[i][j]
 
     connection.close()
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("table", tables)
@@ -188,7 +188,7 @@ def test_update_in_table(table):
                 assert each[j] == records[i][j]
 
     connection.close()
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("table", tables)
@@ -217,7 +217,7 @@ def test_delete_from_table(table):
     assert db_obj.delete_from_table(connection, "") == False
 
     connection.close()
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("table", tables)
@@ -270,4 +270,4 @@ def test_insert_and_update(table):
         for each in records:
             assert each[-2] is None
 
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
