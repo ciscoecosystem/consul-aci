@@ -1,7 +1,7 @@
 [
     {
         "dn": "dn",
-        "expected": "expected"
+        "expected": "epg_alias"
     },
     {
         "dn": "dn2",

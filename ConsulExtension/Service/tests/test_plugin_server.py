@@ -215,7 +215,7 @@ def test_get_epg_alias(case):
             "vrf",
             "epg_health",
             "app_profile",
-            expected
+            "epg_alias"
         ],
         {
             "dn": arg
