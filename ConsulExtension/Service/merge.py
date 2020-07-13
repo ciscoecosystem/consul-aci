@@ -98,11 +98,11 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 if aci['dn'] not in non_merged_ep_dict:
                     non_merged_ep_dict[aci['dn']] = {aci['CEP-Mac']: str(aci['IP'])}
 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']] \
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci['dn']] \
                         and aci.get('IP') \
-                        and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
-                    multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']] + ", " + str(aci['IP'])
-                    non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
+                        and aci['IP'] != non_merged_ep_dict[aci['dn']][aci['CEP-Mac']]:
+                    multipleips = non_merged_ep_dict[aci['dn']][aci['CEP-Mac']] + ", " + str(aci['IP'])
+                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: multipleips})
                 else:
                     non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: str(aci['IP'])})
 
@@ -138,7 +138,8 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         logger.info('Merge complete. Total objects correlated: ' + str(len(final_list)))
 
         for each in final_list:
-            del each['node_services_copy']
+            if 'node_services_copy' in each:
+                del each['node_services_copy']
 
         return final_list  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
