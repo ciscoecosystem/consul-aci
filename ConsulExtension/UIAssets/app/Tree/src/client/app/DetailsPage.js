@@ -17,6 +17,7 @@ export default class DetailePage extends Component {
     this.getQueryParams = this.getQueryParams.bind(this);
     this.getCustomQuery = this.getCustomQuery.bind(this);
     this.setNewTab = this.setNewTab.bind(this);
+    this.getIpList = this.getIpList.bind(this);
 
     this.state = {
       data: this.props.data,
@@ -60,11 +61,18 @@ export default class DetailePage extends Component {
   }
   getMacList() {
     if (this.state.data.type === "grey") {
-      return Object.keys(this.state.data.attributes) || ""
+      return Object.keys(this.state.data.attributes)
     }
     else {
       return this.state.data.attributes.Mac || ""
     }
+  }
+  getIpList(macList){
+    let ipList = []
+    if(this.state.data.type === "grey"){
+      macList.map((item)=>(ipList.push(this.state.data.attributes[item])))
+    }
+    return ipList
   }
   setNewTab(clonedObj) {
     let newTab = {
@@ -95,8 +103,9 @@ export default class DetailePage extends Component {
     if (data.name == "EPG") {
       let moType = data.name.toLowerCase();
       let macList = "";
+      let ipList = "";
       let ip = "";
-      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:"' + ip
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ipList:"'+ ipList + '",ip:"' + ip
       let noMotype = queryParams;
       let newquery = this.getCustomQuery();
       clonedObj[0]["content"] = <Operational nomo={noMotype} customQuery={newquery} query={param}></Operational>
@@ -154,9 +163,10 @@ export default class DetailePage extends Component {
     if (data.name == "EP") {
       let moType = data.name.toLowerCase();
       let macList = this.getMacList();
+      let ipList = this.getIpList(macList);
       let ip = (data.attributes["IP"]) ? data.attributes["IP"] : "";
       
-      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ip:"' + ip
+      let param = queryParams + '",moType:"' + moType + '",macList:"' + macList + '",ipList:"'+ ipList.join("-") + '",ip:"' + ip
 
       let query = {
         param, type: "GetOperationalInfo",
