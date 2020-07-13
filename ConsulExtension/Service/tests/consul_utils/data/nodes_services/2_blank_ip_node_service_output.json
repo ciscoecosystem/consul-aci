@@ -1,0 +1,9 @@
+[
+  {
+    "service_id": "serviceid0",
+    "service_address": ":1073",
+    "service_port": "1073",
+    "service_ip": "",
+    "service_name": "servicename0"
+  }
+]
