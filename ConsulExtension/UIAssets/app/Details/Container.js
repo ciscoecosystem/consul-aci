@@ -222,7 +222,7 @@ class Container extends Component {
                 />
 
                 {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
-                <div className="scroll" style={{ padding: "0px 14px" }}>
+                <div className="scroll" style={{ padding: "0px 14px", marginBottom: "240px" }}>
                     <DataTable
                         loading={this.state.loading}
                         data={this.state.data}

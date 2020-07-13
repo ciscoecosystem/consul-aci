@@ -284,7 +284,7 @@ class App extends React.Component {
         loadingBoxHide();
 
         return (
-            <div>
+            <div style={{height:"100%"}}>
                 <ToastContainer />
                 {(treedata === undefined || treeApiLoading) ? <Loader> loading </Loader> : <TestComponent key={key}
                     detailsPage={this.state.detailsPage}

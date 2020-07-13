@@ -1,6 +1,5 @@
 """"""
 
-import copy
 import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
@@ -36,81 +35,126 @@ def extract_ap_and_epgs(eps):
             count_dict[ap][epg] = 1
         else:
             count_dict[ap][epg] += 1
+
     return count_dict
 
 
-# returns a list of list
-def determine_recommendation(extract_ap_epgs, common_eps):
+def sort_eps(each):
+    if 'IP' in each:
+        return each['IP']
+    else:
+        return each['mac']
+
+
+def extract_vrf(apic_data):
+    vrf_dict = {}
+    for each in apic_data:
+        vrf = each['VRF']
+        dn = each['dn']
+        key = 'IP'
+        if 'mac' in each:
+            key = 'mac'
+        if vrf in vrf_dict:
+            vrf_dict[vrf].add(dn + '|' + each[key])
+        else:
+            vrf_dict[vrf] = {dn + '|' + each[key]}
+
+    return vrf_dict
+
+
+def search_ep_in_apic(apic_data, search_param):
+    for each in apic_data:
+        flag = False
+        for key, val in search_param.items():
+            # logger.debug(' key , val :'+key+' , '+val)
+            if key in each and each[key] == val:
+                # logger.debug(' Inside search and element found ')
+                flag = True
+            else:
+                break
+        if flag:
+            return each
+    return None
+
+
+def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
+
+    common_eps = sorted(common_eps, key=sort_eps)
+    logger.debug('sorted eps {} '.format(common_eps))
+    recommended_ep = common_eps[0]
+    del common_eps[0]
+    peers = []
+
+    rec_key = 'IP'
+    each_key = 'IP'
     recommendation_list = []
-    for each in common_eps:
-        accounted = 0
-        for duplicate in common_eps:
 
-            key = 'IP'
-            dup_key = 'IP'
-            if 'mac' in each:
-                key = 'mac'
-            if 'mac' in duplicate:
-                dup_key = 'mac'
+    extracted_vrfs = extract_vrf(apic_data)
+    logger.debug('extracted vrfs {} '.format(extracted_vrfs))
 
-            # For different elements, if IP/Mac is same and 'dn' is different
-            if each[key] == duplicate[dup_key] and each['dn'] != duplicate['dn'] and common_eps.index(each) != common_eps.index(duplicate):
+    for i in range(len(common_eps)):
+        each = common_eps[i]
+        ap_rec, epg_rec = extract(recommended_ep['dn'])
+        ap_each, epg_each = extract(each['dn'])
 
-                # This is the condition when there are 2 CEp's
-                # EP1: CEp's child fvIp.addr = 1.1.1.1
-                # EP2: CEp.ip = 1.1.1.1
-                # Then the first one will be selected giving fvIp priority
-                if each.get('cep_ip', ''):
-                    recommendation_list.append([each[key], each['dn'], 'No', key])
-                    break
-                if duplicate.get('cep_ip', ''):
-                    recommendation_list.append([each[key], each['dn'], 'Yes', key])
-                    break
+        ap_rec_count = len(extract_ap_epgs[ap_rec])
+        ap_each_count = len(extract_ap_epgs[ap_each])
 
-                ap_main, epg_main = extract(each['dn'])
-                ap_dup, epg_dup = extract(duplicate['dn'])
+        epg_rec_count = extract_ap_epgs[ap_rec][epg_rec]
+        epg_each_count = extract_ap_epgs[ap_each][epg_each]
 
-                # Compare count of 'EPG' for an 'AP'
-                main_count = extract_ap_epgs[ap_main][epg_main]
-                dup_count = extract_ap_epgs[ap_dup][epg_dup]
-                # recommendation logic
-                #     first compare the number of EPG in an application profile in which the EP belong
-                #     recommend the EP with highest EPG count
-                #     if the count is same then consider the count of EP in EPG in which the EP belong
-                #     recommend the EP with highest EP count
-                #     If both of the counts are same then the EP with fvIP is given priority
+        if 'mac' in recommended_ep:
+            rec_key = 'mac'
+        if 'mac' in each:
+            each_key = 'mac'
 
-                if main_count > dup_count:
-                    recommendation_list.append([each[key], each['dn'], 'Yes', key])
-                    break
-                elif main_count == dup_count:
-                    ap_main_c = len(extract_ap_epgs[ap_main])
-                    ap_dup_c = len(extract_ap_epgs[ap_dup])
-                    # Add one with more number of Epgs
-                    if ap_main_c > ap_dup_c:
-                        recommendation_list.append([each[key], each['dn'], 'Yes', key])
-                        break
-                    elif ap_main_c < ap_dup_c:
-                        recommendation_list.append([each[key], each['dn'], 'No', key])
-                        break
-                    else:
-                        recommendation_list.append([each[key], each['dn'], 'None', key])
+        search_params_rec = {rec_key: recommended_ep[rec_key], 'dn': recommended_ep['dn']}
+        apic_rec = search_ep_in_apic(apic_data, search_params_rec)['VRF']
+
+        search_params_each = {rec_key: each[rec_key], 'dn': each['dn']}
+        apic_each = search_ep_in_apic(apic_data, search_params_each)['VRF']
+
+        # When we encounter the ep whose IP is different from the current recommended IP.
+        # We add all peers and recommended to recommended list as recommended
+        if recommended_ep[rec_key] != each[each_key]:
+            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key])
+            for temp in peers:
+                recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key])
+            recommended_ep = each
+            peers = []
+            continue
+
+        if (recommended_ep['cep_ip'] and each['cep_ip']) or (not recommended_ep['cep_ip'] and not each['cep_ip']):
+            if apic_rec and apic_each and len(extracted_vrfs[apic_rec]) > len(extracted_vrfs[apic_each]):
+                recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+            elif apic_rec and apic_each and len(extracted_vrfs[apic_rec]) < len(extracted_vrfs[apic_each]):
+                recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                recommended_ep = each
+            else:
+                if ap_rec_count > ap_each_count:
+                    recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+                elif ap_rec_count < ap_each_count:
+                    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                    recommended_ep = each
                 else:
-                    recommendation_list.append([each[key], each['dn'], 'No', key])
-            elif each[key] != duplicate[dup_key] and each['dn'] != duplicate['dn'] and common_eps.index(each) != common_eps.index(duplicate) and any(each[key] in d for d in recommendation_list) is not True:
-                recommendation_list.append([each[key], each['dn'], 'None', key])
-            elif accounted == 0:
-                recommendation_list.append([each[key], each['dn'], 'None', key])
-                accounted = 1
+                    if epg_rec_count > epg_each_count:
+                        recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+                    elif epg_rec_count < epg_each_count:
+                        recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                        recommended_ep = each
+                    else:
+                        peers.append(each)
+        elif recommended_ep.get('cep_ip', '') is False and each.get('cep_ip', ''):
+            recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+        else:
+            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+            recommended_ep = each
 
-    recommendation_set = set(map(tuple, recommendation_list))
-    recommendation_list = map(list, recommendation_set)
-    temp_list = copy.deepcopy(recommendation_list)
-    for a in temp_list:
-        for b in temp_list:
-            # If same recommendation already exist with b[2] == 'None' than remove it.
-            if a[0] == b[0] and a[1] == b[1] and ((a[2] == 'Yes' or a[2] == 'No') and b[2] == 'None'):
-                recommendation_list.remove(b)
+    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key])
+
+    for temp in peers:
+        recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key])
+
     return recommendation_list
 
 
@@ -148,7 +192,7 @@ def generatelist(ip_list):
     return src_clus_list
 
 
-def recommended_eps(source_ip_list, parsed_eps):
+def recommended_eps(source_ip_list, parsed_eps, apic_data):
     """This finds all the recommended EPs in APIC wrt the source data
 
     TODO: explain
@@ -185,7 +229,7 @@ def recommended_eps(source_ip_list, parsed_eps):
         return []
 
     try:
-        rec_list = determine_recommendation(extract_ap_epgs, common_eps)
+        rec_list = determine_recommendation(extract_ap_epgs, common_eps, apic_data)
     except Exception as e:
         logger.exception('Exception while determining recommended list, Error: {}'.format(str(e)))
         return []

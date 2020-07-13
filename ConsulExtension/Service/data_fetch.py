@@ -169,8 +169,7 @@ def data_fetch():
 
             # get agent list from db
             connection = db_obj.engine.connect()
-            with connection.begin():
-                agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
             connection.close()
             agent_list = []
             for agent in agents:
@@ -229,7 +228,9 @@ def data_fetch():
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for node_id, node_val in nodes_dict.items():
-                        db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME,
+                        db_obj.insert_and_update(
+                            connection,
+                            db_obj.NODE_TABLE_NAME,
                             (
                                 node_val.get('node_id'),
                                 node_val.get('node_name'),
@@ -252,8 +253,7 @@ def data_fetch():
 
                 # Remove deleted Node data.
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+                node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -263,7 +263,7 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and node[0] not in nodes_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.NODE_TABLE_NAME,{'node_id': node[0]})
+                                    db_obj.delete_from_table(connection, db_obj.NODE_TABLE_NAME, {'node_id': node[0]})
                                 elif len(agents) > 1:
                                     node[4].remove(agent)
                                     db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
@@ -285,7 +285,9 @@ def data_fetch():
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for node in node_checks_dict.values():
-                        db_obj.insert_and_update(connection, db_obj.NODECHECKS_TABLE_NAME,
+                        db_obj.insert_and_update(
+                            connection,
+                            db_obj.NODECHECKS_TABLE_NAME,
                             (
                                 node.get('CheckID'),
                                 node.get('node_id'),
@@ -309,8 +311,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+                node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -320,7 +321,7 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and (node[0], node[1]) not in node_checks_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.NODECHECKS_TABLE_NAME,{'check_id': node[0], 'node_id': node[1]})
+                                    db_obj.delete_from_table(connection, db_obj.NODECHECKS_TABLE_NAME, {'check_id': node[0], 'node_id': node[1]})
                                 elif len(agents) > 1:
                                     node[9].remove(agent)
                                     db_obj.insert_and_update(connection, db_obj.NODECHECKS_TABLE_NAME, node, {'check_id': node[0], 'node_id': node[1]})
@@ -367,8 +368,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+                service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -420,8 +420,7 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+                service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
@@ -431,10 +430,10 @@ def data_fetch():
                         for agent in agents:
                             if agent in agent_addr_list and (service[0], service[1]) not in service_checks_key:
                                 if len(agents) == 1:
-                                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0], 'service_id': service[1]})
                                 elif len(agents) > 1:
                                     service[8].remove(agent)
-                                    db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0],'service_id': service[1]})
+                                    db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
                 connection.close()
 
                 logger.info("Data update in Service Checks Complete.")
@@ -448,8 +447,7 @@ def data_fetch():
 
             # get tenant list from db
             connection = db_obj.engine.connect()
-            with connection.begin():
-                tenants = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME))
+            tenants = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME))
             connection.close()
 
             tenant_list = []
@@ -506,15 +504,14 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
+                ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for ep in ep_data:
                         if ep[2] == tenant and (ep[0], ep[1]) not in ep_key:
-                            db_obj.delete_from_table(connection, db_obj.EP_TABLE_NAME, ep, {'mac': ep[0], 'ip': ep[1]})
+                            db_obj.delete_from_table(connection, db_obj.EP_TABLE_NAME, {'mac': ep[0], 'ip': ep[1]})
                 connection.close()
 
                 logger.info("Data update in EP Complete.")
@@ -547,15 +544,14 @@ def data_fetch():
                 connection.close()
 
                 connection = db_obj.engine.connect()
-                with connection.begin():
-                    epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+                epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
                 connection.close()
 
                 connection = db_obj.engine.connect()
                 with connection.begin():
                     for epg in epg_data:
                         if epg[1] == tenant and epg[0] not in epg_key:
-                            db_obj.delete_from_table(connection, db_obj.EPG_TABLE_NAME, epg, {'dn': epg[0]})
+                            db_obj.delete_from_table(connection, db_obj.EPG_TABLE_NAME, {'dn': epg[0]})
                 connection.close()
 
                 logger.info("Data update in EPG Complete.")

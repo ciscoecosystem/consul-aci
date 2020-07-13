@@ -22,9 +22,9 @@ export default class TestComponent extends React.Component {
         }]
 
         return (
-            <div>
+            <div style={{height:"100%"}}>
                 <Legend reloadController={this.props.reloadController} />
-                <div id="treeWrapper">
+                <div id="treeWrapper" style={{background:"white", height:"100%"}}>
                     <Tree
                         data={nodeWrapper} // nodeWrapper contains 1 array element which further contains multiple node
                         datacenterName={this.props.datacenterName}

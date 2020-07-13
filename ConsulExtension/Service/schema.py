@@ -124,6 +124,7 @@ class Query(graphene.ObjectType):
                                         dn=graphene.String(),
                                         mo_type=graphene.String(),
                                         mac_list=graphene.String(),
+                                        ip_list=graphene.String(),
                                         ip=graphene.String())
 
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies,
@@ -186,8 +187,8 @@ class Query(graphene.ObjectType):
         GetAuditLogs.auditLogsList = app.get_audit_logs(dn)
         return GetAuditLogs
 
-    def resolve_GetOperationalInfo(self, info, dn, mo_type, mac_list, ip):
-        GetOperationalInfo.operationalList = app.get_children_ep_info(dn, mo_type, mac_list, ip)
+    def resolve_GetOperationalInfo(self, info, dn, mo_type, mac_list, ip_list, ip):
+        GetOperationalInfo.operationalList = app.get_children_ep_info(dn, mo_type, mac_list, ip_list, ip)
         return GetOperationalInfo
 
     def resolve_GetConfiguredAccessPolicies(self, info, tn, ap, epg):

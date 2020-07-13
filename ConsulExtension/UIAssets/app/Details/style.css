@@ -67,7 +67,7 @@
 .detail-container {
     height: 80vh;
     margin: 10px 0px;
-    overflow-y: overlay;
+    overflow-y: scroll;
     overflow-x: unset;
 }
 

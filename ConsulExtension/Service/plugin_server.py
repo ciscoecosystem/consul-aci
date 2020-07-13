@@ -14,8 +14,6 @@ import apic_utils
 import alchemy_core
 import custom_logger
 
-import functools
-
 
 app = Flask(__name__, template_folder="../UIAssets",
             static_folder="../UIAssets/public")
@@ -60,8 +58,11 @@ def get_new_mapping(tenant, datacenter):
     try:
         # Get APIC data
         connection = db_obj.engine.connect()
-        with connection.begin():
-            ep_data = list(db_obj.select_from_ep_with_tenant(connection, tenant))
+        ep_data = list(db_obj.select_from_table(
+            connection,
+            db_obj.EP_TABLE_NAME,
+            {'tenant': tenant}
+        ))
         connection.close()
 
         parsed_eps = []
@@ -79,6 +80,7 @@ def get_new_mapping(tenant, datacenter):
                 }
             )
 
+        apic_data = get_apic_data(tenant)
         # Get consul data
         consul_data = get_consul_data(datacenter)
         ip_list = []
@@ -91,7 +93,7 @@ def get_new_mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommended_eps(
-            list(set(ip_list)), parsed_eps)
+            list(set(ip_list)), parsed_eps, apic_data)
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
@@ -108,7 +110,6 @@ def get_new_mapping(tenant, datacenter):
                     'enabled': entry.get('recommended')  # Initially only the recommended are true
                 })
 
-        apic_data = get_apic_data(tenant)
         for mapped_obj in current_mapping:
             for ep in apic_data:
                 if ep.get('dn') == mapped_obj.get('dn'):
@@ -123,11 +124,9 @@ def get_new_mapping(tenant, datacenter):
         logger.info('New mapping: {}'.format(str(current_mapping)))
 
         connection = db_obj.engine.connect()
-        with connection.begin():
-            already_mapped_data = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
+        already_mapped_data = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
         connection.close()
 
-        logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
         new_map_list = []
@@ -592,8 +591,7 @@ def get_multi_node_check(node_list, datacenter):
     response = []
     try:
         connection = db_obj.engine.connect()
-        with connection.begin():
-            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
         connection.close()
 
         node_list = json.loads(node_list)
@@ -759,7 +757,7 @@ def get_audit_logs(dn):
 
 
 @time_it
-def get_children_ep_info(dn, mo_type, mac_list, ip):
+def get_children_ep_info(dn, mo_type, mac_list, ip_list, ip):
     """
     Get Operational for EP and Client EP for EPG
 
@@ -788,8 +786,13 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
-    logger.debug('=Data returned by API call for get_children: {}'.format(str(len(ep_list))))
+    logger.debug('Data returned by API call for get_children: {}'.format(str(len(ep_list))))
     ep_info_list = []
+    if mo_type == "ep" and ip == "":
+        mac_ip_dict = dict()
+        ip_list = ip_list.split("-")
+        for index, mac in enumerate(mac_list):
+            mac_ip_dict[mac] = ip_list[index]
     try:
         for ep in ep_list:
             ep_info_dict = dict()
@@ -803,7 +806,10 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
                 mcast_addr = "---"
 
             if mo_type == "ep":
-                cep_ip = ip
+                if ip != "":
+                    cep_ip = ip
+                else:
+                    cep_ip = mac_ip_dict[ep_attr.get("mac")]
             elif mo_type == "epg":
                 ip_set = set()
                 for eachip in ep_children:
@@ -996,22 +1002,38 @@ def get_subnets(dn):
     }
     """
     aci_util_obj = apic_utils.AciUtils()
-    subnet_query_string = "query-target=children&target-subtree-class=fvSubnet"
-    subnet_resp = aci_util_obj.get_mo_related_item(dn, subnet_query_string, "")
-    subnet_list = []
     try:
-        for subnet in subnet_resp:
-            subnet_dict = {
-                "ip": "",
-                "to_epg": "",
-                "epg_alias": ""
-            }
-            subnet_attr = subnet.get("fvSubnet").get("attributes")
-            dn = subnet_attr.get("dn")
-            subnet_dict["to_epg"] = get_to_epg(dn)
-            subnet_dict["ip"] = subnet_attr["ip"]
-            subnet_dict["epg_alias"] = get_epg_alias(dn.split('/subnet')[0])
-            subnet_list.append(subnet_dict)
+        epg_traffic_query_string = 'query-target-filter=eq(vzFromEPg.epgDn,"' + dn + \
+            '")&rsp-subtree=full&rsp-subtree-class=vzToEPg,vzRsRFltAtt,vzCreatedBy&rsp-subtree-include=required'
+        epg_traffic_resp = aci_util_obj.get_all_mo_instances("vzFromEPg", epg_traffic_query_string)
+        logger.debug("=Data returned by API call for to epg traffic {}".format(str(len(epg_traffic_resp))))
+
+        to_epg_set = set()
+
+        for epg_traffic in epg_traffic_resp:
+            to_epg_children = epg_traffic["vzFromEPg"]["children"]
+            for to_epg_child in to_epg_children:
+                vz_to_epg_child = to_epg_child["vzToEPg"]
+                to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
+                flt_attr_children = vz_to_epg_child["children"]
+                for flt_attr in flt_attr_children:
+                    to_epg_set.add(to_epg_dn)
+
+        subnet_list = []
+        for epg in to_epg_set:
+            subnet_resp = aci_util_obj.get_mo_related_item(epg, "query-target=children&target-subtree-class=fvSubnet", "")
+            for subnet in subnet_resp:
+                subnet_dict = {
+                    "ip": "",
+                    "to_epg": "",
+                    "epg_alias": ""
+                }
+                subnet_attr = subnet.get("fvSubnet").get("attributes")
+                dn = subnet_attr.get("dn")
+                subnet_dict["to_epg"] = get_to_epg(dn)
+                subnet_dict["ip"] = subnet_attr["ip"]
+                subnet_dict["epg_alias"] = get_epg_alias(dn.split('/subnet')[0])
+                subnet_list.append(subnet_dict)
 
         return json.dumps({
             "status_code": "200",
@@ -1052,14 +1074,21 @@ def get_to_epg_traffic(epg_dn):
     try:
         for epg_traffic in epg_traffic_resp:
             to_epg_children = epg_traffic["vzFromEPg"]["children"]
-            type_mapping = {'prov': "Provider", 'cons': "Consumer"}
-            contract_type = epg_traffic.get("vzFromEPg", {}).get("attributes", {}).get("membType", "")
-            contract_type = type_mapping.get(contract_type, contract_type)
             for to_epg_child in to_epg_children:
 
                 vz_to_epg_child = to_epg_child["vzToEPg"]
                 to_epg_dn = vz_to_epg_child["attributes"]["epgDn"]
                 parsed_to_epg_dn = get_to_epg(to_epg_dn)
+                def_dn = vz_to_epg_child["attributes"]["epgDefDn"]
+                contract_type = ""
+                if re.search("/cons-", def_dn):
+                    contract_type = "Consumer"
+                elif re.search("/prov-", def_dn):
+                    contract_type = "Provider"
+                elif re.search("/intra-", def_dn):
+                    contract_type = "Intra EPG"
+                else:
+                    logger.error("Contract type not prov/cons/intra")
 
                 flt_attr_children = vz_to_epg_child["children"]
                 for flt_attr in flt_attr_children:
@@ -1227,8 +1256,7 @@ def read_creds():
 
         # handle db read failure, just pass empty list from there
         connection = db_obj.engine.connect()
-        with connection.begin():
-            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
         connection.close()
 
         if not agents:
@@ -1296,14 +1324,13 @@ def write_creds(new_agent):
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
 
         connection = db_obj.engine.connect()
-        with connection.begin():
-            agents = list(db_obj.select_from_table(
-                connection,
-                db_obj.LOGIN_TABLE_NAME,
-                {
-                    'agent_ip': new_agent.get('ip'),
-                    'port': new_agent.get('port')
-                }))
+        agents = list(db_obj.select_from_table(
+            connection,
+            db_obj.LOGIN_TABLE_NAME,
+            {
+                'agent_ip': new_agent.get('ip'),
+                'port': new_agent.get('port')
+            }))
         connection.close()
 
         if agents:
@@ -1380,8 +1407,7 @@ def update_creds(update_input):
         new_agent = update_input.get('newData')
 
         connection = db_obj.engine.connect()
-        with connection.begin():
-            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
         connection.close()
         if not agents:
             logger.info('Agents List Empty.')
@@ -1389,14 +1415,13 @@ def update_creds(update_input):
 
         if not (old_agent.get('ip') == new_agent.get('ip') and old_agent.get('port') == new_agent.get('port')):
             connection = db_obj.engine.connect()
-            with connection.begin():
-                new_agent_db_data = db_obj.select_from_table(
-                    connection,
-                    db_obj.LOGIN_TABLE_NAME,
-                    {
-                        'agent_ip': new_agent.get('ip'),
-                        'port': new_agent.get('port')
-                    })
+            new_agent_db_data = db_obj.select_from_table(
+                connection,
+                db_obj.LOGIN_TABLE_NAME,
+                {
+                    'agent_ip': new_agent.get('ip'),
+                    'port': new_agent.get('port')
+                })
             connection.close()
             if new_agent_db_data:
                 message = 'Agent ' + \
@@ -1489,14 +1514,12 @@ def delete_creds(agent_data):
 
         agent_dc = agent_data.get('datacenter')
         connection = db_obj.engine.connect()
-        with connection.begin():
-            agent_list = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        agent_list = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
         connection.close()
         agent_list = [agent for agent in agent_list if agent[5] == agent_dc]
         if not agent_list:
             connection = db_obj.engine.connect()
-            with connection.begin():
-                mappings = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
+            mappings = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
             connection.close()
 
             connection = db_obj.engine.connect()
@@ -1516,8 +1539,7 @@ def delete_creds(agent_data):
 
         # Delete Node data wrt this agent
         connection = db_obj.engine.connect()
-        with connection.begin():
-            node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
         connection.close()
 
         connection = db_obj.engine.connect()
@@ -1536,8 +1558,7 @@ def delete_creds(agent_data):
 
         # Delete Service data wrt this agent
         connection = db_obj.engine.connect()
-        with connection.begin():
-            service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
+        service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
         connection.close()
 
         connection = db_obj.engine.connect()
@@ -1556,8 +1577,7 @@ def delete_creds(agent_data):
 
         # Delete Node Check data wrt this agent
         connection = db_obj.engine.connect()
-        with connection.begin():
-            node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
+        node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
         connection.close()
 
         connection = db_obj.engine.connect()
@@ -1576,8 +1596,7 @@ def delete_creds(agent_data):
 
         # Delete Service Check data wrt this agent
         connection = db_obj.engine.connect()
-        with connection.begin():
-            service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
+        service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
         connection.close()
 
         connection = db_obj.engine.connect()
@@ -1628,8 +1647,7 @@ def get_datacenters():
     datacenters = []
     try:
         connection = db_obj.engine.connect()
-        with connection.begin():
-            agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
         connection.close()
 
         if agents:
@@ -1685,8 +1703,7 @@ def post_tenant(tn):
     logger.info('Tenant received: {}'.format(str(tn)))
     try:
         connection = db_obj.engine.connect()
-        with connection.begin():
-            response = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME, {'tenant': tn}))
+        response = list(db_obj.select_from_table(connection, db_obj.TENANT_TABLE_NAME, {'tenant': tn}))
         connection.close()
 
         if not response:
@@ -1866,8 +1883,7 @@ def get_agent_status(datacenter=""):
     agents_res = {'up': 0, 'down': 0}
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+    agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
     connection.close()
 
     if not agents:
@@ -1887,102 +1903,11 @@ def get_agent_status(datacenter=""):
     return agents_res
 
 
-def get_service_status(ep_ips):
-    """Function to get status of service
+def add_check(add_check, add_to):
+    """Adds consul checks"""
 
-    Args:
-        ep_ips (set): Set of EP IPs
-
-    Returns:
-        dict: Dictionary with count of passing, warning and critical services
-    """
-    service_res = {'passing': 0, 'warning': 0, 'failing': 0}
-
-    connection = db_obj.engine.connect()
-    services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-    service_checks = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
-    connection.close()
-
-    if not service_checks:
-        logger.info("Service check is empty")
-        return service_res
-
-    service_checks = list_data_formatter(service_checks, [1])
-
-    for service in services:
-        service_ip = service[5].split(':')[0]
-        if service_ip in ep_ips:
-            service_checks_list = service_checks.get(service[0], [])
-            for service_check in service_checks_list:
-                if service_check[7].lower():
-                    service_res[service_check[7].lower()] += 1
-                    break
-
-    return service_res
-
-
-def get_nodes_status(ep_ips):
-    """Function to get status of nodes
-
-    Args:
-        ep_ips (set): Set of EP ips
-
-    Returns:
-        dict: Dictionary with count of passing, warning and critical nodes
-    """
-    nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-
-    connection = db_obj.engine.connect()
-    nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
-    node_checks = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
-    connection.close()
-
-    if not node_checks:
-        logger.info("Node check is empty")
-        return nodes_res
-
-    node_checks = list_data_formatter(node_checks, [1])
-
-    for node in nodes:
-        for node_ip in node[2]:
-            if node_ip in ep_ips:
-                node_checks_list = node_checks.get(node[0], [])
-                for node_check in node_checks_list:
-                    if node_check[8].lower():
-                        nodes_res[node_check[8].lower()] += 1
-                        break
-    return nodes_res
-
-
-def get_service_endpoints(ep_ips, service_ips, node_ips):
-    """Function to return count of service and non service endpoint
-
-        Args:
-            ep_ips (set): Set of EP IPS
-            service_ips (set): Set of Service IPS
-            node_ips (set): Set og node_ips
-
-        Returns:
-            dict: Count of service and non service endpoint
-    """
-    response = {'service': 0, 'non_service': 0}
-    consul_ips = list(set(service_ips) | set(node_ips))
-    ep_map = {}
-    for each in consul_ips:
-        if each in ep_ips:
-            ep_map[each] = 0
-
-    for each in ep_ips:
-        if each in ep_map:
-            ep_map[each] = ep_map[each] + 1
-
-    total_service_count = 0
-    if ep_map:
-        total_service_count = functools.reduce(lambda a, b: a + b, [v for v in ep_map.values()])
-
-    response['service'] = total_service_count
-    response['non_service'] = len(ep_ips) - total_service_count
-    return response
+    for status, check_value in add_check.iteritems():
+        add_to[status] += check_value
 
 
 @time_it
@@ -2002,36 +1927,53 @@ def get_performance_dashboard(tn):
         response = {}
 
         connection = db_obj.engine.connect()
-        eps = list(db_obj.select_from_table(
-            connection,
-            db_obj.EP_TABLE_NAME,
-            {'tenant': tn}
-        ))
-        services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
-        nodes = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
+        ep_len = len(list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)))
         connection.close()
 
-        ep_ips = set()
-        service_ips = []
-        node_ips = []
-        for ep in eps:
-            if ep[1]:
-                ep_ips.add(ep[1])
+        mapped_ep = {}
+        datacenters = json.loads(get_datacenters())['payload']
+        for dc in datacenters:
+            datacenter = dc['datacenter']
+            if datacenter not in mapped_ep:
+                mapped_ep[datacenter] = []
 
-        for service in services:
-            if service[3]:
-                service_ips.append(service[3])
+        for dc in mapped_ep:
+            mapped_dc = get_new_mapping(tn, dc)
+            for map in mapped_dc:
+                mapped_ep[dc].append(map)
 
-        for node in nodes:
-            if node[2]:
-                for ip in node[2]:
-                    node_ips.append(ip)
+        apic_data = get_apic_data(tn)
+        ep_res = {'service': 0, 'non_service': 0}
+        service_res = {'passing': 0, 'warning': 0, 'failing': 0}
+        nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
+        ep_list = []
+        node_ip_list = []
+        service_addr_list = []
+        for dc in mapped_ep:
+            consul_data = get_consul_data(dc)
+            merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])
+
+            for ep in merged_data:
+                # Add service eps to ep_resp
+                if (ep['IP'], ep['dn']) not in ep_list:
+                    ep_list.append((ep['IP'], ep['dn']))
+                    ep_res['service'] += 1
+
+                if ep['node_ips'][0] not in node_ip_list:
+                    node_ip_list.append(ep['node_ips'][0])
+                    add_check(ep['node_check'], nodes_res)
+
+                for service in ep['node_services']:
+                    if service['service_address'] not in service_addr_list:
+                        service_addr_list.append(service['service_address'])
+                        add_check(service['service_checks'], service_res)
+
+        ep_res['non_service'] = ep_len - ep_res['service']
 
         response['agents'] = get_agent_status()
-        response['service'] = get_service_status(ep_ips)
-        response['nodes'] = get_nodes_status(ep_ips)
-        response['service_endpoint'] = get_service_endpoints(ep_ips, service_ips, node_ips)
-        # Send the agents
+        response['service'] = service_res
+        response['nodes'] = nodes_res
+        response['service_endpoint'] = ep_res
 
         return json.dumps({
             "status": "200",
@@ -2051,8 +1993,7 @@ def get_epg_alias(dn):
     """This would return EPG alias from the db"""
 
     connection = db_obj.engine.connect()
-    with connection.begin():
-        epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
+    epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
     connection.close()
 
     for epg in epg_data:
