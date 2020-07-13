@@ -31,7 +31,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         for each in mappings:
             mapping_ips[each.get('ip')] = True
 
-        mapping_key = 'ip'
         aci_key = 'IP'
 
         consul_data_formatter(consul_data, mapping_ips)
@@ -44,7 +43,10 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 total_epg_count[aci['EPG']] += 1
 
             mapped_detail = new_mappings.get(
-                    (aci.get('dn'),aci.get(aci_key)),
+                    (
+                        aci.get('dn'),
+                        aci.get(aci_key)
+                    ),
                     {}
                 )
             if mapped_detail:
@@ -96,7 +98,9 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 if aci['EPG'] not in non_merged_ep_dict:
                     non_merged_ep_dict[aci['EPG']] = {aci['CEP-Mac']: str(aci['IP'])}
 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']] and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']] \
+                        and aci.get('IP') \
+                        and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
                     multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']] + ", " + str(aci['IP'])
                     non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
                 else:
@@ -202,4 +206,5 @@ def consul_data_formatter(consul_data, mapping_ips):
                 services.append(service_list[i])
         node['node_services'] = service_list
         node['node_services_copy'] = [service for service in node['node_services'] if (service.get(
-            'service_ip') == "" or service.get('service_ip') in node.get('node_ips', []))]
+                'service_ip') == "" or service.get('service_ip') in node.get('node_ips', [])
+            )]
