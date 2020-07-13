@@ -745,7 +745,7 @@ def get_audit_logs(dn):
 
 
 @time_it
-def get_children_ep_info(dn, mo_type, mac_list, ip):
+def get_children_ep_info(dn, mo_type, mac_list, ip_list, ip):
     """
     Get Operational for EP and Client EP for EPG
 
@@ -774,8 +774,13 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
         ep_info_query_string = 'query-target=children&target-subtree-class=fvCEp&rsp-subtree=children&rsp-subtree-class=fvRsHyper,fvRsCEpToPathEp,fvRsToVm,fvIp'
 
     ep_list = aci_util_obj.get_mo_related_item(dn, ep_info_query_string, "")
-    logger.debug('=Data returned by API call for get_children: {}'.format(str(len(ep_list))))
+    logger.debug('Data returned by API call for get_children: {}'.format(str(len(ep_list))))
     ep_info_list = []
+    if mo_type == "ep" and ip == "":
+        mac_ip_dict = dict()
+        ip_list = ip_list.split("-")
+        for index, mac in enumerate(mac_list):
+            mac_ip_dict[mac] = ip_list[index]
     try:
         for ep in ep_list:
             ep_info_dict = dict()
@@ -789,7 +794,10 @@ def get_children_ep_info(dn, mo_type, mac_list, ip):
                 mcast_addr = "---"
 
             if mo_type == "ep":
-                cep_ip = ip
+                if ip != "":
+                    cep_ip = ip
+                else:
+                    cep_ip = mac_ip_dict[ep_attr.get("mac")]
             elif mo_type == "epg":
                 ip_set = set()
                 for eachip in ep_children:

@@ -1,7 +1,15 @@
 import json
-from Service import plugin_server
 import os
 import pytest
+import sys
+from mock import Mock
+
+sys.modules['cobra'] = 'cobra'
+sys.modules['cobra.model'] = 'cobra.model'
+sys.modules['cobra.model.pol'] = Mock(name='Uni')
+sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
+
+from Service import plugin_server
 
 
 def get_data(file_name):
@@ -33,7 +41,7 @@ def test_get_new_mapping(case):
         os.system(
             'cp ./tests/plugin_server/{}.db ./ConsulDatabase.db'.format(case)
         )
-    except:
+    except Exception:
         assert False
 
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
