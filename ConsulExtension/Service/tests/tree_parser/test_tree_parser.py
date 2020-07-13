@@ -11,11 +11,18 @@ Case4: Service with different ip as that of Node which DOES NOT map to any EP
 Case5: Service with no ip
 Case6: All above combinations
 '''
-cases = [1, 2, 3, 4, 5, 6]
+cases = [
+    "dangling",
+    "ipv6",
+    "service_to_ep",
+    "service_to_none",
+    "service_without_ip",
+    "random_combination"
+]
 
 
 def get_data(in_out, case):
-    with open('./tests/tree_parser/{}_{}.json'.format(in_out, case), 'r') as f:
+    with open('./tests/tree_parser/data/{}/{}.json'.format(in_out, case), 'r') as f:
         return json.load(f)
 
 

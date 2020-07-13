@@ -16,7 +16,7 @@ from Service.apic_utils import AciUtils
 
 
 def get_data(file_name):
-    with open('./tests/plugin_server/{}'.format(file_name), 'r') as fp:
+    with open('./tests/plugin_server/data/{}'.format(file_name), 'r') as fp:
         data = json.load(fp)
         return data
 
@@ -98,7 +98,18 @@ Case 7: Service and Node has different ip and Service and Node mapped with diffe
 Case 8: Service and Node has different ip and Node mapped with any EP
 Case 9: Service without any ip address
 '''
-get_new_mapping_cases = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+get_new_mapping_cases = [
+    "dangling",
+    "node_to_ep",
+    "service_node_with_same_ip_to_none",
+    "service_node_with_same_ip_to_ep",
+    "service_node_with_diff_ip_service_to_ep",
+    "service_node_with_diff_ip_both_to_none",
+    "service_node_with_diff_ip_both_to_diff_ep"
+    "service_node_with_diff_ip_node_to_ep"
+    "service_without_ip"
+]
+
 mapping_data = get_data('saved_mapping.json')
 read_creds_cases = get_data('read_creds.json')
 epg_alias_data = get_data('get_epg_alias.json')
@@ -111,7 +122,7 @@ def test_get_new_mapping(case):
 
     try:
         os.system(
-            'cp ./tests/plugin_server/{}.db ./ConsulDatabase.db'.format(case)
+            'cp ./tests/plugin_server/data/{}.db ./ConsulDatabase.db'.format(case)
         )
     except Exception:
         assert False
