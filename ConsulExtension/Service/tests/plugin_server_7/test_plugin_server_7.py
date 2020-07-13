@@ -56,10 +56,3 @@ def test_change_key(input, expected):
         actual_output = plugin_server.change_key(services)
         assert actual_output == []
 
-
-@pytest.mark.parametrize('input, expected',
-                         [(),
-                          (),
-                          (None, [])])
-def test(input, expected):
-    assert True
