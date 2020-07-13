@@ -1427,7 +1427,7 @@ def update_creds(update_input):
                 with connection.begin():
                     db_obj.insert_and_update(
                         connection,
-                        db_obj.LOGIN_TABLE_NAME, 
+                        db_obj.LOGIN_TABLE_NAME,
                         [
                             new_agent.get('ip'),
                             new_agent.get('port'),
@@ -1435,7 +1435,7 @@ def update_creds(update_input):
                             new_agent.get('token'),
                             new_agent.get('status'),
                             new_agent.get('datacenter')
-                        ], 
+                        ],
                         {
                             'agent_ip': old_agent.get('ip'),
                             'port': old_agent.get('port')
@@ -1587,7 +1587,14 @@ def delete_creds(agent_data):
                 if agent_addr not in agents:
                     continue
                 if len(agents) == 1:
-                    db_obj.delete_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME, {'check_id': service[0],'service_id': service[1]})
+                    db_obj.delete_from_table(
+                        connection,
+                        db_obj.SERVICECHECKS_TABLE_NAME,
+                        {
+                            'check_id': service[0],
+                            'service_id': service[1]
+                        }
+                    )
                 else:
                     service[8].remove(agent_addr)
                     db_obj.insert_and_update(connection, db_obj.SERVICECHECKS_TABLE_NAME, service, {'check_id': service[0], 'service_id': service[1]})
@@ -1849,6 +1856,7 @@ def get_apic_data(tenant):
 
     return apic_data
 
+
 def get_agent_status(datacenter=""):
     """Function to get overview agent
 
@@ -1888,7 +1896,7 @@ def get_service_status(ep_ips):
     Returns:
         dict: Dictionary with count of passing, warning and critical services
     """
-    service_res = {'passing': 0, 'warning':0, 'failing':0}
+    service_res = {'passing': 0, 'warning': 0, 'failing': 0}
 
     connection = db_obj.engine.connect()
     services = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
