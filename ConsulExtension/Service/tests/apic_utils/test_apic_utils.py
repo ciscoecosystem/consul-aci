@@ -1,5 +1,4 @@
 import pytest
-import time
 from requests import Session
 from Service import apic_utils
 from Service.apic_utils import AciUtils
@@ -997,7 +996,7 @@ def test_parse_epg_data():
     AciUtils.parse_and_return_epg_data = dummy_parse_and_return_epg_data
 
     obj = AciUtils()
-    response = obj.parse_and_return_epg_data([{"fvAEPg": {}}])    
+    response = obj.parse_and_return_epg_data([{"fvAEPg": {}}])
 
     assert response == {"dummy-key": "dummy-val"}
 

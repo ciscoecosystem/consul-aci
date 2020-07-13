@@ -12,7 +12,6 @@ sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
 from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
-from Service import apic_utils
 from Service.apic_utils import AciUtils
 
 

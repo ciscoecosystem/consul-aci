@@ -1,4 +1,3 @@
-import pytest
 from Service import data_fetch
 from Service import consul_utils
 from Service import threading_util

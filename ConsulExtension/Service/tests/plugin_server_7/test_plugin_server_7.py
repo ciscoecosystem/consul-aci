@@ -1,19 +1,18 @@
 import pytest
 from Service import plugin_server
-from Service.tests.plugin_server_7.utils import (
-                                    generate_dummy_new_mapping_data,
-                                    verify_mapping,
-                                    generate_dummy_exception_new_mapping_data,
-                                    verify_change_key,
-                                    get_absolue_path,
-                                    parse_json_file)
+from Service.tests.plugin_server_7.utils import (generate_dummy_new_mapping_data,
+                                                 verify_mapping,
+                                                 generate_dummy_exception_new_mapping_data,
+                                                 verify_change_key,
+                                                 get_absolue_path,
+                                                 parse_json_file)
 
 
 @pytest.mark.parametrize("test_input, expected",
                          [('/data/1_mapping_initial_input.json',
                           {'output': '/data/1_mapping_initial_output.json',
                            'method': verify_mapping}),
-                           ('/data/3_mapping_empty_input.json',
+                          ('/data/3_mapping_empty_input.json',
                           {'output': '/data/3_mapping_empty_output.json',
                            'method': verify_mapping})])
 def test_mapping(test_input, expected):

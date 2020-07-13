@@ -1,4 +1,3 @@
-import requests
 import json
 import os
 
@@ -20,7 +19,6 @@ def parse_json_file(file_path):
     with open(file_path) as f:
         data = json.load(f)
     return data
-
 
 
 def create_dummy_session_get_status_code(response_code):
@@ -57,15 +55,12 @@ def create_dummy_session_with_error_get(input_file):
     return dummy_session
 
 
-
 def verify_nodelist_against_catalog(actual_output, output_file):
     output_file = get_absolue_path(output_file)
     data = parse_json_file(output_file)
     flag = False
     for expected_node in data:
-        flag = any(expected_node['node_id'] == each['node_id'] and
-                   set(expected_node['node_ips']) ==
-                   set(each['node_ips']) for each in actual_output)
+        flag = any(expected_node['node_id'] == each['node_id'] and set(expected_node['node_ips']) == set(each['node_ips']) for each in actual_output)
     if data == actual_output:
         flag = True
     return flag
@@ -76,10 +71,7 @@ def verify_nodes_services(actual_output, output_file):
     data = parse_json_file(output_file)
     flag = False
     for expected_node in data:
-        flag = any(expected_node['service_id'] == each['service_id']
-                   and
-                   set(expected_node['service_address']) ==
-                   set(each['service_address']) for each in actual_output)
+        flag = any(expected_node['service_id'] == each['service_id'] and set(expected_node['service_address']) == set(each['service_address']) for each in actual_output)
     if data == actual_output:
         flag = True
     return flag
@@ -98,9 +90,7 @@ def verify_node_and_service_checks(actual_output, output_file):
 
 
 def verify_service_info(actual_output, expected_output):
-    if (actual_output[0] == expected_output[0] and
-        actual_output[1] == expected_output[1] and
-       actual_output[2] == expected_output[2]):
+    if (actual_output[0] == expected_output[0] and actual_output[1] == expected_output[1] and actual_output[2] == expected_output[2]):
         return True
     else:
         return False
