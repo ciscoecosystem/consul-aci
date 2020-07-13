@@ -307,3 +307,7 @@ body {
 .cui .panel{
   margin-bottom: 280px !important;
 }
+
+.ReactTable .pagination-bottom .select::after {
+  z-index: 10;
+}

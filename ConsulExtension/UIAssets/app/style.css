@@ -201,3 +201,7 @@ main {
 .cui .slideInLeftSmall{
     animation: none !important;
 }
+
+.ReactTable .pagination-bottom .select::after {
+    z-index: 10;
+}
