@@ -55,4 +55,3 @@ def test_change_key(input, expected):
     else:
         actual_output = plugin_server.change_key(services)
         assert actual_output == []
-

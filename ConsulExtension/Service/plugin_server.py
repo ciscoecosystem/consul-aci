@@ -196,6 +196,7 @@ def mapping(tenant, datacenter):
 
     try:
         current_mapping = get_new_mapping(tenant, datacenter)
+
         return json.dumps({
             "payload": current_mapping,  # Return current mapping
             "status_code": "200",
