@@ -13,6 +13,17 @@ from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
 from Service.apic_utils import AciUtils
+from Service.tests.plugin_server.utils import (
+                                    generate_dummy_new_mapping_data,
+                                    verify_mapping,
+                                    generate_dummy_exception_new_mapping_data,
+                                    generate_multiple_dummy_db_output,
+                                    generate_dummy_db_output,
+                                    verify_change_key,
+                                    get_absolue_path,
+                                    parse_json_file,
+                                    verify_agent_status,
+                                    dummy_db_select_exception)
 
 
 def get_data(file_name):
@@ -702,3 +713,71 @@ def test_get_to_epg_traffic():
             "type": "Consumer"
         }]
     })
+
+
+
+
+
+@pytest.mark.parametrize("test_input, expected",
+                         [('/plugin_server/data/mapping/1_mapping_initial_input.json',
+                          {'output': '/plugin_server/data/mapping/1_mapping_initial_output.json',
+                           'method': verify_mapping}),
+                           ('/plugin_server/data/mapping/3_mapping_empty_input.json',
+                          {'output': '/plugin_server/data/mapping/3_mapping_empty_output.json',
+                           'method': verify_mapping})])
+def test_mapping(test_input, expected):
+    plugin_server.get_new_mapping = generate_dummy_new_mapping_data(test_input)
+    actual_output = plugin_server.mapping('', '')
+    verifier = expected['method']
+    assert verifier(actual_output, expected['output'])
+
+
+@pytest.mark.parametrize("test_input, expected",
+                         [('/plugin_server/data/mapping/3_mapping_empty_input.json',
+                          {'output': '/plugin_server/data/mapping/2_mapping_exception_output.json',
+                           'method': verify_mapping})])
+def test_mapping_exception(test_input, expected):
+    plugin_server.get_new_mapping = generate_dummy_exception_new_mapping_data()
+    actual_output = plugin_server.mapping('', '')
+    verifier = expected['method']
+    assert verifier(actual_output, expected['output'])
+
+
+@pytest.mark.parametrize('input, expected',
+                         [(100, ('200', 'Polling Interval Set!')),
+                          (3, ('200', 'Polling Interval Set!'))])
+def test_set_polling_interval(input, expected):
+    assert plugin_server.set_polling_interval(input), expected
+
+
+@pytest.mark.parametrize('input, expected',
+                         [('/plugin_server/data/change_key/1_initial_input.json', '/plugin_server/data/change_key/1_initial_output.json'),
+                          ('/plugin_server/data/change_key/1_empty_input.json', '/plugin_server/data/change_key/1_empty_output.json'),
+                          (None, [])])
+def test_change_key(input, expected):
+    services = None
+    if input:
+        input_file = get_absolue_path(input)
+        services = parse_json_file(input_file)
+        actual_output = plugin_server.change_key(services)
+        assert verify_change_key(actual_output, expected)
+    else:
+        actual_output = plugin_server.change_key(services)
+        assert actual_output == []
+
+
+@pytest.mark.parametrize('input, expected',
+                         [('/plugin_server/data/agent_status/1_initial_input.json', '/plugin_server/data/agent_status/1_initial_output.json'),
+                          ('/plugin_server/data/agent_status/2_different_dc_input.json', '/plugin_server/data/agent_status/2_different_dc_output.json'),
+                          (None, [])])
+def test_get_agent_status(input, expected):
+    if input:
+        alchemy_core.Database.select_from_table = generate_dummy_db_output(None, input)
+        actual_output = plugin_server.get_agent_status('dc1')
+        assert verify_agent_status(actual_output, expected)
+    else:
+        alchemy_core.Database.select_from_table = dummy_db_select_exception()
+        with pytest.raises(Exception):
+            assert plugin_server.get_agent_status('dc1')
+
+
