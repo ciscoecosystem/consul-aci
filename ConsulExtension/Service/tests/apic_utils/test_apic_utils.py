@@ -41,9 +41,6 @@ apic_fetch_vrf_cases = [
     ({}, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", '')
 ]
 
-apic_fetch_contract_cases = [
-]
-
 get_epg_health_cases = [
     ({
         "imdata": [{
@@ -615,7 +612,7 @@ def test_apic_fetch_vrf(data, dn, expected):
      "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
      "data/apic_fetch_contract_cases/all_contracts_output.json"),
     ("data/apic_fetch_contract_cases/no_contracts_input.json",
-    "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
      "data/apic_fetch_contract_cases/no_contracts_output.json")
 ])
 def test_apic_fetch_contract(data, dn, expected):
