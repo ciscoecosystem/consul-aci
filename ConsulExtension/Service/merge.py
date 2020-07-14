@@ -122,12 +122,11 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         updated_merged_list = []
         if fractions:
-            for key, value in fractions.iteritems():
-                for each in merge_list:
-                    if key == each['EPG']:
-                        each['fraction'] = value
-                        each['Non_IPs'] = final_non_merged.get(each['dn'], {})
-                        updated_merged_list.append(each)
+            for each in merge_list:
+                if each['EPG'] in fractions:
+                    each['fraction'] = fractions[each['EPG']]
+                    each['Non_IPs'] = final_non_merged.get(each['dn'], {})
+                    updated_merged_list.append(each)
 
         final_list = []
         for each in updated_merged_list:
