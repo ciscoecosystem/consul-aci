@@ -3,33 +3,11 @@ from requests import Session
 from Service import apic_utils
 from Service.apic_utils import AciUtils
 from Service.tests.utils import DummyClass
+from Service.tests.apic_utils.utils import get_data
 
 
 aci_get_cases = [(200, {'dummy_key': 'dummy_val'}), (400, None)]
 
-get_interface_cases = [
-    ({
-        "fvRsCEpToPathEp": {
-            "attributes": {
-                "tDn": "topology/pod-0/paths-111/pathep-[eth0/0]",
-            }
-        }
-    }, "111", "Pod-0/Node-111/eth0/0"),
-    ({
-        "fvRsCEpToPathEp": {
-            "attributes": {
-                "tDn": "topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]",
-            }
-        }
-    }, "-111-222", "Pod-0/Node--111-222/FI-A-PG"),
-    ({
-        "fvRsCEpToPathEp": {
-            "attributes": {
-                "tDn": "topology/pod-1/pathgrp-[1.1.1.1]",
-            }
-        }
-    }, "[1.1.1.1]", "Pod-1/Node-[1.1.1.1]/1.1.1.1(vmm)")
-]
 
 get_node_from_interface_cases = [
     ("topology/pod-1/pathdummy-xxx", ""),
@@ -37,188 +15,6 @@ get_node_from_interface_cases = [
     ("topology/pod-0/paths-111/pathep-[eth0/0]", "111"),
     ("topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]", "-111-222"),
     (["topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]", "topology/pod-0/paths-111/pathep-[eth0/0]"], "-111-222, 111"),
-]
-
-get_controller_and_hosting_server = [
-    ({
-        "fvRsHyper": {
-            "attributes": {
-                "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-hyper000/hv-host-00"
-            }
-        }
-    }, [{
-        "compHv": {
-            "attributes": {
-                "name": "1.1.1.1"
-            }
-        }
-    }], ("hyper000", "1.1.1.1")),
-    ({
-        "fvRsHyper": {
-            "attributes": {
-                "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-hyper000/hv-host-00"
-            }
-        }
-    }, [], ("hyper000", "")),
-    ({}, [{
-        "compHv": {
-            "attributes": {
-                "name": "1.1.1.1"
-            }
-        }
-    }], ("", ""))
-]
-
-get_ip_mac_list_cases = [
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "1.1.1.1",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["1.1.1.1", True]]),
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "0.0.0.0",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["00:00:00:00:00:aa", False]]),
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "0.0.0.0",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["1.1.1.1", False]]),
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "1.1.1.1",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["1.1.1.1", False]]),
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "0.0.0.0",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "2.2.2.2",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["1.1.1.1", False], ["2.2.2.2", False]]),
-    ({
-        "fvCEp": {
-            "attributes": {
-                "ip": "1.1.1.1",
-                "mac": "00:00:00:00:00:AA",
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "2.2.2.2",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, [["2.2.2.2", False], ["1.1.1.1", True]])
 ]
 
 apic_fetch_bd_cases = [
@@ -246,65 +42,6 @@ apic_fetch_vrf_cases = [
 ]
 
 apic_fetch_contract_cases = [
-    ({"imdata": [
-        {
-            "fvRsProv": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy1",
-                }
-            }
-        },
-        {
-            "fvRsProv": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy2",
-                }
-            }
-        },
-        {
-            "fvRsCons": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy1",
-                }
-            }
-        },
-        {
-            "fvRsCons": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy2",
-                }
-            }
-        },
-        {
-            "fvRsIntraEpg": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0",
-                }
-            }
-        },
-        {
-            "fvRsConsIf": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0",
-                }
-            }
-        },
-        {
-            "fvRsProtBy": {
-                "attributes": {
-                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0",
-                }
-            }
-        }
-    ]
-    }, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", {
-        "Consumer": ["dummy1", "dummy2"],
-        "Intra EPG": ["dummy0"],
-        "Provider": ["dummy1", "dummy2"],
-        "Consumer Interface": ["dummy0"],
-        "Taboo": ["dummy0"]
-    }),
-    ({}, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", {})
 ]
 
 get_epg_health_cases = [
@@ -401,33 +138,56 @@ def test_get_node_from_interface(interface, expected):
     assert response == expected
 
 
-@pytest.mark.parametrize("data, node, expected", get_interface_cases)
+@pytest.mark.parametrize("data, node, expected", [
+    ("data/get_interface_cases/paths_input.json",
+     "data/get_interface_cases/paths_node.json",
+     "data/get_interface_cases/paths_output.json"
+     ),
+    ("data/get_interface_cases/protpaths_input.json",
+     "data/get_interface_cases/protpaths_node.json",
+     "data/get_interface_cases/protpaths_output.json"
+     ),
+    ("data/get_interface_cases/pathgrp_input.json",
+     "data/get_interface_cases/pathgrp_node.json",
+     "data/get_interface_cases/pathgrp_output.json"
+     )
+])
 def test_get_interface(data, node, expected):
 
     # Mock apic_util get_node_from_interface
     def dummy_get_node_from_interface(self, interface):
-        return node
+        return get_data(node)
 
     AciUtils.get_node_from_interface = dummy_get_node_from_interface
 
     # Test the function
     obj = AciUtils()
-    response = obj.get_interface(data)
+    response = obj.get_interface(get_data(data))
 
-    assert response == expected
+    assert response == get_data(expected)
 
 
-@pytest.mark.parametrize("data,mo_instance_data,expected", get_controller_and_hosting_server)
+@pytest.mark.parametrize("data,mo_instance_data,expected", [
+    ("data/get_controller_and_hosting_server/with_ip_host_input.json",
+     "data/get_controller_and_hosting_server/with_ip_host_mo_instance.json",
+     ('hyper000', '1.1.1.1')),
+    ("data/get_controller_and_hosting_server/with_host_input.json",
+     "data/get_controller_and_hosting_server/with_host_mo_instance.json",
+     ('hyper000', '')),
+    ("data/get_controller_and_hosting_server/without_ip_host_input.json",
+     "data/get_controller_and_hosting_server/without_ip_host_mo_instance.json",
+     ('', ''))
+])
 def test_get_controller_and_hosting_server(data, mo_instance_data, expected):
 
     def dummy_get_all_mo_instances(self, mo_class, query_string=""):
-        return mo_instance_data
+        return get_data(mo_instance_data)
 
     AciUtils.get_all_mo_instances = dummy_get_all_mo_instances
 
     # Test the function
     obj = AciUtils()
-    response = obj.get_controller_and_hosting_server(data)
+    response = obj.get_controller_and_hosting_server(get_data(data))
 
     assert response == expected
 
@@ -464,12 +224,25 @@ def test_get_dict_records():
     assert response == {'key': [1, 2, 3]}
 
 
-@pytest.mark.parametrize('data,expected', get_ip_mac_list_cases)
+@pytest.mark.parametrize('data,expected', [
+    ("data/get_ip_mac_list_cases/cep_input.json",
+     "data/get_ip_mac_list_cases/cep_output.json"),
+    ("data/get_ip_mac_list_cases/no_ip_input.json",
+     "data/get_ip_mac_list_cases/no_ip_output.json"),
+    ("data/get_ip_mac_list_cases/fvip_input.json",
+     "data/get_ip_mac_list_cases/fvip_output.json"),
+    ("data/get_ip_mac_list_cases/same_cep_fvip_input.json",
+     "data/get_ip_mac_list_cases/same_cep_fvip_output.json"),
+    ("data/get_ip_mac_list_cases/2_fvip_input.json",
+     "data/get_ip_mac_list_cases/2_fvip_output.json"),
+    ("data/get_ip_mac_list_cases/diff_cep_fvip_input.json",
+     "data/get_ip_mac_list_cases/diff_cep_fvip_output.json")
+])
 def test_get_ip_mac_list(data, expected):
 
-    response = AciUtils.get_ip_mac_list(data)
+    response = AciUtils.get_ip_mac_list(get_data(data))
 
-    assert response == expected
+    assert response == get_data(expected)
 
 
 def test_get_ep_info():
@@ -837,11 +610,18 @@ def test_apic_fetch_vrf(data, dn, expected):
     assert response == expected
 
 
-@pytest.mark.parametrize('data, dn, expected', apic_fetch_contract_cases)
+@pytest.mark.parametrize('data, dn, expected', [
+    ("data/apic_fetch_contract_cases/all_contracts_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/apic_fetch_contract_cases/all_contracts_output.json"),
+    ("data/apic_fetch_contract_cases/no_contracts_input.json",
+    "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/apic_fetch_contract_cases/no_contracts_output.json")
+])
 def test_apic_fetch_contract(data, dn, expected):
     # Mock AciUtils methods
     def dummy_aci_get(self, url):
-        return data
+        return get_data(data)
 
     AciUtils.aci_get = dummy_aci_get
     AciUtils.proto = "http://"
@@ -850,7 +630,7 @@ def test_apic_fetch_contract(data, dn, expected):
     obj = AciUtils()
     response = obj.apic_fetch_contract(dn)
 
-    assert response == expected
+    assert response == get_data(expected)
 
 
 @pytest.mark.parametrize('data, dn, expected', get_epg_health_cases)
