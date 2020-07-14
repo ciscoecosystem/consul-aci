@@ -105,8 +105,8 @@ get_new_mapping_cases = [
     "service_node_with_same_ip_to_ep",
     "service_node_with_diff_ip_service_to_ep",
     "service_node_with_diff_ip_both_to_none",
-    "service_node_with_diff_ip_both_to_diff_ep"
-    "service_node_with_diff_ip_node_to_ep"
+    "service_node_with_diff_ip_both_to_diff_ep",
+    "service_node_with_diff_ip_node_to_ep",
     "service_without_ip"
 ]
 
