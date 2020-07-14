@@ -282,7 +282,7 @@ export default class App extends React.Component {
     pollingIntervalCall(){
         let xhrPostPollingIntervalCall = this.xhrCred;
         const payload = {
-            query: 'query{SetPullingInterval(interval:' + this.state.selectedPollingInterval + '){response}}'
+            query: 'query{SetPollingInterval(interval:' + this.state.selectedPollingInterval + '){response}}'
         }
         try{
             xhrPostPollingIntervalCall.open("POST", QUERY_URL, true);
@@ -297,12 +297,12 @@ export default class App extends React.Component {
                 if (xhrPostPollingIntervalCall.readyState == 4 && xhrPostPollingIntervalCall.status == 200) {
 
                     let apiResponse = JSON.parse(xhrPostPollingIntervalCall.responseText);
-                    let pollingApiResponse = JSON.parse(apiResponse.data.SetPullingInterval.response)
+                    let pollingApiResponse = JSON.parse(apiResponse.data.SetPollingInterval.response)
                     if(parseInt(pollingApiResponse.status) === 200){
-                        this.notify(pollingApiResponse.payload.message, true, false)
+                        this.notify(pollingApiResponse.message, true, false)
                     }
                     else if(parseInt(pollingApiResponse.status) === 300){
-                        this.notify(pollingApiResponse.payload.message)
+                        this.notify(pollingApiResponse.message)
                     }
                     this.handlePollingIntervalPopUp(false);
                 }
