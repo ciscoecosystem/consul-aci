@@ -323,7 +323,7 @@ export default class App extends React.Component {
                     console.log("Not fetching");
                 }
             }
-            xhrReadDc.send(JSON.stringify(READ_DATACENTER_QUERY));
+            xhrReadDc.send(JSON.stringify(READ_DATACENTER_QUERY(this.tenantName)));
         }
         catch (e) {
             thiss.notify("Error while fetching agent information please refresh")
@@ -339,7 +339,7 @@ export default class App extends React.Component {
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
-                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
+                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} />}
                     {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
                 </div >
             </Router>

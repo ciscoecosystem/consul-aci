@@ -58,6 +58,7 @@ export default class Agent extends React.Component {
         console.log("Agent index props", props);
         this.state = {
             details: [],
+            tenantName: this.props.tenantName,
             readAgentLoading: false,
             redirectToMain: false,
             addAgentModalIsOpen: false,
@@ -209,7 +210,7 @@ export default class Agent extends React.Component {
         let thiss = this;
         const payload = {
             query: `query{
-            ReadCreds{creds}
+            ReadCreds(tn: ${this.state.tenantName}){creds}
         }`}
         let xhrCred = this.xhrCred;
         try {
@@ -297,7 +298,7 @@ export default class Agent extends React.Component {
         if (isNewAgentAdded) {
             payload = {
                 query: `query{
-                WriteCreds(agentList: ${JSON.stringify(JSON.stringify([agentDetail]))} ){creds}
+                WriteCreds(tn: ${this.state.tenantName}, agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
             }`}
         } else {
             let editDetailCopy = details[editAgentIndex];
@@ -312,7 +313,7 @@ export default class Agent extends React.Component {
 
             payload = {
                 query: `query{
-                UpdateCreds(updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
+                UpdateCreds(tn: ${this.state.tenantName},updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
             }`}
         }
 

@@ -118,7 +118,7 @@ class CONSUL_LoginForm extends React.Component {
     readAgentsCall() {
         this.setState({ readAgentLoading: true})
         const payload = {query: `query{
-            ReadCreds{creds}
+            ReadCreds(tn: ${this.state.tenantName}){creds}
         }`}
         let isDetail = false;
         try {
@@ -179,7 +179,7 @@ class CONSUL_LoginForm extends React.Component {
 
         if (isNewAgentAdded){
             payload = { query: `query{
-                WriteCreds(agentList: ${JSON.stringify(JSON.stringify([agentDetail]))} ){creds}
+                WriteCreds(tn: ${this.state.tenantName} ,agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
             }`}
         } else {
             let editDetailCopy  = Object.assign({}, this.state.editDetailCopy);
@@ -193,7 +193,7 @@ class CONSUL_LoginForm extends React.Component {
             }
 
             payload = { query: `query{
-                UpdateCreds(updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
+                UpdateCreds(tn: ${this.state.tenantName},updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
             }`}
         }
 
