@@ -33,6 +33,7 @@ def set_polling_interval(interval):
     return "200", "Polling Interval Set!"
 
 
+@time_it
 def get_new_mapping(tenant, datacenter):
     """Generate new mapping(recommendation)
 
@@ -609,19 +610,20 @@ def get_multi_node_check(node_list, datacenter):
 
         node_list = json.loads(node_list)
 
+        node_checks_data = list_data_formatter(node_checks_data, [2])
+
         for node_name in node_list:
-            for check in node_checks_data:
-                if check[2] == node_name:
-                    response.append({
-                        'NodeName': node_name,
-                        'Name': check[3],
-                        'ServiceName': check[4],
-                        'CheckID': check[0],
-                        'Type': check[5],
-                        'Notes': check[6],
-                        'Output': check[7],
-                        'Status': check[8]
-                    })
+            for check in node_checks_data.get(node_name, []):
+                response.append({
+                    'NodeName': node_name,
+                    'Name': check[3],
+                    'ServiceName': check[4],
+                    'CheckID': check[0],
+                    'Type': check[5],
+                    'Notes': check[6],
+                    'Output': check[7],
+                    'Status': check[8]
+                })
 
         return json.dumps({
             "payload": response,
@@ -1953,7 +1955,11 @@ def get_performance_dashboard(tn):
         response = {}
 
         connection = db_obj.engine.connect()
-        ep_len = len(list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)))
+        ep_len = len(list(db_obj.select_from_table(
+            connection,
+            db_obj.EP_TABLE_NAME,
+            {'tenant': tn}
+        )))
         connection.close()
 
         mapped_ep = {}
@@ -1972,26 +1978,26 @@ def get_performance_dashboard(tn):
         ep_res = {'service': 0, 'non_service': 0}
         service_res = {'passing': 0, 'warning': 0, 'failing': 0}
         nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-        ep_list = []
-        node_ip_list = []
-        service_addr_list = []
+        ep_set = set()
+        node_ip_set = set()
+        service_addr_set = set()
         for dc in mapped_ep:
             consul_data = get_consul_data(dc)
             merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])
 
             for ep in merged_data:
                 # Add service eps to ep_resp
-                if (ep['IP'], ep['dn']) not in ep_list:
-                    ep_list.append((ep['IP'], ep['dn']))
+                if (ep['IP'], ep['dn']) not in ep_set:
+                    ep_set.add((ep['IP'], ep['dn']))
                     ep_res['service'] += 1
 
-                if ep['node_ips'][0] not in node_ip_list:
-                    node_ip_list.append(ep['node_ips'][0])
+                if ep['node_ips'][0] not in node_ip_set:
+                    node_ip_set.add(ep['node_ips'][0])
                     add_check(ep['node_check'], nodes_res)
 
                 for service in ep['node_services']:
-                    if service['service_address'] not in service_addr_list:
-                        service_addr_list.append(service['service_address'])
+                    if service['service_address'] not in service_addr_set:
+                        service_addr_set.add(service['service_address'])
                         add_check(service['service_checks'], service_res)
 
         ep_res['non_service'] = ep_len - ep_res['service']
