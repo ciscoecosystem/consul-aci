@@ -93,7 +93,7 @@ def get_new_mapping(tenant, datacenter):
                     ip_list.append(service.get('service_ip'))
 
         aci_consul_mappings = recommend_utils.recommended_eps(
-            list(set(ip_list)), parsed_eps, apic_data)
+            set(ip_list), parsed_eps, apic_data)
 
         if not aci_consul_mappings:
             logger.info("Empty ACI and Consul mappings.")
@@ -110,37 +110,46 @@ def get_new_mapping(tenant, datacenter):
                     'enabled': entry.get('recommended')  # Initially only the recommended are true
                 })
 
+        apic_data = dictionary_data_formatter(apic_data, ['dn'])
+
         for mapped_obj in current_mapping:
-            for ep in apic_data:
-                if ep.get('dn') == mapped_obj.get('dn'):
-                    mapped_obj.update({
-                        'vrf': ep.get('VRF'),
-                        'bd': ep.get('BD'),
-                        'ap': ep.get('AppProfile'),
-                        'tenant': tenant,
-                        'epg': ep.get('EPG')
-                    })
+            for ep in apic_data.get(mapped_obj.get('dn', [])):
+                # if ep.get('dn') == mapped_obj.get('dn'):
+                mapped_obj.update({
+                    'vrf': ep.get('VRF'),
+                    'bd': ep.get('BD'),
+                    'ap': ep.get('AppProfile'),
+                    'tenant': tenant,
+                    'epg': ep.get('EPG')
+                })
 
         logger.info('New mapping: {}'.format(str(current_mapping)))
 
         connection = db_obj.engine.connect()
-        already_mapped_data = list(db_obj.select_from_table(connection, db_obj.MAPPING_TABLE_NAME))
+        already_mapped_data = list(db_obj.select_from_table(
+            connection,
+            db_obj.MAPPING_TABLE_NAME,
+            {'datacenter': datacenter}
+        ))
         connection.close()
 
         logger.info('Mapping in db mapping: {}'.format(str(already_mapped_data)))
 
-        new_map_list = []
+        new_map_dc = dict()
 
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
+        tmp_already_mapped_data = list_data_formatter(already_mapped_data, [0, 1, 2])
         connection = db_obj.engine.connect()
         with connection.begin():
             for new_map in current_mapping:
-                for db_map in already_mapped_data:
-                    if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn') and db_map[2] == datacenter:
-                        new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
-                        break
+                for db_map in tmp_already_mapped_data.get(
+                    '{}{}'.format(new_map.get('ip'), new_map.get('dn')),
+                    []
+                ):
+                    # if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn'):
+                    new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
 
                 db_obj.insert_and_update(
                     connection,
@@ -162,18 +171,22 @@ def get_new_mapping(tenant, datacenter):
                         'datacenter': datacenter
                     })
 
-                new_map_list.append((new_map.get('ip'), new_map.get('dn')))
+                new_map_dc[(new_map.get('ip'), new_map.get('dn'))] = True
         connection.close()
 
         connection = db_obj.engine.connect()
         with connection.begin():
             for mapping in already_mapped_data:
-                if mapping[2] == datacenter and (mapping[0], mapping[1]) not in new_map_list:
-                    db_obj.delete_from_table(connection, db_obj.MAPPING_TABLE_NAME, {
-                        'ip': mapping[0],
-                        'dn': mapping[1],
-                        'datacenter': mapping[2]
-                    })
+                if (mapping[0], mapping[1]) not in new_map_dc:
+                    db_obj.delete_from_table(
+                        connection,
+                        db_obj.MAPPING_TABLE_NAME,
+                        {
+                            'ip': mapping[0],
+                            'dn': mapping[1],
+                            'datacenter': mapping[2]
+                        }
+                    )
         connection.close()
 
         return current_mapping
