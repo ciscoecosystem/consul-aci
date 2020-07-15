@@ -35,6 +35,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         consul_data_formatter(consul_data, mapping_ips)
         mapped_consul_nodes_list = mapped_consul_nodes_formatter(consul_data)
+        consul_ip_dict = consul_ip_dict_generator(consul_data)
 
         for aci in aci_data:
             if aci['EPG'] not in total_epg_count:
@@ -52,7 +53,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if mapped_detail:
                 logger.info('mapping: {}, aci: {}'.format(str(mapped_detail), str(aci)))
                 # Service to CEp mapping
-                for node in consul_data:
+                for node in consul_ip_dict.get(aci.get(aci_key), []):
                     new_node = {
                         'node_id': node.get('node_id'),
                         'node_name': node.get('node_name'),
@@ -62,11 +63,9 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                     }
                     # All the services which matches CEp and its ip is different from its nodes ip
                     node_services = node.get('node_services', [])
-                    flagger = aci.get(aci_key) not in node.get('node_ips')
-                    if flagger:
-                        for service in node_services:
-                            if aci.get(aci_key) == service.get('service_ip'):
-                                new_node['node_services'].append(service)
+                    for service in node_services:
+                        if aci.get(aci_key) == service.get('service_ip'):
+                            new_node['node_services'].append(service)
                     if new_node['node_services']:
                         new_node.update(aci)
                         merge_list.append(new_node)
@@ -208,3 +207,15 @@ def consul_data_formatter(consul_data, mapping_ips):
         node['node_services_copy'] = [service for service in node['node_services'] if (service.get(
                 'service_ip') == "" or service.get('service_ip') in node.get('node_ips', [])
             )]
+
+
+def consul_ip_dict_generator(consul_data):
+    dc = dict()
+    for node in consul_data:
+        node_ips = list(set(node.get('node_ips', [])))
+        for ip in node_ips:
+            if ip in dc:
+                dc[ip].append(node)
+            else:
+                dc[ip] = [node]
+    return dc
