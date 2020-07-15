@@ -171,6 +171,9 @@ class Database:
             logger.exception("Exception in creating db obj: {}".format(str(e)))
 
     def create_tables(self):
+        '''
+        Function to create tables and save table objects
+        '''
         metadata = MetaData()
 
         self.login = Table(
@@ -556,6 +559,17 @@ class Database:
                 'create_tables()', str(e)))
 
     def insert_into_table(self, connection, table_name, field_values):
+        '''
+        Function to insert single record in table
+
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
+            field_values {list/tuple} --> values of single record
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         field_values = list(field_values)
         try:
             ins = None
@@ -571,6 +585,20 @@ class Database:
         return False
 
     def select_from_table(self, connection, table_name, field_arg_dict={}, required_fields=[]):
+        '''
+        Function to get data from database table
+
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
+
+        Optional Arguments:
+            field_arg_dict  {dict} --> key-value pairs of column name and data to filter records
+            required_fields {list} --> list of column names which is required
+
+        Returns:
+            {list{tuple}} or None --> list of records found in database table on success
+        '''
         try:
             table_name = table_name.lower()
             field_list = [self.table_key_meta[table_name][each.lower()] for each in required_fields]
@@ -592,6 +620,18 @@ class Database:
         return None
 
     def update_in_table(self, connection, table_name, field_arg_dict, new_record_dict):
+        '''
+        Function to update data into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+            new_record_dict {dict}       --> key-value pairs of column name and data of new value
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
@@ -609,6 +649,19 @@ class Database:
         return False
 
     def delete_from_table(self, connection, table_name, field_arg_dict={}):
+        '''
+        Function to delete data from database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         try:
             table_name = table_name.lower()
             if field_arg_dict:
@@ -627,10 +680,24 @@ class Database:
         return False
 
     def insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
+        '''
+        Function to insert new record and update existing record into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            new_record      {list}       --> values of new record
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         table_name = table_name.lower()
         if field_arg_dict:
             old_data = self.select_from_table(connection, table_name, field_arg_dict)
-            if old_data != None:
+            if old_data is not None:
                 if len(old_data) > 0:
                     old_data = old_data[0]
                     new_record_dict = dict()
@@ -638,8 +705,7 @@ class Database:
                     for i in range(len(new_record)):
                         if old_data[i] != new_record[i]:
                             index.append(i)
-                    field_names = [self.SCHEMA_DICT[table_name][i]
-                                   for i in index]
+                    field_names = [self.SCHEMA_DICT[table_name][i]for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]
