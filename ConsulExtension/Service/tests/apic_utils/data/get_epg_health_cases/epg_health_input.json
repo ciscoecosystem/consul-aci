@@ -1,0 +1,17 @@
+{
+    "imdata": [
+        {
+            "healthInst": {
+                "attributes": {
+                    "cur": "96"
+                }
+            }
+        },
+        {
+            "healthNodeInst": {}
+        },
+        {
+            "healthNodeInst": {}
+        }
+    ]
+}

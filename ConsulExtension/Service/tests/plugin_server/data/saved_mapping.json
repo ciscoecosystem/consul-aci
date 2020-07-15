@@ -1,0 +1,47 @@
+[
+    {
+        "dn": "uni/tn-tn0/ap-ap2/epg-epg2",
+        "bd": "uni/tn-tn0/ap-ap2/epg-epg2",
+        "ip": "172.23.231.56",
+        "enabled": true,
+        "ap": "ap2",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg2",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg3",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg3",
+        "ip": "172.23.231.56",
+        "enabled": false,
+        "ap": "ap1",
+        "recommended": false,
+        "vrf": "tn0/",
+        "epg": "epg3",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap2/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap2/epg-epg0",
+        "ip": "172.23.231.56",
+        "enabled": true,
+        "ap": "ap2",
+        "recommended": false,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg3",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg3",
+        "ip": "10.199.123.148",
+        "enabled": false,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg3",
+        "tenant": "tn0"
+    },
+    "fail"
+]

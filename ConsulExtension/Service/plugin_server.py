@@ -107,7 +107,6 @@ def get_new_mapping(tenant, datacenter):
                     'enabled': entry.get('recommended')  # Initially only the recommended are true
                 })
 
-
         for mapped_obj in current_mapping:
             for ep in apic_data:
                 if ep.get('dn') == mapped_obj.get('dn'):

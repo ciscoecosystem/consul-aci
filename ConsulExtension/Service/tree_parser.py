@@ -148,7 +148,6 @@ def consul_tree_dict(data):
                         # Add Service to EP
                         ep_dict['children'].append(service_dict)
 
-
                         # Now adding the service info in EP and EPG attributes
                         # for the Side Pane info,
                         # And adding services label to EPG
@@ -194,7 +193,6 @@ def consul_tree_dict(data):
                         if service_address not in ap_service_addr_list:
                             ap_dict['checks'] = add_checks(ap_dict['checks'], service_dict['checks'])
                             ap_service_addr_list.append(service_address)
-
 
                     # Add EP to EPG
                     epg_dict['children'].append(ep_dict)

@@ -122,7 +122,7 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
                 recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key])
             recommended_ep = each
             peers = []
-            continue 
+            continue
 
         if (recommended_ep['cep_ip'] and each['cep_ip']) or (not recommended_ep['cep_ip'] and not each['cep_ip']):
             if apic_rec and apic_each and len(extracted_vrfs[apic_rec]) > len(extracted_vrfs[apic_each]):
