@@ -13,17 +13,16 @@ from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
 from Service.apic_utils import AciUtils
-from Service.tests.plugin_server.utils import (
-                                    generate_dummy_new_mapping_data,
-                                    verify_mapping,
-                                    generate_dummy_exception_new_mapping_data,
-                                    generate_multiple_dummy_db_output,
-                                    generate_dummy_db_output,
-                                    verify_change_key,
-                                    get_absolue_path,
-                                    parse_json_file,
-                                    verify_agent_status,
-                                    dummy_db_select_exception)
+from Service.tests.plugin_server.utils import (generate_dummy_new_mapping_data,
+                                               verify_mapping,
+                                               generate_dummy_exception_new_mapping_data,
+                                               generate_multiple_dummy_db_output,
+                                               generate_dummy_db_output,
+                                               verify_change_key,
+                                               get_absolue_path,
+                                               parse_json_file,
+                                               verify_agent_status,
+                                               dummy_db_select_exception)
 
 
 def get_data(file_name):
@@ -715,14 +714,10 @@ def test_get_to_epg_traffic():
     })
 
 
-
-
-
 @pytest.mark.parametrize("test_input, expected",
                          [('/plugin_server/data/mapping/1_mapping_initial_input.json',
                           {'output': '/plugin_server/data/mapping/1_mapping_initial_output.json',
-                           'method': verify_mapping}),
-                           ('/plugin_server/data/mapping/3_mapping_empty_input.json',
+                           'method': verify_mapping}), ('/plugin_server/data/mapping/3_mapping_empty_input.json',
                           {'output': '/plugin_server/data/mapping/3_mapping_empty_output.json',
                            'method': verify_mapping})])
 def test_mapping(test_input, expected):
@@ -779,5 +774,3 @@ def test_get_agent_status(input, expected):
         alchemy_core.Database.select_from_table = dummy_db_select_exception()
         with pytest.raises(Exception):
             assert plugin_server.get_agent_status('dc1')
-
-
