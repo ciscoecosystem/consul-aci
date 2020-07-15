@@ -66,6 +66,8 @@ export default class App extends React.Component {
         this.setSidebar = this.setSidebar.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.handlePollingIntervalPopUp = this.handlePollingIntervalPopUp.bind(this);
+        this.getPollingInterval = this.getPollingInterval.bind(this);
+        this.setPollingIntervalDefaultValue = this.setPollingIntervalDefaultValue.bind(this);
         this.state = {
             agentPopup: false,
             pollingIntervalPopup: false,
@@ -141,6 +143,7 @@ export default class App extends React.Component {
         // this.setSidebar(dummyItems);
         this.postTenant();
         this.readDatacenter();
+        this.getPollingInterval();
         this.intervalCall  = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
     }
 
@@ -276,7 +279,46 @@ export default class App extends React.Component {
     }
 
     handlePollingIntervalPopUp(pollingIntervalPopup = true){
-        this.setState({ pollingIntervalPopup })
+        this.setState({ pollingIntervalPopup }, ()=>{if(pollingIntervalPopup === false){this.getPollingInterval()}})
+    }
+
+    setPollingIntervalDefaultValue(interval){
+        let pollingIntervalArray = this.state.pollingIntervalOptions
+        pollingIntervalArray.map((item)=>(item.selected === true ? item.selected = false : null))
+        pollingIntervalArray.map((item)=>(parseInt(item.value) === parseInt(interval) ? item.selected=true : null))
+        this.setState({pollingIntervalOptions:pollingIntervalArray, selectedPollingInterval: parseInt(interval)})
+    }
+
+    getPollingInterval(){
+        let xhrPostGetPollingIntervalCall = this.xhrCred;
+        const payload = {
+            query: 'query{GetPollingInterval{response}}'
+        }
+        try{
+            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, false);
+            xhrPostGetPollingIntervalCall.setRequestHeader("Content-type", "application/json");
+            // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+            xhrPostGetPollingIntervalCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrPostGetPollingIntervalCall.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+            xhrPostGetPollingIntervalCall.onreadystatechange =  () => {
+
+                if (xhrPostGetPollingIntervalCall.readyState == 4 && xhrPostGetPollingIntervalCall.status == 200) {
+
+                    let apiResponse = JSON.parse(xhrPostGetPollingIntervalCall.responseText);
+                    let getPollingApiResponse = JSON.parse(apiResponse.data.GetPollingInterval.response)
+                    if(parseInt(getPollingApiResponse.status_code) === 200){
+                        let data = getPollingApiResponse.payload
+                        this.setPollingIntervalDefaultValue(data.interval)
+                    }
+                }
+            }
+            xhrPostGetPollingIntervalCall.send(JSON.stringify(payload));
+        }catch(e){
+            console.error('Error getting agents', e);
+        }
+
     }
 
     pollingIntervalCall(){
@@ -285,7 +327,7 @@ export default class App extends React.Component {
             query: 'query{SetPollingInterval(interval:' + this.state.selectedPollingInterval + '){response}}'
         }
         try{
-            xhrPostPollingIntervalCall.open("POST", QUERY_URL, true);
+            xhrPostPollingIntervalCall.open("POST", QUERY_URL, false);
             xhrPostPollingIntervalCall.setRequestHeader("Content-type", "application/json");
             // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
             // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
