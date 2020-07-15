@@ -118,7 +118,7 @@ class CONSUL_LoginForm extends React.Component {
     readAgentsCall() {
         this.setState({ readAgentLoading: true})
         const payload = {query: `query{
-            ReadCreds(tn: ${JOSN.stringify(this.state.tenantName)}){creds}
+            ReadCreds(tn: ${JSON.stringify(this.state.tenantName)}){creds}
         }`}
         let isDetail = false;
         try {

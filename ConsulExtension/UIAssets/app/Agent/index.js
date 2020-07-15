@@ -298,7 +298,7 @@ export default class Agent extends React.Component {
         if (isNewAgentAdded) {
             payload = {
                 query: `query{
-                WriteCreds(tn: ${JOSN.stringify(this.state.tenantName)}, agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
+                WriteCreds(tn: ${JSON.stringify(this.state.tenantName)}, agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
             }`}
         } else {
             let editDetailCopy = details[editAgentIndex];
