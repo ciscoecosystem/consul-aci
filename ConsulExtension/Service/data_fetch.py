@@ -21,7 +21,7 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 db_obj = database.Database()
 db_obj.create_tables()
 
-POLL_INTERVAL = int(get_conf_value('DATA_FETCH', 'POLL_INTERVAL'))        # interval in minutes
+POLL_INTERVAL = 2                                                         # default interval in minutes
 CHECK_AGENT_LIST = int(get_conf_value('DATA_FETCH', 'CHECK_AGENT_LIST'))  # interval in sec
 THREAD_POOL = int(get_conf_value('DATA_FETCH', 'CONSUL_THREAD_POOL'))     # Pool size for all thread pools
 
@@ -560,6 +560,25 @@ def data_fetch():
 
         except Exception as e:
             logger.info("Error in data fetch: {}".format(str(e)))
+
+        # Fetch polling interval from polling table if it
+        # does not exist, default polling interval will be set
+        connection = db_obj.engine.connect()
+        interval = []
+        try:
+            interval = db_obj.select_from_table(
+                connection,
+                db_obj.POLLING_TABLE_NAME,
+                {'pkey': 'interval'},
+                ['interval']
+            )
+        except Exception:
+            interval = []
+        connection.close()
+        if interval:
+            POLL_INTERVAL = interval[0][0]
+        else:
+            POLL_INTERVAL = 2
 
         current_time = time.time()
         time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
