@@ -210,7 +210,7 @@ export default class Agent extends React.Component {
         let thiss = this;
         const payload = {
             query: `query{
-            ReadCreds(tn: ${this.state.tenantName}){creds}
+            ReadCreds(tn: ${JSON.stringify(this.state.tenantName)}){creds}
         }`}
         let xhrCred = this.xhrCred;
         try {
@@ -298,7 +298,7 @@ export default class Agent extends React.Component {
         if (isNewAgentAdded) {
             payload = {
                 query: `query{
-                WriteCreds(tn: ${this.state.tenantName}, agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
+                WriteCreds(tn: ${JOSN.stringify(this.state.tenantName)}, agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
             }`}
         } else {
             let editDetailCopy = details[editAgentIndex];
@@ -313,7 +313,7 @@ export default class Agent extends React.Component {
 
             payload = {
                 query: `query{
-                UpdateCreds(tn: ${this.state.tenantName},updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
+                UpdateCreds(tn: ${JSON.stringify(this.state.tenantName)},updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
             }`}
         }
 
@@ -445,7 +445,7 @@ export default class Agent extends React.Component {
 
         let payload = {
             query: `query{
-            DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
+            DeleteCreds(tn: ${JSON.stringify(this.state.tenantName)}, agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
 
         let xhr = this.xhrCred;

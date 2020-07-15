@@ -65,7 +65,7 @@ export function TREE_VIEW_QUERY_PAYLOAD(tn, datacenter) {
 }
 
 export function READ_DATACENTER_QUERY(tn){
-    return { query: 'query{GetDatacenters(tn:"' +tn + '"){datacenters}}'
+    return { query: 'query{GetDatacenters(tn:"' +tn + '"){datacenters}}' }
 }
 export function POST_TENANT_QUERY(tn) {
     return { query: 'query{PostTenant(tn:"' + tn + '"){tenant}}' }
