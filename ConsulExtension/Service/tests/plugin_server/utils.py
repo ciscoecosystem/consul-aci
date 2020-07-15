@@ -1,21 +1,6 @@
-from Service.tests.utils import *
+from Service.tests.utils import get_absolue_path
+from Service.tests.utils import parse_json_file
 import json
-import os
-
-
-# def get_absolue_path(input_file):
-#     dir_path = os.path.dirname(os.path.abspath(__file__))
-#     print('Dir path : {}'.format(dir_path))
-#     file_path = r''.join([dir_path,
-#                           input_file])
-#     print('Absolute file path {} '.format(file_path))
-#     return file_path
-
-
-# def parse_json_file(file_path):
-#     with open(file_path) as f:
-#         data = json.load(f)
-#     return data
 
 
 def generate_dummy_new_mapping_data(input_file):
@@ -117,3 +102,11 @@ def verify_agent_status(actual_output, expected_file):
     expected_output = parse_json_file(file)
     print('======== {} {} '.format(actual_output, expected_output))
     return compare_dicts(actual_output, expected_output)
+
+
+def get_data_json(file_name):
+    return parse_json_file(get_absolue_path(file_name))
+
+
+def get_data_str(file_name):
+    return json.dumps(parse_json_file(get_absolue_path(file_name)))

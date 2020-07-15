@@ -22,7 +22,9 @@ from Service.tests.plugin_server.utils import (generate_dummy_new_mapping_data,
                                                get_absolue_path,
                                                parse_json_file,
                                                verify_agent_status,
-                                               dummy_db_select_exception)
+                                               dummy_db_select_exception,
+                                               get_data_json,
+                                               get_data_str)
 
 
 def get_data(file_name):
@@ -250,35 +252,10 @@ def test_get_epg_alias(case):
 
 
 @pytest.mark.parametrize("data, expected", [
-    ({
-        "faultRecords": [{
-            "faultRecord": {
-                "attributes": {
-                    "code": "F000",
-                    "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-                    "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-                    "cause": "dummy-error",
-                    "severity": "cleared",
-                    "created": "1970-1-1T00:00:00.000-01:00",
-                }
-            }
-        }]
-    }, json.dumps({
-        "status_code": "200",
-        "message": "OK",
-        "payload": [{
-            "code": "F000",
-            "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-            "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-            "cause": "dummy-error",
-            "severity": "cleared",
-            "created": "1970-1-1T00:00:00.000-01:00",
-        }]
-    })),
-    ([], json.dumps({
-        "status_code": "300",
-        "message": "Error while fetching Fault details.",
-        "payload": []}))
+    ("/plugin_server/data/get_faults/get_faults_input.json",
+     "/plugin_server/data/get_faults/get_faults_output.json"),
+    ("/plugin_server/data/get_faults/empty_input.json",
+     "/plugin_server/data/get_faults/empty_output.json")
 ])
 def test_get_faults(data, expected):
 
@@ -288,100 +265,50 @@ def test_get_faults(data, expected):
         return "dummy-token"
 
     def dummy_get_ap_epg_faults(self, dn):
-        return data
+        return get_data_json(data)
 
     AciUtils.login = dummy_login
     AciUtils.get_ap_epg_faults = dummy_get_ap_epg_faults
 
     response = plugin_server.get_faults("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg")
 
-    assert response == expected
+    assert response == get_data_str(expected)
 
 
 @pytest.mark.parametrize("data, expected", [
-    ({
-        "eventRecords": [{
-            "eventRecord": {
-                "attributes": {
-                    "code": "F000",
-                    "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-                    "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-                    "cause": "dummy-error",
-                    "severity": "cleared",
-                    "created": "1970-1-1T00:00:00.000-01:00",
-                }
-            }
-        }]
-    }, json.dumps({
-        "status_code": "200",
-        "message": "OK",
-        "payload": [{
-            "code": "F000",
-            "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-            "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-            "cause": "dummy-error",
-            "severity": "cleared",
-            "created": "1970-1-1T00:00:00.000-01:00",
-        }]
-    })),
-    ([], json.dumps({
-        "status_code": "300",
-        "message": "Error while fetching Event details.",
-        "payload": []}))
+    ("/plugin_server/data/get_events/get_events_input.json",
+     "/plugin_server/data/get_events/get_events_output.json"),
+    ("/plugin_server/data/get_events/empty_input.json",
+     "/plugin_server/data/get_events/empty_output.json")
 ])
 def test_get_events(data, expected):
 
     def dummy_get_ap_epg_events(self, dn):
-        return data
+        return get_data_json(data)
 
     AciUtils.get_ap_epg_events = dummy_get_ap_epg_events
 
     response = plugin_server.get_events("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg")
 
-    assert response == expected
+    assert response == get_data_str(expected)
 
 
 @pytest.mark.parametrize("data, expected", [
-    ({
-        "auditLogRecords": [{
-            "aaaModLR": {
-                "attributes": {
-                    "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-                    "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-                    "created": "1970-1-1T00:00:00.000-01:00",
-                    "id": "ID000",
-                    "ind": "dummy-action",
-                    "user": "dummy-user",
-                }
-            }
-        }]
-    }, json.dumps({
-        "status_code": "200",
-        "message": "OK",
-        "payload": [{
-            "affected": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA/ip-[1.1.1.1]",
-            "descr": "For Tenant DummyTn, application EPG DummyEpg, ACI has detected some fault. Context: 0000.",
-            "created": "1970-1-1T00:00:00.000-01:00",
-            "id": "ID000",
-            "action": "dummy-action",
-            "user": "dummy-user",
-        }]
-    })),
-    ([], json.dumps({
-        "status_code": "300",
-        "message": "Error while fetching Audit log details.",
-        "payload": []}))
+    ("/plugin_server/data/get_audit_logs/get_audit_logs_input.json",
+     "/plugin_server/data/get_audit_logs/get_audit_logs_output.json"),
+    ("/plugin_server/data/get_audit_logs/empty_input.json",
+     "/plugin_server/data/get_audit_logs/empty_output.json")
 ])
 def test_get_audit_logs(data, expected):
 
     def dummy_get_ap_epg_audit_logs(self, dn):
-        return data
+        return get_data_json(data)
 
     AciUtils.get_ap_epg_audit_logs = dummy_get_ap_epg_audit_logs
 
     response = plugin_server.get_audit_logs("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg")
 
-    assert response == expected
+    assert response == get_data_str(expected)
 
 
 @pytest.mark.parametrize("data, expected", [
@@ -399,20 +326,15 @@ def test_get_to_epg(data, expected):
 
 
 @pytest.mark.parametrize("data, expected", [
-    ([{
-        "actrlRuleHitAg15min": {
-            "attributes": {
-                "ingrPktsCum": "11",
-                "egrPktsCum": "22",
-            }
-        }
-    }], ("11", "22")),
-    ([], ("0", "0"))
+    ("/plugin_server/data/get_ingress_egress/ingress_egress_input.json",
+     ("11", "22")),
+    ("/plugin_server/data/get_ingress_egress/empty_input.json",
+     ("0", "0"))
 ])
 def test_get_ingress_egress(data, expected):
 
     def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
-        return data
+        return get_data_json(data)
 
     def dummy_login(self):
         return "dummy-token"
@@ -427,84 +349,25 @@ def test_get_ingress_egress(data, expected):
 
 
 @pytest.mark.parametrize("data, expected", [
-    ([{"vzRFltE": {"attributes": {"etherT": "unspecified"}}}], ["*"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "unspecified",
-                "sFromPort": "unspecified",
-                "sToPort": "unspecified",
-                "dFromPort": "unspecified",
-                "dToPort": "unspecified"
-            }
-        }
-    }], ["dummy:*:* to *"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "dummy",
-                "sFromPort": "unspecified",
-                "sToPort": "unspecified",
-                "dFromPort": "unspecified",
-                "dToPort": "unspecified"
-            }
-        }
-    }], ["dummy:dummy:* to *"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "dummy",
-                "sFromPort": "dummy",
-                "sToPort": "unspecified",
-                "dFromPort": "unspecified",
-                "dToPort": "unspecified"
-            }
-        }
-    }], ["dummy:dummy:* to *"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "dummy",
-                "sFromPort": "dummy",
-                "sToPort": "dummy",
-                "dFromPort": "unspecified",
-                "dToPort": "unspecified"
-            }
-        }
-    }], ["dummy:dummy:dummy-dummy to *"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "dummy",
-                "sFromPort": "unspecified",
-                "sToPort": "unspecified",
-                "dFromPort": "dummy",
-                "dToPort": "unspecified"
-            }
-        }
-    }], ["dummy:dummy:* to *"]),
-    ([{
-        "vzRFltE": {
-            "attributes": {
-                "etherT": "dummy",
-                "prot": "dummy",
-                "sFromPort": "unspecified",
-                "sToPort": "unspecified",
-                "dFromPort": "dummy",
-                "dToPort": "dummy"
-            }
-        }
-    }], ["dummy:dummy:* to dummy-dummy"]),
+    ("/plugin_server/data/get_filter_list/1_input.json",
+     "/plugin_server/data/get_filter_list/1_output.json"),
+    ("/plugin_server/data/get_filter_list/2_input.json",
+     "/plugin_server/data/get_filter_list/2_output.json"),
+    ("/plugin_server/data/get_filter_list/3_input.json",
+     "/plugin_server/data/get_filter_list/3_output.json"),
+    ("/plugin_server/data/get_filter_list/4_input.json",
+     "/plugin_server/data/get_filter_list/4_output.json"),
+    ("/plugin_server/data/get_filter_list/5_input.json",
+     "/plugin_server/data/get_filter_list/5_output.json"),
+    ("/plugin_server/data/get_filter_list/6_input.json",
+     "/plugin_server/data/get_filter_list/6_output.json"),
+    ("/plugin_server/data/get_filter_list/7_input.json",
+     "/plugin_server/data/get_filter_list/7_output.json"),
 ])
 def test_get_filter_list(data, expected):
 
     def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
-        return data
+        return get_data_json(data)
 
     def dummy_login(self):
         return "dummy-token"
@@ -515,110 +378,47 @@ def test_get_filter_list(data, expected):
     obj = AciUtils()
     response = plugin_server.get_filter_list("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", obj)
 
-    assert response == expected
+    assert response == get_data_json(expected)
 
 
 @pytest.mark.parametrize("data, dn, mo_type, mac_list, ip, expected", [
-    ([{
-        "fvCEp": {
-            "attributes": {
-                "encap": "dummy-encap",
-                "mac": "00:00:00:00:00:AA",
-                "mcastAddr": "not-applicable",
-                "lcC": "dummy-lcc",
-            },
-            "children": []
-        }
-    }], "", "ep", "00:00:00:00:00:AA", "1.1.1.1", json.dumps({
-        "status_code": "200",
-        "message": "OK",
-        "payload": [{
-            "ip": "1.1.1.1",
-            "mac": "00:00:00:00:00:AA",
-            "mcast_addr": "---",
-            "learning_source": "dummy-lcc",
-            "encap": "dummy-encap",
-            "ep_name": "dummy-vm-name",
-            "hosting_server_name": "1.1.1.1",
-            "iface_name": ["Pod-0/Node-111/eth0/0"],
-            "ctrlr_name": "hyper000"
-        }]
-    })),
-    ([{
-        "fvCEp": {
-            "attributes": {
-                "encap": "dummy-encap",
-                "mac": "00:00:00:00:00:AA",
-                "mcastAddr": "not-applicable",
-                "lcC": "dummy-lcc",
-                "ip": "2.2.2.2"
-            },
-            "children": [{
-                "fvIp": {
-                    "attributes": {
-                        "addr": "2.2.2.2",
-                    }
-                }
-            }]
-        }
-    }], "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "epg", "", "", json.dumps({
-        "status_code": "200",
-        "message": "OK",
-        "payload": [{
-            "ip": "2.2.2.2",
-            "mac": "00:00:00:00:00:AA",
-            "mcast_addr": "---",
-            "learning_source": "dummy-lcc",
-            "encap": "dummy-encap",
-            "ep_name": "dummy-vm-name",
-            "hosting_server_name": "1.1.1.1",
-            "iface_name": ["Pod-0/Node-111/eth0/0"],
-            "ctrlr_name": "hyper000"
-        }]
-    }))
+    ("/plugin_server/data/get_children_ep_info/fvcep_input.json",
+     "", "ep", "00:00:00:00:00:AA",
+     "/plugin_server/data/get_children_ep_info/fvcep_ip.json",
+     "/plugin_server/data/get_children_ep_info/fvcep_output.json"),
+    ("/plugin_server/data/get_children_ep_info/fvip_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "epg", "",
+     "/plugin_server/data/get_children_ep_info/fvip_ip.json",
+     "/plugin_server/data/get_children_ep_info/fvip_output.json")
 ])
 def test_get_children_ep_info(data, dn, mo_type, mac_list, ip, expected):
 
     def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
-        return data
+        return get_data_json(data)
 
     def dummy_login(self):
         return "dummy-token"
 
     def dummy_get_ep_info(self, ep_attr):
-        return {
-            "controller": "hyper000",
-            "hosting_servername": "1.1.1.1",
-            "interfaces": ["Pod-0/Node-111/eth0/0"],
-            "vm_name": "dummy-vm-name",
-            "vmm_domain": "DUMMY0-leaf000"
-        }
+        return get_data_json("/plugin_server/data/get_children_ep_info/get_ep_info.json")
 
     AciUtils.login = dummy_login
     AciUtils.get_ep_info = dummy_get_ep_info
     AciUtils.get_mo_related_item = dummy_get_mo_related_item
 
-    response = plugin_server.get_children_ep_info(dn, mo_type, mac_list, ip)
+    response = plugin_server.get_children_ep_info(dn, mo_type, mac_list, get_data_json(ip))
 
-    assert response == expected
+    assert json.loads(response) == get_data_json(expected)
 
 
-def test_get_configured_access_policies():
+@pytest.mark.parametrize("data, expected", [
+    ("/plugin_server/data/get_configured_access_policies/get_configured_access_policies_input.json",
+     "/plugin_server/data/get_configured_access_policies/get_configured_access_policies_output.json")
+])
+def test_get_configured_access_policies(data, expected):
 
     def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
-        return [{
-            "syntheticAccessPolicyInfo": {
-                "attributes": {
-                    "domain": "uni/vmmp-DummyHost/dom-DummyDom",
-                    "accBndlGrp": "uni/dummy/dummy/accportgrp-Dummy-Group",
-                    "vLanPool": "uni/dummy/dummy/from-[dummy-lan1]-to-[dummy-lan2]",
-                    "accPortP": "uni/dummy/accportprof-Dummy-Profile",
-                    "attEntityP": "uni/dummy/attentp-Dummy-AttEntryP",
-                    "nodeP": "uni/dummy/nprof-Dummy-Switch",
-                    "pathEp": "topology/pod-1/paths-111/pathep-[dummy-path]",
-                }
-            }
-        }]
+        return get_data_json(data)
 
     def dummy_login(self):
         return "dummy-token"
@@ -628,51 +428,17 @@ def test_get_configured_access_policies():
 
     response = plugin_server.get_configured_access_policies("DummyTn", "DummyAp", "DummyEpg")
 
-    assert response == json.dumps({
-        "status_code": "200",
-        "message": "Ok",
-        "payload": [{
-            "domain": "DummyHost/DummyDom",
-            "switch_prof": "Dummy-Switch",
-            "aep": "Dummy-AttEntryP",
-            "iface_prof": "Dummy-Profile",
-            "pc_vpc": "Dummy-Group",
-            "node": "111",
-            "path_ep": "dummy-path",
-            "vlan_pool": "[dummy-lan1]-to-[dummy-lan2]"
-        }]
-    })
+    assert json.loads(response) == get_data_json(expected)
 
 
-def test_get_to_epg_traffic():
+@pytest.mark.parametrize("data, expected", [
+    ("/plugin_server/data/get_to_epg_traffic/get_to_epg_traffic_input.json",
+     "/plugin_server/data/get_to_epg_traffic/get_to_epg_traffic_output.json")
+])
+def test_get_to_epg_traffic(data, expected):
 
     def dummy_get_all_mo_instances(self, mo_dn, item_query_string):
-        return [{
-            "vzFromEPg": {
-                "children": [{
-                    "vzToEPg": {
-                        "attributes": {
-                            "epgDefDn": "uni/tn-DummyTn/brc-DummyBrc/dummy/cons-dummy",
-                            "epgDn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg"
-                        },
-                        "children": [{
-                            "vzRsRFltAtt": {
-                                "attributes": {
-                                    "tDn": "uni/tn-common/fp-default",
-                                },
-                                "children": [{
-                                    "vzCreatedBy": {
-                                        "attributes": {
-                                            "ownerDn": "uni/tn-DummyTn/brc-DummyBrc/subj-DummySubj/rssubjFiltAtt-DummyFilt"
-                                        }
-                                    }
-                                }]
-                            }
-                        }]
-                    }
-                }]
-            }
-        }]
+        return get_data_json(data)
 
     def dummy_login(self):
         return "dummy-token"
@@ -698,20 +464,7 @@ def test_get_to_epg_traffic():
 
     response = plugin_server.get_to_epg_traffic("uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg")
 
-    assert response == json.dumps({
-        "status_code": "200",
-        "message": "",
-        "payload": [{
-            "to_epg": "DummyTn/DummyAp/DummyEpg",
-            "contract_subj": "DummyTn/DummyBrc/DummySubj",
-            "filter_list": ["flt1", "flt1"],
-            "ingr_pkts": "1",
-            "egr_pkts": "1",
-            "alias": "DummyAlias",
-            "contract_type": "",
-            "type": "Consumer"
-        }]
-    })
+    assert json.loads(response) == get_data_json(expected)
 
 
 @pytest.mark.parametrize("test_input, expected",

@@ -106,7 +106,7 @@ def test_get_interface(data, node, expected):
 @pytest.mark.parametrize("data,mo_instance_data,expected", [
     ("data/get_controller_and_hosting_server/with_ip_host_input.json",
      "data/get_controller_and_hosting_server/with_ip_host_mo_instance.json",
-     ('hyper000', '1.1.1.1')),
+     ('hyper000', get_data("data/ip_1.json"))),
     ("data/get_controller_and_hosting_server/with_host_input.json",
      "data/get_controller_and_hosting_server/with_host_mo_instance.json",
      ('hyper000', '')),
@@ -182,7 +182,7 @@ def test_get_ep_info(data, expected):
 
     # Mock AciUtils functions
     def dummy_get_controller_and_hosting_server(self, ep_child):
-        return ("hyper000", "1.1.1.1")
+        return ("hyper000", get_data("data/ip_1.json"))
 
     def dummy_get_interface(self, ep_child):
         return "Pod-0/Node-111/eth0/0"
@@ -213,7 +213,7 @@ def test_parse_and_return_ep_data(data, ep_data, expected):
         return get_data(ep_data)
 
     def dummy_get_ip_mac_list(ep_child):
-        return [["2.2.2.2", True], ["1.1.1.1", False]]
+        return [[get_data("data/ip_2.json"), True], [get_data("data/ip_1.json"), False]]
 
     AciUtils.get_ep_info = dummy_get_ep_info
     get_ip_mac_list = dummy_get_ip_mac_list
