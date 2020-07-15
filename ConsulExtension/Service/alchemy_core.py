@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
+from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean, Integer
 from datetime import datetime
 from sqlalchemy.sql import select
 from sqlalchemy.interfaces import PoolListener
@@ -34,6 +34,7 @@ class Database:
     EPAUDIT_TABLE_NAME = 'epaudit'
     EPGAUDIT_TABLE_NAME = 'epgaudit'
     TENANT_TABLE_NAME = 'tenant'
+    POLLING_TABLE_NAME = 'polling'
 
     SCHEMA_DICT = {
         LOGIN_TABLE_NAME: [
@@ -159,6 +160,14 @@ class Database:
         TENANT_TABLE_NAME: [
             'tenant',
             'created_ts'
+        ],
+
+        POLLING_TABLE_NAME: [
+            'pkey',
+            'interval',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
         ]
     }
 
@@ -414,6 +423,15 @@ class Database:
             Column('created_ts', DateTime)
         )
 
+        self.polling = Table(
+            self.POLLING_TABLE_NAME, metadata,
+            Column('pkey', String, primary_key=True),
+            Column('interval', Integer),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+        )
+
         try:
             metadata.create_all(self.engine)
             self.table_obj_meta.update({
@@ -431,7 +449,8 @@ class Database:
                 self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
                 self.EPAUDIT_TABLE_NAME: self.epaudit,
                 self.EPGAUDIT_TABLE_NAME: self.epgaudit,
-                self.TENANT_TABLE_NAME: self.tenant
+                self.TENANT_TABLE_NAME: self.tenant,
+                self.POLLING_TABLE_NAME: self.polling
             })
             self.table_key_meta.update({
                 self.LOGIN_TABLE_NAME: {
@@ -549,6 +568,13 @@ class Database:
                 self.TENANT_TABLE_NAME: {
                     'tenant': self.tenant.c.tenant,
                     'created_ts': self.tenant.c.created_ts
+                },
+                self.POLLING_TABLE_NAME: {
+                    'pkey': self.polling.c.pkey,
+                    'interval': self.polling.c.interval,
+                    'created_ts': self.polling.c.created_ts,
+                    'updated_ts': self.polling.c.updated_ts,
+                    'last_checked_ts': self.polling.c.last_checked_ts
                 }
             })
         except Exception as e:
