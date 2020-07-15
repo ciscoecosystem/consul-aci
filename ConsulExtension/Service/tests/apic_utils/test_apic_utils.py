@@ -210,7 +210,7 @@ def test_parse_and_return_ep_data(data, ep_data, expected):
 
     # Mock AciUtils functions
     def dummy_get_ep_info(self, ep_attr):
-        return get_data(data)
+        return get_data(ep_data)
 
     def dummy_get_ip_mac_list(ep_child):
         return [["2.2.2.2", True], ["1.1.1.1", False]]
@@ -225,15 +225,15 @@ def test_parse_and_return_ep_data(data, ep_data, expected):
     assert response == get_data(expected)
 
 
-@pytest.mark.parametrize("data, ep_data, expected", [
+@pytest.mark.parametrize("data, get_ep_data, expected", [
     ("data/parse_ep_data_cases/ep_input.json",
      "data/parse_ep_data_cases/get_ep_input.json",
      "data/parse_ep_data_cases/ep_output.json")
 ])
-def test_parse_ep_data(data, ep_data, expected):
+def test_parse_ep_data(data, get_ep_data, expected):
 
     def dummy_parse_and_return_ep_data(self, ep_data):
-        return get_data(ep_data)
+        return get_data(get_ep_data)
 
     AciUtils.parse_and_return_ep_data = dummy_parse_and_return_ep_data
 
