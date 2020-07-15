@@ -9,61 +9,6 @@ from Service.tests.apic_utils.utils import get_data
 aci_get_cases = [(200, {'dummy_key': 'dummy_val'}), (400, None)]
 
 
-get_node_from_interface_cases = [
-    ("topology/pod-1/pathdummy-xxx", ""),
-    ("topology/pod-1/pathgrp-[1.1.1.1]", "[1.1.1.1]"),
-    ("topology/pod-0/paths-111/pathep-[eth0/0]", "111"),
-    ("topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]", "-111-222"),
-    (["topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]", "topology/pod-0/paths-111/pathep-[eth0/0]"], "-111-222, 111"),
-]
-
-apic_fetch_bd_cases = [
-    ({
-        "imdata": [{
-            "fvRsBd": {
-                "attributes": {
-                    "tnFvBDName": "Dummy-BD0",
-                }
-            }}]
-    }, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "Dummy-BD0"),
-    ({}, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", None)
-]
-
-apic_fetch_vrf_cases = [
-    ({
-        "imdata": [{
-            "fvRsCtx": {
-                "attributes": {
-                    "tnFvCtxName": "Dummy-VRF",
-                }
-            }}]
-    }, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "Dummy-VRF"),
-    ({}, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", '')
-]
-
-get_epg_health_cases = [
-    ({
-        "imdata": [{
-            "healthInst": {
-                "attributes": {
-                    "cur": "96",
-                }
-            }
-        }, {
-            "healthNodeInst": {}
-        }, {
-            "healthNodeInst": {}
-        }]
-    }, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "96"),
-    ({}, "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", '')
-]
-
-get_mo_related_item_cases = [
-    ({"imdata": ['data1', 'data2']}, 'dummy-dn', 'dummy-url', '', ['data1', 'data2']),
-    ({"imdata": ['data1', 'data2']}, '', 'dummy-url', "other_url", ['data1', 'data2'])
-]
-
-
 @pytest.mark.parametrize("status,expected", aci_get_cases)
 def test_aci_get(status, expected):
     """Test aci get function"""
@@ -94,39 +39,33 @@ def test_aci_get(status, expected):
     assert response == expected
 
 
-def test_get_vm_domain_and_name():
+@pytest.mark.parametrize("aci_get_data, data", [
+    ("data/get_vm_domain_and_name_cases/domain_and_name_get_data.json",
+     "data/get_vm_domain_and_name_cases/domain_and_name_input.json")
+])
+def test_get_vm_domain_and_name(aci_get_data, data):
     """Test the VM Domain and Name"""
 
     def dummy_aci_get(self, url):
-        return {
-            "totalCount": "1",
-            "imdata": [
-                {
-                    "compVm": {
-                        "attributes": {
-                            "name": "dummy-vm-name",
-                        }
-                    }
-                }
-            ]
-        }
+        return get_data(aci_get_data)
 
     AciUtils.aci_get = dummy_aci_get
 
     # Test the function
     obj = AciUtils()
-    response = obj.get_vm_domain_and_name({
-        "fvRsToVm": {
-            "attributes": {
-                "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-dummy/vm-vm-000",
-            }
-        }
-    })
+    response = obj.get_vm_domain_and_name(get_data(data))
 
     assert response == ('DUMMY0-leaf000', 'dummy-vm-name')
 
 
-@pytest.mark.parametrize("interface, expected", get_node_from_interface_cases)
+@pytest.mark.parametrize("interface, expected", [
+    ("topology/pod-1/pathdummy-xxx", ""),
+    ("topology/pod-1/pathgrp-[1.1.1.1]", "[1.1.1.1]"),
+    ("topology/pod-0/paths-111/pathep-[eth0/0]", "111"),
+    ("topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]", "-111-222"),
+    (["topology/pod-0/protpaths-111-222/pathep-[FI-A-PG]",
+      "topology/pod-0/paths-111/pathep-[eth0/0]"], "-111-222, 111"),
+])
 def test_get_node_from_interface(interface, expected):
 
     # Test the function
@@ -189,21 +128,14 @@ def test_get_controller_and_hosting_server(data, mo_instance_data, expected):
     assert response == expected
 
 
-def test_get_all_mo_instances():
+@pytest.mark.parametrize("data, expected", [
+    ("data/get_all_mo_instances_cases/get_instance_input.json",
+     "data/get_all_mo_instances_cases/get_instance_output.json")
+])
+def test_get_all_mo_instances(data, expected):
 
     def dummy_aci_get(self, url):
-        return {
-            "totalCount": "1",
-            "imdata": [
-                {
-                    "compHv": {
-                        "attributes": {
-                            "name": "1.1.1.1"
-                        }
-                    }
-                }
-            ]
-        }
+        return get_data(data)
 
     AciUtils.aci_get = dummy_aci_get
 
@@ -211,7 +143,7 @@ def test_get_all_mo_instances():
     obj = AciUtils()
     response = obj.get_all_mo_instances("dummy-class", "dummy-query")
 
-    assert response == [{"compHv": {"attributes": {"name": "1.1.1.1"}}}]
+    assert response == get_data(expected)
 
 
 def test_get_dict_records():
@@ -242,7 +174,11 @@ def test_get_ip_mac_list(data, expected):
     assert response == get_data(expected)
 
 
-def test_get_ep_info():
+@pytest.mark.parametrize("data, expected", [
+    ("data/get_ep_info_cases/ep_input.json",
+     "data/get_ep_info_cases/ep_output.json")
+])
+def test_get_ep_info(data, expected):
 
     # Mock AciUtils functions
     def dummy_get_controller_and_hosting_server(self, ep_child):
@@ -260,50 +196,21 @@ def test_get_ep_info():
 
     # Test the function
     obj = AciUtils()
-    response = obj.get_ep_info([
-        {
-            "fvRsCEpToPathEp": {
-                "attributes": {
-                    "tDn": "topology/pod-0/paths-111/pathep-[eth0/0]",
-                }
-            }
-        },
-        {
-            "fvRsHyper": {
-                "attributes": {
-                    "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-hyper000/hv-host-00"
-                }
-            }
-        },
-        {
-            "fvRsToVm": {
-                "attributes": {
-                    "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-dummy/vm-vm-000",
-                }
-            }
-        }
-    ])
+    response = obj.get_ep_info(get_data(data))
 
-    assert response == {
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000'
-    }
+    assert response == get_data(expected)
 
 
-def test_parse_and_return_ep_data():
+@pytest.mark.parametrize("data, ep_data, expected", [
+    ("data/parse_and_return_ep_data_cases/ep_input.json",
+     "data/parse_and_return_ep_data_cases/get_ep_input.json",
+     "data/parse_and_return_ep_data_cases/ep_output.json")
+])
+def test_parse_and_return_ep_data(data, ep_data, expected):
 
     # Mock AciUtils functions
     def dummy_get_ep_info(self, ep_attr):
-        return {
-            "controller": "hyper000",
-            "hosting_servername": "1.1.1.1",
-            "interfaces": ["Pod-0/Node-111/eth0/0"],
-            "vm_name": 'dummy-vm-name',
-            "vmm_domain": 'DUMMY0-leaf000'
-        }
+        return get_data(data)
 
     def dummy_get_ip_mac_list(ep_child):
         return [["2.2.2.2", True], ["1.1.1.1", False]]
@@ -313,222 +220,27 @@ def test_parse_and_return_ep_data():
 
     # Test the function
     obj = AciUtils()
-    response = obj.parse_and_return_ep_data({
-        "fvCEp": {
-            "attributes": {
-                "ip": "2.2.2.2",
-                "mac": "00:00:00:00:00:AA",
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-                "lcC": "dummy-vmm",
-                "encap": "dummy-lan-111",
-                "mcastAddr": "not-applicable"
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    })
+    response = obj.parse_and_return_ep_data(get_data(data))
 
-    assert response == [{
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "1.1.1.1",
-        "is_cep": False
-    }, {
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "2.2.2.2",
-        "is_cep": True
-    }]
+    assert response == get_data(expected)
 
 
-def test_parse_ep_data():
+@pytest.mark.parametrize("data, ep_data, expected", [
+    ("data/parse_ep_data_cases/ep_input.json",
+     "data/parse_ep_data_cases/get_ep_input.json",
+     "data/parse_ep_data_cases/ep_output.json")
+])
+def test_parse_ep_data(data, ep_data, expected):
 
     def dummy_parse_and_return_ep_data(self, ep_data):
-        return [
-            {
-                "controller": "hyper000",
-                "hosting_servername": "1.1.1.1",
-                "interfaces": ["Pod-0/Node-111/eth0/0"],
-                "vm_name": 'dummy-vm-name',
-                "vmm_domain": 'DUMMY0-leaf000',
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-                "learning_src": "dummy-vmm",
-                "tenant": "DummyTn",
-                "mac": "00:00:00:00:00:AA",
-                "encap": "dummy-lan-111",
-                "multi_cast_addr": "---",
-                "ip": "1.1.1.1",
-                "is_cep": False
-            }, {
-                "controller": "hyper000",
-                "hosting_servername": "1.1.1.1",
-                "interfaces": ["Pod-0/Node-111/eth0/0"],
-                "vm_name": 'dummy-vm-name',
-                "vmm_domain": 'DUMMY0-leaf000',
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-                "learning_src": "dummy-vmm",
-                "tenant": "DummyTn",
-                "mac": "00:00:00:00:00:AA",
-                "encap": "dummy-lan-111",
-                "multi_cast_addr": "---",
-                "ip": "2.2.2.2",
-                "is_cep": True
-            }]
+        return get_data(ep_data)
 
     AciUtils.parse_and_return_ep_data = dummy_parse_and_return_ep_data
 
     obj = AciUtils()
-    response = obj.parse_ep_data([{
-        "fvCEp": {
-            "attributes": {
-                "ip": "2.2.2.2",
-                "mac": "00:00:00:00:00:AA",
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-                "lcC": "dummy-vmm",
-                "encap": "dummy-lan-111",
-                "mcastAddr": "not-applicable"
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }, {
-        "fvCEp": {
-            "attributes": {
-                "ip": "2.2.2.2",
-                "mac": "00:00:00:00:00:AA",
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-                "lcC": "dummy-vmm",
-                "encap": "dummy-lan-111",
-                "mcastAddr": "not-applicable"
-            },
-            "children": [
-                {
-                    "fvIp": {
-                        "attributes": {
-                            "addr": "1.1.1.1",
-                        }
-                    },
-                },
-                {
-                    "fvRsCEpToPathEp": {},
-                },
-                {
-                    "fvRsHyper": {},
-                },
-                {
-                    "fvRsToVm": {}
-                }
-            ]
-        }
-    }])
+    response = obj.parse_ep_data(get_data(data))
 
-    assert response == [{
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "1.1.1.1",
-        "is_cep": False
-    }, {
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "2.2.2.2",
-        "is_cep": True
-    }, {
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "1.1.1.1",
-        "is_cep": False
-    }, {
-        "controller": "hyper000",
-        "hosting_servername": "1.1.1.1",
-        "interfaces": ["Pod-0/Node-111/eth0/0"],
-        "vm_name": 'dummy-vm-name',
-        "vmm_domain": 'DUMMY0-leaf000',
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-        "learning_src": "dummy-vmm",
-        "tenant": "DummyTn",
-        "mac": "00:00:00:00:00:AA",
-        "encap": "dummy-lan-111",
-        "multi_cast_addr": "---",
-        "ip": "2.2.2.2",
-        "is_cep": True
-    }]
+    assert response == get_data(expected)
 
 
 def test_apic_fetch_ep_data():
@@ -573,12 +285,15 @@ def test_apic_fetch_epg_data():
     assert response == resp_data
 
 
-@pytest.mark.parametrize('data, dn, expected', apic_fetch_bd_cases)
+@pytest.mark.parametrize('data, dn, expected', [
+    ("data/apic_fetch_bd_cases/bd_input.json", "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "Dummy-BD0"),
+    ("data/apic_fetch_bd_cases/empty_input.json", "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", None)
+])
 def test_apic_fetch_bd(data, dn, expected):
 
     # Mock AciUtils methods
     def dummy_aci_get(self, url):
-        return data
+        return get_data(data)
 
     AciUtils.aci_get = dummy_aci_get
     AciUtils.proto = "http://"
@@ -590,12 +305,19 @@ def test_apic_fetch_bd(data, dn, expected):
     assert response == expected
 
 
-@pytest.mark.parametrize('data, dn, expected', apic_fetch_vrf_cases)
+@pytest.mark.parametrize('data, dn, expected', [
+    ("data/apic_fetch_vrf_cases/vrf_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/apic_fetch_vrf_cases/vrf_output.json",),
+    ("data/apic_fetch_vrf_cases/empty_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/apic_fetch_vrf_cases/empty_output.json",)
+])
 def test_apic_fetch_vrf(data, dn, expected):
 
     # Mock AciUtils methods
     def dummy_aci_get(self, url):
-        return data
+        return get_data(data)
 
     AciUtils.aci_get = dummy_aci_get
     AciUtils.proto = "http://"
@@ -604,7 +326,7 @@ def test_apic_fetch_vrf(data, dn, expected):
     obj = AciUtils()
     response = obj.apic_fetch_vrf(dn)
 
-    assert response == expected
+    assert response == get_data(expected)
 
 
 @pytest.mark.parametrize('data, dn, expected', [
@@ -630,11 +352,18 @@ def test_apic_fetch_contract(data, dn, expected):
     assert response == get_data(expected)
 
 
-@pytest.mark.parametrize('data, dn, expected', get_epg_health_cases)
+@pytest.mark.parametrize('data, dn, expected', [
+    ("data/get_epg_health_cases/epg_health_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/get_epg_health_cases/epg_health_output.json"),
+    ("data/get_epg_health_cases/empty_input.json",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+     "data/get_epg_health_cases/empty_output.json")
+])
 def test_get_epg_health(data, dn, expected):
     # Mock AciUtils methods
     def dummy_aci_get(self, url):
-        return data
+        return get_data(data)
 
     AciUtils.aci_get = dummy_aci_get
     AciUtils.proto = "http://"
@@ -643,7 +372,7 @@ def test_get_epg_health(data, dn, expected):
     obj = AciUtils()
     response = obj.get_epg_health(dn)
 
-    assert response == expected
+    assert response == get_data(expected)
 
 
 def test_get_ap_epg_faults():
@@ -691,7 +420,10 @@ def test_get_ap_epg_audit_logs():
     assert response == {'auditLogRecords': ['data1', 'data2']}
 
 
-@pytest.mark.parametrize('data, mo_dn, item_query_string, item_type, expected', get_mo_related_item_cases)
+@pytest.mark.parametrize('data, mo_dn, item_query_string, item_type, expected', [
+    ({"imdata": ['data1', 'data2']}, 'dummy-dn', 'dummy-url', '', ['data1', 'data2']),
+    ({"imdata": ['data1', 'data2']}, '', 'dummy-url', "other_url", ['data1', 'data2'])
+])
 def test_get_mo_related_item(data, mo_dn, item_query_string, item_type, expected):
 
     # Mock AciUtils methods
@@ -708,7 +440,12 @@ def test_get_mo_related_item(data, mo_dn, item_query_string, item_type, expected
     assert response == expected
 
 
-def test_parse_and_return_epg_data():
+@pytest.mark.parametrize('data, contract, expected', [
+    ("data/parse_and_return_epg_data_cases/epg_data_input.json",
+     "data/parse_and_return_epg_data_cases/epg_data_contract.json",
+     "data/parse_and_return_epg_data_cases/epg_data_output.json")
+])
+def test_parse_and_return_epg_data(data, contract, expected):
 
     # Mock AciUtils methods
     def dummy_apic_fetch_bd(self, url):
@@ -718,13 +455,7 @@ def test_parse_and_return_epg_data():
         return "Dummy-VRF"
 
     def dummy_apic_fetch_contract(self, url):
-        return {
-            "Consumer": ["dummy1", "dummy2"],
-            "Intra EPG": ["dummy0"],
-            "Provider": ["dummy1", "dummy2"],
-            "Consumer Interface": ["dummy0"],
-            "Taboo": ["dummy0"]
-        }
+        return get_data(contract)
 
     def dummy_get_epg_health(self, url):
         return "96"
@@ -735,33 +466,9 @@ def test_parse_and_return_epg_data():
     AciUtils.get_epg_health = dummy_get_epg_health
 
     obj = AciUtils()
-    response = obj.parse_and_return_epg_data({
-        "fvAEPg": {
-            "attributes": {
-                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
-                "name": "DummyEpg",
-                "nameAlias": "DummyAliasName",
-            }
-        }
-    })
+    response = obj.parse_and_return_epg_data(get_data(data))
 
-    assert response == {
-        "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
-        "tenant": "DummyTn",
-        "bd": "Dummy-BD0",
-        "app_profile": "DummyAp",
-        "epg": "DummyEpg",
-        "epg_alias": "DummyAliasName",
-        "vrf": "DummyTn/Dummy-VRF",
-        "contracts": {
-            "Consumer": ["dummy1", "dummy2"],
-            "Intra EPG": ["dummy0"],
-            "Provider": ["dummy1", "dummy2"],
-            "Consumer Interface": ["dummy0"],
-            "Taboo": ["dummy0"]
-        },
-        "epg_health": "96"
-    }
+    assert response == get_data(expected)
 
 
 def test_parse_epg_data():
