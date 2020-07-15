@@ -298,10 +298,10 @@ export default class App extends React.Component {
 
                     let apiResponse = JSON.parse(xhrPostPollingIntervalCall.responseText);
                     let pollingApiResponse = JSON.parse(apiResponse.data.SetPollingInterval.response)
-                    if(parseInt(pollingApiResponse.status) === 200){
+                    if(parseInt(pollingApiResponse.status_code) === 200){
                         this.notify(pollingApiResponse.message, true, false)
                     }
-                    else if(parseInt(pollingApiResponse.status) === 300){
+                    else if(parseInt(pollingApiResponse.status_code) === 300){
                         this.notify(pollingApiResponse.message)
                     }
                     this.handlePollingIntervalPopUp(false);
