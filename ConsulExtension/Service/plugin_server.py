@@ -141,12 +141,12 @@ def get_new_mapping(tenant, datacenter):
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
-        tmp_already_mapped_data = list_data_formatter(already_mapped_data, [0, 1])
+        tmp_already_mapped_data = list_data_formatter(already_mapped_data, [0, 1, 2])
         connection = db_obj.engine.connect()
         with connection.begin():
             for new_map in current_mapping:
                 for db_map in tmp_already_mapped_data.get(
-                    '{}{}'.format(new_map.get('ip'), new_map.get('dn')),
+                    '{}{}'.format(new_map.get('ip'), new_map.get('dn'), datacenter),
                     []
                 ):
                     # if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn'):
