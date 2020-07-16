@@ -1228,7 +1228,7 @@ def get_filter_list(flt_dn, aci_util_obj):
 
 
 @time_it
-def read_creds():
+def read_creds(tn):
     """Returns list of all agents in DB with connection status
 
     return: {
@@ -1238,11 +1238,11 @@ def read_creds():
     }
     """
     try:
-        logger.info('Reading agents.')
+        logger.info('Reading agents. =================== {} '.format(tn))
 
         # handle db read failure, just pass empty list from there
         connection = db_obj.engine.connect()
-        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+        agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
         connection.close()
 
         if not agents:
@@ -1292,8 +1292,9 @@ def read_creds():
         })
 
 
+
 @time_it
-def write_creds(new_agent):
+def write_creds(tn, new_agent):
     """Writes an Agent to DB and returns it status
     to UI with encripted token
 
@@ -1348,7 +1349,12 @@ def write_creds(new_agent):
                     new_agent.get('protocol'),
                     new_agent.get('token'),
                     new_agent.get('status'),
-                    new_agent.get('datacenter')
+                    new_agent.get('datacenter'),
+                    None,
+                    None,
+                    None,
+                    tn
+
                 ])
         connection.close()
 
@@ -1374,7 +1380,7 @@ def write_creds(new_agent):
 
 
 @time_it
-def update_creds(update_input):
+def update_creds(tn, update_input):
     """Update an Agent to DB and returns it status to UI
 
     :update_input: json with old agents data and new agents data
@@ -1406,7 +1412,8 @@ def update_creds(update_input):
                 db_obj.LOGIN_TABLE_NAME,
                 {
                     'agent_ip': new_agent.get('ip'),
-                    'port': new_agent.get('port')
+                    'port': new_agent.get('port'),
+                    'tenant': tn
                 })
             connection.close()
             if new_agent_db_data:
@@ -1449,7 +1456,8 @@ def update_creds(update_input):
                         ],
                         {
                             'agent_ip': old_agent.get('ip'),
-                            'port': old_agent.get('port')
+                            'port': old_agent.get('port'),
+                            'tenant': tn
                         })
                 connection.close()
 
@@ -1475,7 +1483,7 @@ def update_creds(update_input):
 
 
 @time_it
-def delete_creds(agent_data):
+def delete_creds(tn, agent_data):
     """Update an Agent to DB and returns it status to UI
 
     :update_input: json with old agents data and new agents data
@@ -1493,7 +1501,8 @@ def delete_creds(agent_data):
         # Agent deleted
         connection = db_obj.engine.connect()
         with connection.begin():
-            db_obj.delete_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'), 'port': agent_data.get('port')})
+            db_obj.delete_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'agent_ip': agent_data.get('ip'),
+                                        'port': agent_data.get('port'), 'tenant': tn})
         connection.close()
 
         logger.info('Agent {} deleted'.format(str(agent_data)))
@@ -1824,7 +1833,7 @@ def get_apic_data(tenant):
     return apic_data
 
 
-def get_agent_status(datacenter=""):
+def get_agent_status(tn, datacenter=""):
     """Function to get overview agent
 
     Returns:
@@ -1833,7 +1842,7 @@ def get_agent_status(datacenter=""):
     agents_res = {'up': 0, 'down': 0}
 
     connection = db_obj.engine.connect()
-    agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+    agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
     connection.close()
 
     if not agents:
@@ -1920,7 +1929,7 @@ def get_performance_dashboard(tn):
 
         ep_res['non_service'] = ep_len - ep_res['service']
 
-        response['agents'] = get_agent_status()
+        response['agents'] = get_agent_status(tn)
         response['service'] = service_res
         response['nodes'] = nodes_res
         response['service_endpoint'] = ep_res
