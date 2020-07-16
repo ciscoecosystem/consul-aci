@@ -93,7 +93,7 @@ def get_polling_interval():
 
         return json.dumps({
             "status_code": "200",
-            "message": "",
+            "message": "Ok",
             "payload": {
                 "interval": POLL_INTERVAL
             }
