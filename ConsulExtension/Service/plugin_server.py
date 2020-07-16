@@ -141,7 +141,7 @@ def get_new_mapping(tenant, datacenter):
         # current_mapping is new mapping between aci and consul
         # already_mapped_data is previously stored mapping by user
         # if node is already disabled then disable it from new mappings also
-        tmp_already_mapped_data = list_data_formatter(already_mapped_data, [0, 1, 2])
+        tmp_already_mapped_data = list_data_formatter(already_mapped_data, [0, 1])
         connection = db_obj.engine.connect()
         with connection.begin():
             for new_map in current_mapping:
@@ -261,6 +261,7 @@ def save_mapping(tenant, datacenter, mapped_data):
                         mapping.get('enabled'),
                         mapping.get('ap'),
                         mapping.get('bd'),
+                        mapping.get('epg'),
                         mapping.get('vrf'),
                         tenant
                     ),
