@@ -146,7 +146,7 @@ def get_new_mapping(tenant, datacenter):
         with connection.begin():
             for new_map in current_mapping:
                 for db_map in tmp_already_mapped_data.get(
-                    '{}{}'.format(new_map.get('ip'), new_map.get('dn'), datacenter),
+                    '{}{}{}'.format(new_map.get('ip'), new_map.get('dn'), datacenter),
                     []
                 ):
                     # if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn'):
