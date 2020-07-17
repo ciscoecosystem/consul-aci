@@ -155,7 +155,6 @@ export default class App extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState){
         console.log("In should component Update")
-        console.log(_.isEqual(this.state.details, nextState.details))
         if(_.isEqual(this.state, nextState)){
             return false
         }
@@ -466,7 +465,7 @@ export default class App extends React.Component {
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
-                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} shouldUpdate={this.state.pollingIntervalPopup?false:true}/>}
                 </div >
             </Router>
         );

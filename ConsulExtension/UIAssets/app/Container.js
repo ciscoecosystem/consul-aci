@@ -33,6 +33,14 @@ export default class Container extends React.Component {
         this.getDataCenters = this.getDataCenters.bind(this);
     }
 
+    shouldComponentUpdate(nextProps, nextState){
+
+        if(!nextProps.shouldUpdate){
+            return false
+        }
+        return true
+    }
+
     getDataCenters(DataCentersObj){
         let DataCenters = []
         DataCentersObj.map((item)=>(DataCenters.push(item.datacenter)))
