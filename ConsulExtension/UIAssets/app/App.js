@@ -278,7 +278,7 @@ export default class App extends React.Component {
     }
 
     handlePollingIntervalPopUp(pollingIntervalPopup = true){
-        if(pollingIntervalPopup){
+        if(pollingIntervalPopup === true){
             this.getPollingInterval()
         }
         this.setState({ pollingIntervalPopup })
