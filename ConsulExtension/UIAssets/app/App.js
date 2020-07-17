@@ -1,9 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Link } from 'react-router-dom';
-import { Loader } from 'blueprint-react';
+import { Loader, Select, Button } from 'blueprint-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Mapping from "./Mapping/Mapping.js";
-import Agent from "./Agent/index.js"
+import Agent from "./Agent/index.js";
+import Modal from "./commonComponent/Modal.js";
 import { PROFILE_NAME, getCookie, QUERY_URL, READ_DATACENTER_QUERY, POST_TENANT_QUERY, AGENTS, URL_TOKEN, DEV_TOKEN, INTERVAL_API_CALL } from "../constants.js";
 import Container from "./Container"
 import 'react-toastify/dist/ReactToastify.css';
@@ -61,16 +62,31 @@ export default class App extends React.Component {
         this.readDcCall = this.readDcCall.bind(this);
         this.postTenant = this.postTenant.bind(this);
         this.handleAgent = this.handleAgent.bind(this);
-        this.handleMapping = this.handleMapping.bind(this)
+        this.handleMapping = this.handleMapping.bind(this);
         this.setSidebar = this.setSidebar.bind(this);
+        this.handleSelectChange = this.handleSelectChange.bind(this);
+        this.handlePollingIntervalPopUp = this.handlePollingIntervalPopUp.bind(this);
         this.state = {
             agentPopup: false,
+            pollingIntervalPopup: false,
             mappingDcname: undefined,
             mappingPopup: false,
             items: [
                 { label: AGENTS , action: this.handleAgent },
-                { label: "Polling interval", action: function () { console.log("polling interval") } }
+                { label: "Polling interval", action: this.handlePollingIntervalPopUp }
             ],
+            pollingIntervalOptions : [
+                { label: 2, value: 2, selected: true },
+                { label: 3, value: 3,  selected: false },
+                { label: 4, value: 4,  selected: false },
+                { label: 5, value: 5,  selected: false },
+                { label: 6, value: 6,  selected: false },
+                { label: 7, value: 7,  selected: false },
+                { label: 8, value: 8,  selected: false },
+                { label: 9, value: 9,  selected: false },
+                { label: 10, value: 10,  selected: false },
+            ],
+            selectedPollingInterval : 2,
             details: [],
             tenantApiCallCnt: 2, // indicates no of time "PostTenant" api could be called.
             sidebarItems: [
@@ -149,6 +165,14 @@ export default class App extends React.Component {
         this.setState({ readDatacenterLoading: true }, function () {
             console.log("LOading----")
             thiss.readDcCall();
+        })
+    }
+
+
+    handleSelectChange(selected, options) {
+        this.setState({
+            selectedPollingInterval: selected[0].value,
+            pollingIntervalOptions: options
         })
     }
 
@@ -251,6 +275,44 @@ export default class App extends React.Component {
         this.setState({ mappingPopup, mappingDcname  })
     }
 
+    handlePollingIntervalPopUp(pollingIntervalPopup = true){
+        this.setState({ pollingIntervalPopup })
+    }
+
+    pollingIntervalCall(){
+        let xhrPostPollingIntervalCall = this.xhrCred;
+        const payload = {
+            query: 'query{SetPollingInterval(interval:' + this.state.selectedPollingInterval + '){response}}'
+        }
+        try{
+            xhrPostPollingIntervalCall.open("POST", QUERY_URL, true);
+            xhrPostPollingIntervalCall.setRequestHeader("Content-type", "application/json");
+            // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+            xhrPostPollingIntervalCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrPostPollingIntervalCall.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+            xhrPostPollingIntervalCall.onreadystatechange =  () => {
+
+                if (xhrPostPollingIntervalCall.readyState == 4 && xhrPostPollingIntervalCall.status == 200) {
+
+                    let apiResponse = JSON.parse(xhrPostPollingIntervalCall.responseText);
+                    let pollingApiResponse = JSON.parse(apiResponse.data.SetPollingInterval.response)
+                    if(parseInt(pollingApiResponse.status_code) === 200){
+                        this.notify(pollingApiResponse.message, true, false)
+                    }
+                    else if(parseInt(pollingApiResponse.status_code) === 300){
+                        this.notify(pollingApiResponse.message)
+                    }
+                    this.handlePollingIntervalPopUp(false);
+                }
+            }
+            xhrPostPollingIntervalCall.send(JSON.stringify(payload));
+        }catch(e){
+            console.error('Error getting agents', e);
+        }
+    }
+
     postTenant() {
         let thiss = this;
         let { tenantApiCallCnt } = this.state;
@@ -333,11 +395,31 @@ export default class App extends React.Component {
     }
 
     render() {
+
+
         return (
             <Router>
                 <div>
                     <ToastContainer />
                     {/* {this.state.agentPopup && <Redirect to="/agent" />} */}
+                    <Modal isOpen={this.state.pollingIntervalPopup} title="Configure polling interval" onClose={()=>{this.handlePollingIntervalPopUp(false)} }>
+
+                        <div className="polling-interval">
+                            <div className="panel">
+                                <form>
+                                    <div className="integration-form">
+                                        <Select items={this.state.pollingIntervalOptions} onChange={this.handleSelectChange} label={"Select polling interval (in minutes)"} />
+                                        <div className="form-action-buttons">
+                                            <Button key={"configurePollingInterval"}
+                                                    size="btn--small"
+                                                    type="btn--primary"
+                                                    onClick={()=>{this.pollingIntervalCall()}}
+                                            >Save</Button>
+                                        </div>
+                                    </div>
+                                </form></div>
+                        </div>
+                    </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
                     {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
