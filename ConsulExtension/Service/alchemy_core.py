@@ -729,8 +729,16 @@ class Database:
                     new_record_dict = dict()
                     index = []
                     for i in range(len(new_record)):
-                        if old_data[i] != new_record[i]:
-                            index.append(i)
+                        if isinstance(new_record[i], bool):
+                            try:
+                                old_column_value = bool(int(old_data[i]))
+                                if old_column_value != new_record[i]:
+                                    index.append(i)
+                            except Exception:
+                                logger.exception("Exception in insert_and_update for table {}".format(table_name))
+                        else:
+                            if old_data[i] != new_record[i]:
+                                index.append(i)
                     field_names = [self.SCHEMA_DICT[table_name][i]for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
