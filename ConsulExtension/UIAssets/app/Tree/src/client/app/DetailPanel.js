@@ -9,6 +9,8 @@ const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
 const NODE_EPG_NAME = "EPG";
 const VALUE_LENGTH = 35;
+const IP_LENGTH = 21;
+const MAC_LENGTH = 20;
 
 function formateDataToChartData(data) {
     let totalCnt = 0;
@@ -46,7 +48,7 @@ function nonServiceEndPointEP(data) {
                 <td width="70%" className="bold-font">IP</td>
             </tr>
             {Object.entries(data).map(elem => <tr>
-                <td>{elem[0]}</td> <td>{elem[1]}</td>
+                <td title={elem[0]}>{showShortName(elem[0], MAC_LENGTH)}</td> <td title={elem[1]}>{showShortName(elem[1], IP_LENGTH)}</td>
             </tr>)}
         </table>
     </React.Fragment>) : (<React.Fragment></React.Fragment>)
