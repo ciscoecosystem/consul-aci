@@ -48,7 +48,7 @@ function nonServiceEndPointEP(data) {
                 <td width="70%" className="bold-font">IP</td>
             </tr>
             {Object.entries(data).map(elem => <tr>
-                <td title={elem[0]}>{showShortName(elem[0], MAC_LENGTH)}</td> <td title={elem[1]}>{showShortName(elem[1], IP_LENGTH)}</td>
+                <td title={elem[0]}>{showShortName(elem[0], MAC_LENGTH)}</td> <td title={elem[1]}>{elem[1].split(",").map((item)=>(showShortName(item, IP_LENGTH))).join(",")}</td>
             </tr>)}
         </table>
     </React.Fragment>) : (<React.Fragment></React.Fragment>)
