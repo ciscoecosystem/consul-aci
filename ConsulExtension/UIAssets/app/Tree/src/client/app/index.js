@@ -60,9 +60,14 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.getData();
+        let getDataIntervalCall = () => { 
+            this.getData();
+            setTimeout(getDataIntervalCall, INTERVAL_API_CALL)
+        };
+
+        getDataIntervalCall()
         // this.getStaticData();
-        setInterval(this.getData, INTERVAL_API_CALL);
+        // setInterval(this.getData, INTERVAL_API_CALL);
     }
 
     reload() {
