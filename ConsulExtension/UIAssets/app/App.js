@@ -143,7 +143,6 @@ export default class App extends React.Component {
         // this.setSidebar(dummyItems);
         this.postTenant();
         this.readDatacenter();
-        this.getPollingInterval();
         this.intervalCall  = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
     }
 
@@ -279,7 +278,10 @@ export default class App extends React.Component {
     }
 
     handlePollingIntervalPopUp(pollingIntervalPopup = true){
-        this.setState({ pollingIntervalPopup }, ()=>{if(pollingIntervalPopup === false){this.getPollingInterval()}})
+        if(pollingIntervalPopup){
+            this.getPollingInterval()
+        }
+        this.setState({ pollingIntervalPopup })
     }
 
     setPollingIntervalDefaultValue(interval){
