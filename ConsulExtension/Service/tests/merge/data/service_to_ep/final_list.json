@@ -47,9 +47,7 @@
         "epg_health": "8",
         "VRF": "tn0/",
         "fraction": 0,
-        "node_ips": [
-            "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b"
-        ],
+        "node_ip": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {},
         "learningSource": "vmm",

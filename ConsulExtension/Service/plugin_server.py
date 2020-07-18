@@ -82,7 +82,7 @@ def get_new_mapping(tenant, datacenter):
         consul_data = get_consul_data(datacenter)
         ip_list = []
         for node in consul_data:
-            ip_list += node.get('node_ips', [])
+            ip_list.append(node.get('node_ip'))
             # For fetching ips of services.
             for service in node.get('node_services', []):
                 # check ip is not empty string
@@ -1762,7 +1762,7 @@ def get_consul_data(datacenter):
         node_dict = {
             'node_id': node[0],
             'node_name': node[1],
-            'node_ips': node[2],
+            'node_ip': node[2],
             'node_check': {},
             'node_services': []
         }
@@ -1919,8 +1919,8 @@ def get_performance_dashboard(tn):
                     ep_list.append((ep['IP'], ep['dn']))
                     ep_res['service'] += 1
 
-                if ep['node_ips'][0] not in node_ip_list:
-                    node_ip_list.append(ep['node_ips'][0])
+                if ep['node_ip'] not in node_ip_list:
+                    node_ip_list.append(ep['node_ip'])
                     add_check(ep['node_check'], nodes_res)
 
                 for service in ep['node_services']:

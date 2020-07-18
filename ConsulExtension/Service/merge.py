@@ -42,14 +42,14 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             new_node = {
                                 'node_id': node.get('node_id'),
                                 'node_name': node.get('node_name'),
-                                'node_ips': node.get('node_ips'),
+                                'node_ip': node.get('node_ip'),
                                 'node_check': node.get('node_check'),
                                 'node_services': []
                             }
                             # All the services which matches CEp and its ip is different from its nodes ip
                             node_services = copy.deepcopy(node.get('node_services', []))
                             for service in node_services:
-                                if aci.get(aci_key) == service.get('service_ip') and aci.get(aci_key) not in node.get('node_ips'):
+                                if aci.get(aci_key) == service.get('service_ip') and aci.get(aci_key) != node.get('node_ip'):
                                     # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
@@ -67,13 +67,13 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                         # node to EP mapping
-                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key) in node.get('node_ips', [])]
+                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key) == node.get('node_ip')]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
                                 mapped_node = copy.deepcopy(each)
                                 services = copy.deepcopy(mapped_node.get('node_services', []))
-                                mapped_node['node_services'] = [service for service in services if (service.get('service_ip') == "" or service.get('service_ip') in mapped_node.get('node_ips', []))]
+                                mapped_node['node_services'] = [service for service in services if (service.get('service_ip') == "" or service.get('service_ip') == mapped_node.get('node_ip'))]
                                 merge_list.append(mapped_node)
                                 if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
                                     merged_eps.append((aci[aci_key], aci['CEP-Mac'], aci['dn']))

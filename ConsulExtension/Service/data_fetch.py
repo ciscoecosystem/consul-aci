@@ -235,7 +235,7 @@ def data_fetch():
                             (
                                 node_val.get('node_id'),
                                 node_val.get('node_name'),
-                                node_val.get('node_ips'),
+                                node_val.get('node_ip'),
                                 datacenter,
                                 node_val.get('agent_addr')
                             ),
@@ -245,8 +245,7 @@ def data_fetch():
                         )
 
                         # Add node ip to consul ip list
-                        for ip in node_val.get('node_ips'):
-                            consul_ip_list.add(ip)
+                        consul_ip_list.add(node_val.get('node_ip'))
 
                         # Add node_id to key set
                         nodes_key.add(node_val.get('node_id'))

@@ -31,7 +31,7 @@ dc.update({
     'node': [
         'node_id',
         'node_name',
-        ['node_ips1', 'node_ips2'],
+        ['node_ip1', 'node_ip2'],
         'datacenter',
         ['agents1', 'agents2']
     ]

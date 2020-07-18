@@ -97,7 +97,7 @@ class Consul(object):
                     {
                         node_id:    string: id
                         node_name:  string: name
-                        node_ips:   unique string list: ips
+                        node_ip:    string: ips
                     }, ...
                 ]
         """
@@ -111,24 +111,11 @@ class Consul(object):
 
             # Iterate over each node and get all its unique ips
             for node in catalog_nodes:
-                ip_list = []
-                ip_list.append(node.get('Address', ''))
-                tagged_addr = node.get('TaggedAddresses', {})
-                if tagged_addr:
-                    ip_list.append(tagged_addr.get('wan_ipv4', ''))
-                    ip_list.append(tagged_addr.get('wan', ''))
-                    ip_list.append(tagged_addr.get('lan', ''))
-                    ip_list.append(tagged_addr.get('lan_ipv4', ''))
-
-                # for removing '' from ip_list
-                ip_list = [ip.lower() for ip in ip_list if ip]
-
-                node_name = node.get('Node', '')
 
                 node_list.append({
                     'node_id': node.get('ID', ''),
-                    'node_name': node_name,
-                    'node_ips': list(set(ip_list))
+                    'node_name': node.get('Node', ''),
+                    'node_ip': node.get('Address', '')
                 })
         except Exception as e:
             logger.exception('Exception in Catalog Nodes: {}'.format(str(e)))
@@ -413,85 +400,3 @@ class Consul(object):
 
         logger.debug('detailed_node_check return: {}'.format(str(node_checks_list)))
         return node_checks_list
-
-    def get_consul_data(self):
-        """
-        This will fetch the data from the API and return for now
-        Decide the form of data needed in the merge logic and return as per that.
-
-        return: [
-                    {
-                        node_id:    string: id
-                        node_name:  string: name
-                        node_ips:   unique string list: ips
-                        node_check: {
-                                passing: int: if val > 0
-                                warning: int: if val > 0
-                                failing: int: if val > 0
-                            }
-                        node_services: [
-                                {
-                                    service_id:        string: id
-                                    service_name:      string: name
-                                    service_ip:        string: ip
-                                    service_port:      string: port
-                                    service_address:   string: service ip(if exists)/node ip : port
-                                    service_tags:      string list: tags
-                                    service_kind:      string: kind
-                                    service_namespace: string: namespace
-                                    service_checks: {
-                                                    passing: int: if val > 0
-                                                    warning: int: if val > 0
-                                                    failing: int: if val > 0
-                                                }
-                                }, ...
-                            ]
-                    }, ...
-                ]
-        """
-
-        logger.info('Get all consul data.')
-        consul_data = []
-        try:
-
-            list_of_nodes = self.nodes()
-
-            for node in list_of_nodes:
-
-                # get all the services info using name
-                node_name = node.get('node_name')
-                service_list = self.nodes_services(node_name)
-                final_service_list = []
-
-                for service in service_list:
-
-                    # get service check, tags and kind using service name
-                    service_name = service.get('service_name')  # This may fail
-                    service_check = self.service_checks(service_name)
-                    service_tags, service_kind, service_ns = self.service_info(service_name)
-
-                    # Form final dict
-                    final_service_list.append({
-                        'service_id': service.get('service_id'),
-                        'service_ip': service.get('service_ip'),
-                        'service_port': service.get('service_port'),
-                        'service_address': service.get('service_address'),
-                        'service_name': service_name,
-                        'service_checks': service_check,
-                        'service_tags': service_tags,
-                        'service_kind': service_kind,
-                        'service_namespace': service_ns
-                    })
-
-                consul_data.append({
-                    'node_id': node.get('node_id'),
-                    'node_name': node_name,
-                    'node_ips': node.get('node_ips'),
-                    'node_check': self.node_checks(node_name),
-                    'node_services': final_service_list
-                })
-        except Exception as e:
-            logger.exception("Error while merge_aci_data : {}".format(str(e)))
-
-        logger.debug('get_consul_data return: {}'.format(str(consul_data)))
-        return consul_data
