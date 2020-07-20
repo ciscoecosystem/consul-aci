@@ -9,7 +9,7 @@ const NODE_EP_NAME = "EP";
 const NODE_SERVICE_NAME = "Service";
 const NODE_EPG_NAME = "EPG";
 const VALUE_LENGTH = 35;
-const IP_LENGTH = 21;
+const IP_LENGTH = 22;
 const MAC_LENGTH = 20;
 
 function formateDataToChartData(data) {
