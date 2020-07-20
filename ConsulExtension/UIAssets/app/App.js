@@ -73,6 +73,7 @@ export default class App extends React.Component {
             pollingIntervalPopup: false,
             mappingDcname: undefined,
             mappingPopup: false,
+            callContainer: true,
             items: [
                 { label: AGENTS , action: this.handleAgent },
                 { label: "Polling interval", action: this.handlePollingIntervalPopUp }
@@ -145,6 +146,7 @@ export default class App extends React.Component {
         this.readDatacenter();
         this.intervalCall  = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
     }
+
 
 
     componentWillUnmount() {
@@ -280,7 +282,14 @@ export default class App extends React.Component {
         if(pollingIntervalPopup === true){
             this.getPollingInterval()
         }
-        this.setState({ pollingIntervalPopup })
+        if(pollingIntervalPopup){
+            this.setState({ pollingIntervalPopup, callContainer: false})
+        }
+        else{
+            this.setState({ pollingIntervalPopup })
+            setTimeout(()=>(this.setState({callContainer: true})), 1000)
+        }
+ 
     }
 
     setPollingIntervalDefaultValue(interval){
@@ -465,7 +474,7 @@ export default class App extends React.Component {
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
-                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} shouldUpdate={this.state.pollingIntervalPopup?false:true}/>}
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} shouldUpdate={this.state.callContainer}/>}
                 </div >
             </Router>
         );
