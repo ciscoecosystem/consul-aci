@@ -311,3 +311,7 @@ body {
 .ReactTable .pagination-bottom .select::after {
   z-index: 10;
 }
+
+.ReactTable .-pagination .-pageJump input {
+  width: 70px !important;
+}
