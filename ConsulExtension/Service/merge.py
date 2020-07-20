@@ -139,7 +139,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if 'node_services_copy' in each:
                 del each['node_services_copy']
 
-        return final_list  # updated_merged_list#,total_epg_count # TBD for returning values
+        return final_list, final_non_merged  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
         logger.exception("Error in merge_aci_data : {}".format(str(e)))
         return []
