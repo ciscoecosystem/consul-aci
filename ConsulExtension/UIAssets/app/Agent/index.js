@@ -75,8 +75,12 @@ export default class Agent extends React.Component {
 
     componentDidMount() {
         // let thiss = this;
-        this.readAgents();
-        this.intervalCall  = setInterval(() => this.readAgents(true), INTERVAL_API_CALL);
+ 
+        let readAgentsIntervalCall = (param) => { 
+            this.readAgents(param);
+            this.intervalCall = setTimeout(()=>readAgentsIntervalCall(true), INTERVAL_API_CALL)
+        };
+        readAgentsIntervalCall(false);
     }
 
     componentWillUnmount() {

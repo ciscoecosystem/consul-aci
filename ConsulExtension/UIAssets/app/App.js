@@ -124,8 +124,13 @@ export default class App extends React.Component {
     componentDidMount() {
         // this.setSidebar(dummyItems);
         this.postTenant();
-        this.readDatacenter();
-        this.intervalCall  = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
+        let readDataIntervalCall = () => { 
+            this.readDatacenter();
+            this.intervalCall = setTimeout(readDataIntervalCall, INTERVAL_API_CALL)
+        };
+
+        readDataIntervalCall()
+
     }
 
 
