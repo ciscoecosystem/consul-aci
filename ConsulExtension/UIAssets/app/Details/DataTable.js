@@ -15,22 +15,34 @@ export default class DataTable extends Component {
       {
         Header: "Service",
         accessor: "service",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Instance",
         accessor: "serviceInstance",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Port",
         accessor: "port",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Kind",
         accessor: "serviceKind",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Service Tags",
@@ -62,7 +74,10 @@ export default class DataTable extends Component {
       {
         Header: "Namespace",
         accessor: "serviceNamespace",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       }
     ]
 
@@ -71,22 +86,34 @@ export default class DataTable extends Component {
       {
         Header: "Endpoint",
         accessor: "endPointName",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "IP",
         accessor: "ip",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Application Profile",
         accessor: "ap",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "EPG",
         accessor: "epgName",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "EPG Health",
@@ -95,7 +122,7 @@ export default class DataTable extends Component {
         sortMethod: (a, b) => Number(a)-Number(b),// sorting numerically
         Cell: row => {
 
-          let epgcolor = "56b72a";
+          let epgcolor = "#56b72a";
           if (row.value < 70) {
             epgcolor = "#ffcc00";
           }
@@ -108,7 +135,10 @@ export default class DataTable extends Component {
       {
         Header: "Consul Node",
         accessor: "consulNode",
-        filterType: "textoptions"
+        filterType: "text",
+        Cell: row => {
+          return <span title={row.value}>{row.value}</span>
+        }
       },
       {
         Header: "Node Check",
@@ -162,18 +192,10 @@ export default class DataTable extends Component {
     this.setState({ row: newprops.data })
   }
 
-  // CONSUL_handleRowExpanded(newExpanded, index, event) {
-  //   // we override newExpanded, keeping only current selected row expanded
-  //   this.props.setExpand(index[0])
-  // }
-
   render() {
-    let thiss = this;
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
-
-
 
         <FilterableTable loading={this.state.loading}
           ref={this.myRef}
@@ -181,22 +203,18 @@ export default class DataTable extends Component {
           noDataText="No endpoints found for the given Application in the given Tenant."
           data={this.state.row}
           columns={this.state.columns}
-          // onPageChange={() => this.props.resetExpanded()}
-          // expanded={this.props.expanded}
-          // onExpandedChange={(newExpanded, index, event) => this.CONSUL_handleRowExpanded(newExpanded, index, event)}
           getTrProps={(state, rowInfo) => {
-            if (rowInfo && rowInfo.row) {
-              return {
-                onClick: (e) => {
-                  thiss.props.setSummaryDetail(rowInfo.original)
-                  // console.log("Select row on click ", rowInfo );
+              if (rowInfo && rowInfo.row) {
+                return {
+                  onClick: (e) => {
+                    this.props.setSummaryDetail(rowInfo.original)
+                  }
                 }
+              } else {
+                return {}
               }
-            } else {
-              return {}
-            }
-          }} />
-        {/* </FilterableTable> */}
+            }}
+           />
       </div>
     )
   }

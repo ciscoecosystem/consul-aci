@@ -298,7 +298,7 @@ export default class Tree extends React.Component {
       .nodeSize(
         orientation === "horizontal"
           ? [nodeSize.y - 25, nodeSize.x]
-          : [nodeSize.x - 25, nodeSize.y]
+          : [nodeSize.x + 45, nodeSize.y]
       )
       .separation((a, b) =>
         deepEqual(a.parent, b.parent)
@@ -377,7 +377,7 @@ export default class Tree extends React.Component {
     }
 
     return (
-      <div>
+      <div style={{height:"100%"}}>
         <div
           className={`rd3t-tree-container ${
             zoomable ? "rd3t-grabbable" : undefined

@@ -1,12 +1,9 @@
-import json
 import copy
-import datetime
-
 import custom_logger
 from decorator import time_it
 
-
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
+
 
 @time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
@@ -26,7 +23,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         logger.debug("ACI Data: {}".format(str(aci_data)))
         logger.debug("Mapping Data: {}".format(str(aci_consul_mappings)))
 
-        mappings = [node for node in aci_consul_mappings if node.get('enabled') == True]
+        mappings = [node for node in aci_consul_mappings if node.get('enabled')]
 
         for aci in aci_data:
             if aci['EPG'] not in total_epg_count.keys():
@@ -38,7 +35,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 for each in mappings:
                     mapping_key = 'ip'
                     aci_key = 'IP'
-                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key).upper() == each.get(mapping_key).upper() and each['dn'] == str(aci['dn']):
+                    if aci.get(aci_key) and each.get(mapping_key) and aci.get(aci_key) == each.get(mapping_key) and each['dn'] == str(aci['dn']):
                         logger.info('mapping: {}, aci: {}'.format(str(each), str(aci)))
                         # Service to CEp mapping
                         for node in consul_data:
@@ -52,7 +49,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             # All the services which matches CEp and its ip is different from its nodes ip
                             node_services = copy.deepcopy(node.get('node_services', []))
                             for service in node_services:
-                                if aci.get(aci_key).upper() == service.get('service_ip') and aci.get(aci_key).upper() not in node.get('node_ips'):
+                                if aci.get(aci_key) == service.get('service_ip') and aci.get(aci_key) not in node.get('node_ips'):
                                     # node['node_services'].remove(service)
                                     new_node['node_services'].append(service)
                                 # Below statements is supposed to remove all the services which do not map to any ip in mappings.
@@ -70,7 +67,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                                         merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                         # node to EP mapping
-                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key).upper() in node.get('node_ips', [])]
+                        mapped_consul_nodes = [node for node in consul_data if aci.get(aci_key) in node.get('node_ips', [])]
                         if mapped_consul_nodes:
                             for each in mapped_consul_nodes:
                                 each.update(aci)
@@ -89,18 +86,18 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if (aci['IP'], aci['CEP-Mac'], aci['dn']) in merged_eps:
                 continue
             else:
-                if aci['EPG'] not in non_merged_ep_dict:
-                    non_merged_ep_dict[aci['EPG']] = {aci['CEP-Mac']: str(aci['IP'])}
-                
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['EPG']].keys() and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']]:
-                    multipleips = non_merged_ep_dict[aci['EPG']][aci['CEP-Mac']] + ", " + str(aci['IP'])
-                    non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: multipleips})
+                if aci['dn'] not in non_merged_ep_dict:
+                    non_merged_ep_dict[aci['dn']] = {aci['CEP-Mac']: str(aci['IP'])}
+
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci['dn']].keys() and aci.get('IP') and aci['IP'] != non_merged_ep_dict[aci['dn']][aci['CEP-Mac']]:
+                    multipleips = non_merged_ep_dict[aci['dn']][aci['CEP-Mac']] + ", " + str(aci['IP'])
+                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: multipleips})
                 else:
-                    non_merged_ep_dict[aci['EPG']].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: str(aci['IP'])})
 
         final_non_merged = {}
         if non_merged_ep_dict:
-            for key,value in non_merged_ep_dict.items():
+            for key, value in non_merged_ep_dict.items():
                 if not value:
                     continue
                 final_non_merged[key] = value
@@ -110,7 +107,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             for epg in total_epg_count.keys():
                 un_map_eps = int(total_epg_count.get(epg, [])) - len(merged_epg_count.get(epg, []))
                 fractions[epg] = int(un_map_eps)
-                logger.info('Total Unmapped Eps (Inactive):'+str(un_map_eps)+" - "+str(epg))
+                logger.info('Total Unmapped Eps (Inactive): {} - {}'.format(str(un_map_eps), str(epg)))
 
         updated_merged_list = []
         if fractions:
@@ -118,7 +115,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 for each in merge_list:
                     if key == each['EPG']:
                         each['fraction'] = value
-                        each['Non_IPs'] = final_non_merged.get(key, {})
+                        each['Non_IPs'] = final_non_merged.get(each['dn'], {})
                         updated_merged_list.append(each)
 
         final_list = []
@@ -129,7 +126,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             final_list.append(each)
         logger.info('Merge complete. Total objects correlated: ' + str(len(final_list)))
 
-        return final_list #updated_merged_list#,total_epg_count # TBD for returning values
+        return final_list  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
-        logger.exception("Error in merge_aci_data : "+str(e))
+        logger.exception("Error in merge_aci_data : {}".format(str(e)))
         return []

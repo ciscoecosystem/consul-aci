@@ -2,10 +2,11 @@
 
 import threading
 
+
 class ThreadSafeDict(dict):
     """A thread safe dict
 
-    Method for seeing that there is no race condition 
+    Method for seeing that there is no race condition
     and using lock when accessing the thread_registry
     """
 

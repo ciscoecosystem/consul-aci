@@ -1,10 +1,11 @@
 import React from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
-import { Sidebar, Dropdown, ButtonGroup, Icon, Screen, Button } from 'blueprint-react';
+import { Sidebar,  ButtonGroup, Icon, Screen, Button, Dropdown, Carousel } from 'blueprint-react';
 import Iframe from 'react-iframe';
 import { PROFILE_NAME, getParamObject } from "../constants.js";
 import Modal from './commonComponent/Modal.js';
 import Dashboard from './Dashboard/Dashboard.js';
+import Details from './Details/App.js';
 import 'react-toastify/dist/ReactToastify.css';
 // import qsimg from './Asset/qs-details.png';
 
@@ -27,10 +28,15 @@ export default class Container extends React.Component {
         pathname = pathname.split("/");
         pathname.pop();
         this.pathname = pathname.join("/");
-        this.closeHelpPopUp = this.closeHelpPopUp.bind(this)
-        this.openHelpPopUp = this.openHelpPopUp.bind(this)
-        console.log("container constructor");
-        // <Redirect to={this.pathname + "/" + window.location.search} />
+        this.closeHelpPopUp = this.closeHelpPopUp.bind(this);
+        this.openHelpPopUp = this.openHelpPopUp.bind(this);
+        this.getDataCenters = this.getDataCenters.bind(this);
+    }
+
+    getDataCenters(DataCentersObj){
+        let DataCenters = []
+        DataCentersObj.map((item)=>(DataCenters.push(item.datacenter)))
+        return DataCenters
     }
     
     closeHelpPopUp() {
@@ -62,18 +68,21 @@ export default class Container extends React.Component {
                                 <Dropdown
                                     label={<span class="icon-cog icon-small"></span>}
                                     size="btn--small"
-                                    items={this.props.items}>
+                                    items={this.props.items}
+                                    type="dropdown--type-button">
                                 </Dropdown>
                             </div>
                         </div>
                     </header>
                     <main>
                         <Modal className="help-popup" isOpen={this.state.showHelpPopUpIsOpen} title="Quickstart guide" onClose={this.closeHelpPopUp}>
-                                <div className="panel">
+                                <div className="panel quickquide">
                                     <div className="wrapper" >
                                     {/* <img src={QSIMG_PATH} className="slid-img" alt="help"/> */}
-                                    {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
-
+                                    {/* {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)} */}
+                                        <Carousel>
+                                            {this.state.images.map(item=><img src={item} className="slid-img" alt="help"/>)}
+                                        </Carousel>
                                     </div>
                                 </div>
                         </Modal>
@@ -105,7 +114,7 @@ export default class Container extends React.Component {
                                 }} />
 
                                 <Route path={this.pathname + "/operational"} component={function () {
-                                    return <OperationalViewComponent pathname={thiss.pathname} />
+                                    return <OperationalViewComponent pathname={thiss.pathname} availableDataCenter={thiss.getDataCenters(thiss.props.detailsItem)}/>
                                 }} />
 
 
@@ -133,8 +142,6 @@ class OperationalViewComponent extends React.Component {
 
         this.paramsObject = getParamObject(window.location); // query string as object
 
-        console.log("extracted paramsObject ", this.paramsObject);
-
         this.handleIsListView = this.handleIsListView.bind(this);
         this.state = {
             isListView: true, // True signifies detailview and False for Treeview
@@ -148,20 +155,15 @@ class OperationalViewComponent extends React.Component {
             isListView: (selectedView.value === "detail")
         })
     }
-    componentWillMount() {
-        console.log("Mounting Operations view")
-    }
-    componentWillUnmount() {
-        console.log("Unmounting Operations view")
-    }
 
     render() {
         let { isListView, treeViewLocation, detailViewLocation } = this.state;
         let toLocation = isListView ? detailViewLocation : treeViewLocation;
 
         let dcName = this.paramsObject[PROFILE_NAME];
+        let tenantName = this.paramsObject["tn"];
+        let isDeleted = !this.props.availableDataCenter.includes(dcName);
 
-        console.log("Operations view Render", this.state);
 
         return (<div>
             <div className="page-container-header ">
@@ -177,7 +179,10 @@ class OperationalViewComponent extends React.Component {
                         onChange={this.handleIsListView} />
                 </div>
             </div>
-            <FrameComponent toLocation={toLocation} />}
+            {this.state.isListView ? <Details dcName={dcName} tenantName={tenantName} isDeleted={isDeleted}/> : 
+                <div style={{height:"84vh" }}>
+                    <FrameComponent toLocation={toLocation} />
+                </div>}
 
         </div>)
     }
@@ -187,7 +192,6 @@ class OperationalViewComponent extends React.Component {
 function FrameComponent(props) {
     return <Iframe url={props.toLocation}
         width="450px"
-        height="80vh"
         id="myId"
         className="myClassname"
         display="initial"

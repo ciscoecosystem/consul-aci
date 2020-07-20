@@ -15,7 +15,6 @@
         "contact-phone":"1 800 553 2447",
         "contact-url":"https://github.com/ciscoecosystem/consul-aci/issues"
     },
-    "helpURL":"/help/content/index.html",
     "iconfile":"hashicorp-consul.png",
     "insertionURL":"fv:infoTenant:center",
     "metaversion":"1.0",

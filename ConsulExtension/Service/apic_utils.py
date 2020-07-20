@@ -1,6 +1,5 @@
 import re
 import json
-import time
 import copy
 import base64
 import requests
@@ -18,15 +17,35 @@ from cobra.model.aaa import AppUser as AaaAppUser
 from cobra.model.aaa import UserCert as AaaUserCert
 try:
     from OpenSSL.crypto import FILETYPE_PEM, load_privatekey, sign
-except:
+except Exception as e:
     print("=== could not import openssl crypto ===")
 
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-APIC_IP =  get_conf_value('APIC', 'APIC_IP')
+APIC_IP = get_conf_value('APIC', 'APIC_IP')
 STATIC_IP = get_conf_value('APIC', 'STATIC_IP')
 APIC_THREAD_POOL = int(get_conf_value('APIC', 'APIC_THREAD_POOL'))
+
+
+def create_cert_session():
+    """
+    Create user certificate and session.
+    """
+
+    cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
+    # static generated upon install
+    plugin_key_file = '/home/app/credentials/plugin.key'
+    pol_uni = PolUni('')
+    aaa_user_ep = AaaUserEp(pol_uni)
+    aaa_app_user = AaaAppUser(aaa_user_ep, cert_user)
+    aaa_user_cert = AaaUserCert(aaa_app_user, cert_user)
+
+    with open(plugin_key_file, "r") as file:
+        plugin_key = file.read()
+
+    return (aaa_user_cert, plugin_key)
+
 
 class AciUtils(object):
     __instance = None
@@ -64,7 +83,7 @@ class AciUtils(object):
         Returns:
             auth_token -- Authentication token from Cisco APIC API
         """
-        user_cert, plugin_key = AciUtils.create_cert_session()
+        user_cert, plugin_key = create_cert_session()
         app_token_payload = {"aaaAppToken": {
             "attributes": {"appName": "CiscoHashiCorp_ConsulExtensionforACI"}}}
         data = json.dumps(app_token_payload)
@@ -92,27 +111,8 @@ class AciUtils(object):
                 self.apic_token = None
                 return None
         except Exception as e:
-            logger.exception('Unable to connect with APIC. Exception: '+str(e))
+            logger.exception('Unable to connect with APIC. Exception: {}'.format(str(e)))
             self.apic_token = None
-
-    @staticmethod
-    def create_cert_session():
-        """
-        Create user certificate and session.
-        """
-
-        cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
-        # static generated upon install
-        plugin_key_file = '/home/app/credentials/plugin.key'
-        pol_uni = PolUni('')
-        aaa_user_ep = AaaUserEp(pol_uni)
-        aaa_app_user = AaaAppUser(aaa_user_ep, cert_user)
-        aaa_user_cert = AaaUserCert(aaa_app_user, cert_user)
-
-        with open(plugin_key_file, "r") as file:
-            plugin_key = file.read()
-
-        return (aaa_user_cert, plugin_key)
 
     @time_it
     def aci_get(self, url, retry=1):
@@ -209,7 +209,6 @@ class AciUtils(object):
         data_list = []
         data = {}
         ep_attr = item.get('fvCEp').get('attributes')
-        ip_mac_list, data['is_cep'] = AciUtils.get_ip_mac_list(item)
         data['dn'] = ep_attr.get('dn')
         data['learning_src'] = ep_attr.get("lcC")
         data['tenant'] = data['dn'].split('tn-')[1].split('/')[0]
@@ -218,11 +217,11 @@ class AciUtils(object):
         data['multi_cast_addr'] = ep_attr.get("mcastAddr")
         if data['multi_cast_addr'] == "not-applicable":
             data['multi_cast_addr'] = "---"
-
         ep_child_attr = item.get('fvCEp').get('children')
         ep_info = self.get_ep_info(ep_child_attr)
-        for ip_mac in ip_mac_list:
-            data['ip'] = ip_mac
+
+        for each in AciUtils.get_ip_mac_list(item):
+            data['ip'], data['is_cep'] = each  # TODO: if mac, then add ''
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -362,8 +361,7 @@ class AciUtils(object):
                 instance_list = response_json['imdata']
             return instance_list
         except Exception as ex:
-            logger.exception('Exception while fetching MO: ' +
-                             mo_class + ', Error:' + str(ex))
+            logger.exception('Exception while fetching MO: {}, Error: {}'.format(mo_class, str(ex)))
             return []
 
     @staticmethod
@@ -423,8 +421,7 @@ class AciUtils(object):
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
                 data = response_json.get("imdata")
-                logger.debug(
-                    'Total EPGs fetched for Tenant: {} - {} EPGs'.format(str(tenant), str(len(data))))
+                logger.debug('Total EPGs fetched for Tenant: {} - {} EPGs'.format(str(tenant), str(len(data))))
                 parsed_data = self.parse_epg_data(data)
                 return parsed_data
             return None
@@ -495,7 +492,7 @@ class AciUtils(object):
             contract_list = []
             mapping_dict = {
                 'fvRsCons': "Consumer",
-                'fvRsIntraEpg': "IntraEpg",
+                'fvRsIntraEpg': "Intra EPG",
                 'fvRsProv': "Provider",
                 'fvRsConsIf': "Consumer Interface",
                 'fvRsProtBy': "Taboo"
@@ -586,6 +583,7 @@ class AciUtils(object):
         data['bd'] = self.apic_fetch_bd(data['dn'])
         data['app_profile'] = data['dn'].split('ap-')[1].split('/')[0]
         data['epg'] = epg_attr.get("name")
+        data['epg_alias'] = epg_attr.get("nameAlias")
         dn_split = data['dn'].split("/", 4)
         vrf_str = dn_split[0] + '/' + dn_split[1] + '/BD-' + data['bd']
         vrf_data = self.apic_fetch_vrf(vrf_str)
@@ -606,25 +604,30 @@ class AciUtils(object):
         """
         is_cep = False
         is_ip_list = False
-        ip_set = set()
-        mac_set = set()
+        ip_set = []
+        is_cep_list = []
+        response = []
         for eachip in item.get('fvCEp').get('children'):
             # If first key is 'fvIp' than add IP to list otherwise add mac address
             if eachip.keys()[0] == 'fvIp':
                 is_ip_list = True
-                ip_set.add(
-                    str(eachip.get('fvIp').get('attributes').get('addr')))
+                ip_set.append(str(eachip.get('fvIp').get('attributes').get('addr')).lower())
+                is_cep_list.append(is_cep)
 
         # Below if condition adds all valid ip and mac to the list
-        cep_ip = str(item.get('fvCEp').get('attributes').get('ip'))
-        if cep_ip != STATIC_IP and not is_ip_list:
+        cep_ip = str(item.get('fvCEp').get('attributes').get('ip')).lower()
+        if cep_ip != STATIC_IP:
             is_cep = True
-            ip_set.add(cep_ip)
+            ip_set.append(cep_ip)
+            is_cep_list.append(is_cep)
         elif not is_ip_list:
-            mac_set.add(item.get('fvCEp').get('attributes').get('mac'))
+            ip_set.append(item.get('fvCEp').get('attributes').get('mac').lower())
+            is_cep_list.append(is_cep)
 
-        return (list(ip_set) + list(mac_set)), is_cep
-
+        for i, value in enumerate(ip_set):
+            if value not in ip_set[:i]:
+                response.append([value, is_cep_list[i]])
+        return response
 
     @time_it
     def get_ap_epg_faults(self, dn):
@@ -639,7 +642,6 @@ class AciUtils(object):
             logger.info("Exception while processing Faults : {}".format(ex))
         return faults_dict
 
-
     @time_it
     def get_ap_epg_events(self, dn):
         """
@@ -653,7 +655,6 @@ class AciUtils(object):
             logger.info("Exception while processing Events : {}".format(ex))
         return events_dict
 
-
     @time_it
     def get_ap_epg_audit_logs(self, dn):
         """
@@ -666,7 +667,6 @@ class AciUtils(object):
         except Exception as ex:
             logger.info("Exception while processing Audit logs : " + str(ex))
         return audit_logs_dict
-
 
     @time_it
     def get_mo_related_item(self, mo_dn, item_query_string, item_type):
@@ -691,12 +691,12 @@ class AciUtils(object):
                 response_json = self.aci_get(url)
                 if response_json and response_json.get("imdata"):
                     item_list = response_json.get("imdata")
+            # logger.debug("get mo returns: {}".format(str(item_list)))
             return item_list
         except Exception as ex:
             logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
-            logger.exception('Epg Item Url : =>'.format(url))
+            logger.exception('Epg Item Url : {}'.format(url))
             return []
-
 
     @staticmethod
     def get_dict_records(list_of_records, key):

@@ -278,6 +278,7 @@
 
 .node-icon {
   text-align: center;
+  font-size: 12px !important
 }
 
 .cui .node-icon .icon-tiny:before {
@@ -287,4 +288,21 @@
 .ReactTable .rt-noData {
   color: black;
   font-size: 16px;
+}
+
+.ReactTable .rt-tbody {
+  overflow: hidden;
+}
+
+body {
+  overflow-x: auto;
+  overflow-y: scroll;
+}
+
+.cui .form-group.dropdown .dropdown__menu {
+  margin-bottom: 50px !important;
+}
+
+.ReactTable {
+  margin-bottom: 50px !important;
 }

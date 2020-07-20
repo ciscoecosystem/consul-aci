@@ -89,8 +89,11 @@ export default class Agent extends React.Component {
         console.log("ERRROR :===>> ", error, info)
     }
 
-    refreshField() {
-        this.setState({ ...defaultFieldState })
+    refreshField(){
+        this.setState({ ...defaultFieldState, errormsg: {
+            Address: null,
+            Port: null
+        } })
     }
 
     setDetails(details, isReloaded = false) {
@@ -226,7 +229,8 @@ export default class Agent extends React.Component {
                         // thiss.setState({ details: credsData.payload })
                     } else if (parseInt(credsData.status_code) === 300) {
                         try {
-                            thiss.notify(credsData.message)
+                            thiss.setDetails(credsData.payload, isReloaded);
+                            thiss.notify(credsData.message);
                         } catch (e) {
                             console.log("message error", e)
                         }
@@ -621,7 +625,7 @@ export default class Agent extends React.Component {
             }}>
                 <div>
                     <div className="panel">
-                        <form onSubmit={this.submitAgent}>
+                        <form>
                             <div className="integration-form">
                                 {
                                     agentFields.map(function (elem) {
@@ -634,6 +638,7 @@ export default class Agent extends React.Component {
                                         className={!saveAllow && "disabled"}
                                         size="btn--small"
                                         type="btn--primary"
+                                        onClick={this.submitAgent}
                                     >Save</Button>
 
                                 </div>
@@ -658,7 +663,7 @@ export default class Agent extends React.Component {
                                         className={`half-margin-left ${readAgentLoading && 'disabled'}`}
                                         size="btn--small"
                                         type="btn--primary-ghost"
-                                        onClick={() => { this.setState({ isNewAgentAdded: true }, () => this.handleModal(true)) }}> {"Add " + AGENTS} </Button>
+                                        onClick={() => { this.setState({ isNewAgentAdded: true }, () => {this.handleModal(true)}) }}> {"Add " + AGENTS} </Button>
 
                                     <IconButton
                                         className={`pull-right ${readAgentLoading && 'disabled'}`}

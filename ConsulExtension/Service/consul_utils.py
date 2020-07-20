@@ -13,7 +13,6 @@ class Consul(object):
     """Consul class"""
 
     def __init__(self, agent_ip, port, token, protocol):
-        
         logger.info('Consul Object init for agent: {}:{}'.format(agent_ip, port))
 
         self.agent_ip = str(agent_ip)
@@ -24,26 +23,25 @@ class Consul(object):
         self.session = requests.Session()
         self.connected = False
 
-        # The base URL is set with protocol http, 
+        # The base URL is set with protocol http,
         # if http fails https will be tried
         self.base_url = '{}://{}:{}'.format(self.protocol, self.agent_ip, self.port)
         self.header = {}
         if self.token:
             logger.info('Token provided')
-            self.header = {'X-Consul-Token' : self.token}
-
+            self.header = {'X-Consul-Token': self.token}
 
     def check_connection(self):
         """Verify if connection to an agent is possible
-        
+
         if token is provided checks for a token based access
-         with both http and https if that fails then same 
+         with both http and https if that fails then same
          for without token
 
         if Token is not provided check connection with http
          and https
         """
-        
+
         logger.info('Check Consul Connection')
         try:
             status_code = None
@@ -52,7 +50,7 @@ class Consul(object):
                 response = self.session.get(urls.AUTH.format(self.base_url), headers=self.header, timeout=5)
                 status_code = response.status_code
 
-            # This is the case when no token is provided by the user or 
+            # This is the case when no token is provided by the user or
             # it is provided but connection has failed
             else:
                 logger.info("Token NOT provided, trying connecting to agent without token.")
@@ -92,10 +90,9 @@ class Consul(object):
             logger.exception('Exception in Consul check connection: {}'.format(str(e)))
             return self.connected, None
 
-
     def nodes(self):
         """Fetching all the nodes using an agent
-        
+
         return: [
                     {
                         node_id:    string: id
@@ -111,7 +108,7 @@ class Consul(object):
             catalog_nodes = self.session.get(urls.CATALOG_NODES.format(self.base_url), timeout=30)
             catalog_nodes = json.loads(catalog_nodes.content)
             logger.debug('Catalog Nodes API data: {}'.format(str(catalog_nodes)))
-            
+
             # Iterate over each node and get all its unique ips
             for node in catalog_nodes:
                 ip_list = []
@@ -124,7 +121,7 @@ class Consul(object):
                     ip_list.append(tagged_addr.get('lan_ipv4', ''))
 
                 # for removing '' from ip_list
-                ip_list = [ip for ip in ip_list if ip]
+                ip_list = [ip.lower() for ip in ip_list if ip]
 
                 node_name = node.get('Node', '')
 
@@ -134,17 +131,16 @@ class Consul(object):
                     'node_ips': list(set(ip_list))
                 })
         except Exception as e:
-             logger.exception('Exception in Catalog Nodes: {}'.format(str(e)))
+            logger.exception('Exception in Catalog Nodes: {}'.format(str(e)))
 
         logger.debug('nodes return: {}'.format(str(node_list)))
         return node_list
 
-
     def nodes_services(self, node_name):
         """This will return all the services of a node
-        
-        node_name: name of nodes for services
-        
+
+        :node_name: name of nodes for services
+
         return: [
                     {
                         service_id:       string: id
@@ -167,13 +163,13 @@ class Consul(object):
             for service in services_resp.get('Services'):
 
                 # form service_address
-                service_ip = service.get('Address')
+                service_ip = service.get('Address').lower()
                 service_port = service.get('Port')
                 if service_ip:
                     service_address = str(service_ip) + ':' + str(service_port)
                 else:
-                    service_address = str(services_resp.get('Node', {}).get('Address', '')) + ':' + str(service_port)
-                
+                    service_address = str(services_resp.get('Node', {}).get('Address', '')).lower() + ':' + str(service_port)
+
                 # Form a dict
                 service_list.append({
                     'service_id': service.get('ID'),
@@ -188,11 +184,10 @@ class Consul(object):
         logger.debug('nodes_services return: {}'.format(str(service_list)))
         return service_list
 
-
     def node_checks(self, node_name):
         """Get node checks
 
-        node_name: name of the node for checks
+        :node_name: name of the node for checks
 
         return: {
                 passing: int: if val > 0
@@ -235,11 +230,10 @@ class Consul(object):
         logger.debug('node_checks return: {}'.format(str(check_dict)))
         return check_dict
 
-
     def service_checks(self, service_name):
         """Get all the serveice checks
-        
-        service_name: name of the service for checks
+
+        :service_name: name of the service for checks
 
         return: {
                 passing: int: if val > 0
@@ -254,7 +248,7 @@ class Consul(object):
             service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name), timeout=30)
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
-        
+
             for check in service_resp:
                 status = check.get('Status')
                 if status:
@@ -279,11 +273,10 @@ class Consul(object):
         logger.debug('service_checks return: {}'.format(str(check_dict)))
         return check_dict
 
-
     def service_info(self, service_name):
         """Get tag and kind info from details of a service
-        
-        service_name: name of the service for checks
+
+        :service_name: name of the service for checks
 
         return: tuple(tag_list, kind, namespace)
                     tag_list: string list
@@ -306,19 +299,18 @@ class Consul(object):
             tag_list = list(tags_set)
             service_kind = service_resp[0].get('ServiceKind', '')
 
-            # In case of OSS cluster, no key named Namespace is returned, 
-            # thus NA will be returned. 
+            # In case of OSS cluster, no key named Namespace is returned,
+            # thus NA will be returned.
             service_namespace = service_resp[0].get('Namespace', 'NA')
         except Exception as e:
             logger.exception('Exception in Service Details: {}'.format(str(e)))
 
-        logger.debug('service_info return: {}'.format(tag_list, service_kind))
+        logger.debug('service_info return: {}, {}, {}'.format(tag_list, service_kind, service_namespace))
         return tag_list, service_kind, service_namespace
-
 
     def datacenter(self):
         """This will return datacenter of an agent
-        
+
         return: string
         """
 
@@ -331,15 +323,14 @@ class Consul(object):
             logger.debug('Datacenter API data: {}'.format(datacenter_name))
         except Exception as e:
             logger.exception("Error in Datacenter: {}".format(e))
-        
+
         logger.debug('datacenter return: {}'.format(str(datacenter_name)))
         return datacenter_name
 
-
     def detailed_service_check(self, service_name, service_id):
         """Get serveice checks details
-        
-        service_name: name of the service for checks
+
+        :service_name: name of the service for checks
 
         return: [{
             ServiceName: string
@@ -358,7 +349,7 @@ class Consul(object):
             service_resp = self.session.get(urls.SERVICE_CHECK.format(self.base_url, service_name), timeout=30)
             service_resp = json.loads(service_resp.content)
             logger.debug('Service Check API data: {}'.format(service_resp))
-            
+
             for check in service_resp:
                 if check.get("ServiceID").lower() == service_id.lower():
                     service_check = {}
@@ -379,11 +370,10 @@ class Consul(object):
         logger.debug('detailed_service_check return: {}'.format(str(service_checks_list)))
         return service_checks_list
 
-
     def detailed_node_check(self, node_name):
         """Get node checks details
 
-        node_name: name of the node for checks
+        :node_name: name of the node for checks
 
         return: [{
             Name: string
@@ -423,7 +413,6 @@ class Consul(object):
 
         logger.debug('detailed_node_check return: {}'.format(str(node_checks_list)))
         return node_checks_list
-
 
     def get_consul_data(self):
         """
@@ -477,7 +466,7 @@ class Consul(object):
                 for service in service_list:
 
                     # get service check, tags and kind using service name
-                    service_name = service.get('service_name') # This may fail
+                    service_name = service.get('service_name')  # This may fail
                     service_check = self.service_checks(service_name)
                     service_tags, service_kind, service_ns = self.service_info(service_name)
 
@@ -502,7 +491,7 @@ class Consul(object):
                     'node_services': final_service_list
                 })
         except Exception as e:
-            logger.exception("Error while merge_aci_data : "+str(e))
+            logger.exception("Error while merge_aci_data : {}".format(str(e)))
 
         logger.debug('get_consul_data return: {}'.format(str(consul_data)))
         return consul_data
