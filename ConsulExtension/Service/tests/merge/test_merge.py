@@ -65,9 +65,6 @@ def verifier_consul_data_formatter(copy_consul_data, consul_data, mapping_ips):
                         )
                         and service not in consul_data[i]["node_services_copy"]
                     ):
-                        writer("left.json", node)
-                        writer("right.json", consul_data[i])
-                        writer("mapping_ips.json", mapping_ips)
                         assert service is False
                         flag = False
                         break
