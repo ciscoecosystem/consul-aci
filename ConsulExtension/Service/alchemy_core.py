@@ -185,7 +185,7 @@ class Database:
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime),
-            Column('tenant', String)
+            Column('tenant', String, primary_key=True)
         )
 
         self.mapping = Table(
