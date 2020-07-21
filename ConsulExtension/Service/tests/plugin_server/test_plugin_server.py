@@ -44,6 +44,7 @@ def mapping_key_maker(data, obj_type, datacenter):
             st += "1" if each.get("enabled") else "0"
             st += each.get("ap")
             st += each.get("bd")
+            st += each.get("epg")
             st += each.get("vrf")
             st += each.get("tenant")
             dc[st] = True
@@ -58,6 +59,7 @@ def mapping_key_maker(data, obj_type, datacenter):
             st += each[5]
             st += each[6]
             st += each[7]
+            st += each[8]
             dc[st] = True
     return dc
 
@@ -72,20 +74,23 @@ def check_saved_mapping(db_saved_data, data, datacenter):
 
 
 def read_creds_checker(response, db_data):
-    response = response.get("payload")[0]
-    db_data = db_data[0]
-    if response.get("ip") != db_data[0]:
-        return False
-    if response.get("port") != db_data[1]:
-        return False
-    if response.get("protocol") != db_data[2]:
-        return False
-    if response.get("token") != db_data[3]:
-        return False
-    if response.get("status") != bool(db_data[4]):
-        return False
-    if response.get("datacenter") != db_data[5]:
-        return False
+    try:
+        response = response.get("payload")[0]
+        db_data = db_data[0]
+        if response.get("ip") != db_data[0]:
+            return False
+        if response.get("port") != db_data[1]:
+            return False
+        if response.get("protocol") != db_data[2]:
+            return False
+        if response.get("token") != db_data[3]:
+            return False
+        if response.get("status") != bool(db_data[4]):
+            return False
+        if response.get("datacenter") != db_data[5]:
+            return False
+    except Exception:
+        return [] == db_data
     return True
 
 
@@ -134,14 +139,14 @@ def test_get_new_mapping(case):
 
     try:
         os.system(
-            'cp ./tests/plugin_server/data/{}.db ./ConsulDatabase.db'.format(case)
+            'copy .\\tests\\plugin_server\\data\\{}.db .\\ConsulDatabase.db'.format(case)
         )
     except Exception:
         assert False
 
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
     original_mapping = get_data('{}.json'.format(case))
-    os.remove('./ConsulDatabase.db')
+    os.remove('.\\ConsulDatabase.db')
     assert new_mapping == original_mapping
 
 
@@ -184,7 +189,7 @@ def test_save_mapping(mapped_data):
         ))
         assert response == failed_response
 
-    os.remove('./ConsulDatabase.db')
+    os.remove('.\\ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("case", read_creds_cases)
@@ -197,7 +202,7 @@ def test_read_creds(case):
         'message': 'Agents not found'
     }
     if case == "empty_agents":
-        response = json.loads(plugin_server.read_creds())
+        response = json.loads(plugin_server.read_creds("tn0"))
         assert response == empty_agent_response
     else:
         data = case
@@ -212,12 +217,12 @@ def test_read_creds(case):
             }
         )
         connection.close()
-        response = json.loads(plugin_server.read_creds())
+        response = json.loads(plugin_server.read_creds("tn0"))
         connection = db_obj.engine.connect()
         db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
         connection.close()
         assert read_creds_checker(response, db_data)
-    os.remove('./ConsulDatabase.db')
+    os.remove('.\\ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("case", epg_alias_data)
@@ -248,7 +253,7 @@ def test_get_epg_alias(case):
     connection.close()
     response = plugin_server.get_epg_alias(arg)
     assert response == expected
-    os.remove('./ConsulDatabase.db')
+    os.remove('.\\ConsulDatabase.db')
 
 
 @pytest.mark.parametrize("data, expected", [
@@ -489,13 +494,6 @@ def test_mapping_exception(test_input, expected):
     actual_output = plugin_server.mapping('', '')
     verifier = expected['method']
     assert verifier(actual_output, expected['output'])
-
-
-@pytest.mark.parametrize('input, expected',
-                         [(100, ('200', 'Polling Interval Set!')),
-                          (3, ('200', 'Polling Interval Set!'))])
-def test_set_polling_interval(input, expected):
-    assert plugin_server.set_polling_interval(input), expected
 
 
 @pytest.mark.parametrize('input, expected',

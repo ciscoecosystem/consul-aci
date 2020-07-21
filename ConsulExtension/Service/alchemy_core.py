@@ -487,7 +487,7 @@ class Database:
                 self.NODE_TABLE_NAME: {
                     'node_id': self.node.c.node_id,
                     'node_name': self.node.c.node_name,
-                    'node_ips': self.node.c.node_ips,
+                    'node_ip': self.node.c.node_ip,
                     'datacenter': self.node.c.datacenter,
                     'agents': self.node.c.agents,
                     'created_ts': self.node.c.created_ts,
