@@ -569,3 +569,33 @@ def test_set_polling_interval(interval):
         response = plugin_server.set_polling_interval(interval)
         assert json.loads(response) == failed_response
         os.remove(".\\ConsulDatabase.db")
+
+
+@pytest.mark.parametrize("interval", [2, 2.2, "fail"])
+def test_get_polling_interval(interval):
+    dummy_db = alchemy_core.Database()
+    dummy_db.create_tables()
+    passed_response = json.dumps({
+        "status_code": "200",
+        "message": "Ok",
+        "payload": {
+            "interval": interval
+        }
+    })
+    failed_response = json.dumps({
+        "status_code": "300",
+        "message": "Could not get polling interval",
+        "payload": []
+    })
+    plugin_server.set_polling_interval(interval)
+    if interval != "fail":
+        response = plugin_server.get_polling_interval()
+        assert response == passed_response
+        os.remove(".\\ConsulDatabase.db")
+    else:
+        plugin_server_db_obj = plugin_server.db_obj
+        plugin_server.db_obj = None
+        response = plugin_server.get_polling_interval()
+        plugin_server.db_obj = plugin_server_db_obj
+        assert response == failed_response
+        os.remove(".\\ConsulDatabase.db")
