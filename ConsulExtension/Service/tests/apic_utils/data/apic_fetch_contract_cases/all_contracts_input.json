@@ -1,0 +1,53 @@
+{
+    "imdata": [
+        {
+            "fvRsProv": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy1"
+                }
+            }
+        },
+        {
+            "fvRsProv": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy2"
+                }
+            }
+        },
+        {
+            "fvRsCons": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy1"
+                }
+            }
+        },
+        {
+            "fvRsCons": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy2"
+                }
+            }
+        },
+        {
+            "fvRsIntraEpg": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0"
+                }
+            }
+        },
+        {
+            "fvRsConsIf": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0"
+                }
+            }
+        },
+        {
+            "fvRsProtBy": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0"
+                }
+            }
+        }
+    ]
+}

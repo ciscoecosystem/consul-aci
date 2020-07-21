@@ -1,3 +1,7 @@
+from Service.recommend_utils import (determine_recommendation,
+                                     recommended_eps)
+from Service.plugin_server import get_apic_data
+
 import pytest
 import sys
 from mock import Mock
@@ -7,12 +11,13 @@ sys.modules['cobra.model'] = 'cobra.model'
 sys.modules['cobra.model.pol'] = Mock(name='Uni')
 sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
 
-from Service.recommend_utils import (determine_recommendation,
-                                     recommended_eps)
-from Service.plugin_server import get_apic_data
+
 import os
 import configparser
 
+
+from Service import custom_logger
+logger = custom_logger.CustomLogger.get_logger("./app.log")
 
 DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
                'uni/tn-tn0/ap-ap0/epg-epg2',
@@ -37,8 +42,8 @@ def get_conf_value(section, key_name):
     dir_path = os.path.dirname(os.path.abspath(__file__))
     print('Dir path : {}'.format(dir_path))
     file_path = r''.join([dir_path,
-                          '/recommendation/recommendation_config.cfg'])
-    print('file_path : {}'.format(file_path))
+                          '/data/recommendation_config.cfg'])
+
     config = configparser.ConfigParser()
 
     config.read(file_path)
@@ -50,7 +55,7 @@ def pre_test_setup(request):
     # factory will only be invoked once per session -
     try:
         os_cmd = os.system(
-            'cp ./tests/recommendation/ConsulDatabase.db ./ConsulDatabase.db')
+            'cp ./tests/recommendation/data/ConsulDatabase.db ./ConsulDatabase.db')
         if os_cmd != 0:
             raise FileCopyException('Unable to execute copy command')
         print('Test DB successfully copied')
