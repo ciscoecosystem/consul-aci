@@ -117,7 +117,7 @@ dc.update({
 
 
 def clear_db():
-    os.remove('.\\ConsulDatabase.db')
+    os.remove('./ConsulDatabase.db')
 
 
 tables = dc.keys()
