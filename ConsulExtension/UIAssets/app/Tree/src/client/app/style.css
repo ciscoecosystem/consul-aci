@@ -303,6 +303,15 @@ body {
   margin-bottom: 50px !important;
 }
 
-.ReactTable {
-  margin-bottom: 50px !important;
+
+.cui .panel{
+  margin-bottom: 280px !important;
+}
+
+.ReactTable .pagination-bottom .select::after {
+  z-index: 10;
+}
+
+.ReactTable .-pagination .-pageJump input {
+  width: 70px !important;
 }

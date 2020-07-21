@@ -96,7 +96,7 @@ export default class Dashboard extends React.Component {
         }
 
         try {
-            this.xhrReadDashboard.open("POST", QUERY_URL, false);
+            this.xhrReadDashboard.open("POST", QUERY_URL, true);
             this.xhrReadDashboard.setRequestHeader("Content-type", "application/json");
             // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
             // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
