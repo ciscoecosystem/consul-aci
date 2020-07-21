@@ -46,7 +46,8 @@ class Database:
             'datacenter',
             'created_ts',
             'updated_ts',
-            'last_checked_ts'
+            'last_checked_ts',
+            'tenant'
         ],
 
         MAPPING_TABLE_NAME: [
@@ -195,7 +196,8 @@ class Database:
             Column('datacenter', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
-            Column('last_checked_ts', DateTime)
+            Column('last_checked_ts', DateTime),
+            Column('tenant', String, primary_key=True)
         )
 
         self.mapping = Table(
@@ -465,7 +467,8 @@ class Database:
                     'datacenter': self.login.c.datacenter,
                     'created_ts': self.login.c.created_ts,
                     'updated_ts': self.login.c.updated_ts,
-                    'last_checked_ts': self.login.c.last_checked_ts
+                    'last_checked_ts': self.login.c.last_checked_ts,
+                    'tenant': self.login.c.tenant
                 },
                 self.MAPPING_TABLE_NAME: {
                     'ip': self.mapping.c.ip,
