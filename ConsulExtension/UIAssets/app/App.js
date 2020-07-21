@@ -438,7 +438,7 @@ export default class App extends React.Component {
                     console.log("Not fetching");
                 }
             }
-            xhrReadDc.send(JSON.stringify(READ_DATACENTER_QUERY));
+            xhrReadDc.send(JSON.stringify(READ_DATACENTER_QUERY(this.tenantName)));
         }
         catch (e) {
             thiss.notify("Error while fetching agent information please refresh")
