@@ -507,13 +507,6 @@ def test_mapping_exception(test_input, expected):
     assert verifier(actual_output, expected['output'])
 
 
-@pytest.mark.parametrize('input, expected',
-                         [(100, ('200', 'Polling Interval Set!')),
-                          (3, ('200', 'Polling Interval Set!'))])
-def test_set_polling_interval(input, expected):
-    assert plugin_server.set_polling_interval(input), expected
-
-
 @pytest.mark.parametrize(
     'input, expected',
     [
@@ -553,14 +546,14 @@ def test_get_agent_status(input, expected):
         original_select = alchemy_core.Database.select_from_table
         alchemy_core.Database.select_from_table = generate_dummy_db_output(None, input)
         actual_output = plugin_server.get_agent_status('tn0', 'dc1')
-        alchemy_core.Database.select_from_table  = original_select
+        alchemy_core.Database.select_from_table = original_select
         assert verify_agent_status(actual_output, expected)
     else:
         original_select = alchemy_core.Database.select_from_table
         alchemy_core.Database.select_from_table = dummy_db_select_exception()
         with pytest.raises(Exception):
             assert plugin_server.get_agent_status('tn0', 'dc1')
-        alchemy_core.Database.select_from_table  = original_select
+        alchemy_core.Database.select_from_table = original_select
 
 
 @pytest.mark.parametrize("interval", [2, 2.2, "fail"])
