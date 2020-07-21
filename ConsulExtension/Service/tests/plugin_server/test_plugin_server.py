@@ -527,3 +527,45 @@ def test_get_agent_status(input, expected):
         alchemy_core.Database.select_from_table = dummy_db_select_exception()
         with pytest.raises(Exception):
             assert plugin_server.get_agent_status('dc1')
+
+
+@pytest.mark.parametrize("interval", [2, 2.2, "fail"])
+def test_set_polling_interval(interval):
+    passed_response = {
+        "status_code": "200",
+        "message": "Polling Interval Set!"
+    }
+    failed_response = {
+        'status_code': '300',
+        'message': 'Some error occurred, could not set polling interval'
+    }
+    dummy_db = alchemy_core.Database()
+    dummy_db.create_tables()
+    connection = dummy_db.engine.connect()
+    ls = dummy_db.select_from_table(
+        connection,
+        dummy_db.POLLING_TABLE_NAME
+    )
+    connection.close()
+
+    assert len(ls) == 0
+
+    if interval != "fail":
+        response = plugin_server.set_polling_interval(interval)
+        assert json.loads(response) == passed_response
+
+        connection = dummy_db.engine.connect()
+        db_interval = dummy_db.select_from_table(
+            connection,
+            dummy_db.POLLING_TABLE_NAME,
+            {'pkey': 'interval'},
+            ['interval']
+        )[0][0]
+        connection.close()
+        assert interval == db_interval
+        os.remove(".\\ConsulDatabase.db")
+    else:
+        os.remove(".\\ConsulDatabase.db")
+        response = plugin_server.set_polling_interval(interval)
+        assert json.loads(response) == failed_response
+        os.remove(".\\ConsulDatabase.db")
