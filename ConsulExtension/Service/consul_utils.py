@@ -155,7 +155,9 @@ class Consul(object):
                 if service_ip:
                     service_address = str(service_ip) + ':' + str(service_port)
                 else:
-                    service_address = str(services_resp.get('Node', {}).get('Address', '')).lower() + ':' + str(service_port)
+                    service_address = str(services_resp.get('Node', {}).get('Address', '')).lower() \
+                        + ':' \
+                        + str(service_port)
 
                 # Form a dict
                 service_list.append({

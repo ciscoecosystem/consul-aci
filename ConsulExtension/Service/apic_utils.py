@@ -17,7 +17,7 @@ from cobra.model.aaa import AppUser as AaaAppUser
 from cobra.model.aaa import UserCert as AaaUserCert
 try:
     from OpenSSL.crypto import FILETYPE_PEM, load_privatekey, sign
-except Exception as e:
+except Exception:
     print("=== could not import openssl crypto ===")
 
 
@@ -696,7 +696,9 @@ class AciUtils(object):
             # logger.debug("get mo returns: {}".format(str(item_list)))
             return item_list
         except Exception as ex:
-            logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
+            logger.exception(
+                'Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex)
+            )
             logger.exception('Epg Item Url : {}'.format(url))
             return []
 
