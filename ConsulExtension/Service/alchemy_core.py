@@ -45,10 +45,10 @@ class Database:
             'token',
             'status',
             'datacenter',
+            'tenant',
             'created_ts',
             'updated_ts',
-            'last_checked_ts',
-            'tenant'
+            'last_checked_ts'
         ],
 
         MAPPING_TABLE_NAME: [
@@ -195,10 +195,10 @@ class Database:
             Column('token', String),
             Column('status', String),
             Column('datacenter', String),
+            Column('tenant', String, primary_key=True),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
-            Column('last_checked_ts', DateTime),
-            Column('tenant', String, primary_key=True)
+            Column('last_checked_ts', DateTime)
         )
 
         self.mapping = Table(
@@ -466,10 +466,10 @@ class Database:
                     'token': self.login.c.token,
                     'status': self.login.c.status,
                     'datacenter': self.login.c.datacenter,
+                    'tenant': self.login.c.tenant,
                     'created_ts': self.login.c.created_ts,
                     'updated_ts': self.login.c.updated_ts,
-                    'last_checked_ts': self.login.c.last_checked_ts,
-                    'tenant': self.login.c.tenant
+                    'last_checked_ts': self.login.c.last_checked_ts
                 },
                 self.MAPPING_TABLE_NAME: {
                     'ip': self.mapping.c.ip,

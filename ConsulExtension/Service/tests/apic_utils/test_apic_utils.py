@@ -216,7 +216,6 @@ def test_parse_and_return_ep_data(data, ep_data, expected):
         return [[get_data("data/ip_2.json"), True], [get_data("data/ip_1.json"), False]]
 
     AciUtils.get_ep_info = dummy_get_ep_info
-    AciUtils.get_ip_mac_list = dummy_get_ip_mac_list
 
     # Test the function
     obj = AciUtils()

@@ -1375,7 +1375,7 @@ def read_creds(tn):
                         datacenter = agent[5]
 
                 if agent[4] != status or agent[5] != datacenter:
-                    agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter)
+                    agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter, tn)
                     db_obj.insert_and_update(
                         connection,
                         db_obj.LOGIN_TABLE_NAME,
@@ -1474,11 +1474,7 @@ def write_creds(tn, new_agent):
                     new_agent.get('token'),
                     new_agent.get('status'),
                     new_agent.get('datacenter'),
-                    None,
-                    None,
-                    None,
                     tn
-
                 ])
         connection.close()
 
@@ -1581,7 +1577,8 @@ def update_creds(tn, update_input):
                             new_agent.get('protocol'),
                             new_agent.get('token'),
                             new_agent.get('status'),
-                            new_agent.get('datacenter')
+                            new_agent.get('datacenter'),
+                            tn
                         ],
                         {
                             'agent_ip': old_agent.get('ip'),
