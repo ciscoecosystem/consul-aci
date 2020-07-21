@@ -191,8 +191,6 @@ def make_unique_recommendation(recommendation_list):
             dc[key] = [each, each[2]]
     for each in dc.keys():
         ans = True if "Yes" == dc[each][1] else False
-        if len(dc[each][1]) > 1:
-            print(each, ans)
         ls.append([
             dc[each][0][0],
             dc[each][0][1],
