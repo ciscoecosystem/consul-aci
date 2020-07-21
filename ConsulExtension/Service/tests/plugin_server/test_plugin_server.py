@@ -206,7 +206,7 @@ def test_read_creds(case):
         'status_code': '301',
         'message': 'Agents not found'
     }
-    if case == "empty_agents":
+    if case == "empty_agents" or case[6] != "tn0":
         response = json.loads(plugin_server.read_creds("tn0"))
         assert response == empty_agent_response
     else:
