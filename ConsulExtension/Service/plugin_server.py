@@ -381,7 +381,7 @@ def tree(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
@@ -422,7 +422,7 @@ def details_flattened(tenant, datacenter):
 
         apic_data = get_apic_data(tenant)
         consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data, non_merged_data, = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
@@ -463,6 +463,7 @@ def details_flattened(tenant, datacenter):
 
         return json.dumps({
             "payload": details_list,
+            "non_merged_eps": non_merged_data,
             "status_code": "200",
             "message": "OK"
         })
@@ -2059,7 +2060,7 @@ def get_performance_dashboard(tn):
         service_addr_set = set()
         for dc in mapped_ep:
             consul_data = get_consul_data(dc)
-            merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])
+            merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])[0]
 
             for ep in merged_data:
                 # Add service eps to ep_resp
