@@ -1,5 +1,7 @@
 import configparser
 import os
+import custom_logger
+logger = custom_logger.CustomLogger.get_logger("./app.log")
 
 
 def get_conf_value(section, key_name):

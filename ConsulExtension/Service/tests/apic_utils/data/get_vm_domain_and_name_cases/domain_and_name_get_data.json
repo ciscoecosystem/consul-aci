@@ -1,0 +1,12 @@
+{
+    "totalCount": "1",
+    "imdata": [
+        {
+            "compVm": {
+                "attributes": {
+                    "name": "dummy-vm-name"
+                }
+            }
+        }
+    ]
+}
