@@ -319,7 +319,7 @@ def save_mapping(tenant, datacenter, mapped_data):
 
     try:
         logger.info("Saving mappings for datacenter : " + str(datacenter))
-        logger.debug("Mapped Data : " + mapped_data)
+        logger.debug("Mapped Data : " + str(mapped_data))
         mapped_data = mapped_data.replace("'", '"')
         mapped_data_dict = json.loads(mapped_data)
 

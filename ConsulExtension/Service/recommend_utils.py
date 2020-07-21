@@ -162,16 +162,17 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
                         ])
                         recommended_ep = each
                     else:
-                        peers.append(each)
+                        peers.append([each, apic_each])
         elif recommended_ep.get('cep_ip', '') is False and each.get('cep_ip', ''):
             recommendation_list.append([each[each_key], each['dn'], 'No', each_key, apic_each])
         else:
             recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key, apic_rec])
             recommended_ep = each
 
-    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key, apic_rec])
+    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key, ""])
 
-    for temp in peers:
+    for temp_var in peers:
+        temp, apic_rec = temp_var
         recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key, apic_rec])
 
     recommendation_list = make_unique_recommendation(recommendation_list)

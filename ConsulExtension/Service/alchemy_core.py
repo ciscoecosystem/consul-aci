@@ -12,6 +12,7 @@ DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
 
 
 class MyListener(PoolListener):
+    """ MyListner class to use database in WAL mode """
     def connect(self, dbapi_con, con_record):
         dbapi_con.execute('pragma journal_mode=WAL')
 
