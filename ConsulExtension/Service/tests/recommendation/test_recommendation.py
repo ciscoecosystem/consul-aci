@@ -11,11 +11,8 @@ sys.modules['cobra.model'] = 'cobra.model'
 sys.modules['cobra.model.pol'] = Mock(name='Uni')
 sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
 
-
 import os
 import configparser
-
-
 from Service import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 

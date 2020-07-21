@@ -13,18 +13,19 @@ from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
 from Service.apic_utils import AciUtils
-from Service.tests.plugin_server.utils import (generate_dummy_new_mapping_data,
-                                               verify_mapping,
-                                               generate_dummy_exception_new_mapping_data,
-                                               generate_multiple_dummy_db_output,
-                                               generate_dummy_db_output,
-                                               verify_change_key,
-                                               get_absolue_path,
-                                               parse_json_file,
-                                               verify_agent_status,
-                                               dummy_db_select_exception,
-                                               get_data_json,
-                                               get_data_str)
+from Service.tests.plugin_server.utils import (
+    generate_dummy_new_mapping_data,
+    verify_mapping,
+    generate_dummy_exception_new_mapping_data,
+    generate_dummy_db_output,
+    verify_change_key,
+    get_absolue_path,
+    parse_json_file,
+    verify_agent_status,
+    dummy_db_select_exception,
+    get_data_json,
+    get_data_str
+)
 
 
 def get_data(file_name):
@@ -343,7 +344,13 @@ def test_get_ingress_egress(data, expected):
     AciUtils.get_mo_related_item = dummy_get_mo_related_item
 
     obj = AciUtils()
-    response = plugin_server.get_ingress_egress("uni/tn-DummyTn/ap-DummyAp/epg-DummyToEpg", "uni/tn-DummyTn/ap-DummyAp/epg-DummyFromEpg", "subj", "flt", obj)
+    response = plugin_server.get_ingress_egress(
+        "uni/tn-DummyTn/ap-DummyAp/epg-DummyToEpg",
+        "uni/tn-DummyTn/ap-DummyAp/epg-DummyFromEpg",
+        "subj",
+        "flt",
+        obj
+    )
 
     assert response == expected
 
@@ -498,10 +505,14 @@ def test_set_polling_interval(input, expected):
     assert plugin_server.set_polling_interval(input), expected
 
 
-@pytest.mark.parametrize('input, expected',
-                         [('/plugin_server/data/change_key/1_initial_input.json', '/plugin_server/data/change_key/1_initial_output.json'),
-                          ('/plugin_server/data/change_key/1_empty_input.json', '/plugin_server/data/change_key/1_empty_output.json'),
-                          (None, [])])
+@pytest.mark.parametrize(
+    'input, expected',
+    [
+        ('/plugin_server/data/change_key/1_initial_input.json', '/plugin_server/data/change_key/1_initial_output.json'),
+        ('/plugin_server/data/change_key/1_empty_input.json', '/plugin_server/data/change_key/1_empty_output.json'),
+        (None, [])
+    ]
+)
 def test_change_key(input, expected):
     services = None
     if input:
@@ -514,10 +525,20 @@ def test_change_key(input, expected):
         assert actual_output == []
 
 
-@pytest.mark.parametrize('input, expected',
-                         [('/plugin_server/data/agent_status/1_initial_input.json', '/plugin_server/data/agent_status/1_initial_output.json'),
-                          ('/plugin_server/data/agent_status/2_different_dc_input.json', '/plugin_server/data/agent_status/2_different_dc_output.json'),
-                          (None, [])])
+@pytest.mark.parametrize(
+    'input, expected',
+    [
+        (
+            '/plugin_server/data/agent_status/1_initial_input.json',
+            '/plugin_server/data/agent_status/1_initial_output.json'
+        ),
+        (
+            '/plugin_server/data/agent_status/2_different_dc_input.json',
+            '/plugin_server/data/agent_status/2_different_dc_output.json'
+        ),
+        (None, [])
+    ]
+)
 def test_get_agent_status(input, expected):
     if input:
         alchemy_core.Database.select_from_table = generate_dummy_db_output(None, input)
