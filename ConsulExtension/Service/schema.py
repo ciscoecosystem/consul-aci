@@ -42,9 +42,10 @@ class GetSubnets(graphene.ObjectType):
 
 
 class SetPollingInterval(graphene.ObjectType):
-    status = graphene.String()
-    message = graphene.String()
+    response = graphene.String()
 
+class GetPollingInterval(graphene.ObjectType):
+    response = graphene.String()
 
 class OperationalTree(graphene.ObjectType):
     response = graphene.String()
@@ -137,7 +138,9 @@ class Query(graphene.ObjectType):
 
     GetSubnets = graphene.Field(GetSubnets, dn=graphene.String())
 
-    SetPollingInterval = graphene.Field(SetPollingInterval, interval=graphene.String())
+    SetPollingInterval = graphene.Field(SetPollingInterval, interval=graphene.Int())
+    
+    GetPollingInterval = graphene.Field(GetPollingInterval)
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                    service_name=graphene.String(),
@@ -208,10 +211,12 @@ class Query(graphene.ObjectType):
         return GetSubnets
 
     def resolve_SetPollingInterval(self, info, interval):
-        status, message = app.set_polling_interval(interval)
-        SetPollingInterval.status = status
-        SetPollingInterval.message = message
+        SetPollingInterval.response = app.set_polling_interval(interval)
         return SetPollingInterval
+
+    def resolve_GetPollingInterval(self, info):
+        GetPollingInterval.response = app.get_polling_interval()
+        return GetPollingInterval
 
     def resolve_Mapping(self, info, tn, datacenter):
         Mapping.mappings = app.mapping(tn, datacenter)

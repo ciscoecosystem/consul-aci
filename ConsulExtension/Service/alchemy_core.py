@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
+from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean, Integer
 from datetime import datetime
 from sqlalchemy.sql import select
 from sqlalchemy.interfaces import PoolListener
@@ -34,6 +34,7 @@ class Database:
     EPAUDIT_TABLE_NAME = 'epaudit'
     EPGAUDIT_TABLE_NAME = 'epgaudit'
     TENANT_TABLE_NAME = 'tenant'
+    POLLING_TABLE_NAME = 'polling'
 
     SCHEMA_DICT = {
         LOGIN_TABLE_NAME: [
@@ -160,6 +161,14 @@ class Database:
         TENANT_TABLE_NAME: [
             'tenant',
             'created_ts'
+        ],
+
+        POLLING_TABLE_NAME: [
+            'pkey',
+            'interval',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
         ]
     }
 
@@ -172,6 +181,9 @@ class Database:
             logger.exception("Exception in creating db obj: {}".format(str(e)))
 
     def create_tables(self):
+        '''
+        Function to create tables and save table objects
+        '''
         metadata = MetaData()
 
         self.login = Table(
@@ -416,6 +428,15 @@ class Database:
             Column('created_ts', DateTime)
         )
 
+        self.polling = Table(
+            self.POLLING_TABLE_NAME, metadata,
+            Column('pkey', String, primary_key=True),
+            Column('interval', Integer),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+        )
+
         try:
             metadata.create_all(self.engine)
             self.table_obj_meta.update({
@@ -433,7 +454,8 @@ class Database:
                 self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
                 self.EPAUDIT_TABLE_NAME: self.epaudit,
                 self.EPGAUDIT_TABLE_NAME: self.epgaudit,
-                self.TENANT_TABLE_NAME: self.tenant
+                self.TENANT_TABLE_NAME: self.tenant,
+                self.POLLING_TABLE_NAME: self.polling
             })
             self.table_key_meta.update({
                 self.LOGIN_TABLE_NAME: {
@@ -552,6 +574,13 @@ class Database:
                 self.TENANT_TABLE_NAME: {
                     'tenant': self.tenant.c.tenant,
                     'created_ts': self.tenant.c.created_ts
+                },
+                self.POLLING_TABLE_NAME: {
+                    'pkey': self.polling.c.pkey,
+                    'interval': self.polling.c.interval,
+                    'created_ts': self.polling.c.created_ts,
+                    'updated_ts': self.polling.c.updated_ts,
+                    'last_checked_ts': self.polling.c.last_checked_ts
                 }
             })
         except Exception as e:
@@ -559,6 +588,17 @@ class Database:
                 'create_tables()', str(e)))
 
     def insert_into_table(self, connection, table_name, field_values):
+        '''
+        Function to insert single record in table
+
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
+            field_values {list/tuple} --> values of single record
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         field_values = list(field_values)
         try:
             ins = None
@@ -574,6 +614,20 @@ class Database:
         return False
 
     def select_from_table(self, connection, table_name, field_arg_dict={}, required_fields=[]):
+        '''
+        Function to get data from database table
+
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
+
+        Optional Arguments:
+            field_arg_dict  {dict} --> key-value pairs of column name and data to filter records
+            required_fields {list} --> list of column names which is required
+
+        Returns:
+            {list{tuple}} or None --> list of records found in database table on success
+        '''
         try:
             table_name = table_name.lower()
             field_list = [self.table_key_meta[table_name][each.lower()] for each in required_fields]
@@ -595,6 +649,18 @@ class Database:
         return None
 
     def update_in_table(self, connection, table_name, field_arg_dict, new_record_dict):
+        '''
+        Function to update data into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+            new_record_dict {dict}       --> key-value pairs of column name and data of new value
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
@@ -612,6 +678,19 @@ class Database:
         return False
 
     def delete_from_table(self, connection, table_name, field_arg_dict={}):
+        '''
+        Function to delete data from database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         try:
             table_name = table_name.lower()
             if field_arg_dict:
@@ -630,19 +709,40 @@ class Database:
         return False
 
     def insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
+        '''
+        Function to insert new record and update existing record into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            new_record      {list}       --> values of new record
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        '''
         table_name = table_name.lower()
         if field_arg_dict:
             old_data = self.select_from_table(connection, table_name, field_arg_dict)
-            if old_data != None:
+            if old_data is not None:
                 if len(old_data) > 0:
                     old_data = old_data[0]
                     new_record_dict = dict()
                     index = []
                     for i in range(len(new_record)):
-                        if old_data[i] != new_record[i]:
-                            index.append(i)
-                    field_names = [self.SCHEMA_DICT[table_name][i]
-                                   for i in index]
+                        if isinstance(new_record[i], bool):
+                            try:
+                                old_column_value = bool(int(old_data[i]))
+                                if old_column_value != new_record[i]:
+                                    index.append(i)
+                            except Exception:
+                                logger.exception("Exception in insert_and_update for table {}".format(table_name))
+                        else:
+                            if old_data[i] != new_record[i]:
+                                index.append(i)
+                    field_names = [self.SCHEMA_DICT[table_name][i]for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]

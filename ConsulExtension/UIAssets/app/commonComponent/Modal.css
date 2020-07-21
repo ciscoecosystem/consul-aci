@@ -22,7 +22,7 @@
 
 
 
-@media only screen and (max-height: 100px) and (max-height: 500px) {
+/* @media only screen and (max-height: 100px) and (max-height: 500px) {
     .modal-layout>main.scrollable {
         height: max-content;
     }
@@ -34,6 +34,12 @@
         display: table;
         height: auto;
     }
+} */
+
+
+
+.modal-layout>main.scrollable{
+    height: 100%;
 }
 
 
@@ -51,4 +57,10 @@
 
 .modal-layout main .quickquide {
     padding: 0px 0px 10px 0px !important;
+}
+
+.cui.blueprint .modal-layout{
+    min-height: 25vh !important;
+    max-height: 100% !important;
+    height: auto
 }
