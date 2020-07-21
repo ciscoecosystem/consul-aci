@@ -62,19 +62,36 @@ def extract_vrf(apic_data):
     return vrf_dict
 
 
-def search_ep_in_apic(apic_data, search_param):
+def apic_data_formatter(apic_data):
+    dc = dict()
     for each in apic_data:
-        flag = False
-        for key, val in search_param.items():
-            # logger.debug(' key , val :'+key+' , '+val)
-            if key in each and each[key] == val:
-                # logger.debug(' Inside search and element found ')
-                flag = True
-            else:
-                break
-        if flag:
-            return each
-    return None
+        if 'IP' in each:
+            key_ip = '{}#{}'.format(
+                each.get('IP', ""),
+                each.get('dn', "")
+            )
+            dc[key_ip] = each
+        if 'mac' in each:
+            key_mac = '{}#{}'.format(
+                each.get('mac', ""),
+                each.get('dn', "")
+            )
+            dc[key_mac] = each
+    return dc
+
+
+def search_ep_in_apic(apic_data, search_param):
+    if 'mac' in search_param:
+        key = '{}#{}'.format(
+            search_param['mac'],
+            search_param['dn']
+        )
+    if 'IP' in search_param:
+        key = '{}#{}'.format(
+            search_param['IP'],
+            search_param['dn']
+        )
+    return apic_data.get(key, None)
 
 
 def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
@@ -91,7 +108,7 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
 
     extracted_vrfs = extract_vrf(apic_data)
     logger.debug('extracted vrfs {} '.format(extracted_vrfs))
-
+    apic_data_f = apic_data_formatter(apic_data)
     for i in range(len(common_eps)):
         each = common_eps[i]
         ap_rec, epg_rec = extract(recommended_ep['dn'])
@@ -109,10 +126,10 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
             each_key = 'mac'
 
         search_params_rec = {rec_key: recommended_ep[rec_key], 'dn': recommended_ep['dn']}
-        apic_rec = search_ep_in_apic(apic_data, search_params_rec)['VRF']
+        apic_rec = search_ep_in_apic(apic_data_f, search_params_rec)['VRF']
 
         search_params_each = {rec_key: each[rec_key], 'dn': each['dn']}
-        apic_each = search_ep_in_apic(apic_data, search_params_each)['VRF']
+        apic_each = search_ep_in_apic(apic_data_f, search_params_each)['VRF']
 
         # When we encounter the ep whose IP is different from the current recommended IP.
         # We add all peers and recommended to recommended list as recommended
