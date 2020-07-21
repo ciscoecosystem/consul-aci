@@ -1,0 +1,1 @@
+{"status_code": "200", "message": "Ok", "payload": [{"node": "111", "switch_prof": "Dummy-Switch", "domain": "DummyHost/DummyDom", "pc_vpc": "Dummy-Group", "aep": "Dummy-AttEntryP", "path_ep": "dummy-path", "iface_prof": "Dummy-Profile", "vlan_pool": "[dummy-lan1]-to-[dummy-lan2]"}]}
