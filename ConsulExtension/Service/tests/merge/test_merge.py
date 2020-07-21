@@ -95,13 +95,14 @@ def test_merge_aci_consul(case):
     consul_data = get_data(case, 'consul_data.json')
     aci_consul_mappings = get_data(case, 'aci_consul_mappings.json')
     original_response = get_data(case, 'final_list.json')
-    generated_response = merge.merge_aci_consul(tenant,
-                                                aci_data,
-                                                consul_data,
-                                                aci_consul_mappings
-                                                )
+    generated_response = merge.merge_aci_consul(
+        tenant,
+        aci_data,
+        consul_data,
+        aci_consul_mappings
+    )
     original_response = gen_keys_ls(original_response)
-    generated_response = gen_keys_ls(generated_response)
+    generated_response = gen_keys_ls(generated_response[0])
     assert get_final_output(original_response, generated_response)
 
 
@@ -155,19 +156,3 @@ def test_consul_data_formatter(case):
     copy_consul_data = deepcopy(consul_data)
     merge.consul_data_formatter(consul_data, mapping_ips)
     assert verifier_consul_data_formatter(copy_consul_data, consul_data, mapping_ips)
-
-
-@pytest.mark.parametrize("case", cases_merge_aci_consul)
-def test_consul_ip_dict_generator(case):
-    data = get_data(case, "consul_data.json")
-    output = merge.consul_ip_dict_generator(data)
-    flag = True
-    for node in data:
-        node_ips = list(set(node.get('node_ips', [])))
-        for ip in node_ips:
-            if node not in output[ip]:
-                flag = False
-                break
-        else:
-            break
-    assert flag
