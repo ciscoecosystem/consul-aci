@@ -221,7 +221,9 @@ class AciUtils(object):
         ep_info = self.get_ep_info(ep_child_attr)
 
         for each in AciUtils.get_ip_mac_list(item):
-            data['ip'], data['is_cep'] = each  # TODO: if mac, then add ''
+            data['ip'], data['is_cep'] = each
+            if data['mac'] == data['ip']:
+                data['ip'] = ""
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list

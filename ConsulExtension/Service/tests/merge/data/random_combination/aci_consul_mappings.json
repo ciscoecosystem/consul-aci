@@ -1,0 +1,156 @@
+[
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "ip": "10.99.27.147",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "10.6.228.3",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "172.31.192.243",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "ip": "192.168.71.181",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "ip": "10.25.28.100",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "ip": "10.137.44.72",
+        "enabled": false,
+        "ap": "ap1",
+        "recommended": false,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "10.137.44.72",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg1",
+        "ip": "10.64.49.230",
+        "enabled": false,
+        "ap": "ap0",
+        "recommended": false,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "ip": "10.64.49.230",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "ip": "10.201.143.18",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "ip": "172.16.17.236",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg1",
+        "ip": "192.168.147.153",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg1",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "192.168.147.153",
+        "enabled": false,
+        "ap": "ap0",
+        "recommended": false,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap1/epg-epg0",
+        "ip": "192.168.147.153",
+        "enabled": true,
+        "ap": "ap1",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    }
+]

@@ -1,0 +1,1 @@
+[{"dn": "uni/tn-tn0/ap-ap0/epg-epg0", "bd": "uni/tn-tn0/ap-ap0/epg-epg0", "ip": "951d:56e4:69ae:46b1:3510:f9e0:cd26:49ee", "enabled": true, "ap": "ap0", "recommended": true, "vrf": "tn0/", "epg": "epg0", "tenant": "tn0"}]

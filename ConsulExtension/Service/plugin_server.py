@@ -28,9 +28,47 @@ db_obj.create_tables()
 
 @time_it
 def set_polling_interval(interval):
-    """Sets the polling interval for data fetch"""
+    """Sets the polling interval for data fetch
 
-    return "200", "Polling Interval Set!"
+    :interval: the interval to be set
+
+    return: {
+        status_code: string: 200/300
+        message: string
+    }
+    """
+
+    try:
+        logger.info("Setting Polling Interval to: {}".format(str(interval)))
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            response = db_obj.insert_and_update(
+                connection,
+                db_obj.POLLING_TABLE_NAME,
+                (
+                    'interval',
+                    interval
+                ),
+                {
+                    'pkey': 'interval'
+                }
+            )
+        connection.close()
+
+        if not response:
+            logger.error("Error in setting Polling Interval")
+            return json.dumps({'status_code': '300', 'message': 'Some error occurred, could not set polling interval'})
+
+        return json.dumps({
+            "status_code": "200",
+            "message": "Polling Interval Set!"
+        })
+    except Exception as e:
+        logger.exception("Could not set polling interval, Error: {}".format(str(e)))
+        return json.dumps({
+            "status_code": "300",
+            "message": 'Some error occurred, could not set polling interval'
+        })
 
 
 @time_it
