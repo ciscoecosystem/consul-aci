@@ -1,0 +1,31 @@
+[
+    {
+        "node_ips": [
+            "951d:56e4:69ae:46b1:3510:f9e0:cd26:49ee"
+        ],
+        "node_check": {
+            "passing": 1
+        },
+        "node_id": "nodeid0",
+        "node_services": [
+            {
+                "service_checks": {
+                    "warning": 1
+                },
+                "node_id": "nodeid0",
+                "service_port": "9000",
+                "service_name": "servicename0",
+                "service_namespace": "namespace0",
+                "service_id": "serviceid0",
+                "service_address": ":9000",
+                "service_ip": "",
+                "service_kind": "servicekind0",
+                "service_tags": [
+                    "cache",
+                    "global"
+                ]
+            }
+        ],
+        "node_name": "nodename0"
+    }
+]

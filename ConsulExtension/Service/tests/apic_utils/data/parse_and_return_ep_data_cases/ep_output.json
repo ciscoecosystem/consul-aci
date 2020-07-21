@@ -1,0 +1,29 @@
+[{
+    "controller": "hyper000",
+    "hosting_servername": "1.1.1.1",
+    "interfaces": ["Pod-0/Node-111/eth0/0"],
+    "vm_name": "dummy-vm-name",
+    "vmm_domain": "DUMMY0-leaf000",
+    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
+    "learning_src": "dummy-vmm",
+    "tenant": "DummyTn",
+    "mac": "00:00:00:00:00:AA",
+    "encap": "dummy-lan-111",
+    "multi_cast_addr": "---",
+    "ip": "1.1.1.1",
+    "is_cep": false
+}, {
+    "controller": "hyper000",
+    "hosting_servername": "1.1.1.1",
+    "interfaces": ["Pod-0/Node-111/eth0/0"],
+    "vm_name": "dummy-vm-name",
+    "vmm_domain": "DUMMY0-leaf000",
+    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
+    "learning_src": "dummy-vmm",
+    "tenant": "DummyTn",
+    "mac": "00:00:00:00:00:AA",
+    "encap": "dummy-lan-111",
+    "multi_cast_addr": "---",
+    "ip": "2.2.2.2",
+    "is_cep": true
+}]
