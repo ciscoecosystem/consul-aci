@@ -118,7 +118,7 @@ class CONSUL_LoginForm extends React.Component {
     readAgentsCall() {
         this.setState({ readAgentLoading: true})
         const payload = {query: `query{
-            ReadCreds{creds}
+            ReadCreds(tn: ${JSON.stringify(this.state.tenantName)}){creds}
         }`}
         let isDetail = false;
         try {
@@ -179,7 +179,7 @@ class CONSUL_LoginForm extends React.Component {
 
         if (isNewAgentAdded){
             payload = { query: `query{
-                WriteCreds(agentList: ${JSON.stringify(JSON.stringify([agentDetail]))} ){creds}
+                WriteCreds(tn: ${JSON.stringigy(this.state.tenantName)} ,agentList: ${JSON.stringify(JSON.stringify([agentDetail]))}){creds}
             }`}
         } else {
             let editDetailCopy  = Object.assign({}, this.state.editDetailCopy);
@@ -193,7 +193,7 @@ class CONSUL_LoginForm extends React.Component {
             }
 
             payload = { query: `query{
-                UpdateCreds(updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
+                UpdateCreds(tn: ${JSON.stringify(this.state.tenantName)},updateInput: ${JSON.stringify(JSON.stringify(dataInput))}){creds}
             }`}
         }
 
@@ -325,7 +325,7 @@ class CONSUL_LoginForm extends React.Component {
 
 
         let payload = { query: `query{
-            DeleteCreds(agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
+            DeleteCreds(tn: ${this.state.tenantName},agentData: ${JSON.stringify(JSON.stringify(agentDetail))} ){message}
         }`}
 
         let xhr = new XMLHttpRequest();

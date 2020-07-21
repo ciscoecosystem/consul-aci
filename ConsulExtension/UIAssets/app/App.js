@@ -290,7 +290,7 @@ export default class App extends React.Component {
             this.setState({ pollingIntervalPopup })
             setTimeout(()=>(this.setState({callContainer: true})), 1000)
         }
- 
+
     }
 
     setPollingIntervalDefaultValue(interval){
@@ -474,8 +474,8 @@ export default class App extends React.Component {
                         </div>
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
-                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
-                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} shouldUpdate={this.state.callContainer}/>}
+                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} />}
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details}  shouldUpdate={this.state.callContainer}/>}
                 </div >
             </Router>
         );
