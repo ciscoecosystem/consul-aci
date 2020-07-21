@@ -70,6 +70,43 @@ def set_polling_interval(interval):
             "message": 'Some error occurred, could not set polling interval'
         })
 
+def get_polling_interval():
+
+    try:
+        logger.info("GetPollingInterval called")
+        interval = []
+        POLL_INTERVAL = 2
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            try:
+                interval = db_obj.select_from_table(
+                    connection,
+                    db_obj.POLLING_TABLE_NAME,
+                    {'pkey': 'interval'},
+                    ['interval']
+                )
+            except Exception:
+                interval = []
+            if interval:
+                POLL_INTERVAL = interval[0][0]
+        connection.close()
+
+        return json.dumps({
+            "status_code": "200",
+            "message": "Ok",
+            "payload": {
+                "interval": POLL_INTERVAL
+            }
+        })
+    except Exception as e:
+        logger.exception("Could not get polling interval, Error: {}".format(str(e)))
+        return json.dumps({
+            "status_code": "300",
+            "message": "Could not get polling interval",
+            "payload": []
+        })
+
+
 
 @time_it
 def get_new_mapping(tenant, datacenter):

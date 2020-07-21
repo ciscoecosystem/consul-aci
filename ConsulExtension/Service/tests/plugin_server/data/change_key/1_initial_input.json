@@ -1,0 +1,70 @@
+[
+  {
+    "service_address": ":1066",
+    "service_name": "servicename10",
+    "service_ip": "",
+    "service_tags": [
+      "cache",
+      "global"
+    ],
+    "service_checks": {
+      "passing": 3
+    },
+    "node_id": "nodeid16",
+    "service_port": "1066",
+    "service_namespace": "namespace10",
+    "service_id": "serviceid10",
+    "service_kind": "servicekind10"
+  },
+  {
+    "service_address": ":1067",
+    "service_name": "servicename3",
+    "service_ip": "",
+    "service_tags": [
+      "cache",
+      "global"
+    ],
+    "service_checks": {
+      "passing": 2
+    },
+    "node_id": "nodeid16",
+    "service_port": "1067",
+    "service_namespace": "namespace3",
+    "service_id": "serviceid3",
+    "service_kind": "servicekind3"
+  },
+  {
+    "service_address": ":1065",
+    "service_name": "servicename16",
+    "service_ip": "",
+    "service_tags": [
+      "cache",
+      "global"
+    ],
+    "service_checks": {
+      "warning": 5
+    },
+    "node_id": "nodeid16",
+    "service_port": "1065",
+    "service_namespace": "namespace16",
+    "service_id": "serviceid16",
+    "service_kind": "servicekind16"
+  },
+  {
+    "service_address": ":1068",
+    "service_name": "servicename23",
+    "service_ip": "",
+    "service_tags": [
+      "cache",
+      "global"
+    ],
+    "service_checks": {
+      "failing": 2
+    },
+    "node_id": "nodeid16",
+    "service_port": "1068",
+    "service_namespace": "namespace23",
+    "service_id": "serviceid23",
+    "service_kind": "servicekind23"
+  }
+]

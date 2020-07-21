@@ -202,6 +202,14 @@ main {
     animation: none !important;
 }
 
+.ReactTable .pagination-bottom .select::after {
+    z-index: 10;
+}
+
+.ReactTable .-pagination .-pageJump input {
+    width: 70px !important;
+}
+
 .polling-interval .dropdown__menu a{
     height: 25px !important;
     line-height: 25px !important;

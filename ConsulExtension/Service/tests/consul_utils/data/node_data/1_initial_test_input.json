@@ -1,0 +1,76 @@
+[
+  {
+    "Node": "nodename0",
+    "Services": [],
+    "Address": "10.162.26.233",
+    "ID": "nodeid0",
+    "TaggedAddresses": {
+      "wan_ipv4": "10.162.26.233",
+      "wan": "10.162.26.233",
+      "lan": "10.162.26.233",
+      "lan_ipv4": "10.162.26.233"
+    }
+  },
+  {
+    "Node": "nodename1",
+    "Services": [],
+    "Address": "192.168.224.114",
+    "ID": "nodeid1",
+    "TaggedAddresses": {
+      "wan_ipv4": "192.168.224.114",
+      "wan": "192.168.224.114",
+      "lan": "192.168.224.114",
+      "lan_ipv4": "192.168.224.114"
+    }
+  },
+  {
+    "Node": "nodename7",
+    "Services": [],
+    "Address": "10.49.250.254",
+    "ID": "nodeid7",
+    "TaggedAddresses": {
+      "wan_ipv4": "10.49.250.254",
+      "wan": "10.49.250.254",
+      "lan": "10.49.250.254",
+      "lan_ipv4": "10.49.250.254"
+    }
+  },
+  {
+    "Node": "nodename8",
+    "Services": [],
+    "Address": "192.168.183.181",
+    "ID": "nodeid8",
+    "TaggedAddresses": {
+      "wan_ipv4": "192.168.183.181",
+      "wan": "192.168.183.181",
+      "lan": "192.168.183.181",
+      "lan_ipv4": "192.168.183.181"
+    }
+  },
+  {
+    "Node": "nodename9",
+    "Services": [],
+    "Address": "172.26.223.18",
+    "ID": "nodeid9",
+    "TaggedAddresses": {
+      "wan_ipv4": "172.26.223.18",
+      "wan": "172.26.223.18",
+      "lan": "172.26.223.18",
+      "lan_ipv4": "172.26.223.18"
+    }
+  },
+  {
+    "Node": "nodename10",
+    "Services": [],
+    "Address": "192.168.110.213",
+    "ID": "nodeid10",
+    "TaggedAddresses": {
+      "wan_ipv4": "192.168.110.213",
+      "wan": "192.168.110.213",
+      "lan": "192.168.110.213",
+      "lan_ipv4": "192.168.110.213"
+    }
+  }
+ 
+  
+]
