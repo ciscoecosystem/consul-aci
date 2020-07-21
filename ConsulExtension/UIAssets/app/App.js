@@ -66,11 +66,14 @@ export default class App extends React.Component {
         this.setSidebar = this.setSidebar.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.handlePollingIntervalPopUp = this.handlePollingIntervalPopUp.bind(this);
+        this.getPollingInterval = this.getPollingInterval.bind(this);
+        this.setPollingIntervalDefaultValue = this.setPollingIntervalDefaultValue.bind(this);
         this.state = {
             agentPopup: false,
             pollingIntervalPopup: false,
             mappingDcname: undefined,
             mappingPopup: false,
+            callContainer: true,
             items: [
                 { label: AGENTS , action: this.handleAgent },
                 { label: "Polling interval", action: this.handlePollingIntervalPopUp }
@@ -146,6 +149,7 @@ export default class App extends React.Component {
     }
 
 
+
     componentWillUnmount() {
         console.log("Component will unmount; intervalcall")
         clearInterval(this.intervalCall); // this clears the interval calls
@@ -154,7 +158,6 @@ export default class App extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState){
         console.log("In should component Update")
-        console.log(_.isEqual(this.state.details, nextState.details))
         if(_.isEqual(this.state, nextState)){
             return false
         }
@@ -277,7 +280,56 @@ export default class App extends React.Component {
     }
 
     handlePollingIntervalPopUp(pollingIntervalPopup = true){
-        this.setState({ pollingIntervalPopup })
+        if(pollingIntervalPopup === true){
+            this.getPollingInterval()
+        }
+        if(pollingIntervalPopup){
+            this.setState({ pollingIntervalPopup, callContainer: false})
+        }
+        else{
+            this.setState({ pollingIntervalPopup })
+            setTimeout(()=>(this.setState({callContainer: true})), 1000)
+        }
+ 
+    }
+
+    setPollingIntervalDefaultValue(interval){
+        let pollingIntervalArray = this.state.pollingIntervalOptions
+        pollingIntervalArray.map((item)=>(item.selected === true ? item.selected = false : null))
+        pollingIntervalArray.map((item)=>(parseInt(item.value) === parseInt(interval) ? item.selected=true : null))
+        this.setState({pollingIntervalOptions:pollingIntervalArray, selectedPollingInterval: parseInt(interval)})
+    }
+
+    getPollingInterval(){
+        let xhrPostGetPollingIntervalCall = this.xhrCred;
+        const payload = {
+            query: 'query{GetPollingInterval{response}}'
+        }
+        try{
+            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, false);
+            xhrPostGetPollingIntervalCall.setRequestHeader("Content-type", "application/json");
+            // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+            // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+            xhrPostGetPollingIntervalCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+            xhrPostGetPollingIntervalCall.setRequestHeader("APIC-challenge", window.APIC_URL_TOKEN);
+
+            xhrPostGetPollingIntervalCall.onreadystatechange =  () => {
+
+                if (xhrPostGetPollingIntervalCall.readyState == 4 && xhrPostGetPollingIntervalCall.status == 200) {
+
+                    let apiResponse = JSON.parse(xhrPostGetPollingIntervalCall.responseText);
+                    let getPollingApiResponse = JSON.parse(apiResponse.data.GetPollingInterval.response)
+                    if(parseInt(getPollingApiResponse.status_code) === 200){
+                        let data = getPollingApiResponse.payload
+                        this.setPollingIntervalDefaultValue(data.interval)
+                    }
+                }
+            }
+            xhrPostGetPollingIntervalCall.send(JSON.stringify(payload));
+        }catch(e){
+            console.error('Error getting agents', e);
+        }
+
     }
 
     pollingIntervalCall(){
@@ -423,7 +475,7 @@ export default class App extends React.Component {
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
                     {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} />}
-                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} />}
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details} shouldUpdate={this.state.callContainer}/>}
                 </div >
             </Router>
         );
