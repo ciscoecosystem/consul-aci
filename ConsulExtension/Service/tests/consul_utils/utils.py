@@ -57,7 +57,7 @@ def verify_nodelist_against_catalog(actual_output, output_file):
     data = parse_json_file(output_file)
     flag = False
     for expected_node in data:
-        flag = any(expected_node['node_id'] == each['node_id'] and set(expected_node['node_ips']) == set(each['node_ips']) for each in actual_output)
+        flag = any(expected_node['node_id'] == each['node_id'] and expected_node['node_ip'] == each['node_ip'] for each in actual_output)
     if data == actual_output:
         flag = True
     return flag

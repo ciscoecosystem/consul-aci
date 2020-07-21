@@ -55,13 +55,13 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                     new_node = {
                         'node_id': node.get('node_id'),
                         'node_name': node.get('node_name'),
-                        'node_ips': node.get('node_ips'),
+                        'node_ip': node.get('node_ip'),
                         'node_check': node.get('node_check'),
                         'node_services': []
                     }
                     # All the services which matches CEp and its ip is different from its nodes ip
                     node_services = node.get('node_services', [])
-                    flagger = aci.get(aci_key) not in node.get('node_ips')
+                    flagger = aci.get(aci_key) != node.get('node_ip')
                     for service in node_services:
                         if aci.get(aci_key) == service.get('service_ip') and flagger:
                             new_node['node_services'].append(service)
@@ -180,7 +180,7 @@ def aci_consul_mappings_formatter(data):
 def mapped_consul_nodes_formatter(consul_data):
     dc = dict()
     for node in consul_data:
-        for ip in node.get('node_ips', []):
+        for ip in node.get('node_ip', ''):
             obj = dc.get(ip, [])
             if obj:
                 obj.append(node)
@@ -204,5 +204,5 @@ def consul_data_formatter(consul_data, mapping_ips):
                 services.append(service_list[i])
         node['node_services'] = services
         node['node_services_copy'] = [service for service in node['node_services'] if (service.get(
-                'service_ip') == "" or service.get('service_ip') in node.get('node_ips', [])
+                'service_ip') == "" or service.get('service_ip') == node.get('node_ip')
             )]

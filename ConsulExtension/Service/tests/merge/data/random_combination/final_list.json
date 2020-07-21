@@ -64,9 +64,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "172.31.192.243"
-        ],
+        "node_ip": "172.31.192.243",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -149,9 +147,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "172.31.192.243"
-        ],
+        "node_ip": "172.31.192.243",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -199,9 +195,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.137.44.72"
-        ],
+        "node_ip": "10.137.44.72",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -249,9 +243,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.137.44.72"
-        ],
+        "node_ip": "10.137.44.72",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -334,9 +326,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.137.44.72"
-        ],
+        "node_ip": "10.137.44.72",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -384,9 +374,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.6.228.3"
-        ],
+        "node_ip": "10.6.228.3",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -434,9 +422,7 @@
         "epg_health": "26",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.6.228.3"
-        ],
+        "node_ip": "10.6.228.3",
         "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -502,9 +488,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.25.28.100"
-        ],
+        "node_ip": "10.25.28.100",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -552,9 +536,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "192.168.71.181"
-        ],
+        "node_ip": "192.168.71.181",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -620,9 +602,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -688,9 +668,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -773,9 +751,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -823,9 +799,7 @@
         "epg_health": "18",
         "VRF": "tn0/",
         "fraction": 3,
-        "node_ips": [
-            "10.99.27.147"
-        ],
+        "node_ip": "10.99.27.147",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg0",
         "Non_IPs": {
             "ce:68:06:b3:4f:f1": "192.168.112.168",
@@ -891,9 +865,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -962,9 +934,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -1050,9 +1020,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "192.168.147.153"
-        ],
+        "node_ip": "192.168.147.153",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -1172,9 +1140,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "172.16.17.236"
-        ],
+        "node_ip": "172.16.17.236",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -1260,9 +1226,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "10.201.143.18"
-        ],
+        "node_ip": "10.201.143.18",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -1348,9 +1312,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "10.201.143.18"
-        ],
+        "node_ip": "10.201.143.18",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
@@ -1436,9 +1398,7 @@
         "epg_health": "74",
         "VRF": "tn0/",
         "fraction": 6,
-        "node_ips": [
-            "10.64.49.230"
-        ],
+        "node_ip": "10.64.49.230",
         "dn": "uni/tn-tn0/ap-ap1/epg-epg1",
         "Non_IPs": {
             "94:b2:eb:9b:29:30": "192.168.131.112",
