@@ -7,7 +7,6 @@ def generate_dummy_new_mapping_data(input_file):
     def dummy_get_new_mapping(tenant, datacenter):
         file_path = get_absolue_path(input_file)
         x = parse_json_file(file_path)
-        print('=== {}'.format(x))
         return x
     return dummy_get_new_mapping
 
@@ -16,7 +15,6 @@ def generate_dummy_db_output(formator, expected_file):
     def dummy_select_query(self, connection, table_name, primary_key={}):
         file_path = get_absolue_path(expected_file)
         x = parse_json_file(file_path)
-        print('=== {}'.format(x))
         if formator:
             format(x)
         else:
@@ -29,7 +27,6 @@ def generate_multiple_dummy_db_output(formator, expected_files):
     for file in expected_files:
         file_path = get_absolue_path(file)
         x = parse_json_file(file_path)
-        # print('=== {}'.format(x))
         if formator:
             db_outputs.append(formator(x))
         else:
@@ -83,8 +80,6 @@ def verify_mapping(actual_output, expected_file):
     expected_json = parse_json_file(file)
     actual_output = ''.join(actual_output)
     actual_output = json.loads(actual_output)
-    print('==== {}'.format(actual_output))
-    print('==== {}'.format(expected_json))
     if actual_output == expected_json:
         return True
     else:
@@ -100,7 +95,6 @@ def verify_change_key(actual_output, expected_file):
 def verify_agent_status(actual_output, expected_file):
     file = get_absolue_path(expected_file)
     expected_output = parse_json_file(file)
-    print('======== {} {} '.format(actual_output, expected_output))
     return compare_dicts(actual_output, expected_output)
 
 

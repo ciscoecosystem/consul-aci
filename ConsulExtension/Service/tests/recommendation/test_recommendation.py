@@ -43,7 +43,7 @@ def get_conf_value(section, key_name):
     print('Dir path : {}'.format(dir_path))
     file_path = r''.join([dir_path,
                           '/data/recommendation_config.cfg'])
-    print('################################### file_path : {}'.format(file_path))
+
     config = configparser.ConfigParser()
 
     config.read(file_path)
