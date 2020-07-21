@@ -17,7 +17,7 @@ import configparser
 
 
 from Service import custom_logger
-logger = custom_logger.CustomLogger.get_logger("./app.log")
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
                'uni/tn-tn0/ap-ap0/epg-epg2',
