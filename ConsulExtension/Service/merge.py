@@ -42,12 +42,12 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 total_epg_count[aci['EPG']] += 1
 
             mapped_detail = new_mappings.get(
-                    (
-                        aci.get('dn'),
-                        aci.get(aci_key)
-                    ),
-                    {}
-                )
+                (
+                    aci.get('dn'),
+                    aci.get(aci_key)
+                ),
+                {}
+            )
             if mapped_detail:
                 logger.info('mapping: {}, aci: {}'.format(str(mapped_detail), str(aci)))
                 # Service to CEp mapping
@@ -203,6 +203,9 @@ def consul_data_formatter(consul_data, mapping_ips):
             else:
                 services.append(service_list[i])
         node['node_services'] = services
-        node['node_services_copy'] = [service for service in node['node_services'] if (service.get(
-                'service_ip') == "" or service.get('service_ip') == node.get('node_ip')
-            )]
+        node['node_services_copy'] = [
+            service for service in node['node_services'] if (
+                service.get('service_ip') == ""
+                or service.get('service_ip') == node.get('node_ip')
+            )
+        ]

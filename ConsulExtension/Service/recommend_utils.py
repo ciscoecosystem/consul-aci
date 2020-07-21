@@ -157,7 +157,9 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
                     if epg_rec_count > epg_each_count:
                         recommendation_list.append([each[each_key], each['dn'], 'No', each_key, apic_each])
                     elif epg_rec_count < epg_each_count:
-                        recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key, apic_rec])
+                        recommendation_list.append([
+                            recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key, apic_rec
+                        ])
                         recommended_ep = each
                     else:
                         peers.append([each, apic_each])

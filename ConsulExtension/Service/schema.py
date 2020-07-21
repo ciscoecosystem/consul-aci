@@ -44,8 +44,10 @@ class GetSubnets(graphene.ObjectType):
 class SetPollingInterval(graphene.ObjectType):
     response = graphene.String()
 
+
 class GetPollingInterval(graphene.ObjectType):
     response = graphene.String()
+
 
 class OperationalTree(graphene.ObjectType):
     response = graphene.String()
@@ -99,7 +101,6 @@ class GetPerformanceDashboard(graphene.ObjectType):
     response = graphene.String()
 
 
-
 class Query(graphene.ObjectType):
     """Query class which resolves all the incoming requests"""
 
@@ -139,7 +140,7 @@ class Query(graphene.ObjectType):
     GetSubnets = graphene.Field(GetSubnets, dn=graphene.String())
 
     SetPollingInterval = graphene.Field(SetPollingInterval, interval=graphene.Int())
-    
+
     GetPollingInterval = graphene.Field(GetPollingInterval)
 
     ServiceChecks = graphene.Field(ServiceChecks,
