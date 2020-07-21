@@ -31,7 +31,7 @@ dc.update({
     'node': [
         'node_id',
         'node_name',
-        ['node_ips1', 'node_ips2'],
+        'node_ip',
         'datacenter',
         ['agents1', 'agents2']
     ]
@@ -214,7 +214,7 @@ def test_delete_from_table(table):
         {dc[table][0]: dc[table][0]}
     )
 
-    assert db_obj.delete_from_table(connection, "") == False
+    assert db_obj.delete_from_table(connection, "") is False
 
     connection.close()
     os.remove('./ConsulDatabase.db')
