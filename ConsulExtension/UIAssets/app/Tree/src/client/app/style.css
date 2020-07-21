@@ -309,7 +309,7 @@ body {
 }
 
 .ReactTable .pagination-bottom .select::after {
-  z-index: 10;
+  z-index: 1;
 }
 
 .ReactTable .-pagination .-pageJump input {

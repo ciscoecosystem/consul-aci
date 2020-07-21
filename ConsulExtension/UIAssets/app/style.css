@@ -203,7 +203,12 @@ main {
 }
 
 .ReactTable .pagination-bottom .select::after {
-    z-index: 10;
+    z-index: 1;
+}
+
+.form-group .form-group__text.select::after, .form-group .form-group__text::after {
+    bottom: 10px;
+    z-index: 1;
 }
 
 .ReactTable .-pagination .-pageJump input {
