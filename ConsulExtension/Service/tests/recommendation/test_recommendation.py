@@ -118,7 +118,7 @@ def ap_data():
 @pytest.fixture(scope='class')
 def ap_same_count_data(scope='class'):
     extract_ap_epgs = {'ap2': {'epg3': 2, 'epg0': 1, 'epg1': 2, 'epg4': 2},
-                       'ap0': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1},
+                       'ap0': {'epg2': 2, 'epg0': 2, 'epg1': 1, 'epg4': 1},
                        'ap1': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1}}
     common_eps = []
     common_eps.append({'dn': DOMAIN_LIST[0],
