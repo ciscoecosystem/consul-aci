@@ -180,12 +180,12 @@ def aci_consul_mappings_formatter(data):
 def mapped_consul_nodes_formatter(consul_data):
     dc = dict()
     for node in consul_data:
-        for ip in node.get('node_ip', ''):
-            obj = dc.get(ip, [])
-            if obj:
-                obj.append(node)
-            else:
-                dc[ip] = [node]
+        ip = node.get('node_ip')
+        obj = dc.get(ip, [])
+        if obj:
+            obj.append(node)
+        else:
+            dc[ip] = [node]
     return dc
 
 
