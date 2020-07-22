@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean
+from sqlalchemy import Table, Column, ForeignKey, String, MetaData, PickleType, DateTime, Boolean, Integer
 from datetime import datetime
 from sqlalchemy.sql import select
 from sqlalchemy.interfaces import PoolListener
@@ -12,6 +12,7 @@ DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
 
 
 class MyListener(PoolListener):
+    """ MyListner class to use database in WAL mode """
     def connect(self, dbapi_con, con_record):
         dbapi_con.execute('pragma journal_mode=WAL')
 
@@ -34,6 +35,7 @@ class Database:
     EPAUDIT_TABLE_NAME = 'epaudit'
     EPGAUDIT_TABLE_NAME = 'epgaudit'
     TENANT_TABLE_NAME = 'tenant'
+    POLLING_TABLE_NAME = 'polling'
 
     SCHEMA_DICT = {
         LOGIN_TABLE_NAME: [
@@ -43,6 +45,7 @@ class Database:
             'token',
             'status',
             'datacenter',
+            'tenant',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -66,7 +69,7 @@ class Database:
         NODE_TABLE_NAME: [
             'node_id',
             'node_name',
-            'node_ips',
+            'node_ip',
             'datacenter',
             'agents',
             'created_ts',
@@ -159,6 +162,14 @@ class Database:
         TENANT_TABLE_NAME: [
             'tenant',
             'created_ts'
+        ],
+
+        POLLING_TABLE_NAME: [
+            'pkey',
+            'interval',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
         ]
     }
 
@@ -166,11 +177,14 @@ class Database:
         try:
             self.engine = create_engine(DATABASE_NAME, listeners=[MyListener()])
             self.table_obj_meta = dict()
-            self.table_pkey_meta = dict()
+            self.table_key_meta = dict()
         except Exception as e:
             logger.exception("Exception in creating db obj: {}".format(str(e)))
 
     def create_tables(self):
+        """
+        Function to create tables and save table objects
+        """
         metadata = MetaData()
 
         self.login = Table(
@@ -181,6 +195,7 @@ class Database:
             Column('token', String),
             Column('status', String),
             Column('datacenter', String),
+            Column('tenant', String, primary_key=True),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -206,7 +221,7 @@ class Database:
             self.NODE_TABLE_NAME, metadata,
             Column('node_id', String, primary_key=True),
             Column('node_name', String),
-            Column('node_ips', PickleType),
+            Column('node_ip', String),
             Column('datacenter', String),
             Column('agents', PickleType),
             Column('created_ts', DateTime),
@@ -306,7 +321,7 @@ class Database:
             self.NODEAUDIT_TABLE_NAME, metadata,
             Column('node_id', String),
             Column('node_name', String),
-            Column('node_ips', PickleType),
+            Column('node_ip', String),
             Column('datacenter', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
@@ -414,6 +429,15 @@ class Database:
             Column('created_ts', DateTime)
         )
 
+        self.polling = Table(
+            self.POLLING_TABLE_NAME, metadata,
+            Column('pkey', String, primary_key=True),
+            Column('interval', Integer),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime),
+        )
+
         try:
             metadata.create_all(self.engine)
             self.table_obj_meta.update({
@@ -431,42 +455,133 @@ class Database:
                 self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
                 self.EPAUDIT_TABLE_NAME: self.epaudit,
                 self.EPGAUDIT_TABLE_NAME: self.epgaudit,
-                self.TENANT_TABLE_NAME: self.tenant
+                self.TENANT_TABLE_NAME: self.tenant,
+                self.POLLING_TABLE_NAME: self.polling
             })
-            self.table_pkey_meta.update({
+            self.table_key_meta.update({
                 self.LOGIN_TABLE_NAME: {
                     'agent_ip': self.login.c.agent_ip,
-                    'port': self.login.c.port
+                    'port': self.login.c.port,
+                    'protocol': self.login.c.protocol,
+                    'token': self.login.c.token,
+                    'status': self.login.c.status,
+                    'datacenter': self.login.c.datacenter,
+                    'tenant': self.login.c.tenant,
+                    'created_ts': self.login.c.created_ts,
+                    'updated_ts': self.login.c.updated_ts,
+                    'last_checked_ts': self.login.c.last_checked_ts
                 },
                 self.MAPPING_TABLE_NAME: {
                     'ip': self.mapping.c.ip,
                     'dn': self.mapping.c.dn,
-                    'datacenter': self.mapping.c.datacenter
+                    'datacenter': self.mapping.c.datacenter,
+                    'enabled': self.mapping.c.enabled,
+                    'ap': self.mapping.c.ap,
+                    'bd': self.mapping.c.bd,
+                    'epg': self.mapping.c.epg,
+                    'vrf': self.mapping.c.vrf,
+                    'tenant': self.mapping.c.tenant,
+                    'created_ts': self.mapping.c.created_ts,
+                    'updated_ts': self.mapping.c.updated_ts,
+                    'last_checked_ts': self.mapping.c.last_checked_ts
                 },
                 self.NODE_TABLE_NAME: {
-                    'node_id': self.node.c.node_id
+                    'node_id': self.node.c.node_id,
+                    'node_name': self.node.c.node_name,
+                    'node_ip': self.node.c.node_ip,
+                    'datacenter': self.node.c.datacenter,
+                    'agents': self.node.c.agents,
+                    'created_ts': self.node.c.created_ts,
+                    'updated_ts': self.node.c.updated_ts,
+                    'last_checked_ts': self.node.c.last_checked_ts
                 },
                 self.SERVICE_TABLE_NAME: {
                     'service_id': self.service.c.service_id,
-                    'node_id': self.service.c.node_id
+                    'node_id': self.service.c.node_id,
+                    'service_name': self.service.c.service_name,
+                    'service_ip': self.service.c.service_ip,
+                    'service_port': self.service.c.service_port,
+                    'service_address': self.service.c.service_address,
+                    'service_tags': self.service.c.service_tags,
+                    'service_kind': self.service.c.service_kind,
+                    'namespace': self.service.c.namespace,
+                    'datacenter': self.service.c.datacenter,
+                    'agents': self.service.c.agents,
+                    'created_ts': self.service.c.created_ts,
+                    'updated_ts': self.service.c.updated_ts,
+                    'last_checked_ts': self.service.c.last_checked_ts
                 },
                 self.NODECHECKS_TABLE_NAME: {
                     'check_id': self.nodechecks.c.check_id,
-                    'node_id': self.nodechecks.c.node_id
+                    'node_id': self.nodechecks.c.node_id,
+                    'node_name': self.nodechecks.c.node_name,
+                    'check_name': self.nodechecks.c.check_name,
+                    'service_name': self.nodechecks.c.service_name,
+                    'type': self.nodechecks.c.type,
+                    'notes': self.nodechecks.c.notes,
+                    'output': self.nodechecks.c.output,
+                    'status': self.nodechecks.c.status,
+                    'agents': self.nodechecks.c.agents,
+                    'created_ts': self.nodechecks.c.created_ts,
+                    'updated_ts': self.nodechecks.c.updated_ts,
+                    'last_checked_ts': self.nodechecks.c.last_checked_ts
                 },
                 self.SERVICECHECKS_TABLE_NAME: {
                     'check_id': self.servicechecks.c.check_id,
-                    'service_id': self.servicechecks.c.service_id
+                    'service_id': self.servicechecks.c.service_id,
+                    'service_name': self.servicechecks.c.service_name,
+                    'name': self.servicechecks.c.name,
+                    'type': self.servicechecks.c.type,
+                    'notes': self.servicechecks.c.notes,
+                    'output': self.servicechecks.c.output,
+                    'status': self.servicechecks.c.status,
+                    'agents': self.servicechecks.c.agents,
+                    'created_ts': self.servicechecks.c.created_ts,
+                    'updated_ts': self.servicechecks.c.updated_ts,
+                    'last_checked_ts': self.servicechecks.c.last_checked_ts
                 },
                 self.EP_TABLE_NAME: {
                     'mac': self.ep.c.mac,
-                    'ip': self.ep.c.ip
+                    'ip': self.ep.c.ip,
+                    'tenant': self.ep.c.tenant,
+                    'dn': self.ep.c.dn,
+                    'vm_name': self.ep.c.vm_name,
+                    'interfaces': self.ep.c.interfaces,
+                    'vmm_domain': self.ep.c.vmm_domain,
+                    'controller_name': self.ep.c.controller_name,
+                    'learning_source': self.ep.c.learning_source,
+                    'multicast_address': self.ep.c.multicast_address,
+                    'encap': self.ep.c.encap,
+                    'hosting_server_name': self.ep.c.hosting_server_name,
+                    'is_cep': self.ep.c.is_cep,
+                    'created_ts': self.ep.c.created_ts,
+                    'updated_ts': self.ep.c.updated_ts,
+                    'last_checked_ts': self.ep.c.last_checked_ts
                 },
                 self.EPG_TABLE_NAME: {
-                    'dn': self.epg.c.dn
+                    'dn': self.epg.c.dn,
+                    'tenant': self.epg.c.tenant,
+                    'EPG': self.epg.c.EPG,
+                    'BD': self.epg.c.BD,
+                    'contracts': self.epg.c.contracts,
+                    'vrf': self.epg.c.vrf,
+                    'epg_health': self.epg.c.epg_health,
+                    'app_profile': self.epg.c.app_profile,
+                    'epg_alias': self.epg.c.epg_alias,
+                    'created_ts': self.epg.c.created_ts,
+                    'updated_ts': self.epg.c.updated_ts,
+                    'last_checked_ts': self.epg.c.last_checked_ts
                 },
                 self.TENANT_TABLE_NAME: {
-                    'tenant': self.tenant.c.tenant
+                    'tenant': self.tenant.c.tenant,
+                    'created_ts': self.tenant.c.created_ts
+                },
+                self.POLLING_TABLE_NAME: {
+                    'pkey': self.polling.c.pkey,
+                    'interval': self.polling.c.interval,
+                    'created_ts': self.polling.c.created_ts,
+                    'updated_ts': self.polling.c.updated_ts,
+                    'last_checked_ts': self.polling.c.last_checked_ts
                 }
             })
         except Exception as e:
@@ -474,6 +589,17 @@ class Database:
                 'create_tables()', str(e)))
 
     def insert_into_table(self, connection, table_name, field_values):
+        """
+        Function to insert single record in table
+
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
+            field_values {list/tuple} --> values of single record
+
+        Returns:
+            True or False {bool} --> status of operation
+        """
         field_values = list(field_values)
         try:
             ins = None
@@ -488,55 +614,62 @@ class Database:
                 "Exception in data insertion in {} Error:{}".format(table_name, str(e)))
         return False
 
-    def select_eps_from_mapping(self, connection, tn, is_enabled):
-        try:
-            result = connection.execute(
-                "Select ip from mapping where enabled=" + str(is_enabled) + " and tenant='" + tn + "'")
-            return result
-        except Exception as e:
-            logger.exception("Exception in selecting data from {} Error:{}".format(self.MAPPING_TABLE_NAME, str(e)))
-        return None
+    def select_from_table(self, connection, table_name, field_arg_dict={}, required_fields=[]):
+        """
+        Function to get data from database table
 
-    def select_from_ep_with_tenant(self, connection, tn):
-        try:
-            table_obj = self.table_obj_meta[self.EP_TABLE_NAME]
-            select_query = table_obj.select()
-            select_query = select_query.where(('tenant' == tn))
-            result = connection.execute("Select * from ep where tenant='" + tn + "'")
-            return result
-        except Exception as e:
-            logger.exception("Exception in selecting data from {} Error:{}".format(self.EP_TABLE_NAME, str(e)))
-        return None
+        Arguments:
+            connection   {connection} --> connection object for database
+            table_name   {str}        --> name of the database table
 
-    def select_from_table(self, connection, table_name, primary_key={}):
+        Optional Arguments:
+            field_arg_dict  {dict} --> key-value pairs of column name and data to filter records
+            required_fields {list} --> list of column names which is required
+
+        Returns:
+            {list{tuple}} or None --> list of records found in database table on success
+        """
         try:
-            select_query = None
             table_name = table_name.lower()
-            if primary_key:
-                table_obj = self.table_obj_meta[table_name]
-                select_query = table_obj.select()
-                for key in primary_key:
-                    select_query = select_query.where(
-                        self.table_pkey_meta[table_name][key] == primary_key[key])
-            else:
-                select_query = self.table_obj_meta[table_name].select()
+            field_list = [self.table_key_meta[table_name][each.lower()] for each in required_fields]
+            if not field_list:
+                field_list = [self.table_obj_meta[table_name]]
 
-            if select_query is not None:
-                result = connection.execute(select_query)
-                return result.fetchall()
+            if field_arg_dict:
+                select_query = select(field_list)
+                for key in field_arg_dict:
+                    select_query = select_query.where(
+                        self.table_key_meta[table_name][key] == field_arg_dict[key])
+            else:
+                select_query = select(field_list)
+
+            result = connection.execute(select_query)
+            return result.fetchall()
         except Exception as e:
             logger.exception("Exception in selecting data from {} Error:{}".format(table_name, str(e)))
         return None
 
-    def update_in_table(self, connection, table_name, primary_key, new_record_dict):
+    def update_in_table(self, connection, table_name, field_arg_dict, new_record_dict):
+        """
+        Function to update data into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+            new_record_dict {dict}       --> key-value pairs of column name and data of new value
+
+        Returns:
+            True or False {bool} --> status of operation
+        """
         try:
             table_name = table_name.lower()
             table_obj = self.table_obj_meta[table_name]
             new_record_dict['last_checked_ts'] = datetime.now()
             update_query = table_obj.update()
-            for key in primary_key:
+            for key in field_arg_dict:
                 update_query = update_query.where(
-                    self.table_pkey_meta[table_name][key] == primary_key[key])
+                    self.table_key_meta[table_name][key] == field_arg_dict[key])
             update_query = update_query.values(new_record_dict)
             connection.execute(update_query)
             return True
@@ -545,15 +678,28 @@ class Database:
                 "Exception in updating {} Error:{}".format(table_name, str(e)))
         return False
 
-    def delete_from_table(self, connection, table_name, primary_key={}):
+    def delete_from_table(self, connection, table_name, field_arg_dict={}):
+        """
+        Function to delete data from database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        """
         try:
             table_name = table_name.lower()
-            if primary_key:
+            if field_arg_dict:
                 table_obj = self.table_obj_meta[table_name]
                 delete_query = table_obj.delete()
-                for key in primary_key:
+                for key in field_arg_dict:
                     delete_query = delete_query.where(
-                        self.table_pkey_meta[table_name][key] == primary_key[key])
+                        self.table_key_meta[table_name][key] == field_arg_dict[key])
             else:
                 delete_query = self.table_obj_meta[table_name].delete()
             connection.execute(delete_query)
@@ -563,27 +709,48 @@ class Database:
                 "Exception in deletion from {} Error:{}".format(table_name, str(e)))
         return False
 
-    def insert_and_update(self, connection, table_name, new_record, primary_key={}):
+    def insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
+        """
+        Function to insert new record and update existing record into database table
+
+        Arguments:
+            connection      {connection} --> connection object for database
+            table_name      {str}        --> name of the database table
+            new_record      {list}       --> values of new record
+
+        Optional Arguments:
+            field_arg_dict  {dict}       --> key-value pairs of column name and data to filter records
+
+        Returns:
+            True or False {bool} --> status of operation
+        """
         table_name = table_name.lower()
-        if primary_key:
-            old_data = self.select_from_table(connection, table_name, primary_key)
-            if old_data != None:
+        if field_arg_dict:
+            old_data = self.select_from_table(connection, table_name, field_arg_dict)
+            if old_data is not None:
                 if len(old_data) > 0:
                     old_data = old_data[0]
                     new_record_dict = dict()
                     index = []
                     for i in range(len(new_record)):
-                        if old_data[i] != new_record[i]:
-                            index.append(i)
-                    field_names = [self.SCHEMA_DICT[table_name][i]
-                                   for i in index]
+                        if isinstance(new_record[i], bool):
+                            try:
+                                old_column_value = bool(int(old_data[i]))
+                                if old_column_value != new_record[i]:
+                                    index.append(i)
+                            except Exception:
+                                logger.exception("Exception in insert_and_update for table {}".format(table_name))
+                        else:
+                            if old_data[i] != new_record[i]:
+                                index.append(i)
+                    field_names = [self.SCHEMA_DICT[table_name][i]for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]
 
                     if new_record_dict:
                         new_record_dict['updated_ts'] = datetime.now()
-                    self.update_in_table(connection, table_name, primary_key, new_record_dict)
+                    self.update_in_table(connection, table_name, field_arg_dict, new_record_dict)
                 else:
                     self.insert_into_table(connection, table_name, new_record)
             else:
@@ -591,58 +758,3 @@ class Database:
         else:
             self.insert_into_table(connection, table_name, new_record)
         return True
-
-    def get_join_obj(self, table_name1, table_name2, datacenter=None):
-        try:
-            table_name1 = table_name1.lower()
-            table_name2 = table_name2.lower()
-            obj1 = self.table_obj_meta[table_name1]
-            obj2 = self.table_obj_meta[table_name2]
-            if datacenter:
-                join_obj = obj1.join(obj2, isouter=True)
-            else:
-                join_obj = obj1.join(obj2, obj1.c.dn == obj2.c.dn, isouter=True)
-            return join_obj
-        except Exception as e:
-            logger.exception(
-                "Exception in joining tables: {} & {}, Error: {}".format(table_name1, table_name2, str(e)))
-        return None
-
-    def join(self, connection, datacenter=None, tenant=None):
-        try:
-            if datacenter:
-                obj1 = self.get_join_obj("node", "nodechecks", datacenter)
-                obj2 = self.get_join_obj("service", "servicechecks", datacenter)
-                join_obj = obj1.join(obj2)
-                smt = select([self.node, self.service, self.nodechecks, self.servicechecks]).select_from(join_obj)
-            elif tenant:
-                join_obj = self.get_join_obj("ep", "epg")
-                smt = select([self.ep, self.epg]).select_from(join_obj)
-            result = connection.execute(smt)
-            return result
-        except Exception as e:
-            logger.exception(
-                "Exception in join, Error: {}".format(str(e)))
-            return None
-
-    def join_formatter(self, result):
-        if result is None:
-            return []
-        return_list = []
-        for each in result:
-            return_list.append({
-                'node_id': each[0],
-                'node_name': each[1],
-                'node_ips': each[2],
-                'node_check': each[28],
-                'service_id': each[7],
-                'service_name': each[9],
-                'service_ip': each[10],
-                'service_port': each[11],
-                'service_address': each[12],
-                'service_tags': each[13],
-                'service_kind': each[14],
-                'service_namespace': each[15],
-                'service_checks': each[39]
-            })
-        return return_list

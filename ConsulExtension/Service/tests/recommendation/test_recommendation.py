@@ -11,13 +11,10 @@ sys.modules['cobra.model'] = 'cobra.model'
 sys.modules['cobra.model.pol'] = Mock(name='Uni')
 sys.modules['cobra.model.aaa'] = Mock(name='UserEp')
 
-
 import os
 import configparser
-
-
 from Service import custom_logger
-logger = custom_logger.CustomLogger.get_logger("./app.log")
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
 DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
                'uni/tn-tn0/ap-ap0/epg-epg2',
@@ -43,7 +40,7 @@ def get_conf_value(section, key_name):
     print('Dir path : {}'.format(dir_path))
     file_path = r''.join([dir_path,
                           '/data/recommendation_config.cfg'])
-    print('################################### file_path : {}'.format(file_path))
+
     config = configparser.ConfigParser()
 
     config.read(file_path)
@@ -121,7 +118,7 @@ def ap_data():
 @pytest.fixture(scope='class')
 def ap_same_count_data(scope='class'):
     extract_ap_epgs = {'ap2': {'epg3': 2, 'epg0': 1, 'epg1': 2, 'epg4': 2},
-                       'ap0': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1},
+                       'ap0': {'epg2': 2, 'epg0': 2, 'epg1': 1, 'epg4': 1},
                        'ap1': {'epg2': 2, 'epg0': 1, 'epg1': 2, 'epg4': 1}}
     common_eps = []
     common_eps.append({'dn': DOMAIN_LIST[0],
@@ -147,11 +144,11 @@ def test_determine_recommendation_cef_fvip(cef_ip_and_fvip_data):
     source_ip_list, parsed_eps, apic_data = cef_ip_and_fvip_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], 'Yes', 'IP'])
+                         DOMAIN_LIST[1], True, 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
 
@@ -163,11 +160,11 @@ def test_determine_recommendation_vrf(vrf_data):
     source_ip_list, parsed_eps, apic_data = vrf_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], 'Yes', 'IP'])
+                         DOMAIN_LIST[1], True, 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
     assert len(actual_eps) == len(expected_eps)
@@ -178,11 +175,11 @@ def test_determine_recommendation_ap(ap_data):
     source_ip_list, parsed_eps, apic_data = ap_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], 'Yes', 'IP'])
+                         DOMAIN_LIST[1], True, 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
 
@@ -197,11 +194,11 @@ def test_determine_recommendation_same_ap_count(ap_same_count_data):
     source_ip_list, parsed_eps, apic_data = ap_same_count_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], False, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'Yes', 'IP'])
+                         DOMAIN_LIST[2], True, 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], 'Yes', 'IP'])
+                         DOMAIN_LIST[1], True, 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
     assert len(actual_eps) == len(expected_eps)

@@ -42,8 +42,11 @@ class GetSubnets(graphene.ObjectType):
 
 
 class SetPollingInterval(graphene.ObjectType):
-    status = graphene.String()
-    message = graphene.String()
+    response = graphene.String()
+
+
+class GetPollingInterval(graphene.ObjectType):
+    response = graphene.String()
 
 
 class OperationalTree(graphene.ObjectType):
@@ -124,6 +127,7 @@ class Query(graphene.ObjectType):
                                         dn=graphene.String(),
                                         mo_type=graphene.String(),
                                         mac_list=graphene.String(),
+                                        ip_list=graphene.String(),
                                         ip=graphene.String())
 
     GetConfiguredAccessPolicies = graphene.Field(GetConfiguredAccessPolicies,
@@ -135,7 +139,9 @@ class Query(graphene.ObjectType):
 
     GetSubnets = graphene.Field(GetSubnets, dn=graphene.String())
 
-    SetPollingInterval = graphene.Field(SetPollingInterval, interval=graphene.String())
+    SetPollingInterval = graphene.Field(SetPollingInterval, interval=graphene.Int())
+
+    GetPollingInterval = graphene.Field(GetPollingInterval)
 
     ServiceChecks = graphene.Field(ServiceChecks,
                                    service_name=graphene.String(),
@@ -154,19 +160,22 @@ class Query(graphene.ObjectType):
                                      node_list=graphene.String(),
                                      datacenter=graphene.String())
 
-    ReadCreds = graphene.Field(ReadCreds)
+    ReadCreds = graphene.Field(ReadCreds, tn=graphene.String())
 
-    WriteCreds = graphene.Field(WriteCreds, agent_list=graphene.String())
+    WriteCreds = graphene.Field(WriteCreds, tn=graphene.String(),
+                                agent_list=graphene.String())
 
-    UpdateCreds = graphene.Field(UpdateCreds, update_input=graphene.String())
+    UpdateCreds = graphene.Field(UpdateCreds, tn=graphene.String(),
+                                 update_input=graphene.String())
 
-    DeleteCreds = graphene.Field(DeleteCreds, agent_data=graphene.String())
+    DeleteCreds = graphene.Field(DeleteCreds, tn=graphene.String(),
+                                 agent_data=graphene.String())
 
     DetailsFlattened = graphene.Field(DetailsFlattened,
                                       tn=graphene.String(),
                                       datacenter=graphene.String())
 
-    GetDatacenters = graphene.Field(GetDatacenters)
+    GetDatacenters = graphene.Field(GetDatacenters, tn=graphene.String())
 
     PostTenant = graphene.Field(PostTenant, tn=graphene.String())
 
@@ -186,8 +195,8 @@ class Query(graphene.ObjectType):
         GetAuditLogs.auditLogsList = app.get_audit_logs(dn)
         return GetAuditLogs
 
-    def resolve_GetOperationalInfo(self, info, dn, mo_type, mac_list, ip):
-        GetOperationalInfo.operationalList = app.get_children_ep_info(dn, mo_type, mac_list, ip)
+    def resolve_GetOperationalInfo(self, info, dn, mo_type, mac_list, ip_list, ip):
+        GetOperationalInfo.operationalList = app.get_children_ep_info(dn, mo_type, mac_list, ip_list, ip)
         return GetOperationalInfo
 
     def resolve_GetConfiguredAccessPolicies(self, info, tn, ap, epg):
@@ -203,10 +212,12 @@ class Query(graphene.ObjectType):
         return GetSubnets
 
     def resolve_SetPollingInterval(self, info, interval):
-        status, message = app.set_polling_interval(interval)
-        SetPollingInterval.status = status
-        SetPollingInterval.message = message
+        SetPollingInterval.response = app.set_polling_interval(interval)
         return SetPollingInterval
+
+    def resolve_GetPollingInterval(self, info):
+        GetPollingInterval.response = app.get_polling_interval()
+        return GetPollingInterval
 
     def resolve_Mapping(self, info, tn, datacenter):
         Mapping.mappings = app.mapping(tn, datacenter)
@@ -237,28 +248,28 @@ class Query(graphene.ObjectType):
         MultiNodeChecks.response = app.get_multi_node_check(node_list, datacenter)
         return MultiNodeChecks
 
-    def resolve_ReadCreds(self, info):
-        ReadCreds.creds = app.read_creds()
+    def resolve_ReadCreds(self, info, tn):
+        ReadCreds.creds = app.read_creds(tn)
         return ReadCreds
 
-    def resolve_WriteCreds(self, info, agent_list):
-        WriteCreds.creds = app.write_creds(agent_list)
+    def resolve_WriteCreds(self, info, tn, agent_list):
+        WriteCreds.creds = app.write_creds(tn, agent_list)
         return WriteCreds
 
-    def resolve_UpdateCreds(self, info, update_input):
-        UpdateCreds.creds = app.update_creds(update_input)
+    def resolve_UpdateCreds(self, info, tn, update_input):
+        UpdateCreds.creds = app.update_creds(tn, update_input)
         return UpdateCreds
 
-    def resolve_DeleteCreds(self, info, agent_data):
-        DeleteCreds.message = app.delete_creds(agent_data)
+    def resolve_DeleteCreds(self, info, tn, agent_data):
+        DeleteCreds.message = app.delete_creds(tn, agent_data)
         return DeleteCreds
 
     def resolve_DetailsFlattened(self, info, tn, datacenter):
         DetailsFlattened.details = app.details_flattened(tn, datacenter)
         return DetailsFlattened
 
-    def resolve_GetDatacenters(self, info):
-        GetDatacenters.datacenters = app.get_datacenters()
+    def resolve_GetDatacenters(self, info, tn):
+        GetDatacenters.datacenters = app.get_datacenters(tn)
         return GetDatacenters
 
     def resolve_PostTenant(self, info, tn):

@@ -201,3 +201,28 @@ main {
 .cui .slideInLeftSmall{
     animation: none !important;
 }
+
+.ReactTable .pagination-bottom .select::after {
+    z-index: 1;
+}
+
+.form-group .form-group__text.select::after, .form-group .form-group__text::after {
+    bottom: 10px;
+    z-index: 1;
+}
+
+.ReactTable .-pagination .-pageJump input {
+    width: 70px !important;
+}
+
+.polling-interval .dropdown__menu a{
+    height: 25px !important;
+    line-height: 25px !important;
+}
+
+.polling-interval .dropdown__menu{
+    position: fixed !important;
+    top: auto !important;
+    width: 23% !important;
+
+}

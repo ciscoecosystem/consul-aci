@@ -1,8 +1,6 @@
 [
     {
-        "node_ips": [
-            "951d:56e4:69ae:46b1:3510:f9e0:cd26:49ee"
-        ],
+        "node_ip": "951d:56e4:69ae:46b1:3510:f9e0:cd26:49ee",
         "node_check": {
             "passing": 1
         },
