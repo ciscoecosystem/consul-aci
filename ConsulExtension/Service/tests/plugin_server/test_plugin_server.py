@@ -317,6 +317,52 @@ def test_update_creds(case):
         "payload": []
     }
 
+    agent_already_exist = {
+        "status_code": "300",
+        "message": "Agent {}:{} already exists.".format(
+            update_agent["newData"]["ip"],
+            update_agent["newData"]["port"]
+        ),
+        "payload": {
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "protocol": update_agent["newData"]["protocol"],
+            "port": update_agent["newData"]["port"]
+        }
+    }
+
+    connected_agent = {
+        "status_code": "200",
+        "message": "OK",
+        "payload": {
+            "status": True,
+            "datacenter": "-",
+            "protocol": update_agent["newData"]["protocol"],
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "port": update_agent["newData"]["port"]
+            }
+        }
+
+    disconnected_agent = {
+        "status_code": "301",
+        "message": "message",
+        "payload": {
+            "status": False,
+            "datacenter": "",
+            "protocol": update_agent["newData"]["protocol"],
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "port": update_agent["newData"]["port"]
+        }
+    }
+
+    exception_response = {
+        "status_code": "300",
+        "message": "Could not update the credentials.",
+        "payload": []
+    }
+
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
@@ -327,19 +373,26 @@ def test_update_creds(case):
             db_obj.LOGIN_TABLE_NAME,
             dummy_data
         )
-
+    
     if(case == "agent list empty"):
         response = plugin_server.update_creds(tenant, json.dumps(update_agent))
-        assert agent_not_found == response
-    if(case == "agent already exists"):
-        print(plugin_server.update_creds(tenant, json.dumps(update_agent)))
-    if(case == "connected"):
-        pass
-    if(case == "disconnected"):
-        pass
-    
-    
-    assert False
+        assert agent_not_found == json.loads(response)
+    elif(case == "agent already exists"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert agent_already_exist == json.loads(response)
+    elif(case == "connected"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert connected_agent == json.loads(response)
+    elif(case == "disconnected"):
+        consul_utils.Consul.check_connection = check_connection_false
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        consul_utils.Consul.check_connection = check_connection
+        assert disconnected_agent == json.loads(response)
+    elif(case == "exception"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert exception_response == json.loads(response)
+
+    connection.close()
     clear_db()
 
 @pytest.mark.parametrize("case", epg_alias_data)
