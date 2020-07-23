@@ -156,6 +156,7 @@ get_new_mapping_cases = [
 mapping_data = get_data('saved_mapping.json')
 read_creds_cases = get_data('read_creds.json')
 write_creds_cases = get_data('write_creds.json')
+update_creds_cases = get_data('update_creds.json') 
 epg_alias_data = get_data('get_epg_alias.json')
 
 
@@ -294,16 +295,61 @@ def test_write_creds(case):
         assert already_exist_response == app_response
     elif app_response["status_code"] == "301":
         db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
-        print(db_data)
-        print(app_response)
         assert write_creds_checker(app_response, db_data)
     elif app_response["status_code"] == "300":
         assert app_response == failed_response
     connection.close()
     clear_db()
 
-# @pytest.mark.parametrize("case", update_creds_cases)
-# def test_
+@pytest.mark.parametrize("case", update_creds_cases)
+def test_update_creds(case):
+    # clear_db()
+    try:
+        clear_db()
+    except Exception:
+        pass
+    case, data = case
+    tenant, update_agent, dummy_data = data
+    agent_not_found = {
+        "status_code": "300",
+        "message": "Agents not found",
+        "payload": []
+    }
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+    connection = db_obj.engine.connect()
+    
+    if(case != "agent list empty"):
+        print(dummy_data)
+        db_obj.insert_and_update(
+            connection,
+            db_obj.LOGIN_TABLE_NAME,
+            dummy_data,
+            {
+                'agent_ip': dummy_data["ip"],
+                'port': dummy_data["port"],
+                'tenant': tenant
+            }
+        )
+    connection.close()
+    connection = db_obj.engine.connect()
+    agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
+    print(agents)
+    connection.close()
+    if(case == "agent list empty"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert agent_not_found == response
+    if(case == "agent already exists"):
+        print(plugin_server.update_creds(tenant, json.dumps(update_agent)))
+    if(case == "connected"):
+        pass
+    if(case == "disconnected"):
+        pass
+    
+    
+    assert False
+    clear_db()
 
 @pytest.mark.parametrize("case", epg_alias_data)
 def test_get_epg_alias(case):

@@ -1,0 +1,27 @@
+[
+    [
+        "agent already exists",
+        [    "tn0",
+            {
+                "oldData" : {
+                    "protocol":"http",
+                    "port":"1234",
+                    "ip": "0.0.0.0",
+                    "token":null
+                },
+                "newData" : {
+                    "protocol":"http",
+                    "port":"1234",
+                    "ip": "0.0.0.0",
+                    "token":null
+                }
+            },
+            {
+                "port":"1234",
+                "ip": "1.1.1.1",
+                "protocol": "http",
+                "token":null
+            }
+        ]
+    ]
+]
