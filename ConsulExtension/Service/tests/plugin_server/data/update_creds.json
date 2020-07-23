@@ -1,4 +1,33 @@
 [
+	[
+		"agent list empty",
+		[
+			"tn0",
+            {
+                "oldData" : {
+                    "protocol":"http",
+                    "port":"1234",
+                    "ip": "0.0.0.0",
+                    "token":null
+                },
+                "newData" : {
+                    "protocol":"http",
+                    "port":"1235",
+                    "ip": "0.0.0.0",
+                    "token":null
+                }
+            },
+			[
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "True",
+                "-",
+                "tn0"
+            ]
+		]
+	],
     [
         "agent already exists",
         [    "tn0",
@@ -16,12 +45,71 @@
                     "token":null
                 }
             },
-            {
-                "port":"1234",
-                "ip": "1.1.1.1",
-                "protocol": "http",
-                "token":null
-            }
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "True",
+                "-",
+                "tn0"
+            ]
         ]
-    ]
+    ],
+	[
+		"connected",
+        [    "tn0",
+            {
+                "oldData" : {
+                    "protocol":"http",
+                    "port":"1234",
+                    "ip": "0.0.0.0",
+                    "token":null
+                },
+                "newData" : {
+                    "protocol":"http",
+                    "port":"1235",
+                    "ip": "0.0.0.0",
+                    "token":null
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "True",
+                "-",
+                "tn0"
+            ]
+        ]
+	],
+	[
+		"disconnected",
+        [    "tn0",
+            {
+                "oldData" : {
+                    "protocol":"http",
+                    "port":"1234",
+                    "ip": "0.0.0.0",
+                    "token":null
+                },
+                "newData" : {
+                    "protocol":"http",
+                    "port":"1235",
+                    "ip": "0.0.0.0",
+                    "token":null
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "True",
+                "-",
+                "tn0"
+            ]
+        ]
+	]
 ]

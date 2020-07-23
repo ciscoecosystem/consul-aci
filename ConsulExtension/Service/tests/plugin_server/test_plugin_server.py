@@ -308,6 +308,7 @@ def test_update_creds(case):
         clear_db()
     except Exception:
         pass
+
     case, data = case
     tenant, update_agent, dummy_data = data
     agent_not_found = {
@@ -321,22 +322,12 @@ def test_update_creds(case):
     connection = db_obj.engine.connect()
     
     if(case != "agent list empty"):
-        print(dummy_data)
         db_obj.insert_and_update(
             connection,
             db_obj.LOGIN_TABLE_NAME,
-            dummy_data,
-            {
-                'agent_ip': dummy_data["ip"],
-                'port': dummy_data["port"],
-                'tenant': tenant
-            }
+            dummy_data
         )
-    connection.close()
-    connection = db_obj.engine.connect()
-    agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
-    print(agents)
-    connection.close()
+
     if(case == "agent list empty"):
         response = plugin_server.update_creds(tenant, json.dumps(update_agent))
         assert agent_not_found == response
