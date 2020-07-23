@@ -98,10 +98,31 @@ def read_creds_checker(response, db_data):
         return [] == db_data
     return True
 
+def write_creds_checker(response, db_data):
+    try:
+        response = response.get("payload")
+        db_data = db_data[0]
+        if response.get("ip") != db_data[0]:
+            return False
+        if response.get("port") != db_data[1]:
+            return False
+        if response.get("protocol") != db_data[2]:
+            return False
+        if response.get("token") != db_data[3]:
+            return False
+        if response.get("status") != bool(int(db_data[4])):
+            return False
+        if response.get("datacenter") != db_data[5]:
+            return False
+    except Exception:
+        return [] == db_data
+    return True
 
 def check_connection(self):
     return True, "message"
 
+def check_connection_false(self):
+    return False, "message"
 
 def datacenter(self):
     return "-"
@@ -134,6 +155,7 @@ get_new_mapping_cases = [
 
 mapping_data = get_data('saved_mapping.json')
 read_creds_cases = get_data('read_creds.json')
+write_creds_cases = get_data('write_creds.json')
 epg_alias_data = get_data('get_epg_alias.json')
 
 
@@ -229,6 +251,59 @@ def test_read_creds(case):
         assert read_creds_checker(response, db_data)
     clear_db()
 
+
+@pytest.mark.parametrize("case", write_creds_cases)
+def test_write_creds(case):
+    fail, case = case
+    try:
+        clear_db()
+    except Exception:
+        pass
+
+    failed_response= {
+        "status_code": "300",
+        "message": "Could not write the credentials.",
+        "payload": []
+    }
+
+    if case:
+        already_exist_response = {
+            "status_code": "300",
+            "message": "Agent {}:{} already exists.".format(case[0]["ip"], case[0]["port"]),
+            "payload": {
+                "ip": case[0]["ip"],
+                "token": case[0]["token"],
+                "protocol": case[0]["protocol"],
+                "port": case[0]["port"]
+            }
+        }
+
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+    connection = db_obj.engine.connect()
+    if fail:
+        consul_utils.Consul.check_connection = check_connection_false
+    app_response = json.loads(plugin_server.write_creds("tn0", json.dumps(case)))
+    consul_utils.Consul.check_connection = check_connection
+    # print(app_response)
+    if app_response["status_code"] == "200":
+        db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
+        assert write_creds_checker(app_response, db_data)
+        app_response = json.loads(plugin_server.write_creds("tn0", json.dumps(case)))
+        assert already_exist_response == app_response
+    elif app_response["status_code"] == "301":
+        db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
+        print(db_data)
+        print(app_response)
+        assert write_creds_checker(app_response, db_data)
+    elif app_response["status_code"] == "300":
+        assert app_response == failed_response
+    connection.close()
+    clear_db()
+
+# @pytest.mark.parametrize("case", update_creds_cases)
+# def test_
 
 @pytest.mark.parametrize("case", epg_alias_data)
 def test_get_epg_alias(case):
