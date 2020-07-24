@@ -2055,7 +2055,7 @@ def get_apic_data(tenant):
                 'VMM-Domain': ep[6],
                 'Contracts': epg[4],
                 'VRF': epg[5],
-                'dn': ep_dn,
+                'dn': '/'.join(ep[3].split('/')[:5]),
                 'controllerName': ep[7],
                 'hostingServerName': ep[11],
                 'learningSource': ep[8],
