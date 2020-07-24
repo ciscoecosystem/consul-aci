@@ -90,19 +90,20 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             else:
                                 merged_epg_count[aci['EPG']].append(aci[aci_key])
         for aci in aci_data:
+            aci_dn = get_formatted_dn(aci['dn'])
             if (aci['IP'], aci['CEP-Mac'], aci['dn']) in merged_eps:
                 continue
             else:
-                if aci['dn'] not in non_merged_ep_dict:
-                    non_merged_ep_dict[aci['dn']] = {aci['CEP-Mac']: str(aci['IP'])}
+                if aci_dn not in non_merged_ep_dict:
+                    non_merged_ep_dict[aci_dn] = {aci['CEP-Mac']: str(aci['IP'])}
 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['dn']] \
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci_dn] \
                         and aci.get('IP') \
-                        and aci['IP'] != non_merged_ep_dict[aci['dn']][aci['CEP-Mac']]:
-                    multipleips = non_merged_ep_dict[aci['dn']][aci['CEP-Mac']] + ", " + str(aci['IP'])
-                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: multipleips})
+                        and aci['IP'] != non_merged_ep_dict[aci_dn][aci['CEP-Mac']]:
+                    multipleips = non_merged_ep_dict[aci_dn][aci['CEP-Mac']] + ", " + str(aci['IP'])
+                    non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: multipleips})
                 else:
-                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: str(aci['IP'])})
 
         final_non_merged = {}
         if non_merged_ep_dict:
@@ -117,16 +118,6 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 un_map_eps = int(total_epg_count.get(epg, [])) - len(merged_epg_count.get(epg, []))
                 fractions[epg] = int(un_map_eps)
                 logger.info('Total Unmapped Eps (Inactive): {} - {}'.format(str(un_map_eps), str(epg)))
-
-        tmp = {}
-        for key, value in final_non_merged.iteritems():
-            dn = get_formatted_dn(key)
-            if dn in tmp:
-                tmp[dn].update(value)
-            else:
-                tmp[dn] = value
-
-        final_non_merged = tmp
 
         updated_merged_list = []
         if fractions:
