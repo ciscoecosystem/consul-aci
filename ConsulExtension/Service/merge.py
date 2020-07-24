@@ -90,19 +90,20 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                             else:
                                 merged_epg_count[aci['EPG']].append(aci[aci_key])
         for aci in aci_data:
+            aci_dn = get_formatted_dn(aci['dn'])
             if (aci['IP'], aci['CEP-Mac'], aci['dn']) in merged_eps:
                 continue
             else:
-                if aci['dn'] not in non_merged_ep_dict:
-                    non_merged_ep_dict[aci['dn']] = {aci['CEP-Mac']: str(aci['IP'])}
+                if aci_dn not in non_merged_ep_dict:
+                    non_merged_ep_dict[aci_dn] = {aci['CEP-Mac']: str(aci['IP'])}
 
-                if aci['CEP-Mac'] in non_merged_ep_dict[aci['dn']] \
+                if aci['CEP-Mac'] in non_merged_ep_dict[aci_dn] \
                         and aci.get('IP') \
-                        and aci['IP'] != non_merged_ep_dict[aci['dn']][aci['CEP-Mac']]:
-                    multipleips = non_merged_ep_dict[aci['dn']][aci['CEP-Mac']] + ", " + str(aci['IP'])
-                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: multipleips})
+                        and aci['IP'] != non_merged_ep_dict[aci_dn][aci['CEP-Mac']]:
+                    multipleips = non_merged_ep_dict[aci_dn][aci['CEP-Mac']] + ", " + str(aci['IP'])
+                    non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: multipleips})
                 else:
-                    non_merged_ep_dict[aci['dn']].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: str(aci['IP'])})
 
         final_non_merged = {}
         if non_merged_ep_dict:
@@ -123,7 +124,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             for each in merge_list:
                 if each['EPG'] in fractions:
                     each['fraction'] = fractions[each['EPG']]
-                    each['Non_IPs'] = final_non_merged.get(each['dn'], {})
+                    each['Non_IPs'] = final_non_merged.get(get_formatted_dn(each['dn']), {})
                     updated_merged_list.append(each)
 
         final_list = []
@@ -209,3 +210,8 @@ def consul_data_formatter(consul_data, mapping_ips):
                 or service.get('service_ip') == node.get('node_ip')
             )
         ]
+
+
+def get_formatted_dn(dn):
+    tmp = "/".join(dn.split("/", 4)[:4])
+    return tmp
