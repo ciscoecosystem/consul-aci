@@ -118,12 +118,22 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
                 fractions[epg] = int(un_map_eps)
                 logger.info('Total Unmapped Eps (Inactive): {} - {}'.format(str(un_map_eps), str(epg)))
 
+        tmp = {}
+        for key, value in final_non_merged.iteritems():
+            dn = get_formatted_dn(key)
+            if dn in tmp:
+                tmp[dn].update(value)
+            else:
+                tmp[dn] = value
+
+        final_non_merged = tmp
+
         updated_merged_list = []
         if fractions:
             for each in merge_list:
                 if each['EPG'] in fractions:
                     each['fraction'] = fractions[each['EPG']]
-                    each['Non_IPs'] = final_non_merged.get(each['dn'], {})
+                    each['Non_IPs'] = final_non_merged.get(get_formatted_dn(each['dn']), {})
                     updated_merged_list.append(each)
 
         final_list = []
@@ -209,3 +219,8 @@ def consul_data_formatter(consul_data, mapping_ips):
                 or service.get('service_ip') == node.get('node_ip')
             )
         ]
+
+
+def get_formatted_dn(dn):
+    tmp = "/".join(dn.split("/", 4)[:4])
+    return tmp
