@@ -26,6 +26,14 @@ def extract(dn):
 
 
 def extract_ap_and_epgs(eps):
+    """Extract ap and epgs
+
+    Arguments:
+        eps {list}: eps
+
+    Returns:
+        {dict}: counter of ap and epgs
+    """
     count_dict = {}
     for ep in eps:
         ap, epg = extract(ep['dn'])
@@ -40,6 +48,14 @@ def extract_ap_and_epgs(eps):
 
 
 def sort_eps(each):
+    """Sort key use for sorting epgs
+
+    Arguments:
+        each {dict}: epgs data
+
+    Returns:
+        {bool}: return base on ip and mac
+    """
     if 'IP' in each:
         return each['IP']
     else:
@@ -47,6 +63,14 @@ def sort_eps(each):
 
 
 def extract_vrf(apic_data):
+    """Extract vrf from apic_data
+
+    Arguments:
+        apic_data {list}: apic data
+
+    Returns:
+        {dict}: vrf dictionary
+    """
     vrf_dict = {}
     for each in apic_data:
         vrf = each['VRF']
@@ -63,6 +87,14 @@ def extract_vrf(apic_data):
 
 
 def apic_data_formatter(apic_data):
+    """Formatting apic data
+
+    Arguments:
+        apic_data {list}: apic data
+
+    Returns:
+        {dict}: data centere formatted dict
+    """
     dc = dict()
     for each in apic_data:
         if 'IP' in each:
@@ -81,6 +113,15 @@ def apic_data_formatter(apic_data):
 
 
 def search_ep_in_apic(apic_data, search_param):
+    """Search ep in apic
+
+    Arguments:
+        apic_data {list}: apic data
+        search_param {list}: list contain mac or ip
+
+    Returns:
+        {dict}: base of search param epic data get returned
+    """
     if 'mac' in search_param:
         key = '{}#{}'.format(
             search_param['mac'],
@@ -95,6 +136,16 @@ def search_ep_in_apic(apic_data, search_param):
 
 
 def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
+    """mapping string recommendation
+
+    Arguments:
+        extract_ap_epgs {set}: extracted ap and epgs
+        common_eps {list}: comman eps
+        apic_data {list}: apic data
+
+    Returns:
+        {list}: list of recommendation
+    """
 
     common_eps = sorted(common_eps, key=sort_eps)
     logger.debug('sorted eps {} '.format(common_eps))
