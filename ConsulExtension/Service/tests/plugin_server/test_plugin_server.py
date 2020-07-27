@@ -287,7 +287,6 @@ def test_write_creds(case):
         consul_utils.Consul.check_connection = check_connection_false
     app_response = json.loads(plugin_server.write_creds("tn0", json.dumps(case)))
     consul_utils.Consul.check_connection = check_connection
-    # print(app_response)
     if app_response["status_code"] == "200":
         db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
         assert write_creds_checker(app_response, db_data)
@@ -301,9 +300,9 @@ def test_write_creds(case):
     connection.close()
     clear_db()
 
+
 @pytest.mark.parametrize("case", update_creds_cases)
 def test_update_creds(case):
-    # clear_db()
     try:
         clear_db()
     except Exception:
@@ -366,14 +365,14 @@ def test_update_creds(case):
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
-    
+
     if(case != "agent list empty"):
         db_obj.insert_and_update(
             connection,
             db_obj.LOGIN_TABLE_NAME,
             dummy_data
         )
-    
+
     if(case == "agent list empty"):
         response = plugin_server.update_creds(tenant, json.dumps(update_agent))
         assert agent_not_found == json.loads(response)
@@ -394,6 +393,7 @@ def test_update_creds(case):
 
     connection.close()
     clear_db()
+
 
 @pytest.mark.parametrize("case", epg_alias_data)
 def test_get_epg_alias(case):
