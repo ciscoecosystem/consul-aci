@@ -48,6 +48,9 @@ def create_cert_session():
 
 
 class AciUtils(object):
+    """
+    AciUtils class with all ACI related functionalities
+    """
     __instance = None
 
     def __new__(cls):
@@ -229,7 +232,15 @@ class AciUtils(object):
         return data_list
 
     def get_ep_info(self, ep_children_list):
+        """
+        Function to return information parsed from children of ep
 
+        Argument:
+            ep_children_list {list{dict}} --> ep children information
+
+        Returns:
+            ep_info {dict}  --> returns details of children of ep
+        """
         ep_info = {
             "controller": "",
             "hosting_servername": "",
@@ -704,6 +715,16 @@ class AciUtils(object):
 
     @staticmethod
     def get_dict_records(list_of_records, key):
+        """
+        Function for generating dictionary with given key and value
+
+        Arguments:
+            list_of_records {list}   --> any data in list
+            key             {string} --> key for dictionary
+
+        Returns:
+            {dict} --> dictionary of given key and value in arguments
+        """
         records_dict = dict()
         records_dict[key] = list_of_records
         return records_dict
