@@ -98,6 +98,7 @@ def read_creds_checker(response, db_data):
         return [] == db_data
     return True
 
+
 def write_creds_checker(response, db_data):
     try:
         response = response.get("payload")
@@ -118,11 +119,14 @@ def write_creds_checker(response, db_data):
         return [] == db_data
     return True
 
+
 def check_connection(self):
     return True, "message"
 
+
 def check_connection_false(self):
     return False, "message"
+
 
 def datacenter(self):
     return "-"
@@ -153,10 +157,11 @@ get_new_mapping_cases = [
     "service_without_ip"
 ]
 
+
 mapping_data = get_data('saved_mapping.json')
 read_creds_cases = get_data('read_creds.json')
 write_creds_cases = get_data('write_creds.json')
-update_creds_cases = get_data('update_creds.json') 
+update_creds_cases = get_data('update_creds.json')
 epg_alias_data = get_data('get_epg_alias.json')
 
 
@@ -261,7 +266,7 @@ def test_write_creds(case):
     except Exception:
         pass
 
-    failed_response= {
+    failed_response = {
         "status_code": "300",
         "message": "Could not write the credentials.",
         "payload": []
@@ -278,7 +283,6 @@ def test_write_creds(case):
                 "port": case[0]["port"]
             }
         }
-
 
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
@@ -340,8 +344,8 @@ def test_update_creds(case):
             "ip": update_agent["newData"]["ip"],
             "token": update_agent["newData"]["token"],
             "port": update_agent["newData"]["port"]
-            }
         }
+    }
 
     disconnected_agent = {
         "status_code": "301",
