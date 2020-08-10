@@ -1949,8 +1949,6 @@ def get_consul_data(datacenter):
     service_checks_data = list_data_formatter(service_checks_data, [1])
 
     for service in service_data:
-        if service[9] != datacenter:
-            continue
         service_dict = {
             'service_id': service[0],
             'node_id': service[1],
@@ -1964,9 +1962,9 @@ def get_consul_data(datacenter):
             'service_checks': {}
         }
         check_list = service_checks_data.get(service[0], [])
+        check_dict = service_dict['service_checks']
         for check in check_list:
             status = check[7]
-            check_dict = service_dict['service_checks']
             if 'passing' == status.lower():
                 if 'passing' in check_dict:
                     check_dict['passing'] += 1
@@ -1982,7 +1980,7 @@ def get_consul_data(datacenter):
                     check_dict['failing'] += 1
                 else:
                     check_dict['failing'] = 1
-            service_dict['service_checks'] = check_dict
+        service_dict['service_checks'] = check_dict
         services.append(service_dict)
 
     services_dc = dictionary_data_formatter(services, ['node_id'])
@@ -1993,12 +1991,12 @@ def get_consul_data(datacenter):
             'node_name': node[1],
             'node_ip': node[2],
             'node_check': {},
-            'node_services': []
+            'node_services': services_dc.get(node[0], [])
         }
         check_list = node_checks_data.get(node[0], [])
+        check_dict = node_dict['node_check']
         for check in check_list:
             status = check[8]
-            check_dict = node_dict['node_check']
             if 'passing' == status.lower():
                 if 'passing' in check_dict:
                     check_dict['passing'] += 1
@@ -2014,9 +2012,7 @@ def get_consul_data(datacenter):
                     check_dict['failing'] += 1
                 else:
                     check_dict['failing'] = 1
-            node_dict['node_check'] = check_dict
-        for service in services_dc.get(node[0], []):
-            node_dict['node_services'].append(service)
+        node_dict['node_check'] = check_dict
         consul_data.append(node_dict)
     return consul_data
 
