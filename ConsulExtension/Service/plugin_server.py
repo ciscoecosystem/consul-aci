@@ -220,12 +220,12 @@ def get_new_mapping(tenant, datacenter):
         connection = db_obj.engine.connect()
         with connection.begin():
             for new_map in current_mapping:
-                for db_map in tmp_already_mapped_data.get(
+                db_map = tmp_already_mapped_data.get(
                     '{}{}{}'.format(new_map.get('ip'), new_map.get('dn'), datacenter),
                     []
-                ):
-                    # if db_map[0] == new_map.get('ip') and db_map[1] == new_map.get('dn'):
-                    new_map['enabled'] = db_map[3]  # replace the enabled value with the one in db
+                )
+                if db_map:
+                    new_map['enabled'] = db_map[0][3]  # replace the enabled value with the one in db
 
                 db_obj.insert_and_update(
                     connection,
