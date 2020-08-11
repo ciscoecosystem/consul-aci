@@ -1965,13 +1965,13 @@ def get_consul_data(datacenter):
         connection,
         db_obj.NODECHECKS_TABLE_NAME,
         {},
-        ["check_id", "status"]
+        ["node_id", "status"]
     ))
     service_checks_data = list(db_obj.select_from_table(
         connection,
         db_obj.SERVICECHECKS_TABLE_NAME,
         {},
-        ["check_id", "status"]
+        ["service_id", "status"]
     ))
     connection.close()
 
