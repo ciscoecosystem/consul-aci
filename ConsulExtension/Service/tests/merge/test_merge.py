@@ -56,7 +56,7 @@ def verifier_consul_data_formatter(copy_consul_data, consul_data, mapping_ips):
                         (
                             service.get('service_ip') == ""
                             or service.get('service_ip')
-                            in node.get('node_ips', [])
+                            == node.get('node_ip')
                         )
                         and not
                         (
@@ -136,8 +136,22 @@ def test_mapped_consul_nodes_formatter(case):
     output = merge.mapped_consul_nodes_formatter(data)
     flag = True
     for node in data:
-        for ip in node.get('node_ips', []):
-            if node not in output[ip]:
+        ip = node.get('node_ip')
+        if ip and node not in output[ip]:
+            flag = False
+            break
+    assert flag
+
+
+@pytest.mark.parametrize("case", cases_merge_aci_consul)
+def test_mapped_consul_services_formatter(case):
+    data = get_data(case, "consul_data.json")
+    output = merge.mapped_consul_services_formatter(data)
+    flag = True
+    for node in data:
+        for service in node.get('node_services'):
+            ip = service.get('service_ip')
+            if ip and [service, node] not in output[ip]:
                 flag = False
                 break
         else:
