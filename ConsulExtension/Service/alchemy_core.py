@@ -178,10 +178,11 @@ class Database:
             self.engine = create_engine(DATABASE_NAME, listeners=[MyListener()])
             self.table_obj_meta = dict()
             self.table_key_meta = dict()
+            self.__metadata = self.get_metadata()
         except Exception as e:
             logger.exception("Exception in creating db obj: {}".format(str(e)))
 
-    def create_tables(self):
+    def get_metadata(self):
         """
         Function to create tables and save table objects
         """
@@ -438,12 +439,6 @@ class Database:
             Column('last_checked_ts', DateTime),
         )
 
-        try:
-            metadata.create_all(self.engine, checkfirst=True)
-        except Exception as e:
-            logger.info("Exception in {} Error:{}".format(
-                'create_tables()', str(e)))
-
         self.table_obj_meta.update({
             self.LOGIN_TABLE_NAME: self.login,
             self.MAPPING_TABLE_NAME: self.mapping,
@@ -588,6 +583,14 @@ class Database:
                 'last_checked_ts': self.polling.c.last_checked_ts
             }
         })
+        return metadata
+
+    def create_tables(self):
+        try:
+            self.__metadata.create_all(self.engine, checkfirst=True)
+        except Exception as e:
+            logger.info("Exception in {} Error:{}".format(
+                'create_tables()', str(e)))
 
     def insert_into_table(self, connection, table_name, field_values):
         """
