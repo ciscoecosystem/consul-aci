@@ -8,7 +8,7 @@ from custom_logger import CustomLogger
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
+DATABASE_NAME = 'sqlite:///home/app/data/ConsulDatabase.db'
 
 
 class MyListener(PoolListener):
