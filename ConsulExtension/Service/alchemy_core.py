@@ -8,7 +8,7 @@ from custom_logger import CustomLogger
 
 logger = CustomLogger.get_logger("/home/app/log/app.log")
 
-DATABASE_NAME = 'sqlite:///ConsulDatabase.db'
+DATABASE_NAME = 'sqlite:////home/app/log/ConsulDatabase.db'
 
 
 class MyListener(PoolListener):
@@ -100,7 +100,7 @@ class Database:
             'node_name',
             'check_name',
             'service_name',
-            'check_type',
+            'type',
             'notes',
             'output',
             'status',
@@ -114,8 +114,8 @@ class Database:
             'check_id',
             'service_id',
             'service_name',
-            'check_name',
-            'check_type',
+            'name',
+            'type',
             'notes',
             'output',
             'status',
@@ -178,10 +178,11 @@ class Database:
             self.engine = create_engine(DATABASE_NAME, listeners=[MyListener()])
             self.table_obj_meta = dict()
             self.table_key_meta = dict()
+            self.__metadata = self.get_metadata()
         except Exception as e:
             logger.exception("Exception in creating db obj: {}".format(str(e)))
 
-    def create_tables(self):
+    def get_metadata(self):
         """
         Function to create tables and save table objects
         """
@@ -438,154 +439,157 @@ class Database:
             Column('last_checked_ts', DateTime),
         )
 
+        self.table_obj_meta.update({
+            self.LOGIN_TABLE_NAME: self.login,
+            self.MAPPING_TABLE_NAME: self.mapping,
+            self.NODE_TABLE_NAME: self.node,
+            self.SERVICE_TABLE_NAME: self.service,
+            self.NODECHECKS_TABLE_NAME: self.nodechecks,
+            self.SERVICECHECKS_TABLE_NAME: self.servicechecks,
+            self.EP_TABLE_NAME: self.ep,
+            self.EPG_TABLE_NAME: self.epg,
+            self.NODEAUDIT_TABLE_NAME: self.nodeaudit,
+            self.SERVICEAUDIT_TABLE_NAME: self.serviceaudit,
+            self.NODECHECKSAUDIT_TABLE_NAME: self.nodechecksaudit,
+            self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
+            self.EPAUDIT_TABLE_NAME: self.epaudit,
+            self.EPGAUDIT_TABLE_NAME: self.epgaudit,
+            self.TENANT_TABLE_NAME: self.tenant,
+            self.POLLING_TABLE_NAME: self.polling
+        })
+        self.table_key_meta.update({
+            self.LOGIN_TABLE_NAME: {
+                'agent_ip': self.login.c.agent_ip,
+                'port': self.login.c.port,
+                'protocol': self.login.c.protocol,
+                'token': self.login.c.token,
+                'status': self.login.c.status,
+                'datacenter': self.login.c.datacenter,
+                'tenant': self.login.c.tenant,
+                'created_ts': self.login.c.created_ts,
+                'updated_ts': self.login.c.updated_ts,
+                'last_checked_ts': self.login.c.last_checked_ts
+            },
+            self.MAPPING_TABLE_NAME: {
+                'ip': self.mapping.c.ip,
+                'dn': self.mapping.c.dn,
+                'datacenter': self.mapping.c.datacenter,
+                'enabled': self.mapping.c.enabled,
+                'ap': self.mapping.c.ap,
+                'bd': self.mapping.c.bd,
+                'epg': self.mapping.c.epg,
+                'vrf': self.mapping.c.vrf,
+                'tenant': self.mapping.c.tenant,
+                'created_ts': self.mapping.c.created_ts,
+                'updated_ts': self.mapping.c.updated_ts,
+                'last_checked_ts': self.mapping.c.last_checked_ts
+            },
+            self.NODE_TABLE_NAME: {
+                'node_id': self.node.c.node_id,
+                'node_name': self.node.c.node_name,
+                'node_ip': self.node.c.node_ip,
+                'datacenter': self.node.c.datacenter,
+                'agents': self.node.c.agents,
+                'created_ts': self.node.c.created_ts,
+                'updated_ts': self.node.c.updated_ts,
+                'last_checked_ts': self.node.c.last_checked_ts
+            },
+            self.SERVICE_TABLE_NAME: {
+                'service_id': self.service.c.service_id,
+                'node_id': self.service.c.node_id,
+                'service_name': self.service.c.service_name,
+                'service_ip': self.service.c.service_ip,
+                'service_port': self.service.c.service_port,
+                'service_address': self.service.c.service_address,
+                'service_tags': self.service.c.service_tags,
+                'service_kind': self.service.c.service_kind,
+                'namespace': self.service.c.namespace,
+                'datacenter': self.service.c.datacenter,
+                'agents': self.service.c.agents,
+                'created_ts': self.service.c.created_ts,
+                'updated_ts': self.service.c.updated_ts,
+                'last_checked_ts': self.service.c.last_checked_ts
+            },
+            self.NODECHECKS_TABLE_NAME: {
+                'check_id': self.nodechecks.c.check_id,
+                'node_id': self.nodechecks.c.node_id,
+                'node_name': self.nodechecks.c.node_name,
+                'check_name': self.nodechecks.c.check_name,
+                'service_name': self.nodechecks.c.service_name,
+                'type': self.nodechecks.c.type,
+                'notes': self.nodechecks.c.notes,
+                'output': self.nodechecks.c.output,
+                'status': self.nodechecks.c.status,
+                'agents': self.nodechecks.c.agents,
+                'created_ts': self.nodechecks.c.created_ts,
+                'updated_ts': self.nodechecks.c.updated_ts,
+                'last_checked_ts': self.nodechecks.c.last_checked_ts
+            },
+            self.SERVICECHECKS_TABLE_NAME: {
+                'check_id': self.servicechecks.c.check_id,
+                'service_id': self.servicechecks.c.service_id,
+                'service_name': self.servicechecks.c.service_name,
+                'name': self.servicechecks.c.name,
+                'type': self.servicechecks.c.type,
+                'notes': self.servicechecks.c.notes,
+                'output': self.servicechecks.c.output,
+                'status': self.servicechecks.c.status,
+                'agents': self.servicechecks.c.agents,
+                'created_ts': self.servicechecks.c.created_ts,
+                'updated_ts': self.servicechecks.c.updated_ts,
+                'last_checked_ts': self.servicechecks.c.last_checked_ts
+            },
+            self.EP_TABLE_NAME: {
+                'mac': self.ep.c.mac,
+                'ip': self.ep.c.ip,
+                'tenant': self.ep.c.tenant,
+                'dn': self.ep.c.dn,
+                'vm_name': self.ep.c.vm_name,
+                'interfaces': self.ep.c.interfaces,
+                'vmm_domain': self.ep.c.vmm_domain,
+                'controller_name': self.ep.c.controller_name,
+                'learning_source': self.ep.c.learning_source,
+                'multicast_address': self.ep.c.multicast_address,
+                'encap': self.ep.c.encap,
+                'hosting_server_name': self.ep.c.hosting_server_name,
+                'is_cep': self.ep.c.is_cep,
+                'created_ts': self.ep.c.created_ts,
+                'updated_ts': self.ep.c.updated_ts,
+                'last_checked_ts': self.ep.c.last_checked_ts
+            },
+            self.EPG_TABLE_NAME: {
+                'dn': self.epg.c.dn,
+                'tenant': self.epg.c.tenant,
+                'epg': self.epg.c.epg,
+                'bd': self.epg.c.bd,
+                'contracts': self.epg.c.contracts,
+                'vrf': self.epg.c.vrf,
+                'epg_health': self.epg.c.epg_health,
+                'app_profile': self.epg.c.app_profile,
+                'epg_alias': self.epg.c.epg_alias,
+                'created_ts': self.epg.c.created_ts,
+                'updated_ts': self.epg.c.updated_ts,
+                'last_checked_ts': self.epg.c.last_checked_ts
+            },
+            self.TENANT_TABLE_NAME: {
+                'tenant': self.tenant.c.tenant,
+                'created_ts': self.tenant.c.created_ts
+            },
+            self.POLLING_TABLE_NAME: {
+                'pkey': self.polling.c.pkey,
+                'interval': self.polling.c.interval,
+                'created_ts': self.polling.c.created_ts,
+                'updated_ts': self.polling.c.updated_ts,
+                'last_checked_ts': self.polling.c.last_checked_ts
+            }
+        })
+        return metadata
+
+    def create_tables(self):
         try:
-            metadata.create_all(self.engine)
-            self.table_obj_meta.update({
-                self.LOGIN_TABLE_NAME: self.login,
-                self.MAPPING_TABLE_NAME: self.mapping,
-                self.NODE_TABLE_NAME: self.node,
-                self.SERVICE_TABLE_NAME: self.service,
-                self.NODECHECKS_TABLE_NAME: self.nodechecks,
-                self.SERVICECHECKS_TABLE_NAME: self.servicechecks,
-                self.EP_TABLE_NAME: self.ep,
-                self.EPG_TABLE_NAME: self.epg,
-                self.NODEAUDIT_TABLE_NAME: self.nodeaudit,
-                self.SERVICEAUDIT_TABLE_NAME: self.serviceaudit,
-                self.NODECHECKSAUDIT_TABLE_NAME: self.nodechecksaudit,
-                self.SERVICECHECKSAUDIT_TABLE_NAME: self.servicechecksaudit,
-                self.EPAUDIT_TABLE_NAME: self.epaudit,
-                self.EPGAUDIT_TABLE_NAME: self.epgaudit,
-                self.TENANT_TABLE_NAME: self.tenant,
-                self.POLLING_TABLE_NAME: self.polling
-            })
-            self.table_key_meta.update({
-                self.LOGIN_TABLE_NAME: {
-                    'agent_ip': self.login.c.agent_ip,
-                    'port': self.login.c.port,
-                    'protocol': self.login.c.protocol,
-                    'token': self.login.c.token,
-                    'status': self.login.c.status,
-                    'datacenter': self.login.c.datacenter,
-                    'tenant': self.login.c.tenant,
-                    'created_ts': self.login.c.created_ts,
-                    'updated_ts': self.login.c.updated_ts,
-                    'last_checked_ts': self.login.c.last_checked_ts
-                },
-                self.MAPPING_TABLE_NAME: {
-                    'ip': self.mapping.c.ip,
-                    'dn': self.mapping.c.dn,
-                    'datacenter': self.mapping.c.datacenter,
-                    'enabled': self.mapping.c.enabled,
-                    'ap': self.mapping.c.ap,
-                    'bd': self.mapping.c.bd,
-                    'epg': self.mapping.c.epg,
-                    'vrf': self.mapping.c.vrf,
-                    'tenant': self.mapping.c.tenant,
-                    'created_ts': self.mapping.c.created_ts,
-                    'updated_ts': self.mapping.c.updated_ts,
-                    'last_checked_ts': self.mapping.c.last_checked_ts
-                },
-                self.NODE_TABLE_NAME: {
-                    'node_id': self.node.c.node_id,
-                    'node_name': self.node.c.node_name,
-                    'node_ip': self.node.c.node_ip,
-                    'datacenter': self.node.c.datacenter,
-                    'agents': self.node.c.agents,
-                    'created_ts': self.node.c.created_ts,
-                    'updated_ts': self.node.c.updated_ts,
-                    'last_checked_ts': self.node.c.last_checked_ts
-                },
-                self.SERVICE_TABLE_NAME: {
-                    'service_id': self.service.c.service_id,
-                    'node_id': self.service.c.node_id,
-                    'service_name': self.service.c.service_name,
-                    'service_ip': self.service.c.service_ip,
-                    'service_port': self.service.c.service_port,
-                    'service_address': self.service.c.service_address,
-                    'service_tags': self.service.c.service_tags,
-                    'service_kind': self.service.c.service_kind,
-                    'namespace': self.service.c.namespace,
-                    'datacenter': self.service.c.datacenter,
-                    'agents': self.service.c.agents,
-                    'created_ts': self.service.c.created_ts,
-                    'updated_ts': self.service.c.updated_ts,
-                    'last_checked_ts': self.service.c.last_checked_ts
-                },
-                self.NODECHECKS_TABLE_NAME: {
-                    'check_id': self.nodechecks.c.check_id,
-                    'node_id': self.nodechecks.c.node_id,
-                    'node_name': self.nodechecks.c.node_name,
-                    'check_name': self.nodechecks.c.check_name,
-                    'service_name': self.nodechecks.c.service_name,
-                    'type': self.nodechecks.c.type,
-                    'notes': self.nodechecks.c.notes,
-                    'output': self.nodechecks.c.output,
-                    'status': self.nodechecks.c.status,
-                    'agents': self.nodechecks.c.agents,
-                    'created_ts': self.nodechecks.c.created_ts,
-                    'updated_ts': self.nodechecks.c.updated_ts,
-                    'last_checked_ts': self.nodechecks.c.last_checked_ts
-                },
-                self.SERVICECHECKS_TABLE_NAME: {
-                    'check_id': self.servicechecks.c.check_id,
-                    'service_id': self.servicechecks.c.service_id,
-                    'service_name': self.servicechecks.c.service_name,
-                    'name': self.servicechecks.c.name,
-                    'type': self.servicechecks.c.type,
-                    'notes': self.servicechecks.c.notes,
-                    'output': self.servicechecks.c.output,
-                    'status': self.servicechecks.c.status,
-                    'agents': self.servicechecks.c.agents,
-                    'created_ts': self.servicechecks.c.created_ts,
-                    'updated_ts': self.servicechecks.c.updated_ts,
-                    'last_checked_ts': self.servicechecks.c.last_checked_ts
-                },
-                self.EP_TABLE_NAME: {
-                    'mac': self.ep.c.mac,
-                    'ip': self.ep.c.ip,
-                    'tenant': self.ep.c.tenant,
-                    'dn': self.ep.c.dn,
-                    'vm_name': self.ep.c.vm_name,
-                    'interfaces': self.ep.c.interfaces,
-                    'vmm_domain': self.ep.c.vmm_domain,
-                    'controller_name': self.ep.c.controller_name,
-                    'learning_source': self.ep.c.learning_source,
-                    'multicast_address': self.ep.c.multicast_address,
-                    'encap': self.ep.c.encap,
-                    'hosting_server_name': self.ep.c.hosting_server_name,
-                    'is_cep': self.ep.c.is_cep,
-                    'created_ts': self.ep.c.created_ts,
-                    'updated_ts': self.ep.c.updated_ts,
-                    'last_checked_ts': self.ep.c.last_checked_ts
-                },
-                self.EPG_TABLE_NAME: {
-                    'dn': self.epg.c.dn,
-                    'tenant': self.epg.c.tenant,
-                    'epg': self.epg.c.epg,
-                    'bd': self.epg.c.bd,
-                    'contracts': self.epg.c.contracts,
-                    'vrf': self.epg.c.vrf,
-                    'epg_health': self.epg.c.epg_health,
-                    'app_profile': self.epg.c.app_profile,
-                    'epg_alias': self.epg.c.epg_alias,
-                    'created_ts': self.epg.c.created_ts,
-                    'updated_ts': self.epg.c.updated_ts,
-                    'last_checked_ts': self.epg.c.last_checked_ts
-                },
-                self.TENANT_TABLE_NAME: {
-                    'tenant': self.tenant.c.tenant,
-                    'created_ts': self.tenant.c.created_ts
-                },
-                self.POLLING_TABLE_NAME: {
-                    'pkey': self.polling.c.pkey,
-                    'interval': self.polling.c.interval,
-                    'created_ts': self.polling.c.created_ts,
-                    'updated_ts': self.polling.c.updated_ts,
-                    'last_checked_ts': self.polling.c.last_checked_ts
-                }
-            })
+            self.__metadata.create_all(self.engine, checkfirst=True)
         except Exception as e:
-            logger.exception("Exception in {} Error:{}".format(
+            logger.info("Exception in {} Error:{}".format(
                 'create_tables()', str(e)))
 
     def insert_into_table(self, connection, table_name, field_values):
