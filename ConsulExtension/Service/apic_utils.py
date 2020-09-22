@@ -505,7 +505,7 @@ class AciUtils(object):
                     keys = child.keys()
                     if len(keys) > 0:
                         ct_name = child[keys[0]]['attributes']['dn'].split(
-                            "/", 4)[4].split("-")[1]
+                            "/", 4)[4].split("-", 1)[1]
                     else:
                         continue
 

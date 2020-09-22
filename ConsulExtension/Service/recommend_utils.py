@@ -248,7 +248,7 @@ def recommended_eps(source_ip_list, parsed_eps, apic_data):
         common_eps = get_common_eps(source_ip_list, parsed_eps)
         logger.debug('Common EPs: {}'.format(str(common_eps)))
         if common_eps:
-            extract_ap_epgs = extract_ap_and_epgs(common_eps)
+            extract_ap_epgs = extract_ap_and_epgs(parsed_eps)
         else:
             return []
     except Exception as e:

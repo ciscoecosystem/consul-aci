@@ -52,7 +52,7 @@ def pre_test_setup(request):
     # factory will only be invoked once per session -
     try:
         os_cmd = os.system(
-            'cp ./tests/recommendation/data/ConsulDatabase.db ./ConsulDatabase.db')
+            'cp ./tests/recommendation/data/ConsulDatabase.db /home/app/log/ConsulDatabase.db')
         if os_cmd != 0:
             raise FileCopyException('Unable to execute copy command')
         print('Test DB successfully copied')
@@ -62,7 +62,7 @@ def pre_test_setup(request):
     IP_LIST.append(get_conf_value('IP', STATIC_IP_KEY))
 
     def delete_db():
-        os.remove('./ConsulDatabase.db')
+        os.remove('/home/app/logs/ConsulDatabase.db')
     request.addfinalizer(delete_db)
 
 
