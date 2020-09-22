@@ -35,7 +35,10 @@ def get_data(file_name):
 
 
 def clear_db():
-    os.remove("./ConsulDatabase.db")
+    try:
+        os.remove("./ConsulDatabase.db")
+    except Exception:
+        pass
 
 
 def mapping_key_maker(data, obj_type, datacenter):
@@ -167,6 +170,7 @@ epg_alias_data = get_data('get_epg_alias.json')
 
 @pytest.mark.parametrize("case", get_new_mapping_cases)
 def test_get_new_mapping(case):
+    clear_db()
     tenant = 'tn0'
     datacenter = 'dc1'
 
@@ -185,6 +189,7 @@ def test_get_new_mapping(case):
 
 @pytest.mark.parametrize("mapped_data", mapping_data)
 def test_save_mapping(mapped_data):
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     tenant = 'tn0'
@@ -261,10 +266,7 @@ def test_read_creds(case):
 @pytest.mark.parametrize("case", write_creds_cases)
 def test_write_creds(case):
     fail, case = case
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
 
     failed_response = {
         "status_code": "300",
@@ -307,10 +309,7 @@ def test_write_creds(case):
 
 @pytest.mark.parametrize("case", update_creds_cases)
 def test_update_creds(case):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
 
     case, data = case
     tenant, update_agent, dummy_data = data
@@ -727,10 +726,7 @@ def test_get_agent_status(input, expected):
 
 @pytest.mark.parametrize("interval", [2, 2.2, "fail"])
 def test_set_polling_interval(interval):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     passed_response = {
         "status_code": "200",
         "message": "Polling Interval Set!"
@@ -773,10 +769,7 @@ def test_set_polling_interval(interval):
 
 @pytest.mark.parametrize("interval", [2, 2.2, "fail"])
 def test_get_polling_interval(interval):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     dummy_db = alchemy_core.Database()
     dummy_db.create_tables()
     passed_response = json.dumps({
