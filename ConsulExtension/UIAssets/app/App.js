@@ -130,6 +130,8 @@ export default class App extends React.Component {
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
                 },
+                // This page and its link have been removed as intentions are not required in this release.
+
                 // {
                 //     id: 'serviceint',
                 //     icon: "icon-admin",

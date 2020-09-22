@@ -104,8 +104,9 @@ export default class Container extends React.Component {
                                         <Dashboard tenantName={this.props.tenantName}/>
                                     </div>
                                 }} />
+                                {/* This page and its link have been removed as intentions are not required in this release.
 
-                                {/* <Route exact path={this.pathname + "/serviceintention"} component={function () {
+                                <Route exact path={this.pathname + "/serviceintention"} component={function () {
                                     return <div style={{ height: "fit-content", margin: "30px", background: "white", padding: "20px" }}>
                                         <h5 style={{ textAlign: "center" }}>Network Middleware Automation is under construction</h5>
                                         <ul style={{listStyle:"upper-alpha", padding:"20px"}}>
