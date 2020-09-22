@@ -130,12 +130,12 @@ export default class App extends React.Component {
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
                 },
-                {
-                    id: 'serviceint',
-                    icon: "icon-admin",
-                    path: this.pathname + '/serviceintention',
-                    title: 'Service Intentions'
-                },
+                // {
+                //     id: 'serviceint',
+                //     icon: "icon-admin",
+                //     path: this.pathname + '/serviceintention',
+                //     title: 'Service Intentions'
+                // },
             ]
         }
     }
