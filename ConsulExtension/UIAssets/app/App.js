@@ -130,12 +130,14 @@ export default class App extends React.Component {
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
                 },
-                {
-                    id: 'serviceint',
-                    icon: "icon-admin",
-                    path: this.pathname + '/serviceintention',
-                    title: 'Service Intentions'
-                },
+                // This page and its link have been removed as intentions are not required in this release.
+
+                // {
+                //     id: 'serviceint',
+                //     icon: "icon-admin",
+                //     path: this.pathname + '/serviceintention',
+                //     title: 'Service Intentions'
+                // },
             ]
         }
     }
