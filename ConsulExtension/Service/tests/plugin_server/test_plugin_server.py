@@ -36,7 +36,7 @@ def get_data(file_name):
 
 def clear_db():
     try:
-        os.remove("/home/app/logs/ConsulDatabase.db")
+        os.remove("/home/app/log/ConsulDatabase.db")
     except Exception:
         pass
 
