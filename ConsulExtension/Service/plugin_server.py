@@ -2108,7 +2108,7 @@ def get_agent_status(tn, datacenter=""):
         'down': {
             'value': 0,
             'label': 'Disconnected',
-            'color': 'rgb(255, 204, 0)'
+            'color': 'rgb(226, 35, 26)'
         },
         'total': 0
     }
@@ -2190,7 +2190,8 @@ def get_performance_dashboard(tn):
                 'color': 'rgb(128,128,128)',
                 'value': 0,
                 'label': 'Non-Service Endpoints'
-            }
+            },
+            'total': ep_len
         }
         service_res = {'passing': 0, 'warning': 0, 'failing': 0}
         nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
