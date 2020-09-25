@@ -52,7 +52,7 @@ def pre_test_setup(request):
     # factory will only be invoked once per session -
     try:
         os_cmd = os.system(
-            'copy .\\tests\\recommendation\\data\\ConsulDatabase.db \\home\\app\\log\\ConsulDatabase.db')
+            'cp ./tests/recommendation/data/ConsulDatabase.db /home/app/log/ConsulDatabase.db')
         if os_cmd != 0:
             raise FileCopyException('Unable to execute copy command')
         logger.info('Test DB successfully copied')
