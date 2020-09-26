@@ -6,7 +6,8 @@
         "http",
         "",
         "True",
-        "datacenter"
+        "datacenter",
+        "tn0"
     ],
     [
         "0.0.0.0",
@@ -14,7 +15,8 @@
         "http",
         "",
         "True",
-        "-"
+        "-",
+        "tn0"
     ],
     [
         "0.0.0.0",
@@ -22,6 +24,7 @@
         "http",
         "",
         "False",
-        "datacenter"
+        "datacenter",
+        "tn2"
     ]
 ]

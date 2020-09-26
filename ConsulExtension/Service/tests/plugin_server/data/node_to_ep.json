@@ -1,6 +1,6 @@
 [
     {
-        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-14:aa:06:63:be:ad",
         "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
         "ip": "10.224.39.129",
         "enabled": true,

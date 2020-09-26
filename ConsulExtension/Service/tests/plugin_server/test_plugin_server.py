@@ -13,24 +13,32 @@ from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
 from Service.apic_utils import AciUtils
-from Service.tests.plugin_server.utils import (generate_dummy_new_mapping_data,
-                                               verify_mapping,
-                                               generate_dummy_exception_new_mapping_data,
-                                               generate_multiple_dummy_db_output,
-                                               generate_dummy_db_output,
-                                               verify_change_key,
-                                               get_absolue_path,
-                                               parse_json_file,
-                                               verify_agent_status,
-                                               dummy_db_select_exception,
-                                               get_data_json,
-                                               get_data_str)
+from Service.tests.plugin_server.utils import (
+    generate_dummy_new_mapping_data,
+    verify_mapping,
+    generate_dummy_exception_new_mapping_data,
+    generate_dummy_db_output,
+    verify_change_key,
+    get_absolue_path,
+    parse_json_file,
+    verify_agent_status,
+    dummy_db_select_exception,
+    get_data_json,
+    get_data_str
+)
 
 
 def get_data(file_name):
     with open('./tests/plugin_server/data/{}'.format(file_name), 'r') as fp:
         data = json.load(fp)
         return data
+
+
+def clear_db():
+    try:
+        os.remove("/home/app/data/ConsulDatabase.db")
+    except Exception:
+        pass
 
 
 def mapping_key_maker(data, obj_type, datacenter):
@@ -44,6 +52,7 @@ def mapping_key_maker(data, obj_type, datacenter):
             st += "1" if each.get("enabled") else "0"
             st += each.get("ap")
             st += each.get("bd")
+            st += each.get("epg")
             st += each.get("vrf")
             st += each.get("tenant")
             dc[st] = True
@@ -58,6 +67,7 @@ def mapping_key_maker(data, obj_type, datacenter):
             st += each[5]
             st += each[6]
             st += each[7]
+            st += each[8]
             dc[st] = True
     return dc
 
@@ -72,25 +82,53 @@ def check_saved_mapping(db_saved_data, data, datacenter):
 
 
 def read_creds_checker(response, db_data):
-    response = response.get("payload")[0]
-    db_data = db_data[0]
-    if response.get("ip") != db_data[0]:
-        return False
-    if response.get("port") != db_data[1]:
-        return False
-    if response.get("protocol") != db_data[2]:
-        return False
-    if response.get("token") != db_data[3]:
-        return False
-    if response.get("status") != bool(db_data[4]):
-        return False
-    if response.get("datacenter") != db_data[5]:
-        return False
+    try:
+        response = response.get("payload")[0]
+        db_data = db_data[0]
+        if response.get("ip") != db_data[0]:
+            return False
+        if response.get("port") != db_data[1]:
+            return False
+        if response.get("protocol") != db_data[2]:
+            return False
+        if response.get("token") != db_data[3]:
+            return False
+        if response.get("status") != bool(db_data[4]):
+            return False
+        if response.get("datacenter") != db_data[5]:
+            return False
+    except Exception:
+        return [] == db_data
+    return True
+
+
+def write_creds_checker(response, db_data):
+    try:
+        response = response.get("payload")
+        db_data = db_data[0]
+        if response.get("ip") != db_data[0]:
+            return False
+        if response.get("port") != db_data[1]:
+            return False
+        if response.get("protocol") != db_data[2]:
+            return False
+        if response.get("token") != db_data[3]:
+            return False
+        if response.get("status") != bool(int(db_data[4])):
+            return False
+        if response.get("datacenter") != db_data[5]:
+            return False
+    except Exception:
+        return [] == db_data
     return True
 
 
 def check_connection(self):
     return True, "message"
+
+
+def check_connection_false(self):
+    return False, "message"
 
 
 def datacenter(self):
@@ -122,31 +160,36 @@ get_new_mapping_cases = [
     "service_without_ip"
 ]
 
+
 mapping_data = get_data('saved_mapping.json')
 read_creds_cases = get_data('read_creds.json')
+write_creds_cases = get_data('write_creds.json')
+update_creds_cases = get_data('update_creds.json')
 epg_alias_data = get_data('get_epg_alias.json')
 
 
 @pytest.mark.parametrize("case", get_new_mapping_cases)
 def test_get_new_mapping(case):
+    clear_db()
     tenant = 'tn0'
     datacenter = 'dc1'
 
     try:
         os.system(
-            'cp ./tests/plugin_server/data/{}.db ./ConsulDatabase.db'.format(case)
+            'cp ./tests/plugin_server/data/{}.db /home/app/data/ConsulDatabase.db'.format(case)
         )
     except Exception:
         assert False
 
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
     original_mapping = get_data('{}.json'.format(case))
-    os.remove('./ConsulDatabase.db')
     assert new_mapping == original_mapping
+    clear_db()
 
 
 @pytest.mark.parametrize("mapped_data", mapping_data)
 def test_save_mapping(mapped_data):
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     tenant = 'tn0'
@@ -184,7 +227,7 @@ def test_save_mapping(mapped_data):
         ))
         assert response == failed_response
 
-    os.remove('./ConsulDatabase.db')
+    clear_db()
 
 
 @pytest.mark.parametrize("case", read_creds_cases)
@@ -196,8 +239,8 @@ def test_read_creds(case):
         'status_code': '301',
         'message': 'Agents not found'
     }
-    if case == "empty_agents":
-        response = json.loads(plugin_server.read_creds())
+    if case == "empty_agents" or case[6] != "tn0":
+        response = json.loads(plugin_server.read_creds("tn0"))
         assert response == empty_agent_response
     else:
         data = case
@@ -212,12 +255,147 @@ def test_read_creds(case):
             }
         )
         connection.close()
-        response = json.loads(plugin_server.read_creds())
+        response = json.loads(plugin_server.read_creds("tn0"))
         connection = db_obj.engine.connect()
         db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
         connection.close()
         assert read_creds_checker(response, db_data)
-    os.remove('./ConsulDatabase.db')
+    clear_db()
+
+
+@pytest.mark.parametrize("case", write_creds_cases)
+def test_write_creds(case):
+    fail, case = case
+    clear_db()
+
+    failed_response = {
+        "status_code": "300",
+        "message": "Could not write the credentials.",
+        "payload": []
+    }
+
+    if case:
+        already_exist_response = {
+            "status_code": "300",
+            "message": "Agent {}:{} already exists.".format(case[0]["ip"], case[0]["port"]),
+            "payload": {
+                "ip": case[0]["ip"],
+                "token": case[0]["token"],
+                "protocol": case[0]["protocol"],
+                "port": case[0]["port"]
+            }
+        }
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+    connection = db_obj.engine.connect()
+    if fail:
+        consul_utils.Consul.check_connection = check_connection_false
+    app_response = json.loads(plugin_server.write_creds("tn0", json.dumps(case)))
+    consul_utils.Consul.check_connection = check_connection
+    if app_response["status_code"] == "200":
+        db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
+        assert write_creds_checker(app_response, db_data)
+        app_response = json.loads(plugin_server.write_creds("tn0", json.dumps(case)))
+        assert already_exist_response == app_response
+    elif app_response["status_code"] == "301":
+        db_data = db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME)
+        assert write_creds_checker(app_response, db_data)
+    elif app_response["status_code"] == "300":
+        assert app_response == failed_response
+    connection.close()
+    clear_db()
+
+
+@pytest.mark.parametrize("case", update_creds_cases)
+def test_update_creds(case):
+    clear_db()
+
+    case, data = case
+    tenant, update_agent, dummy_data = data
+    agent_not_found = {
+        "status_code": "300",
+        "message": "Agents not found",
+        "payload": []
+    }
+
+    agent_already_exist = {
+        "status_code": "300",
+        "message": "Agent {}:{} already exists.".format(
+            update_agent["newData"]["ip"],
+            update_agent["newData"]["port"]
+        ),
+        "payload": {
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "protocol": update_agent["newData"]["protocol"],
+            "port": update_agent["newData"]["port"]
+        }
+    }
+
+    connected_agent = {
+        "status_code": "200",
+        "message": "OK",
+        "payload": {
+            "status": True,
+            "datacenter": "-",
+            "protocol": update_agent["newData"]["protocol"],
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "port": update_agent["newData"]["port"]
+        }
+    }
+
+    disconnected_agent = {
+        "status_code": "301",
+        "message": "message",
+        "payload": {
+            "status": False,
+            "datacenter": "",
+            "protocol": update_agent["newData"]["protocol"],
+            "ip": update_agent["newData"]["ip"],
+            "token": update_agent["newData"]["token"],
+            "port": update_agent["newData"]["port"]
+        }
+    }
+
+    exception_response = {
+        "status_code": "300",
+        "message": "Could not update the credentials.",
+        "payload": []
+    }
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+    connection = db_obj.engine.connect()
+
+    if(case != "agent list empty"):
+        db_obj.insert_and_update(
+            connection,
+            db_obj.LOGIN_TABLE_NAME,
+            dummy_data
+        )
+
+    if(case == "agent list empty"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert agent_not_found == json.loads(response)
+    elif(case == "agent already exists"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert agent_already_exist == json.loads(response)
+    elif(case == "connected"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert connected_agent == json.loads(response)
+    elif(case == "disconnected"):
+        consul_utils.Consul.check_connection = check_connection_false
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        consul_utils.Consul.check_connection = check_connection
+        assert disconnected_agent == json.loads(response)
+    elif(case == "exception"):
+        response = plugin_server.update_creds(tenant, json.dumps(update_agent))
+        assert exception_response == json.loads(response)
+
+    connection.close()
+    clear_db()
 
 
 @pytest.mark.parametrize("case", epg_alias_data)
@@ -248,7 +426,7 @@ def test_get_epg_alias(case):
     connection.close()
     response = plugin_server.get_epg_alias(arg)
     assert response == expected
-    os.remove('./ConsulDatabase.db')
+    clear_db()
 
 
 @pytest.mark.parametrize("data, expected", [
@@ -343,7 +521,13 @@ def test_get_ingress_egress(data, expected):
     AciUtils.get_mo_related_item = dummy_get_mo_related_item
 
     obj = AciUtils()
-    response = plugin_server.get_ingress_egress("uni/tn-DummyTn/ap-DummyAp/epg-DummyToEpg", "uni/tn-DummyTn/ap-DummyAp/epg-DummyFromEpg", "subj", "flt", obj)
+    response = plugin_server.get_ingress_egress(
+        "uni/tn-DummyTn/ap-DummyAp/epg-DummyToEpg",
+        "uni/tn-DummyTn/ap-DummyAp/epg-DummyFromEpg",
+        "subj",
+        "flt",
+        obj
+    )
 
     assert response == expected
 
@@ -381,17 +565,17 @@ def test_get_filter_list(data, expected):
     assert response == get_data_json(expected)
 
 
-@pytest.mark.parametrize("data, dn, mo_type, mac_list, ip, expected", [
+@pytest.mark.parametrize("data, dn, mo_type, mac_list,ip_list, ip, expected", [
     ("/plugin_server/data/get_children_ep_info/fvcep_input.json",
-     "", "ep", "00:00:00:00:00:AA",
+     "", "ep", "00:00:00:00:00:AA", "",
      "/plugin_server/data/get_children_ep_info/fvcep_ip.json",
      "/plugin_server/data/get_children_ep_info/fvcep_output.json"),
     ("/plugin_server/data/get_children_ep_info/fvip_input.json",
-     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "epg", "",
+     "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg", "epg", "", "",
      "/plugin_server/data/get_children_ep_info/fvip_ip.json",
      "/plugin_server/data/get_children_ep_info/fvip_output.json")
 ])
-def test_get_children_ep_info(data, dn, mo_type, mac_list, ip, expected):
+def test_get_children_ep_info(data, dn, mo_type, mac_list, ip_list, ip, expected):
 
     def dummy_get_mo_related_item(self, mo_dn, item_query_string, item_type):
         return get_data_json(data)
@@ -406,7 +590,7 @@ def test_get_children_ep_info(data, dn, mo_type, mac_list, ip, expected):
     AciUtils.get_ep_info = dummy_get_ep_info
     AciUtils.get_mo_related_item = dummy_get_mo_related_item
 
-    response = plugin_server.get_children_ep_info(dn, mo_type, mac_list, get_data_json(ip))
+    response = plugin_server.get_children_ep_info(dn, mo_type, mac_list, ip_list, get_data_json(ip))
 
     assert json.loads(response) == get_data_json(expected)
 
@@ -491,17 +675,14 @@ def test_mapping_exception(test_input, expected):
     assert verifier(actual_output, expected['output'])
 
 
-@pytest.mark.parametrize('input, expected',
-                         [(100, ('200', 'Polling Interval Set!')),
-                          (3, ('200', 'Polling Interval Set!'))])
-def test_set_polling_interval(input, expected):
-    assert plugin_server.set_polling_interval(input), expected
-
-
-@pytest.mark.parametrize('input, expected',
-                         [('/plugin_server/data/change_key/1_initial_input.json', '/plugin_server/data/change_key/1_initial_output.json'),
-                          ('/plugin_server/data/change_key/1_empty_input.json', '/plugin_server/data/change_key/1_empty_output.json'),
-                          (None, [])])
+@pytest.mark.parametrize(
+    'input, expected',
+    [
+        ('/plugin_server/data/change_key/1_initial_input.json', '/plugin_server/data/change_key/1_initial_output.json'),
+        ('/plugin_server/data/change_key/1_empty_input.json', '/plugin_server/data/change_key/1_empty_output.json'),
+        (None, [])
+    ]
+)
 def test_change_key(input, expected):
     services = None
     if input:
@@ -514,16 +695,104 @@ def test_change_key(input, expected):
         assert actual_output == []
 
 
-@pytest.mark.parametrize('input, expected',
-                         [('/plugin_server/data/agent_status/1_initial_input.json', '/plugin_server/data/agent_status/1_initial_output.json'),
-                          ('/plugin_server/data/agent_status/2_different_dc_input.json', '/plugin_server/data/agent_status/2_different_dc_output.json'),
-                          (None, [])])
+@pytest.mark.parametrize(
+    'input, expected',
+    [
+        (
+            '/plugin_server/data/agent_status/1_initial_input.json',
+            '/plugin_server/data/agent_status/1_initial_output.json'
+        ),
+        (
+            '/plugin_server/data/agent_status/2_different_dc_input.json',
+            '/plugin_server/data/agent_status/2_different_dc_output.json'
+        ),
+        (None, [])
+    ]
+)
 def test_get_agent_status(input, expected):
     if input:
+        original_select = alchemy_core.Database.select_from_table
         alchemy_core.Database.select_from_table = generate_dummy_db_output(None, input)
-        actual_output = plugin_server.get_agent_status('dc1')
+        actual_output = plugin_server.get_agent_status('tn0', 'dc1')
+        alchemy_core.Database.select_from_table = original_select
         assert verify_agent_status(actual_output, expected)
     else:
+        original_select = alchemy_core.Database.select_from_table
         alchemy_core.Database.select_from_table = dummy_db_select_exception()
         with pytest.raises(Exception):
-            assert plugin_server.get_agent_status('dc1')
+            assert plugin_server.get_agent_status('tn0', 'dc1')
+        alchemy_core.Database.select_from_table = original_select
+
+
+@pytest.mark.parametrize("interval", [2, 2.2, "fail"])
+def test_set_polling_interval(interval):
+    clear_db()
+    passed_response = {
+        "status_code": "200",
+        "message": "Polling Interval Set!"
+    }
+    failed_response = {
+        'status_code': '300',
+        'message': 'Some error occurred, could not set polling interval'
+    }
+    dummy_db = alchemy_core.Database()
+    dummy_db.create_tables()
+    connection = dummy_db.engine.connect()
+    ls = dummy_db.select_from_table(
+        connection,
+        dummy_db.POLLING_TABLE_NAME
+    )
+    connection.close()
+
+    assert len(ls) == 0
+
+    if interval != "fail":
+        response = plugin_server.set_polling_interval(interval)
+        assert json.loads(response) == passed_response
+
+        connection = dummy_db.engine.connect()
+        db_interval = dummy_db.select_from_table(
+            connection,
+            dummy_db.POLLING_TABLE_NAME,
+            {'pkey': 'interval'},
+            ['interval']
+        )[0][0]
+        connection.close()
+        assert interval == db_interval
+        clear_db()
+    else:
+        clear_db()
+        response = plugin_server.set_polling_interval(interval)
+        assert json.loads(response) == failed_response
+        clear_db()
+
+
+@pytest.mark.parametrize("interval", [2, 2.2, "fail"])
+def test_get_polling_interval(interval):
+    clear_db()
+    dummy_db = alchemy_core.Database()
+    dummy_db.create_tables()
+    passed_response = json.dumps({
+        "status_code": "200",
+        "message": "Ok",
+        "payload": {
+            "interval": interval
+        }
+    })
+    failed_response = json.dumps({
+        "status_code": "300",
+        "message": "Could not get polling interval",
+        "payload": []
+    })
+    plugin_server.set_polling_interval(interval)
+    if interval != "fail":
+        response = plugin_server.get_polling_interval()
+        assert response == passed_response
+        clear_db()
+    else:
+        plugin_server_db_obj = plugin_server.db_obj
+        plugin_server.db_obj = None
+        response = plugin_server.get_polling_interval()
+        plugin_server.db_obj = plugin_server_db_obj
+        assert response == failed_response
+        clear_db()

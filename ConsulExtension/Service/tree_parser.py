@@ -101,7 +101,7 @@ def consul_tree_dict(data):
                         'attributes': {
                             'Node': ep_node['node_name'],
                             'Node Checks': ep_node['node_check'],
-                            'Reporting Node IP': ep_node['node_ips'][0],
+                            'Reporting Node IP': ep_node['node_ip'],
                             'Mac': ep_node['CEP-Mac'],
                             'Services_List': [],
                             'IP': ep_node['IP'],
@@ -126,7 +126,7 @@ def consul_tree_dict(data):
                         if service['service_ip']:
                             service_address = str(service['service_ip']) + ':' + str(service['service_port'])
                         else:
-                            service_address = str(ep_node['node_ips'][0]) + ':' + str(service['service_port'])
+                            service_address = str(ep_node['node_ip']) + ':' + str(service['service_port'])
 
                         # 4rd layer nodes in Tree (Service)
                         service_dict = {
@@ -204,7 +204,7 @@ def consul_tree_dict(data):
                     ep_side_pane = {
                         'Node': ep_node['node_name'],
                         'Node Checks': ep_node['node_check'],
-                        'Reporting Node IP': ep_node['node_ips'][0]
+                        'Reporting Node IP': ep_node['node_ip']
                     }
 
                     # Adding Node to EPG attributes
@@ -214,16 +214,16 @@ def consul_tree_dict(data):
                     # Add Consul Node checks to EPG checks, only
                     # if the check for that nodes has not been
                     # added before.
-                    if ep_node['node_ips'][0] not in epg_node_ip_list:
+                    if ep_node['node_ip'] not in epg_node_ip_list:
                         epg_dict['checks'] = add_checks(epg_dict['checks'], ep_node['node_check'])
-                        epg_node_ip_list.append(ep_node['node_ips'][0])
+                        epg_node_ip_list.append(ep_node['node_ip'])
 
                     # Add Consul Node checks to AP checks, only
                     # if the check for that nodes has not been
                     # added before.
-                    if ep_node['node_ips'][0] not in ap_node_ip_list:
+                    if ep_node['node_ip'] not in ap_node_ip_list:
                         ap_dict['checks'] = add_checks(ap_dict['checks'], ep_node['node_check'])
-                        ap_node_ip_list.append(ep_node['node_ips'][0])
+                        ap_node_ip_list.append(ep_node['node_ip'])
 
             # 3rd layer nodes in Tree (EP)
             #  Iterating for each Non service end point in EPG

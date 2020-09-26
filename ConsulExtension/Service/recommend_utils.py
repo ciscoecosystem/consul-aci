@@ -62,19 +62,36 @@ def extract_vrf(apic_data):
     return vrf_dict
 
 
-def search_ep_in_apic(apic_data, search_param):
+def apic_data_formatter(apic_data):
+    dc = dict()
     for each in apic_data:
-        flag = False
-        for key, val in search_param.items():
-            # logger.debug(' key , val :'+key+' , '+val)
-            if key in each and each[key] == val:
-                # logger.debug(' Inside search and element found ')
-                flag = True
-            else:
-                break
-        if flag:
-            return each
-    return None
+        if 'IP' in each:
+            key_ip = '{}#{}'.format(
+                each.get('IP', ""),
+                each.get('dn', "")
+            )
+            dc[key_ip] = each
+        if 'mac' in each:
+            key_mac = '{}#{}'.format(
+                each.get('mac', ""),
+                each.get('dn', "")
+            )
+            dc[key_mac] = each
+    return dc
+
+
+def search_ep_in_apic(apic_data, search_param):
+    if 'mac' in search_param:
+        key = '{}#{}'.format(
+            search_param['mac'],
+            search_param['dn']
+        )
+    if 'IP' in search_param:
+        key = '{}#{}'.format(
+            search_param['IP'],
+            search_param['dn']
+        )
+    return apic_data.get(key, None)
 
 
 def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
@@ -91,7 +108,7 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
 
     extracted_vrfs = extract_vrf(apic_data)
     logger.debug('extracted vrfs {} '.format(extracted_vrfs))
-
+    apic_data_f = apic_data_formatter(apic_data)
     for i in range(len(common_eps)):
         each = common_eps[i]
         ap_rec, epg_rec = extract(recommended_ep['dn'])
@@ -109,48 +126,58 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
             each_key = 'mac'
 
         search_params_rec = {rec_key: recommended_ep[rec_key], 'dn': recommended_ep['dn']}
-        apic_rec = search_ep_in_apic(apic_data, search_params_rec)['VRF']
+        apic_rec = search_ep_in_apic(apic_data_f, search_params_rec)['VRF']
 
         search_params_each = {rec_key: each[rec_key], 'dn': each['dn']}
-        apic_each = search_ep_in_apic(apic_data, search_params_each)['VRF']
+        apic_each = search_ep_in_apic(apic_data_f, search_params_each)['VRF']
 
         # When we encounter the ep whose IP is different from the current recommended IP.
         # We add all peers and recommended to recommended list as recommended
         if recommended_ep[rec_key] != each[each_key]:
-            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key])
+            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'],
+                                        'Yes', rec_key])
             for temp in peers:
-                recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key])
+                recommendation_list.append([temp[rec_key], temp['dn'],
+                                            'Yes', rec_key])
             recommended_ep = each
             peers = []
             continue
 
         if (recommended_ep['cep_ip'] and each['cep_ip']) or (not recommended_ep['cep_ip'] and not each['cep_ip']):
             if apic_rec and apic_each and len(extracted_vrfs[apic_rec]) > len(extracted_vrfs[apic_each]):
-                recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+                recommendation_list.append([each[each_key], each['dn'],
+                                            'No', each_key])
             elif apic_rec and apic_each and len(extracted_vrfs[apic_rec]) < len(extracted_vrfs[apic_each]):
-                recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'],
+                                            'No', rec_key])
                 recommended_ep = each
             else:
                 if ap_rec_count > ap_each_count:
-                    recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+                    recommendation_list.append([each[each_key], each['dn'], 'No',
+                                                each_key])
                 elif ap_rec_count < ap_each_count:
-                    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'],
+                                                'No', rec_key])
                     recommended_ep = each
                 else:
                     if epg_rec_count > epg_each_count:
-                        recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
+                        recommendation_list.append([each[each_key], each['dn'], 'No',
+                                                    each_key])
                     elif epg_rec_count < epg_each_count:
-                        recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+                        recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'],
+                                                    'No', rec_key])
                         recommended_ep = each
                     else:
                         peers.append(each)
         elif recommended_ep.get('cep_ip', '') is False and each.get('cep_ip', ''):
             recommendation_list.append([each[each_key], each['dn'], 'No', each_key])
         else:
-            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No', rec_key])
+            recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'No',
+                                        rec_key])
             recommended_ep = each
 
-    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes', rec_key])
+    recommendation_list.append([recommended_ep[rec_key], recommended_ep['dn'], 'Yes',
+                                rec_key])
 
     for temp in peers:
         recommendation_list.append([temp[rec_key], temp['dn'], 'Yes', rec_key])
@@ -209,7 +236,7 @@ def recommended_eps(source_ip_list, parsed_eps, apic_data):
             # Example of extracted Epg dn
             # "uni/tn-Tenant1/ap-AppProfile1/epg-Epg-test"
             for each in parsed_eps:
-                each['dn'] = '/'.join(each['dn'].split('/', 4)[0:4])
+                each['dn'] = '/'.join(each['dn'].split('/', 5)[0:5])
     except Exception as e:
         logger.exception('Exception in parsed eps list, Error: ' + str(e))
         return []
@@ -221,7 +248,7 @@ def recommended_eps(source_ip_list, parsed_eps, apic_data):
         common_eps = get_common_eps(source_ip_list, parsed_eps)
         logger.debug('Common EPs: {}'.format(str(common_eps)))
         if common_eps:
-            extract_ap_epgs = extract_ap_and_epgs(common_eps)
+            extract_ap_epgs = extract_ap_and_epgs(parsed_eps)
         else:
             return []
     except Exception as e:

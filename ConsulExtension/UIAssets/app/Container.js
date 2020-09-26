@@ -33,6 +33,14 @@ export default class Container extends React.Component {
         this.getDataCenters = this.getDataCenters.bind(this);
     }
 
+    shouldComponentUpdate(nextProps, nextState){
+
+        if(!nextProps.shouldUpdate){
+            return false
+        }
+        return true
+    }
+
     getDataCenters(DataCentersObj){
         let DataCenters = []
         DataCentersObj.map((item)=>(DataCenters.push(item.datacenter)))
@@ -96,6 +104,7 @@ export default class Container extends React.Component {
                                         <Dashboard tenantName={this.props.tenantName}/>
                                     </div>
                                 }} />
+                                {/* This page and its link have been removed as intentions are not required in this release.
 
                                 <Route exact path={this.pathname + "/serviceintention"} component={function () {
                                     return <div style={{ height: "fit-content", margin: "30px", background: "white", padding: "20px" }}>
@@ -106,7 +115,7 @@ export default class Container extends React.Component {
                                             <li>ACI policy (contract and filter) recommendation and creation based on Consul service mesh intentions</li>
                                         </ul>
                                     </div>
-                                }} />
+                                }} /> */}
 
                                 <Route path={this.pathname + "/toOperational"} component={function () {
                                     // this results into unmounting of operational view if already in place

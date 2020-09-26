@@ -17,7 +17,7 @@ from cobra.model.aaa import AppUser as AaaAppUser
 from cobra.model.aaa import UserCert as AaaUserCert
 try:
     from OpenSSL.crypto import FILETYPE_PEM, load_privatekey, sign
-except Exception as e:
+except Exception:
     print("=== could not import openssl crypto ===")
 
 
@@ -221,7 +221,9 @@ class AciUtils(object):
         ep_info = self.get_ep_info(ep_child_attr)
 
         for each in AciUtils.get_ip_mac_list(item):
-            data['ip'], data['is_cep'] = each  # TODO: if mac, then add ''
+            data['ip'], data['is_cep'] = each
+            if data['mac'] == data['ip']:
+                data['ip'] = ""
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -503,7 +505,7 @@ class AciUtils(object):
                     keys = child.keys()
                     if len(keys) > 0:
                         ct_name = child[keys[0]]['attributes']['dn'].split(
-                            "/", 4)[4].split("-")[1]
+                            "/", 4)[4].split("-", 1)[1]
                     else:
                         continue
 
@@ -694,7 +696,9 @@ class AciUtils(object):
             # logger.debug("get mo returns: {}".format(str(item_list)))
             return item_list
         except Exception as ex:
-            logger.exception('Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex))
+            logger.exception(
+                'Exception while fetching EPG item with query string: {} ,\nError: {}'.format(item_query_string, ex)
+            )
             logger.exception('Epg Item Url : {}'.format(url))
             return []
 
