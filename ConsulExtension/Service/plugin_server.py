@@ -1042,7 +1042,9 @@ def get_configured_access_policies(tn, ap, epg):
 
             if re.search("/from-", cap_attr["vLanPool"]):
                 tmp_vlan_pool = cap_attr["vLanPool"].split("/from-")[1]
-                vlans = re.findall('\d+', tmp_vlan_pool)
+                vlans = tmp_vlan_pool.split("-to-")
+                vlans = list(map(lambda x:x.split("vlan-")[1][:-1], vlans))
+                logger.info("vlansss {}".format(vlans)) #
                 cap_dict["vlan_pool"] = "{} to {}".format(vlans[0], vlans[1])
             else:
                 logger.error("Attribute {} not found".format("vLanpool"))
