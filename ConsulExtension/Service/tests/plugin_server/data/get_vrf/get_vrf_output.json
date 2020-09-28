@@ -1,5 +1,5 @@
 {
     "status_code": "200",
     "message": "OK",
-    "payload": ["Consul_VRF", "Consul_VRF_2"]
+    "payload": ["uni/tn-Consul/ctx-Consul_VRF", "uni/tn-Consul/ctx-Consul_VRF_2"]
 }

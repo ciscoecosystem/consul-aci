@@ -2239,7 +2239,7 @@ def get_vrf(tn):
         response = []
         if data:
             for each in data:
-                vrf_name = each.get("fvCtx").get("attributes").get("name")
+                vrf_name = each.get("fvCtx").get("attributes").get("dn")
                 response.append(vrf_name)
         else:
             raise Exception
