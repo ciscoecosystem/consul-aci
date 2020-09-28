@@ -544,22 +544,6 @@ export default class Agent extends React.Component {
             }
         },
         {
-            Header: 'Token',
-            accessor: 'token',
-            Cell: row => {
-                let { token } = row.original;
-                return <div>
-                    <Input
-                        type={"password"}
-                        key={"passtoken"}
-                        name={"passtoken"}
-                        value={token}
-                        disabled={true}
-                        className={"label-password"} /> </div>
-            }
-
-        },
-        {
             Header: 'Datacenter',
             accessor: 'datacenter',
         },
@@ -609,7 +593,7 @@ export default class Agent extends React.Component {
                             value={thiss.state[name]}
                             onBlur={thiss.handleFieldChange}
                             onChange={thiss.handleFieldChange}
-                            className={errorMsg && "input-error"} />
+                            className={"agent-input" || (errorMsg && "input-error")} />
                 }
 
                 {errorMsg && <div class="help-block text-danger"><span class="icon-error"></span><span>{errorMsg}</span></div>}
