@@ -1,0 +1,5 @@
+{
+    "status_code": "200",
+    "message": "OK",
+    "payload": ["Consul_VRF", "Consul_VRF_2"]
+}

@@ -2228,3 +2228,30 @@ def get_epg_alias(dn):
     if epg_data:
         return epg_data[0][0]
     return ""
+
+
+def get_vrf(tn):
+    """This would return VRFs of tenant tn"""
+    try:
+        aci_util_obj = apic_utils.AciUtils()
+        data = aci_util_obj.apic_fetch_vrf_tenant(tn)
+        response = []
+        logger.info("yess")
+        if data:
+            for each in data:
+                vrf_name = each.get("fvCtx").get("attributes").get("name")
+                response.append(vrf_name)
+        else:
+            raise Exception
+        return json.dumps({
+            "status_code": "200",
+            "payload": response,
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Exception occurred, Error: {}".format(e))
+        return json.dumps({
+            "status_code": "300",
+            "payload": [],
+            "message": "Could not load VRF for tenant {}".format(tn)
+        })

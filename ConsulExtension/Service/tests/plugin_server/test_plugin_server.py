@@ -796,3 +796,27 @@ def test_get_polling_interval(interval):
         plugin_server.db_obj = plugin_server_db_obj
         assert response == failed_response
         clear_db()
+
+
+@pytest.mark.parametrize("data, expected", [
+    ("/plugin_server/data/get_vrf/get_vrf_input.json",
+     "/plugin_server/data/get_vrf/get_vrf_output.json"),
+    ("/plugin_server/data/get_vrf/empty_input.json",
+     "/plugin_server/data/get_vrf/empty_output.json")
+])
+def test_get_vrf(data, expected):
+
+    # Mock apic_util login
+
+    def dummy_login(self):
+        return "dummy-token"
+
+    def dummy_apic_fetch_vrf_tenant(self, tn):
+        return get_data_json(data)
+
+    AciUtils.login = dummy_login
+    AciUtils.apic_fetch_vrf_tenant = dummy_apic_fetch_vrf_tenant
+
+    response = plugin_server.get_vrf("tn0")
+
+    assert response == get_data_str(expected)
