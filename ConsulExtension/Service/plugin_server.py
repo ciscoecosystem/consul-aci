@@ -2230,13 +2230,13 @@ def get_epg_alias(dn):
     return ""
 
 
+@time_it
 def get_vrf(tn):
     """This would return VRFs of tenant tn"""
     try:
         aci_util_obj = apic_utils.AciUtils()
         data = aci_util_obj.apic_fetch_vrf_tenant(tn)
         response = []
-        logger.info("yess")
         if data:
             for each in data:
                 vrf_name = each.get("fvCtx").get("attributes").get("name")
