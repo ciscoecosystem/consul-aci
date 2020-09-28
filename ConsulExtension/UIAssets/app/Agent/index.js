@@ -68,9 +68,9 @@ export default class Agent extends React.Component {
                 { label: "Delete", action: this.actionEvent }
             ],
             agentFields: [{ name: "Protocol", type: "select", mandatory: true },
-            { name: "Address", type: "text", mandatory: true },
-            { name: "Port", type: "number", mandatory: true },
-            { name: "Token", type: "password", mandatory: false }
+            { name: "Address", type: "text", mandatory: true, placeholder: "192.168.0.1" },
+            { name: "Port", type: "number", mandatory: true, placeholder: "8000" },
+            { name: "Token", type: "password", mandatory: false, placeholder: "token" }
             ],
             ...defaultFieldState
         }
@@ -592,7 +592,7 @@ export default class Agent extends React.Component {
         ]
 
         function FormField(props) {
-            let { name, type, mandatory } = props;
+            let { name, type, mandatory, placeholder } = props;
 
             let labelComp = <span>{name}{mandatory && <span className="mandatory-symbol">*</span>}</span>
             let errorMsg = errormsg[name];
@@ -605,7 +605,7 @@ export default class Agent extends React.Component {
                             type={type}
                             key={name}
                             name={name}
-                            placeholder={name.toLowerCase()}
+                            placeholder={placeholder}
                             value={thiss.state[name]}
                             onBlur={thiss.handleFieldChange}
                             onChange={thiss.handleFieldChange}
