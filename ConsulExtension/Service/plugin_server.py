@@ -1369,7 +1369,6 @@ def read_creds(tn):
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
         connection.close()
-        vrfs = json.loads(update_vrf_in_db(tn)).get("payload")
 
         if not agents:
             logger.info('Agents List Empty.')
@@ -1408,7 +1407,7 @@ def read_creds(tn):
                     'token': agent[3],
                     'status': status,
                     'datacenter': datacenter,
-                    'vrf': agent[7].split("ctx-")[1]
+                    'vrf': agent[7].split("ctx-")[1] if agent[7] else None
                 })
         connection.close()
         logger.debug('Read creds response: {}'.format(str(payload)))
@@ -1442,7 +1441,9 @@ def write_creds(tn, new_agent):
     try:
         new_agent = json.loads(new_agent)[0]  # UI returns list of one object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
-        vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
+        vrf_dn = None
+        if new_agent.get('vrf'):
+            vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(
             connection,
@@ -1535,8 +1536,12 @@ def update_creds(tn, update_input):
         update_input = json.loads(update_input)
         old_agent = update_input.get('oldData')
         new_agent = update_input.get('newData')
-        old_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, old_agent.get('vrf'))
-        new_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
+        old_vrf_dn = None
+        new_vrf_dn = None
+        if old_agent.get('vrf'):
+            old_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, old_agent.get('vrf'))
+        if new_agent.get('vrf'):
+            new_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
 
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
@@ -1655,7 +1660,9 @@ def delete_creds(tn, agent_data):
     try:
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
-        vrf_dn = "uni/tn-{}/ctx-{}".format(tn, agent_data.get('vrf'))
+        vrf_dn = None
+        if agent_data.get('vrf'):
+            vrf_dn = "uni/tn-{}/ctx-{}".format(tn, agent_data.get('vrf'))
 
         # Agent deleted
         connection = db_obj.engine.connect()
@@ -2261,7 +2268,7 @@ def get_vrf_from_databse(datacenter, tn):
     )
     connection.close()
     vrfs = list(map(lambda x: str(x[0]), tmp_vrfs))
-    return vrfs
+    return None if None in vrfs else vrfs
 
 
 @time_it
