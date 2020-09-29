@@ -88,3 +88,16 @@ form .input-error {
     background:rgba(0,0,0,0) !important;
     border:none !important;
 }
+
+.agent-input {
+    font-size: 14px !important;
+}
+
+form input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    margin: 0;
+  }
