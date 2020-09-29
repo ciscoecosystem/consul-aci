@@ -89,6 +89,9 @@ form .input-error {
     border:none !important;
 }
 
+.agent-input {
+    font-size: 14px !important;
+}
 
 form input::-webkit-credentials-auto-fill-button {
     visibility: hidden;

@@ -376,7 +376,7 @@ export default class App extends React.Component {
             return;
         }
         let payload = POST_TENANT_QUERY(this.tenantName)
-        let xhrPostTenant = this.xhrCred;
+        let xhrPostTenant = new XMLHttpRequest();
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");
