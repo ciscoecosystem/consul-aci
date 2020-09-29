@@ -40,7 +40,7 @@ def consul_tree_dict(data):
 
         # Top level node in Tree
         ap_dict = {
-            'name': 'AppProf',
+            'name': 'Application Profile',
             'type': '#581552',
             'sub_label': ap,
             'attributes': {},

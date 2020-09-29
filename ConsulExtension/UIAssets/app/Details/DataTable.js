@@ -92,6 +92,14 @@ export default class DataTable extends Component {
         }
       },
       {
+        Header: "Pod",
+        accessor: "pod_name",
+        show: true,
+        Cell: row => {
+          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
+        }
+      },
+      {
         Header: "IP",
         accessor: "ip",
         filterType: "text",
