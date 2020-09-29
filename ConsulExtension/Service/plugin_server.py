@@ -443,6 +443,7 @@ def details_flattened(tenant, datacenter):
                 'epgHealth': int(each.get('epg_health')),
                 'consulNode': each.get('node_name'),
                 'nodeChecks': each.get('node_check'),
+                'pod_name': list(map(lambda x:x.split("/")[0], each.get('Interfaces')))
             }
 
             services = change_key(each.get('node_services'))
@@ -1041,7 +1042,10 @@ def get_configured_access_policies(tn, ap, epg):
                 logger.error("Attribute {} not found".format("pathEP"))
 
             if re.search("/from-", cap_attr["vLanPool"]):
-                cap_dict["vlan_pool"] = cap_attr["vLanPool"].split("/from-")[1]
+                tmp_vlan_pool = cap_attr["vLanPool"].split("/from-")[1]
+                vlans = tmp_vlan_pool.split("-to-")
+                vlans = list(map(lambda x:x.split("vlan-")[1][:-1], vlans))
+                cap_dict["vlan_pool"] = "{} to {}".format(vlans[0], vlans[1])
             else:
                 logger.error("Attribute {} not found".format("vLanpool"))
             cap_list.append(cap_dict)
