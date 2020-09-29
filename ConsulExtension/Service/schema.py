@@ -287,7 +287,7 @@ class Query(graphene.ObjectType):
         return GetPerformanceDashboard
 
     def resolve_GetVrf(self, info, tn):
-        GetVrf.response = app.get_vrf(tn)
+        GetVrf.response = app.update_vrf_in_db(tn)
         return GetVrf
 
 

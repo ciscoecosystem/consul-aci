@@ -157,7 +157,7 @@ def get_new_mapping(tenant, datacenter):
                 }
             )
 
-        apic_data = get_apic_data(tenant)
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
         # Get consul data
         consul_data = get_consul_data(datacenter)
         ip_list = []
@@ -381,7 +381,7 @@ def tree(tenant, datacenter):
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
-        apic_data = get_apic_data(tenant)
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
         merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
 
@@ -422,7 +422,7 @@ def details_flattened(tenant, datacenter):
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
-        apic_data = get_apic_data(tenant)
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
         merged_data, non_merged_data, = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
@@ -1369,7 +1369,7 @@ def read_creds(tn):
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
         connection.close()
-        vrfs = update_vrf_in_db(tn)
+        vrfs = json.loads(update_vrf_in_db(tn)).get("payload")
 
         if not agents:
             logger.info('Agents List Empty.')
@@ -2151,10 +2151,10 @@ def add_check(add_check, add_to):
 
 
 @time_it
-def get_performance_dashboard(tn):
+def get_performance_dashboard(tenant):
     """Function to get payload for performance dashboard
 
-    :tn: Name of tenant
+    :tenant: Name of tenant
 
     return: {
         status: 200/300
@@ -2170,24 +2170,24 @@ def get_performance_dashboard(tn):
         ep_len = len(list(db_obj.select_from_table(
             connection,
             db_obj.EP_TABLE_NAME,
-            {'tenant': tn},
+            {'tenant': tenant},
             ["ip"]
         )))
         connection.close()
 
         mapped_ep = {}
-        datacenters = json.loads(get_datacenters(tn))['payload']
+        datacenters = json.loads(get_datacenters(tenant))['payload']
         for dc in datacenters:
             datacenter = dc['datacenter']
             if datacenter not in mapped_ep:
                 mapped_ep[datacenter] = []
 
         for dc in mapped_ep:
-            mapped_dc = get_new_mapping(tn, dc)
+            mapped_dc = get_new_mapping(tenant, dc)
             for map in mapped_dc:
                 mapped_ep[dc].append(map)
 
-        apic_data = get_apic_data(tn)
+        apic_data = get_apic_data(tenant)
         ep_res = {'service': 0, 'non_service': 0}
         service_res = {'passing': 0, 'warning': 0, 'failing': 0}
         nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
@@ -2196,7 +2196,7 @@ def get_performance_dashboard(tn):
         service_addr_set = set()
         for dc in mapped_ep:
             consul_data = get_consul_data(dc)
-            merged_data = merge.merge_aci_consul(tn, apic_data, consul_data, mapped_ep[dc])[0]
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])[0]
 
             for ep in merged_data:
                 # Add service eps to ep_resp
@@ -2215,7 +2215,7 @@ def get_performance_dashboard(tn):
 
         ep_res['non_service'] = ep_len - ep_res['service']
 
-        response['agents'] = get_agent_status(tn)
+        response['agents'] = get_agent_status(tenant)
         response['service'] = service_res
         response['nodes'] = nodes_res
         response['service_endpoint'] = ep_res
@@ -2251,22 +2251,65 @@ def get_epg_alias(dn):
     return ""
 
 
+def get_vrf_from_databse(datacenter, tn):
+    connection = db_obj.engine.connect()
+    tmp_vrfs =  db_obj.select_from_table(
+        connection,
+        db_obj.LOGIN_TABLE_NAME,
+        {
+            'datacenter': datacenter,
+            'tenant': tn
+        },
+        ['vrf_dn']
+    )
+    connection.close()
+    vrfs = list(map(lambda x: str(x[0]), tmp_vrfs))
+    return vrfs
+
+
 @time_it
-def get_vrf(tn):
+def get_vrf_from_apic(tn):
     """This would return VRFs of tenant tn"""
+    response = []
     try:
         aci_util_obj = apic_utils.AciUtils()
         data = aci_util_obj.apic_fetch_vrf_tenant(tn)
-        response = []
         if data:
             for each in data:
                 vrf_name = each.get("fvCtx").get("attributes").get("dn")
                 response.append(vrf_name)
-        else:
-            raise Exception
+    except Exception as e:
+        logger.exception("Exception occurred, Error: {}".format(e))
+    return response
+
+
+@time_it
+def update_vrf_in_db(tn):
+    """This would update vrf in database"""
+    try:
+        connection = db_obj.engine.connect()
+        vrf_db = db_obj.select_from_table(
+            connection,
+            db_obj.VRF_TABLE_NAME
+        )
+        connection.close()
+        vrf_dc = dict()
+        for each in vrf_db:
+            vrf_dc[each[0]] = True
+        vrf_apic = get_vrf_from_apic(tn)
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            for each in vrf_apic:
+                if each not in vrf_dc:
+                    db_obj.insert_into_table(
+                        connection,
+                        db_obj.VRF_TABLE_NAME,
+                        [each]
+                    )
+        connection.close()
         return json.dumps({
             "status_code": "200",
-            "payload": response,
+            "payload": list(map(lambda x: x.split("ctx-")[-1], vrf_apic)),
             "message": "OK"
         })
     except Exception as e:
@@ -2278,27 +2321,18 @@ def get_vrf(tn):
         })
 
 
-@time_it
-def update_vrf_in_db(tn):
-    """This would update vrf in database"""
-    connection = db_obj.engine.connect()
-    vrf_db = db_obj.select_from_table(
-        connection,
-        db_obj.VRF_TABLE_NAME
-    )
-    connection.close()
-    vrf_dc = dict()
-    for each in vrf_db:
-        vrf_dc[each[0]] = True
-    vrf_apic = json.loads(get_vrf(tn)).get("payload")
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        for each in vrf_apic:
-            if each not in vrf_dc:
-                db_obj.insert_into_table(
-                    connection,
-                    db_obj.VRF_TABLE_NAME,
-                    [each]
-                )
-    connection.close()
-    return list(map(lambda x: x.split("ctx-")[-1], vrf_apic))
+def filter_apic_data(apic_data, vrfs):
+    if not vrfs:
+        return apic_data
+
+    def format_vrf(vrf):
+        vrf = vrf.split("/")[1:]
+        vrf = list(map(lambda x: x.split("-", 1)[1], vrf))
+        return '/'.join(vrf)
+
+    vrfs = set(map(format_vrf, vrfs))
+    response = []
+    for each in apic_data:
+        if each.get("VRF") in vrfs:
+            response.append(each)
+    return response
