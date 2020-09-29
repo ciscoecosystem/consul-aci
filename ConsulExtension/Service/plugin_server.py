@@ -1369,10 +1369,11 @@ def read_creds(tn):
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
         connection.close()
+        vrfs = update_vrf_in_db(tn)
 
         if not agents:
             logger.info('Agents List Empty.')
-            return json.dumps({'payload': [], 'status_code': '301', 'message': 'Agents not found'})
+            return json.dumps({'payload': [{'vrfs': vrfs}], 'status_code': '301', 'message': 'Agents not found'})
         payload = []
 
         connection = db_obj.engine.connect()
@@ -1406,10 +1407,13 @@ def read_creds(tn):
                     'protocol': agent[2],
                     'token': agent[3],
                     'status': status,
-                    'datacenter': datacenter
+                    'datacenter': datacenter,
+                    'vrf': agent[7].split("ctx-")[1]
                 })
         connection.close()
-
+        payload.append({
+            'vrfs': vrfs
+        })
         logger.debug('Read creds response: {}'.format(str(payload)))
         return json.dumps({
             'payload': payload,
@@ -1419,7 +1423,7 @@ def read_creds(tn):
     except Exception as e:
         logger.exception('Error in read credentials: ' + str(e))
         return json.dumps({
-            'payload': [],
+            'payload': [{'vrfs': vrfs}],
             'status_code': '300',
             'message': 'Could not load the credentials.'
         })
@@ -1441,7 +1445,7 @@ def write_creds(tn, new_agent):
     try:
         new_agent = json.loads(new_agent)[0]  # UI returns list of one object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
-
+        vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(
             connection,
@@ -1449,7 +1453,8 @@ def write_creds(tn, new_agent):
             {
                 'agent_ip': new_agent.get('ip'),
                 'port': new_agent.get('port'),
-                'tenant': tn
+                'tenant': tn,
+                'vrf_dn': vrf_dn
             }
         ))
         connection.close()
@@ -1489,7 +1494,8 @@ def write_creds(tn, new_agent):
                     new_agent.get('token'),
                     new_agent.get('status'),
                     new_agent.get('datacenter'),
-                    tn
+                    tn,
+                    vrf_dn
                 ])
         connection.close()
 
@@ -1532,6 +1538,8 @@ def update_creds(tn, update_input):
         update_input = json.loads(update_input)
         old_agent = update_input.get('oldData')
         new_agent = update_input.get('newData')
+        old_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, old_agent.get('vrf'))
+        new_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
 
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
@@ -1540,7 +1548,11 @@ def update_creds(tn, update_input):
             logger.info('Agents List Empty.')
             return json.dumps({'payload': [], 'status_code': '300', 'message': 'Agents not found'})
 
-        if not (old_agent.get('ip') == new_agent.get('ip') and old_agent.get('port') == new_agent.get('port')):
+        if not (
+            old_agent.get('ip') == new_agent.get('ip') and
+            old_agent.get('port') == new_agent.get('port') and
+            old_vrf_dn == new_vrf_dn
+        ):
             connection = db_obj.engine.connect()
             new_agent_db_data = db_obj.select_from_table(
                 connection,
@@ -1548,7 +1560,8 @@ def update_creds(tn, update_input):
                 {
                     'agent_ip': new_agent.get('ip'),
                     'port': new_agent.get('port'),
-                    'tenant': tn
+                    'tenant': tn,
+                    'vrf_dn': new_vrf_dn
                 }
             )
             connection.close()
@@ -1560,7 +1573,11 @@ def update_creds(tn, update_input):
                 return json.dumps({'payload': new_agent, 'status_code': '300', 'message': message})
 
         for agent in agents:
-            if old_agent.get('ip') == agent[0] and old_agent.get('port') == int(agent[1]):
+            if (
+                old_agent.get('ip') == agent[0] and
+                old_agent.get('port') == int(agent[1]) and
+                old_vrf_dn == agent[7]
+            ):
                 if new_agent.get('token') == agent[3]:
                     new_agent['token'] = base64.b64decode(new_agent.get('token')).decode('ascii')
                 consul_obj = Consul(
@@ -1594,12 +1611,14 @@ def update_creds(tn, update_input):
                             new_agent.get('token'),
                             new_agent.get('status'),
                             new_agent.get('datacenter'),
-                            tn
+                            tn,
+                            new_vrf_dn
                         ],
                         {
                             'agent_ip': old_agent.get('ip'),
                             'port': old_agent.get('port'),
-                            'tenant': tn
+                            'tenant': tn,
+                            'vrf_dn': old_vrf_dn
                         })
                 connection.close()
 
@@ -1639,6 +1658,7 @@ def delete_creds(tn, agent_data):
     try:
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
+        vrf_dn = "uni/tn-{}/ctx-{}".format(tn, agent_data.get('vrf'))
 
         # Agent deleted
         connection = db_obj.engine.connect()
@@ -1658,7 +1678,8 @@ def delete_creds(tn, agent_data):
                 {
                     'agent_ip': agent_data.get('ip'),
                     'port': agent_data.get('port'),
-                    'tenant': tn
+                    'tenant': tn,
+                    'vrf_dn': vrf_dn
                 }
             )
         connection.close()
@@ -2255,3 +2276,29 @@ def get_vrf(tn):
             "payload": [],
             "message": "Could not load VRF for tenant {}".format(tn)
         })
+
+
+@time_it
+def update_vrf_in_db(tn):
+    """This would update vrf in database"""
+    connection = db_obj.engine.connect()
+    vrf_db = db_obj.select_from_table(
+        connection,
+        db_obj.VRF_TABLE_NAME
+    )
+    connection.close()
+    vrf_dc = dict()
+    for each in vrf_db:
+        vrf_dc[each[0]] = True
+    vrf_apic = json.loads(get_vrf(tn)).get("payload")
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        for each in vrf_apic:
+            if each not in vrf_dc:
+                db_obj.insert_into_table(
+                    connection,
+                    db_obj.VRF_TABLE_NAME,
+                    [each]
+                )
+    connection.close()
+    return list(map(lambda x: x.split("ctx-")[-1], vrf_apic))
