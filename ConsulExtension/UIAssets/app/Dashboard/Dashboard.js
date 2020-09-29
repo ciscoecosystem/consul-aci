@@ -13,6 +13,10 @@ import "./Dashboard.css";
 
 // const dummydata = { 'nodes': { 'passing': 0, 'warning': 0, 'failing': 0 }, 'agents': { 'down': 0, 'up': 2 }, 'service': { 'passing': 1, 'warning': 1, 'failing': 2 }, 'service_endpoint': { 'non_service': 21, 'service': 11 } }
 
+const BILLION = 1000000000
+const MILLION = 1000000000
+const THOUSAND = 1000
+
 export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -52,14 +56,14 @@ export default class Dashboard extends React.Component {
   }
 
   nFormatter(num) {
-    if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
+    if (num >= BILLION) {
+      return (num / BILLION).toFixed(1).replace(/\.0$/, "") + "B";
     }
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (num >= MILLION) {
+      return (num / MILLION).toFixed(1).replace(/\.0$/, "") + "M";
     }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    if (num >= THOUSAND) {
+      return (num / THOUSAND).toFixed(1).replace(/\.0$/, "") + "K";
     }
     return num;
   }
