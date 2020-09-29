@@ -68,8 +68,8 @@ export default class Agent extends React.Component {
                 { label: "Delete", action: this.actionEvent }
             ],
             agentFields: [{ name: "Protocol", type: "select", mandatory: true },
-            { name: "Address", type: "text", mandatory: true, placeholder: "192.168.0.1" },
-            { name: "Port", type: "number", mandatory: true, placeholder: "8000" },
+            { name: "Address", type: "text", mandatory: true, placeholder: "e.g 197.168.0.1" },
+            { name: "Port", type: "number", mandatory: true, placeholder: "e.g. 8000" },
             { name: "Token", type: "password", mandatory: false, placeholder: "token" }
             ],
             ...defaultFieldState
@@ -534,7 +534,7 @@ export default class Agent extends React.Component {
             accessor: 'protocol'
         },
         {
-            Header: 'Address:Port',
+            Header: 'Address',
             accessor: 'ip',
             Cell: row => {
                 let { ip, port } = row.original;
