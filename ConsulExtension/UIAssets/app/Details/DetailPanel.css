@@ -22,3 +22,8 @@
     display: block;
     overflow-wrap: break-word;
 }
+
+.label{
+    display: -webkit-inline-box !important;
+    line-height: 0.9em !important;
+}
