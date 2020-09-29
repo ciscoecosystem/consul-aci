@@ -338,9 +338,9 @@ export default class Node extends React.Component {
 
         {/* checks part */}
         {(checks !== undefined) && <foreignObject x="-70" y="45" width="160" height="50" className="node-icon">
-            {(checks.passing !== undefined) && <span><Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{nFormatter(checks.passing)}&nbsp;&nbsp;</span>}
-            {(checks.warning !== undefined) && <span><Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{nFormatter(checks.warning)}&nbsp;&nbsp;</span>}
-            {(checks.failing !== undefined) && <span><Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{nFormatter(checks.failing)} </span>}
+            {(checks.passing !== undefined) && <span><Icon size="icon-tiny" type=" icon-check-square" style={{ color: successColor, position: "initial" }}></Icon>&nbsp;{nFormatter(checks.passing)}&nbsp;&nbsp;</span>}
+            {(checks.warning !== undefined) && <span><Icon size="icon-tiny" type=" icon-warning" style={{ color: warningColor, position: "initial" }}></Icon>&nbsp;{nFormatter(checks.warning)}&nbsp;&nbsp;</span>}
+            {(checks.failing !== undefined) && <span><Icon size="icon-tiny" type=" icon-exit-contain" style={{ color: failColor,  position: "initial" }}></Icon>&nbsp;{nFormatter(checks.failing)} </span>}
         </foreignObject>}
 
       </g>

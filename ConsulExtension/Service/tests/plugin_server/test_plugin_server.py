@@ -36,7 +36,7 @@ def get_data(file_name):
 
 def clear_db():
     try:
-        os.remove("/home/app/logs/ConsulDatabase.db")
+        os.remove("/home/app/data/ConsulDatabase.db")
     except Exception:
         pass
 
@@ -176,7 +176,7 @@ def test_get_new_mapping(case):
 
     try:
         os.system(
-            'cp ./tests/plugin_server/data/{}.db /home/app/log/ConsulDatabase.db'.format(case)
+            'cp ./tests/plugin_server/data/{}.db /home/app/data/ConsulDatabase.db'.format(case)
         )
     except Exception:
         assert False

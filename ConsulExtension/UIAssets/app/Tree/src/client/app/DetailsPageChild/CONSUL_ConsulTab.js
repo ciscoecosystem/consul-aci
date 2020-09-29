@@ -15,7 +15,7 @@ export default class CONSUL_ConsulTab extends React.Component {
           label: "Node Checks",
           key: "Node Checks",
           content: <CONSUL_ChecksTable key={"nodeChecks"}
-            extraColumn={{ index: 1, value: { Header: 'NodeName', accessor: 'NodeName' } }}
+            extraColumn={{ index: 1, value: { Header: 'Node', accessor: 'NodeName' } }}
             query={NodeCheckQuery} />
         },
         {
