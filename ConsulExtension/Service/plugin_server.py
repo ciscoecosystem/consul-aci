@@ -2103,7 +2103,19 @@ def get_agent_status(tn, datacenter=""):
     Returns:
         dict: Response for agents
     """
-    agents_res = {'up': 0, 'down': 0}
+    agents_res = {
+        'up': {
+            'value': 0,
+            'label': 'Connected',
+            'color': 'rgb(108, 192, 74)'
+        },
+        'down': {
+            'value': 0,
+            'label': 'Disconnected',
+            'color': 'rgb(226, 35, 26)'
+        },
+        'total': 0
+    }
 
     connection = db_obj.engine.connect()
     agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME, {'tenant': tn}))
@@ -2115,14 +2127,15 @@ def get_agent_status(tn, datacenter=""):
     for agent in agents:
         if datacenter:
             if datacenter == agent[5] and agent[4] == '1':
-                agents_res['up'] += 1
+                agents_res['up']['value'] += 1
             elif datacenter == agent[5] and agent[4] == '0':
-                agents_res['down'] += 1
+                agents_res['down']['value'] += 1
         else:
             if agent[4] == '1':
-                agents_res['up'] += 1
+                agents_res['up']['value'] += 1
             elif agent[4] == '0':
-                agents_res['down'] += 1
+                agents_res['down']['value'] += 1
+    agents_res['total'] = agents_res['up']['value'] + agents_res['down']['value']
     return agents_res
 
 
@@ -2171,7 +2184,19 @@ def get_performance_dashboard(tn):
                 mapped_ep[dc].append(map)
 
         apic_data = get_apic_data(tn)
-        ep_res = {'service': 0, 'non_service': 0}
+        ep_res = {
+            'service': {
+                'color': 'rgb(108, 192, 74)',
+                'value': 0,
+                'label': 'Service Endpoints'
+            },
+            'non_service': {
+                'color': 'rgb(128,128,128)',
+                'value': 0,
+                'label': 'Non-Service Endpoints'
+            },
+            'total': ep_len
+        }
         service_res = {'passing': 0, 'warning': 0, 'failing': 0}
         nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
         ep_set = set()
@@ -2185,7 +2210,7 @@ def get_performance_dashboard(tn):
                 # Add service eps to ep_resp
                 if (ep['IP'], ep['dn']) not in ep_set:
                     ep_set.add((ep['IP'], ep['dn']))
-                    ep_res['service'] += 1
+                    ep_res['service']['value'] += 1
 
                 if ep['node_ip'] not in node_ip_set:
                     node_ip_set.add(ep['node_ip'])
@@ -2196,7 +2221,7 @@ def get_performance_dashboard(tn):
                         service_addr_set.add(service['service_address'])
                         add_check(service['service_checks'], service_res)
 
-        ep_res['non_service'] = ep_len - ep_res['service']
+        ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
 
         response['agents'] = get_agent_status(tn)
         response['service'] = service_res
