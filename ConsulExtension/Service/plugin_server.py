@@ -1373,7 +1373,7 @@ def read_creds(tn):
 
         if not agents:
             logger.info('Agents List Empty.')
-            return json.dumps({'payload': [{'vrfs': vrfs}], 'status_code': '301', 'message': 'Agents not found'})
+            return json.dumps({'payload': [], 'status_code': '301', 'message': 'Agents not found'})
         payload = []
 
         connection = db_obj.engine.connect()
@@ -1411,9 +1411,6 @@ def read_creds(tn):
                     'vrf': agent[7].split("ctx-")[1]
                 })
         connection.close()
-        payload.append({
-            'vrfs': vrfs
-        })
         logger.debug('Read creds response: {}'.format(str(payload)))
         return json.dumps({
             'payload': payload,
@@ -1423,7 +1420,7 @@ def read_creds(tn):
     except Exception as e:
         logger.exception('Error in read credentials: ' + str(e))
         return json.dumps({
-            'payload': [{'vrfs': vrfs}],
+            'payload': [],
             'status_code': '300',
             'message': 'Could not load the credentials.'
         })
