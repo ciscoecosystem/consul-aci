@@ -159,7 +159,6 @@ export default class Dashboard extends React.Component {
             } catch (e) {
             }
           }
-        } else {
         }
         this.setState({ loadingDashBoard: false });
       };
@@ -180,40 +179,6 @@ export default class Dashboard extends React.Component {
           <div className="header-text">
             <b>Overview</b>
           </div>
-          {/* {this.state.loadingDashBoard?<Loader></Loader>:
-                        <React.Fragment>
-                            <div style={{"float":"left"}}>
-                                <h6 style={{textAlign:"center", paddingLeft:"70%"}}>Agents</h6>
-                                <div className="agent" >
-                                    <div style={{marginLeft:"30%"}}><span className="green-dot"></span><span>Up({this.state.agents?this.nFormatter(this.state.agents.up):0})</span></div>
-                                </div>
-                                <div className="agent">
-                                    <div style={{marginLeft:"30%"}}><span className="red-dot"></span><span>Down({this.state.agents?this.nFormatter(this.state.agents.down):0})</span></div>
-                                </div>
-                            </div>
-                            <div style={{"float":"right"}}>
-                                <h6 style={{textAlign:"center"}}>Endpoints</h6>
-                                <div className="endpoint">
-                                    <span className="green-dot"></span><span>Service Endpoints({this.state.endpoints?this.nFormatter(this.state.endpoints.service):0})</span>
-                                </div>
-                                <div className="endpoint">
-                                    <span className="grey-dot"></span><span>Non-Service Endpoints({this.state.endpoints?this.nFormatter(this.state.endpoints.non_service):0})</span>
-                                </div>
-                            </div>
-                            {this.state.services && this.state.nodes?
-                                <div style={{textAlign:"center"}}>
-                                    <div className="service-chart">
-                                        <h6>Service checks</h6>
-                                        <PieChartAndCounter  data={this.formateDataToChartData(this.state.services).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.services).totalCnt)} />
-                                    </div>
-                                    <div className="node-chart">
-                                        <h6>Node checks</h6>
-                                        <PieChartAndCounter  data={this.formateDataToChartData(this.state.nodes).formattedData} totalCount={this.nFormatter(this.formateDataToChartData(this.state.nodes).totalCnt)}/>
-                                    </div>
-                                </div>
-                            :null}
-                        </React.Fragment>
-                        }  */}
           {this.state.loadingDashBoard ? (
             <Loader></Loader>
           ) : (
