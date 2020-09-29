@@ -443,6 +443,7 @@ def details_flattened(tenant, datacenter):
                 'epgHealth': int(each.get('epg_health')),
                 'consulNode': each.get('node_name'),
                 'nodeChecks': each.get('node_check'),
+                'pod_name': list(map(lambda x:x.split("/")[0], each.get('Interfaces')))
             }
 
             services = change_key(each.get('node_services'))
