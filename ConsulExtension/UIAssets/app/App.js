@@ -75,7 +75,6 @@ export default class App extends React.Component {
             mappingPopup: false,
             callContainer: true,
             items: [
-                { label: AGENTS , action: this.handleAgent },
                 { label: "Polling interval", action: this.handlePollingIntervalPopUp }
             ],
             pollingIntervalOptions : [
@@ -123,10 +122,10 @@ export default class App extends React.Component {
                 },
                 {
                     id: 'Agent',
-                    icon: "icon-analysis",
+                    icon: "icon-plugin", // icon-insights, icon-general-source, icon-link, icon-plugin
                     title: 'Agent',
                     content: <li class="sidebar__item "> <a className="" aria-current="false" href="javascript:void(0)" onClick={() => this.handleAgent(true)}>
-                        <span className="icon-analysis ">
+                        <span className="icon-plugin">
                         </span><span className="qtr-margin-left">Agent</span></a>
                     </li>
                 },
@@ -376,7 +375,7 @@ export default class App extends React.Component {
             return;
         }
         let payload = POST_TENANT_QUERY(this.tenantName)
-        let xhrPostTenant = this.xhrCred;
+        let xhrPostTenant = new XMLHttpRequest();
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");

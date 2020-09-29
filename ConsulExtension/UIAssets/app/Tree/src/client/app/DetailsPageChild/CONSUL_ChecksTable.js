@@ -132,11 +132,11 @@ export default class CONSUL_ChecksTable extends Component {
                 }
             },
             {
-                Header: 'ServiceName',
+                Header: 'Service',
                 accessor: 'ServiceName'
             },
             {
-                Header: 'CheckID',
+                Header: 'Id',
                 accessor: 'CheckID'
             },
             {
