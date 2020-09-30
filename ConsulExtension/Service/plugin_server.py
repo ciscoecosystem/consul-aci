@@ -2267,7 +2267,7 @@ def get_vrf_from_databse(datacenter, tn):
         ['vrf_dn']
     )
     connection.close()
-    vrfs = list(map(lambda x: str(x[0]), tmp_vrfs))
+    vrfs = list(map(lambda x: x[0], tmp_vrfs))
     return None if None in vrfs else vrfs
 
 
