@@ -203,7 +203,7 @@ def generatelist(ip_list):
     mac_dict = dict((el, []) for el in macs)
     for each in ip_list:
         if each[2] == 'No':
-            each[2] = False
+            each[2] = True  # if 'True' it will map all eps as recommended
         if each[2] == 'Yes' or each[2] == 'None':
             each[2] = True
         if each[3] == 'IP':
