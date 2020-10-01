@@ -157,7 +157,7 @@ def get_new_mapping(tenant, datacenter):
                 }
             )
 
-        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         # Get consul data
         consul_data = get_consul_data(datacenter)
         ip_list = []
@@ -381,7 +381,7 @@ def tree(tenant, datacenter):
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
-        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
         merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
 
@@ -422,7 +422,7 @@ def details_flattened(tenant, datacenter):
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
-        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_databse(datacenter, tenant))
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
         merged_data, non_merged_data, = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
@@ -1389,14 +1389,15 @@ def read_creds(tn):
                         datacenter = agent[5]
 
                 if agent[4] != status or agent[5] != datacenter:
-                    agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter, tn)
+                    agent_val = (agent[0], agent[1], agent[2], agent[3], status, datacenter, tn, agent[7])
                     db_obj.insert_and_update(
                         connection,
                         db_obj.LOGIN_TABLE_NAME,
                         agent_val,
                         {
                             'agent_ip': agent[0],
-                            'port': agent[1]
+                            'port': agent[1],
+                            'vrf_dn': agent[7]
                         }
                     )
 
@@ -1407,7 +1408,7 @@ def read_creds(tn):
                     'token': agent[3],
                     'status': status,
                     'datacenter': datacenter,
-                    'vrf': agent[7].split("ctx-")[1] if agent[7] else None
+                    'vrf': agent[7].split("ctx-")[1] if agent[7] else "-"
                 })
         connection.close()
         logger.debug('Read creds response: {}'.format(str(payload)))
@@ -1441,7 +1442,7 @@ def write_creds(tn, new_agent):
     try:
         new_agent = json.loads(new_agent)[0]  # UI returns list of one object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
-        vrf_dn = None
+        vrf_dn = "-"
         if new_agent.get('vrf'):
             vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
         connection = db_obj.engine.connect()
@@ -1536,8 +1537,8 @@ def update_creds(tn, update_input):
         update_input = json.loads(update_input)
         old_agent = update_input.get('oldData')
         new_agent = update_input.get('newData')
-        old_vrf_dn = None
-        new_vrf_dn = None
+        old_vrf_dn = "-"
+        new_vrf_dn = "-"
         if old_agent.get('vrf'):
             old_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, old_agent.get('vrf'))
         if new_agent.get('vrf'):
@@ -1578,6 +1579,7 @@ def update_creds(tn, update_input):
             if (
                 old_agent.get('ip') == agent[0] and
                 old_agent.get('port') == int(agent[1]) and
+                tn == agent[6] and
                 old_vrf_dn == agent[7]
             ):
                 if new_agent.get('token') == agent[3]:
@@ -1660,7 +1662,7 @@ def delete_creds(tn, agent_data):
     try:
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
-        vrf_dn = None
+        vrf_dn = "-"
         if agent_data.get('vrf'):
             vrf_dn = "uni/tn-{}/ctx-{}".format(tn, agent_data.get('vrf'))
 
@@ -2255,7 +2257,7 @@ def get_epg_alias(dn):
     return ""
 
 
-def get_vrf_from_databse(datacenter, tn):
+def get_vrf_from_database(datacenter, tn):
     connection = db_obj.engine.connect()
     tmp_vrfs =  db_obj.select_from_table(
         connection,
@@ -2268,7 +2270,8 @@ def get_vrf_from_databse(datacenter, tn):
     )
     connection.close()
     vrfs = list(map(lambda x: x[0], tmp_vrfs))
-    return None if None in vrfs else vrfs
+    logger.info("vrfss {}".format(vrfs))
+    return "-" if "-" in vrfs else vrfs
 
 
 @time_it
@@ -2326,7 +2329,7 @@ def update_vrf_in_db(tn):
 
 
 def filter_apic_data(apic_data, vrfs):
-    if not vrfs:
+    if "-" == vrfs:
         return apic_data
 
     def format_vrf(vrf):
@@ -2334,9 +2337,12 @@ def filter_apic_data(apic_data, vrfs):
         vrf = list(map(lambda x: x.split("-", 1)[1], vrf))
         return '/'.join(vrf)
 
-    vrfs = set(map(format_vrf, vrfs))
-    response = []
-    for each in apic_data:
-        if each.get("VRF") in vrfs:
-            response.append(each)
-    return response
+    try:
+        vrfs = set(map(format_vrf, vrfs))
+        response = []
+        for each in apic_data:
+            if each.get("VRF") in vrfs:
+                response.append(each)
+        return response
+    except Exception as e:
+        logger.info("Error in filter_apic_data, Error: {}".format(e))

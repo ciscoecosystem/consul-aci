@@ -210,7 +210,7 @@ class Database:
             Column('status', String),
             Column('datacenter', String),
             Column('tenant', String, primary_key=True),
-            Column('vrf_dn', String, ForeignKey(self.vrf.c.vrf_dn)),
+            Column('vrf_dn', String, ForeignKey(self.vrf.c.vrf_dn), primary_key=True),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
