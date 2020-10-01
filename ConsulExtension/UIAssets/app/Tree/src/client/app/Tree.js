@@ -369,7 +369,7 @@ export default class Tree extends React.Component {
               font-size="20px"
               fill="grey"
             >
-              No Endpoints Found for the given Application in the given Tenant.
+              No endpoints are found for the selected data center in this Tenant.
             </text>
           </svg>
         </div>

@@ -208,7 +208,7 @@ export default class DataTable extends Component {
         <FilterableTable loading={this.state.loading}
           ref={this.myRef}
           className="-striped -highlight"
-          noDataText="No endpoints found for the given Application in the given Tenant."
+          noDataText="No endpoints are found for the selected data center in this Tenant."
           data={this.state.row}
           columns={this.state.columns}
           getTrProps={(state, rowInfo) => {
