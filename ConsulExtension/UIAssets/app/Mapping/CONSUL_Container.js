@@ -215,7 +215,7 @@ export default class CONSUL_Container extends React.Component {
             accessor: 'ip',
         },
         {
-            Header: 'Recommended',
+            Header: 'Mapped',
             accessor: 'recommended',
             Cell: row => {
                 let { recommended } = row.original;
@@ -242,18 +242,18 @@ export default class CONSUL_Container extends React.Component {
             Header: 'Tenant',
             accessor: 'tenant'
         },
-        {
-            Header: 'Map',
-            accessor: 'enabled',
-            filterable: false,
-            Cell: row => {
-                let { enabled } = row.original;
-                return <div>
-                    <Switch key={"clustr-" + row.index} checked={enabled}
-                        onChange={() => this.handleSwitchChange(row.index)} />
-                </div>
-            }
-        }
+        // {
+        //     Header: 'Map',
+        //     accessor: 'enabled',
+        //     filterable: false,
+        //     Cell: row => {
+        //         let { enabled } = row.original;
+        //         return <div>
+        //             <Switch key={"clustr-" + row.index} checked={enabled}
+        //                 onChange={() => this.handleSwitchChange(row.index)} />
+        //         </div>
+        //     }
+        // }
         ]
 
         let { mappingData, totalEnabled, loading } = this.state;
@@ -262,15 +262,14 @@ export default class CONSUL_Container extends React.Component {
             <div>
                 {/* <Header text={this.props.headertext} applinktext={this.props.applinktext} instanceName={headerInstanceName} /> */}
                 <div className="" style={{ margin: "0px 20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-
+                    <div>
                         <p>Selected <b>{totalEnabled}</b> out of {mappingData.length}  </p>
 
-                        <Button key={"savemapping"}
+                        {/* <Button key={"savemapping"}
                             className={`savemapping ${loading && "disabled"}`}
                             size="btn--small"
                             type="btn--primary-ghost"
-                            onClick={this.saveMapping}>Save</Button>
+                            onClick={this.saveMapping}>Save</Button> */}
                     </div>
 
                     <Table key={"mappingtable"}
