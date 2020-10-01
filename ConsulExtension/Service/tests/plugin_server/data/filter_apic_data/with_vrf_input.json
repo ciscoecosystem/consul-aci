@@ -1,0 +1,11 @@
+[
+    [
+        {"VRF": "tn0/vrf0"},
+        {"VRF": "tn0/vrf1"},
+        {"VRF": "tn0/vrf2"},
+        {"VRF": "tn0/vrf3"}
+    ],
+    [
+        "uni/tn-tn0/ctx-vrf1"
+    ]
+]

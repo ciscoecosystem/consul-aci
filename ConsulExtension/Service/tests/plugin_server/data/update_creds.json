@@ -8,13 +8,15 @@
                     "protocol":"http",
                     "port":"1234",
                     "ip": "0.0.0.0",
-                    "token":null
+                    "token":null,
+                    "vrf": "vrf0"
                 },
                 "newData" : {
                     "protocol":"http",
                     "port":"1235",
                     "ip": "0.0.0.0",
-                    "token":null
+                    "token":null,
+                    "vrf": "vrf0"
                 }
             },
 			[
@@ -22,9 +24,10 @@
                 "1234",
                 "http",
                 "",
-                "True",
+                "1",
                 "-",
-                "tn0"
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
             ]
 		]
 	],
@@ -34,15 +37,17 @@
             {
                 "oldData" : {
                     "protocol":"http",
-                    "port":1233,
+                    "port":1234,
                     "ip": "0.0.0.1",
-                    "token":""
+                    "token":"1",
+                    "vrf": "vrf0"
                 },
                 "newData" : {
                     "protocol":"http",
                     "port":1234,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "vrf0"
                 }
             },
             [
@@ -50,9 +55,10 @@
                 "1234",
                 "http",
                 "",
-                "True",
+                "1",
                 "-",
-                "tn0"
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
             ]
         ]
     ],
@@ -64,13 +70,15 @@
                     "protocol":"http",
                     "port":1234,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "vrf0"
                 },
                 "newData" : {
                     "protocol":"http",
                     "port":1235,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "vrf0"
                 }
             },
             [
@@ -78,9 +86,10 @@
                 "1234",
                 "http",
                 "",
-                "True",
+                "1",
                 "-",
-                "tn0"
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
             ]
         ]
     ],
@@ -92,13 +101,15 @@
                     "protocol":"http",
                     "port":1234,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "vrf0"
                 },
                 "newData" : {
                     "protocol":"http",
-                    "port":1235,
+                    "port":1236,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "vrf0"
                 }
             },
             [
@@ -106,9 +117,10 @@
                 "1234",
                 "http",
                 "",
-                "True",
+                "1",
                 "-",
-                "tn0"
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
             ]
         ]
     ],
@@ -121,7 +133,8 @@
                     "protocol":"http",
                     "port":1235,
                     "ip": "0.0.0.0",
-                    "token":""
+                    "token":"",
+                    "vrf": "uni/tn-tn0/ctx-vrf0"
                 }
             },
             [
@@ -129,9 +142,10 @@
                 "1234",
                 "http",
                 "",
-                "True",
+                "1",
                 "-",
-                "tn0"
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
             ]
         ]
     ]

@@ -1,0 +1,66 @@
+{
+    "imdata": [
+        {
+            "fvCtx": {
+                "attributes": {
+                    "annotation": "",
+                    "bdEnforcedEnable": "no",
+                    "childAction": "",
+                    "descr": "",
+                    "dn": "uni/tn-Consul/ctx-Consul_VRF",
+                    "extMngdBy": "",
+                    "ipDataPlaneLearning": "enabled",
+                    "knwMcastAct": "permit",
+                    "lcOwn": "local",
+                    "modTs": "2020-09-08T12:06:39.029+00:00",
+                    "monPolDn": "uni/tn-common/monepg-default",
+                    "name": "Consul_VRF",
+                    "nameAlias": "",
+                    "ownerKey": "",
+                    "ownerTag": "",
+                    "pcEnfDir": "ingress",
+                    "pcEnfDirUpdated": "yes",
+                    "pcEnfPref": "unenforced",
+                    "pcTag": "16386",
+                    "scope": "2686976",
+                    "seg": "2686976",
+                    "status": "",
+                    "uid": "15374",
+                    "userdom": ":all:",
+                    "vrfId": "0"
+                }
+            }
+        },
+        {
+            "fvCtx": {
+                "attributes": {
+                    "annotation": "",
+                    "bdEnforcedEnable": "no",
+                    "childAction": "",
+                    "descr": "",
+                    "dn": "uni/tn-Consul/ctx-Consul_VRF_2",
+                    "extMngdBy": "",
+                    "ipDataPlaneLearning": "enabled",
+                    "knwMcastAct": "permit",
+                    "lcOwn": "local",
+                    "modTs": "2020-09-24T07:41:33.494+00:00",
+                    "monPolDn": "uni/tn-common/monepg-default",
+                    "name": "Consul_VRF_2",
+                    "nameAlias": "",
+                    "ownerKey": "",
+                    "ownerTag": "",
+                    "pcEnfDir": "ingress",
+                    "pcEnfDirUpdated": "yes",
+                    "pcEnfPref": "enforced",
+                    "pcTag": "16386",
+                    "scope": "2981888",
+                    "seg": "2981888",
+                    "status": "",
+                    "uid": "15374",
+                    "userdom": ":all:",
+                    "vrfId": "0"
+                }
+            }
+        }
+    ]
+}

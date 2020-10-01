@@ -479,6 +479,28 @@ class AciUtils(object):
             return ''
 
     @time_it
+    def apic_fetch_vrf_tenant(self, tn):
+        """Function to fetch VRF detail from tenant
+
+        Arguments:
+            tn {str} -- tenant name
+
+        Returns:
+            str -- All Vrfs data from Response of FETCH_VRF_TENANT
+        """
+        try:
+            url = urls.FETCH_VRF_TENANT.format(self.proto, self.apic_ip, tn)
+            response_json = self.aci_get(url)
+            if response_json and response_json.get("imdata"):
+                data = response_json.get("imdata")
+                return data
+            return ''
+        except Exception as e:
+            logger.exception(
+                'Exception in VRF-Tenant API call, Error: {}'.format(str(e)))
+            return ''
+
+    @time_it
     def apic_fetch_contract(self, dn):
         """Fetch Contracts for EPG from dn
 

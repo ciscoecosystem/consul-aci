@@ -28,6 +28,8 @@ AUDIT_LOGS_QUERY        = 'rsp-subtree-include=audit-logs,no-scoped,subtree'
 FAULTS_QUERY            = 'rsp-subtree-include=fault-records,no-scoped,subtree'
 EVENTS_QUERY            = 'rsp-subtree-include=event-logs,no-scoped,subtree'
 
+FETCH_VRF_TENANT        = '{0}{1}/api/node/mo/uni/tn-{2}.json?query-target=children&target-subtree-class=fvCtx'
+
 
 # Consul URLs
 
