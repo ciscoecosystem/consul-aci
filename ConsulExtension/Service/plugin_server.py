@@ -1412,7 +1412,7 @@ def read_creds(tn):
                     'token': agent[3],
                     'status': status,
                     'datacenter': datacenter,
-                    'vrf': agent[7].split("ctx-")[1] if agent[7] else "-"
+                    'vrf': agent[7].split("ctx-")[1] if agent[7] != "-" else "-"
                 })
         connection.close()
         logger.debug('Read creds response: {}'.format(str(payload)))
@@ -1447,7 +1447,7 @@ def write_creds(tn, new_agent):
         new_agent = json.loads(new_agent)[0]  # UI returns list of one object
         logger.info('Writing agent: {}:{}'.format(new_agent.get('ip'), str(new_agent.get('port'))))
         vrf_dn = "-"
-        if new_agent.get('vrf'):
+        if new_agent.get('vrf') != "-" and new_agent.get('vrf') is not None:
             vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
         connection = db_obj.engine.connect()
         agents = list(db_obj.select_from_table(
@@ -1543,9 +1543,9 @@ def update_creds(tn, update_input):
         new_agent = update_input.get('newData')
         old_vrf_dn = "-"
         new_vrf_dn = "-"
-        if old_agent.get('vrf'):
+        if old_agent.get('vrf') != "-" and old_agent.get('vrf') is not None:
             old_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, old_agent.get('vrf'))
-        if new_agent.get('vrf'):
+        if new_agent.get('vrf') != "-" and new_agent.get('vrf') is not None:
             new_vrf_dn = "uni/tn-{}/ctx-{}".format(tn, new_agent.get('vrf'))
 
         connection = db_obj.engine.connect()
@@ -1667,7 +1667,7 @@ def delete_creds(tn, agent_data):
         logger.info('Deleting agent {}'.format(str(agent_data)))
         agent_data = json.loads(agent_data)
         vrf_dn = "-"
-        if agent_data.get('vrf'):
+        if agent_data.get('vrf') != "-" and agent_data.get('vrf') is not None:
             vrf_dn = "uni/tn-{}/ctx-{}".format(tn, agent_data.get('vrf'))
 
         # Agent deleted
