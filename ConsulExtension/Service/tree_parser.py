@@ -156,7 +156,9 @@ def consul_tree_dict(data):
                         service_side_pane = {
                             'Service': service['service_id'],
                             'Address': service_address,
-                            'Service Checks': service['service_checks']
+                            'Service Checks': service['service_checks'],
+                            'ServiceTags': service['service_tags'],
+                            'ServiceKind': service['service_kind']
                         }
 
                         # Adding services to EP attributes
