@@ -118,3 +118,7 @@ form input::-webkit-credentials-auto-fill-button {
 .vrf-dropdown .dropdown__menu{
     margin-bottom: 0px !important;
 }
+
+.ReactTable .table-no-data{
+    font-weight: bold;
+}

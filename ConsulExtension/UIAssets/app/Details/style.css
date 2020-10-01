@@ -76,9 +76,9 @@
 }
 
 .detail-container .overlay-pane {
-    top: 17vh !important;
+    top: inherit !important;
 }
 
-.cui .form-group.dropdown .dropdown__menu {
-    margin-bottom: 50px !important;
+.ReactTable .table-no-data{
+    font-weight: bold;
 }
