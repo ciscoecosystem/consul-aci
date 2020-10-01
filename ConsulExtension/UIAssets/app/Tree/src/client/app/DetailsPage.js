@@ -154,7 +154,7 @@ export default class DetailePage extends Component {
       clonedObj.push({
         label: "Consul",
         key: "Consul",
-        content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+        content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} serviceList={this.state.data.attributes.Services_List} /> // contains subTabs: nodeCheck | serviceChecks 
       });
 
       this.setState({ tabs: clonedObj });
@@ -211,7 +211,7 @@ export default class DetailePage extends Component {
         tabsObj.push({
           label: "Consul",
           key: "Consul",
-          content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} /> // contains subTabs: nodeCheck | serviceChecks 
+          content: <CONSUL_ConsulTab NodeCheckQuery={NodeCheckQuery} ServiceCheckQuery={ServiceCheckQuery} serviceList={data.attributes.Services_List} /> // contains subTabs: nodeCheck | serviceChecks 
         })
       }
 
