@@ -315,3 +315,7 @@ body {
 .ReactTable .-pagination .-pageJump input {
   width: 70px !important;
 }
+
+.ReactTable .table-no-data{
+  font-weight: bold;
+}

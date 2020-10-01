@@ -79,6 +79,6 @@
     top: inherit !important;
 }
 
-.cui .form-group.dropdown .dropdown__menu {
-    margin-bottom: 50px !important;
+.ReactTable .table-no-data{
+    font-weight: bold;
 }
