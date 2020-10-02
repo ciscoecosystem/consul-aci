@@ -158,7 +158,8 @@ def consul_tree_dict(data):
                             'Address': service_address,
                             'Service Checks': service['service_checks'],
                             'ServiceTags': service['service_tags'],
-                            'ServiceKind': service['service_kind']
+                            'ServiceKind': service['service_kind'],
+                            'NameSpace': service['service_namespace']
                         }
 
                         # Adding services to EP attributes
