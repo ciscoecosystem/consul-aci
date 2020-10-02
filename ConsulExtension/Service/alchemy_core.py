@@ -36,8 +36,14 @@ class Database:
     EPGAUDIT_TABLE_NAME = 'epgaudit'
     TENANT_TABLE_NAME = 'tenant'
     POLLING_TABLE_NAME = 'polling'
+    VRF_TABLE_NAME = 'vrf'
 
     SCHEMA_DICT = {
+        VRF_TABLE_NAME: [
+            'vrf_dn',
+            'created_ts'
+        ],
+
         LOGIN_TABLE_NAME: [
             'agent_ip',
             'port',
@@ -46,6 +52,7 @@ class Database:
             'status',
             'datacenter',
             'tenant',
+            'vrf_dn',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -188,6 +195,12 @@ class Database:
         """
         metadata = MetaData()
 
+        self.vrf = Table(
+            self.VRF_TABLE_NAME, metadata,
+            Column('vrf_dn', String, primary_key=True),
+            Column('created_ts', String)
+        )
+
         self.login = Table(
             self.LOGIN_TABLE_NAME, metadata,
             Column('agent_ip', String, primary_key=True),
@@ -197,6 +210,7 @@ class Database:
             Column('status', String),
             Column('datacenter', String),
             Column('tenant', String, primary_key=True),
+            Column('vrf_dn', String, ForeignKey(self.vrf.c.vrf_dn), primary_key=True),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -440,6 +454,7 @@ class Database:
         )
 
         self.table_obj_meta.update({
+            self.VRF_TABLE_NAME: self.vrf,
             self.LOGIN_TABLE_NAME: self.login,
             self.MAPPING_TABLE_NAME: self.mapping,
             self.NODE_TABLE_NAME: self.node,
@@ -458,6 +473,10 @@ class Database:
             self.POLLING_TABLE_NAME: self.polling
         })
         self.table_key_meta.update({
+            self.VRF_TABLE_NAME: {
+                'vrf_dn': self.vrf.c.vrf_dn,
+                'created_ts': self.vrf.c.created_ts
+            },
             self.LOGIN_TABLE_NAME: {
                 'agent_ip': self.login.c.agent_ip,
                 'port': self.login.c.port,
@@ -466,6 +485,7 @@ class Database:
                 'status': self.login.c.status,
                 'datacenter': self.login.c.datacenter,
                 'tenant': self.login.c.tenant,
+                'vrf_dn': self.login.c.vrf_dn,
                 'created_ts': self.login.c.created_ts,
                 'updated_ts': self.login.c.updated_ts,
                 'last_checked_ts': self.login.c.last_checked_ts
@@ -744,10 +764,13 @@ class Database:
                                     index.append(i)
                             except Exception:
                                 logger.exception("Exception in insert_and_update for table {}".format(table_name))
+                        elif isinstance(new_record[i], (int, float)):
+                            if old_data[i] != str(new_record[i]):
+                                index.append(i)
                         else:
                             if old_data[i] != new_record[i]:
                                 index.append(i)
-                    field_names = [self.SCHEMA_DICT[table_name][i]for i in index]
+                    field_names = [self.SCHEMA_DICT[table_name][i] for i in index]
                     new_record_dict = dict()
                     for i in range(len(field_names)):
                         new_record_dict[field_names[i]] = new_record[index[i]]

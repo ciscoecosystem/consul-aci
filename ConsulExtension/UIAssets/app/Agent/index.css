@@ -101,3 +101,24 @@ form input::-webkit-credentials-auto-fill-button {
     width: 0;
     margin: 0;
   }
+
+.vrf-spinner{
+    display: flex;
+    position: absolute;
+    top: 60%;
+    left: 51%
+}
+
+
+.cui .loading-spinner .wrapper .wheel{
+    width: 15px !important;
+    height: 15px !important;
+}
+
+.vrf-dropdown .dropdown__menu{
+    margin-bottom: 0px !important;
+}
+
+.ReactTable .table-no-data{
+    font-weight: bold;
+}

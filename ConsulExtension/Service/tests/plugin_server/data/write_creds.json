@@ -14,7 +14,8 @@
             "protocol":"http",
             "port":"1234",
             "ip": "0.0.0.0",
-            "token":null
+            "token":null,
+            "vrf": "uni/tn-tn0/ctx-test-vrf"
         }]
     ],
     [
