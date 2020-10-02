@@ -82,3 +82,20 @@
 .ReactTable .table-no-data{
     font-weight: bold;
 }
+
+.detail-container .detail-expansion .screen-container{
+    top: inherit !important;
+    position: absolute !important;
+}
+
+.detail-container .overlay-pane{
+    box-shadow:  -1px 9px 17px 0px !important;
+}
+
+.detail-container .scrollable{
+    max-height: 76vh;
+}
+
+.detail-container .panel{
+    margin-bottom: 5%;
+}

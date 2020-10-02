@@ -61,7 +61,7 @@ export default function DetailPanel(props) {
     let serviceInfoOrder = [{ name: "service", label: "service" },
     { name: "serviceChecks", label: "service Checks" },
     { name: "serviceInstance", label: "service Instance" },
-    { name: "port", label: "port" },
+    { name: "serviceAddress", label: "Address" },
     { name: "serviceTags", label: "service Tags" },
     { name: "serviceKind", label: "service Kind" },
     { name: "serviceNamespace", label: "Namespace" }];
@@ -102,12 +102,12 @@ export default function DetailPanel(props) {
         subTitle={"ENDPOINT"}
         title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
-        openScreen={function () { console.log("Here open detail it") }}
+        openScreen={()=>props.setExpansionViewOpen()}
     >
         <div className="" style={{ marginBottom: "80%" }}>
             {CollapsePane("APIC Information", apicInfoOrder)}
             {CollapsePane("Consul Node Information", nodeInfoOrder)}
-            {CollapsePane("Consul Service Information", serviceInfoOrder)}
+            {CollapsePane("Consul Service Information", summaryDetail.service?serviceInfoOrder:[])}
         </div>
     </SummaryPane> : <div></div>
 }
