@@ -79,7 +79,8 @@ export default function DetailPanel(props) {
     { name: "Address", label: "Address" },
     { name: "Service Checks", label: "Service Checks" },
     { name: "ServiceTags", label: "Service Tags" },
-    { name: "ServiceKind", label: "Service Kind" },]
+    { name: "ServiceKind", label: "Service Kind" },
+    { name: "NameSpace", label: "Service Namespace" },]
 
 
     let epInfoOrder = [{ name: "name", label: "Name" },
