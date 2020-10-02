@@ -134,7 +134,13 @@ def get_new_mapping(tenant, datacenter):
     try:
         # Get APIC data
         connection = db_obj.engine.connect()
-        ep_data = list(db_obj.select_from_table(
+        epg_data = list(db_obj.select_from_table(
+            connection,
+            db_obj.EPG_TABLE_NAME,
+            {'tenant': tenant},
+            ["dn", "vrf"]
+        ))
+        tmp_ep_data = list(db_obj.select_from_table(
             connection,
             db_obj.EP_TABLE_NAME,
             {'tenant': tenant},
@@ -142,6 +148,19 @@ def get_new_mapping(tenant, datacenter):
         ))
         connection.close()
 
+        vrfs = get_vrf_from_database(datacenter, tenant)
+        ep_data = []
+        if vrfs == "-":
+            ep_data = tmp_ep_data
+        else:
+            dns = set()
+            vrfs = set(map(format_vrf, vrfs))
+            for each in epg_data:
+                if each[1] in vrfs:
+                    dns.add(each[0])
+            for each in tmp_ep_data:
+                if each[1].split("/cep")[0] in dns:
+                    ep_data.append(each)
         parsed_eps = []
         for ep in ep_data:
             cep_ip = int(ep[2])
@@ -2210,7 +2229,7 @@ def get_performance_dashboard(tenant):
             for map in mapped_dc:
                 mapped_ep[dc].append(map)
 
-        apic_data = get_apic_data(tenant)
+        apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(None, tenant, True))
         ep_res = {
             'service': {
                 'color': 'rgb(108, 192, 74)',
@@ -2286,15 +2305,15 @@ def get_epg_alias(dn):
     return ""
 
 
-def get_vrf_from_database(datacenter, tn):
+def get_vrf_from_database(datacenter, tn, dashboard=False):
     connection = db_obj.engine.connect()
-    tmp_vrfs =  db_obj.select_from_table(
+    search_param = {'tenant': tn}
+    if not dashboard:
+        search_param['datacenter'] = datacenter
+    tmp_vrfs = db_obj.select_from_table(
         connection,
         db_obj.LOGIN_TABLE_NAME,
-        {
-            'datacenter': datacenter,
-            'tenant': tn
-        },
+        search_param,
         ['vrf_dn']
     )
     connection.close()
@@ -2357,14 +2376,15 @@ def update_vrf_in_db(tn):
         })
 
 
+def format_vrf(vrf):
+    vrf = vrf.split("/")[1:]
+    vrf = list(map(lambda x: x.split("-", 1)[1], vrf))
+    return '/'.join(vrf)
+
+
 def filter_apic_data(apic_data, vrfs):
     if "-" == vrfs:
         return apic_data
-
-    def format_vrf(vrf):
-        vrf = vrf.split("/")[1:]
-        vrf = list(map(lambda x: x.split("-", 1)[1], vrf))
-        return '/'.join(vrf)
 
     try:
         vrfs = set(map(format_vrf, vrfs))
