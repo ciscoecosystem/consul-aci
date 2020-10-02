@@ -455,11 +455,14 @@ def details_flattened(tenant, datacenter):
                     'serviceTags': [],
                     'serviceKind': '',
                     'serviceNamespace': '',
-                    'serviceChecks': {}
+                    'serviceChecks': {},
+                    'serviceAddress': ''
                 })
             for service in services:
                 record = {}
                 record.update(ep)
+                if service.get('serviceAddress', False) != "":
+                    service['serviceAddress'] = ':'.join([each.get('IP'), service['port']])
                 record.update(service)
                 details_list.append(record)
         logger.debug("Details final data ended: " + str(details_list))
