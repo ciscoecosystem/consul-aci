@@ -1,8 +1,7 @@
 import React from "react";
 import { Tab, Card, CardBody, Label } from "blueprint-react";
 import CONSUL_ChecksTable from "./CONSUL_ChecksTable";
-import "../DetailsPage.css";
-import PieChartAndCounter from "../commonComponent/PieChartAndCounter.js";
+import PieChartAndCounter from "../../commonComponent/PieChartAndCounter.js";
 
 function formateDataToChartData(data) {
   let totalCnt = 0;

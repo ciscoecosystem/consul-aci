@@ -77,7 +77,9 @@ export default function DetailPanel(props) {
 
     let consulServiceOrder = [{ name: "Service", label: "Service" },
     { name: "Address", label: "Address" },
-    { name: "Service Checks", label: "Service Checks" }]
+    { name: "Service Checks", label: "Service Checks" },
+    { name: "ServiceTags", label: "Service Tags" },
+    { name: "ServiceKind", label: "Service Kind" },]
 
 
     let epInfoOrder = [{ name: "name", label: "Name" },
@@ -109,7 +111,7 @@ export default function DetailPanel(props) {
                     let { formattedData, totalCnt } = formateDataToChartData(showDetails[name])
                     detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                 }
-                else if (name === "serviceTags" || name === "Service Tags") {
+                else if (name === "serviceTags" || name === "Service Tags" || name === "ServiceTags") {
                     if (!Array.isArray(showDetails[name])) {
                         console.warn("Service Tags format invalid");
                         detailValue = "-"

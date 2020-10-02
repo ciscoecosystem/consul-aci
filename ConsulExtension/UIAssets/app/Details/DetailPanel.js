@@ -102,7 +102,7 @@ export default function DetailPanel(props) {
         subTitle={"ENDPOINT"}
         title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
-        openScreen={function () { console.log("Here open detail it") }}
+        openScreen={()=>props.setExpansionViewOpen()}
     >
         <div className="" style={{ marginBottom: "80%" }}>
             {CollapsePane("APIC Information", apicInfoOrder)}
