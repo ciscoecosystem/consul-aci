@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import DataTable from "./DataTable";
 import DetailPanel from "./DetailPanel";
+import DetailPage from "./DetailsPage";
 import { DC_DETAILS_QUERY_PAYLOAD, QUERY_URL, getCookie, INTERVAL_API_CALL, DEV_TOKEN, URL_TOKEN } from "../../constants.js";
 import { toast } from 'react-toastify';
 // import { dummyData } from "./dummyData.js";
@@ -45,7 +46,8 @@ class Container extends Component {
             loading: false,
             // expanded: {},
             summaryPaneIsOpen: false,
-            summaryDetail: {}
+            summaryDetail: {},
+            expansionViewOpen: false,
         };
 
         this.handleBackClick = this.handleBackClick.bind(this);
@@ -219,7 +221,10 @@ class Container extends Component {
                     summaryDetail={summaryDetail}
                     title={summaryDetail["endPointName"]}
                     setSummaryIsOpen={this.setSummaryIsOpen}
+                    setExpansionViewOpen={()=>{this.setState({expansionViewOpen: true})}}
                 />
+
+                {this.state.expansionViewOpen?<div className="detail-expansion"><DetailPage data={summaryDetail} dataCenter={this.props.dcName} title={summaryDetail["endPointName"]} closeDetailsPage={()=>{this.setState({expansionViewOpen: false})}}/></div>:null}
 
                 {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 <div className="scroll" style={{ padding: "0px 14px", marginBottom: "240px" }}>

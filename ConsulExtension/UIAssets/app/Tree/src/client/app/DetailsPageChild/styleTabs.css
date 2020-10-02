@@ -52,3 +52,47 @@ button.Toastify__close-button.Toastify__close-button--error {
   color: black;
   font-size: 16px;
 }
+
+.property-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: #9e9ea2;
+  margin-bottom: 8px;
+}
+
+.property-value {
+  all: unset;
+  font-size: 1.5rem;
+  line-height: 19px;
+  display: block;
+  overflow-wrap: break-word;
+}
+
+.label{
+  display: -webkit-inline-box !important;
+  line-height: 0.9em !important;
+}
+
+.card .bordered{
+  width: 33% !important;
+}
+
+.pie-total-label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.piechart-wrapper {
+  width: 100px !important;
+}
+
+.recharts-surface{
+      overflow: overlay;
+}
+
+.service-cards .card{
+  height: 55vh !important;
+  overflow: auto !important;
+}

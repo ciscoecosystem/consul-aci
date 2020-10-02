@@ -140,7 +140,7 @@ main {
     display: flex;
     flex-direction: column;
     background: #f2f2f2;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .app-container .main-content-wrapper>main .routed-content {
