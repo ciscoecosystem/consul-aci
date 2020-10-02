@@ -108,6 +108,41 @@ def get_polling_interval():
         })
 
 
+def get_vrf_specific_eps(tenant, datacenter=None):
+    connection = db_obj.engine.connect()
+    epg_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.EPG_TABLE_NAME,
+        {'tenant': tenant},
+        ["dn", "vrf"]
+    ))
+    tmp_ep_data = list(db_obj.select_from_table(
+        connection,
+        db_obj.EP_TABLE_NAME,
+        {'tenant': tenant},
+        ["ip", "dn", "is_cep"]
+    ))
+    connection.close()
+
+    if datacenter:
+        vrfs = get_vrf_from_database(datacenter, tenant)
+    else:
+        vrfs = get_vrf_from_database(datacenter, tenant, True)
+
+    ep_data = []
+    if vrfs == "-":
+        ep_data = tmp_ep_data
+    else:
+        dns = set()
+        vrfs = set(map(format_vrf, vrfs))
+        for each in epg_data:
+            if each[1] in vrfs:
+                dns.add(each[0])
+        for each in tmp_ep_data:
+            if each[1].split("/cep")[0] in dns:
+                ep_data.append(each)
+    return ep_data
+
 @time_it
 def get_new_mapping(tenant, datacenter):
     """Generate new mapping(recommendation)
@@ -133,34 +168,7 @@ def get_new_mapping(tenant, datacenter):
     """
     try:
         # Get APIC data
-        connection = db_obj.engine.connect()
-        epg_data = list(db_obj.select_from_table(
-            connection,
-            db_obj.EPG_TABLE_NAME,
-            {'tenant': tenant},
-            ["dn", "vrf"]
-        ))
-        tmp_ep_data = list(db_obj.select_from_table(
-            connection,
-            db_obj.EP_TABLE_NAME,
-            {'tenant': tenant},
-            ["ip", "dn", "is_cep"]
-        ))
-        connection.close()
-
-        vrfs = get_vrf_from_database(datacenter, tenant)
-        ep_data = []
-        if vrfs == "-":
-            ep_data = tmp_ep_data
-        else:
-            dns = set()
-            vrfs = set(map(format_vrf, vrfs))
-            for each in epg_data:
-                if each[1] in vrfs:
-                    dns.add(each[0])
-            for each in tmp_ep_data:
-                if each[1].split("/cep")[0] in dns:
-                    ep_data.append(each)
+        ep_data = get_vrf_specific_eps(tenant, datacenter)
         parsed_eps = []
         for ep in ep_data:
             cep_ip = int(ep[2])
@@ -2208,15 +2216,7 @@ def get_performance_dashboard(tenant):
     try:
         response = {}
 
-        connection = db_obj.engine.connect()
-        ep_len = len(list(db_obj.select_from_table(
-            connection,
-            db_obj.EP_TABLE_NAME,
-            {'tenant': tenant},
-            ["ip"]
-        )))
-        connection.close()
-
+        ep_len = len(get_vrf_specific_eps(tenant))
         mapped_ep = {}
         datacenters = json.loads(get_datacenters(tenant))['payload']
         for dc in datacenters:
@@ -2318,7 +2318,6 @@ def get_vrf_from_database(datacenter, tn, dashboard=False):
     )
     connection.close()
     vrfs = list(map(lambda x: x[0], tmp_vrfs))
-    logger.info("vrfss {}".format(vrfs))
     return "-" if "-" in vrfs else vrfs
 
 
