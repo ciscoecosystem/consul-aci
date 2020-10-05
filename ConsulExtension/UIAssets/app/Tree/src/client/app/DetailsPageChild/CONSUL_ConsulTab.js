@@ -49,6 +49,27 @@ function ServiceList(props){
   console.log(props)
     return (
       <div style={{marginBottom: "50px"}}>
+        {!props.length ? (
+        <div
+          style={{
+            height: "50vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              padding: "20px",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              fontWeight: "bold",
+              color: "rgba(26, 26, 26, 0.5)",
+            }}
+          >
+            No data found
+          </div>
+        </div>
+      ) : null}
           <div>
         <div className="service-cards" style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
           {props? props.map((item, index) => {
@@ -78,6 +99,10 @@ function ServiceList(props){
                         <PropertyItem
                           propertyLabel={"Service Kind"}
                           propertyValue={item.ServiceKind}
+                        />
+                        <PropertyItem
+                          propertyLabel={"Service Namespace"}
+                          propertyValue={item.NameSpace}
                         />
                       </div>
                       <div>

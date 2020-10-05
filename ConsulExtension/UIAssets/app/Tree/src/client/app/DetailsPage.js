@@ -38,7 +38,7 @@ export default class DetailePage extends Component {
   }
   getQueryParams() {
     var query = false;
-    if (this.state.data.name === "AppProf") {
+    if (this.state.data.name === "Application Profile") {
       query = "ap-" + this.state.data.sub_label
     } else if (this.state.data.name === "EPG") {
       const AppProf = "ap-" + this.state.data.parent.sub_label;
@@ -91,11 +91,11 @@ export default class DetailePage extends Component {
 
     const queryParams = this.getQueryParams()
     let clonedObj = clone(this.state.tabs)
-    if (data.name == "AppProf" || data.name == "EPG") {
+    if (data.name == "Application Profile" || data.name == "EPG") {
       clonedObj[1]["content"] = <EventAnalytics queryParams={queryParams} key="analytics"></EventAnalytics>;
 
     }
-    if (data.name == "AppProf") {
+    if (data.name == "Application Profile") {
       clonedObj.splice(0, 1);
 
       this.setState({ tabs: clonedObj });
