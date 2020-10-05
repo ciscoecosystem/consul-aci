@@ -227,6 +227,16 @@ main {
 
 }
 
+.icon-cog{
+    display: flex;
+    justify-content: center;
+}
+
+.icon-help{
+    display: flex;
+    justify-content: center;
+}
+
 .right-menu-icons .dropdown > .dropdown__menu.placement--left{
     top: auto !important;
 }
