@@ -243,10 +243,12 @@ export default class Agent extends React.Component {
 
   handleSelectChange(selected, options, type) {
     if (type !== "VRF") {
+      if(selected[0]){
       this.setState({
         Protocol: selected[0].value,
         protocolOptions: options,
       });
+      }
     } else {
       this.setState({
         VRF: selected[0].value,
@@ -726,7 +728,7 @@ export default class Agent extends React.Component {
           let {vrf} = row.original
           return (
             <div>
-              {vrf ?vrf:"-"}
+              {vrf}
             </div>
           )
         }
@@ -912,6 +914,7 @@ export default class Agent extends React.Component {
                           this.getVRFCall();
                         });
                       }}
+                      style={{marginRight: "10px"}}
                     >
                       {" "}
                       {"Add " + AGENTS}{" "}
