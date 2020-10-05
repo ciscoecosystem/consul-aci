@@ -1,27 +1,29 @@
 [
     [
         false,
-        [{
-            "protocol":"http",
-            "port":"1234",
-            "ip": "0.0.0.0",
-            "token":null
-        }]
+        [
+            {
+                "protocol": "http",
+                "port": "1234",
+                "ip": "0.0.0.0",
+                "token": null
+            }
+        ]
     ],
     [
         true,
-        [{
-            "protocol":"http",
-            "port":"1234",
-            "ip": "0.0.0.0",
-            "token":null,
-            "vrf": "uni/tn-tn0/ctx-test-vrf"
-        }]
+        [
+            {
+                "protocol": "http",
+                "port": "1234",
+                "ip": "0.0.0.0",
+                "token": null,
+                "vrf": "uni/tn-tn0/ctx-test-vrf"
+            }
+        ]
     ],
     [
         false,
-        {
-
-        }
+        {}
     ]
 ]
