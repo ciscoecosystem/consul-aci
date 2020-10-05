@@ -49,11 +49,11 @@ export default class DataTable extends Component {
         accessor: "serviceTags",
         filterable: false,
         Cell: row => {
-          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
+          return <div>{row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}</div>
         }
       },
       {
-        Header: "Service Check",
+        Header: "Service Check(s)",
         accessor: "serviceChecksFilter",
         show: false,
         filterable: true
@@ -65,9 +65,9 @@ export default class DataTable extends Component {
         width: 150,
         Cell: row => {
           return (<span>
-            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
-            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
-            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
+            {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
+            {(row.value.warning !== undefined) && (<span title="warning"> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
+            {(row.value.failing !== undefined) && (<span title="critical"> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
           </span>)
         }
       },
@@ -96,7 +96,7 @@ export default class DataTable extends Component {
         accessor: "pod_name",
         show: true,
         Cell: row => {
-          return row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)
+          return <div>{row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}</div>
         }
       },
       {
@@ -149,13 +149,13 @@ export default class DataTable extends Component {
         }
       },
       {
-        Header: "Node Check",
+        Header: "Node Check(s)",
         accessor: "nodeChecksFilter",
         show: false,
         filterable: true
       },
       {
-        Header: "Service Tag",
+        Header: "Service Tag(s)",
         accessor: "serviceTagFilter",
         show: false,
         filterable: true
@@ -173,9 +173,9 @@ export default class DataTable extends Component {
         width: 150,
         Cell: row => {
           return (<span>
-            {(row.value.passing !== undefined) && (<span> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
-            {(row.value.warning !== undefined) && (<span> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
-            {(row.value.failing !== undefined) && (<span> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
+            {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
+            {(row.value.warning !== undefined) && (<span title="warning"> <Icon size="icon-small" type=" icon-warning" style={{ color: warningColor }}></Icon>&nbsp;{row.value.warning}&nbsp;&nbsp;</span>)}
+            {(row.value.failing !== undefined) && (<span title="critical"> <Icon size="icon-small" type=" icon-exit-contain" style={{ color: failColor }}></Icon>&nbsp;{row.value.failing} </span>)}
           </span>)
         }
       },
