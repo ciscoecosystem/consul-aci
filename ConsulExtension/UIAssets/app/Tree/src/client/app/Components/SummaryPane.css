@@ -31,8 +31,8 @@
 }
 
 .summary-pane-header .summary-pane-title-value {
-    line-height: 1.2;
-    padding: 10px 16px 10px 0px;
+    display: flex;
+    align-items: center;
 }
 
 .summary-pane-header .summary-pane-title-value .title {
