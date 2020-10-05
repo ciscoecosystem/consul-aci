@@ -226,3 +226,7 @@ main {
     width: 23% !important;
 
 }
+
+.right-menu-icons .dropdown > .dropdown__menu.placement--left{
+    top: auto !important;
+}
