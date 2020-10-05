@@ -1439,7 +1439,7 @@ def read_creds(tn):
                     'token': agent[3],
                     'status': status,
                     'datacenter': datacenter,
-                    'vrf': agent[7].split("ctx-")[1] if agent[7] != "-" else "-"
+                    'vrf': agent[7].split("ctx-")[1] if agent[7] != "-" else None
                 })
         connection.close()
         logger.debug('Read creds response: {}'.format(str(payload)))
