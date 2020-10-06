@@ -12,7 +12,7 @@
             "encap": "dummy-encap",
             "hosting_server_name": "1.1.1.1",
             "ip": "1.1.1.1",
-            "mcast_addr": "---",
+            "mcast_addr": "",
             "ctrlr_name": "hyper000"
         }
     ]
