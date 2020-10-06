@@ -1,5 +1,5 @@
 [
-{
+  {
     "node_ip": "10.162.26.233",
     "node_id": "nodeid0",
     "node_name": "nodename0"
@@ -9,7 +9,7 @@
     "node_id": "nodeid1",
     "node_name": "nodename1"
   },
-{
+  {
     "node_ip": "10.49.250.254",
     "node_id": "nodeid7",
     "node_name": "nodename7"
@@ -29,5 +29,4 @@
     "node_id": "nodeid10",
     "node_name": "nodename10"
   }
-
 ]

@@ -143,6 +143,7 @@ def get_vrf_specific_eps(tenant, datacenter=None):
                 ep_data.append(each)
     return ep_data
 
+
 @time_it
 def get_new_mapping(tenant, datacenter):
     """Generate new mapping(recommendation)

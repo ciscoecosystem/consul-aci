@@ -1,1 +1,37 @@
-[{"BD": "uni/tn-tn0/ap-ap0/epg-epg0", "dn": "uni/tn-tn0/ap-ap0/epg-epg0", "learningSource": "vmm", "VM-Name": "Indeed.", "IP": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27", "VMM-Domain": "ESX0-leaf105", "CEP-Mac": "44:6c:3d:e9:f7:c8", "EPG": "epg0", "AppProfile": "ap0", "hostingServerName": "hypername0", "Contracts": {"IntraEpg": ["dummy"], "Provider": ["dummy"], "Consumer": ["dummy"], "Taboo": ["dummy"], "Consumer Interface": ["dummy"]}, "Interfaces": ["Pod-6/Node-104/eth1/6"], "epg_health": "72", "VRF": "tn0/", "controllerName": "vcenter105"}]
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "learningSource": "vmm",
+        "VM-Name": "Indeed.",
+        "IP": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27",
+        "VMM-Domain": "ESX0-leaf105",
+        "CEP-Mac": "44:6c:3d:e9:f7:c8",
+        "EPG": "epg0",
+        "AppProfile": "ap0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-6/Node-104/eth1/6"
+        ],
+        "epg_health": "72",
+        "VRF": "tn0/",
+        "controllerName": "vcenter105"
+    }
+]

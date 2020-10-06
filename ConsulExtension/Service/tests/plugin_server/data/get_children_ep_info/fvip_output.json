@@ -1,1 +1,19 @@
-{"status_code": "200", "message": "OK", "payload": [{"ep_name": "dummy-vm-name", "learning_source": "dummy-lcc", "mac": "00:00:00:00:00:AA", "iface_name": ["Pod-0/Node-111/eth0/0"], "encap": "dummy-encap", "hosting_server_name": "1.1.1.1", "ip": "2.2.2.2", "mcast_addr": "---", "ctrlr_name": "hyper000"}]}
+{
+    "status_code": "200",
+    "message": "OK",
+    "payload": [
+        {
+            "ep_name": "dummy-vm-name",
+            "learning_source": "dummy-lcc",
+            "mac": "00:00:00:00:00:AA",
+            "iface_name": [
+                "Pod-0/Node-111/eth0/0"
+            ],
+            "encap": "dummy-encap",
+            "hosting_server_name": "1.1.1.1",
+            "ip": "2.2.2.2",
+            "mcast_addr": "---",
+            "ctrlr_name": "hyper000"
+        }
+    ]
+}

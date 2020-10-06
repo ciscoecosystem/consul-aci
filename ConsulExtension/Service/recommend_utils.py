@@ -98,17 +98,17 @@ def determine_recommendation(extract_ap_epgs, common_eps, apic_data):
 
     common_eps = sorted(common_eps, key=sort_eps)
     logger.debug('sorted eps {} '.format(common_eps))
-    recommended_ep = common_eps[0]
+    # recommended_ep = common_eps[0]
     # del common_eps[0]
-    peers = []
+    # peers = []
 
-    rec_key = 'IP'
+    # rec_key = 'IP'
     each_key = 'IP'
     recommendation_list = []
 
     extracted_vrfs = extract_vrf(apic_data)
     logger.debug('extracted vrfs {} '.format(extracted_vrfs))
-    apic_data_f = apic_data_formatter(apic_data)
+    # apic_data_f = apic_data_formatter(apic_data)
     for i in range(len(common_eps)):
         recommendation_list.append([common_eps[i][each_key], common_eps[i]['dn'], 'Yes', each_key])
 
