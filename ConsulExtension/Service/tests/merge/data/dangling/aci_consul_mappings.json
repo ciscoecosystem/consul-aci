@@ -1,1 +1,13 @@
-[{"dn": "uni/tn-tn0/ap-ap0/epg-epg0", "bd": "uni/tn-tn0/ap-ap0/epg-epg0", "ip": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27", "enabled": true, "ap": "ap0", "recommended": true, "vrf": "tn0/", "epg": "epg0", "tenant": "tn0"}]
+[
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/",
+        "epg": "epg0",
+        "tenant": "tn0"
+    }
+]

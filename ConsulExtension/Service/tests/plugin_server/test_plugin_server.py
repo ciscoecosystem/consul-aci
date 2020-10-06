@@ -97,6 +97,14 @@ def read_creds_checker(response, db_data):
             return False
         if response.get("datacenter") != db_data[5]:
             return False
+        db_vrf = db_data[7]
+        if db_vrf == "-":
+            db_vrf = None
+        else:
+            db_vrf = db_vrf.split("ctx-")[1]
+        # assert False == [response.get("vrf"), db_vrf]
+        if response.get("vrf") != db_vrf:
+            return False
     except Exception:
         return [] == db_data
     return True
