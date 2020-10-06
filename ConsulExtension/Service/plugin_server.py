@@ -1430,8 +1430,7 @@ def read_creds(tn):
                         agent_val,
                         {
                             'agent_ip': agent[0],
-                            'port': agent[1],
-                            'vrf_dn': agent[7]
+                            'port': agent[1]
                         }
                     )
 
@@ -1442,7 +1441,7 @@ def read_creds(tn):
                     'token': agent[3],
                     'status': status,
                     'datacenter': datacenter,
-                    'vrf': agent[7].split("ctx-")[1] if agent[7] != "-" else "-"
+                    'vrf': agent[7].split("ctx-")[1] if agent[7] != "-" else None
                 })
         connection.close()
         logger.debug('Read creds response: {}'.format(str(payload)))
@@ -1486,8 +1485,7 @@ def write_creds(tn, new_agent):
             {
                 'agent_ip': new_agent.get('ip'),
                 'port': new_agent.get('port'),
-                'tenant': tn,
-                'vrf_dn': vrf_dn
+                'tenant': tn
             }
         ))
         connection.close()
@@ -1587,8 +1585,7 @@ def update_creds(tn, update_input):
 
         if not (
             old_agent.get('ip') == new_agent.get('ip') and
-            old_agent.get('port') == new_agent.get('port') and
-            old_vrf_dn == new_vrf_dn
+            old_agent.get('port') == new_agent.get('port')
         ):
             connection = db_obj.engine.connect()
             new_agent_db_data = db_obj.select_from_table(
@@ -1597,8 +1594,7 @@ def update_creds(tn, update_input):
                 {
                     'agent_ip': new_agent.get('ip'),
                     'port': new_agent.get('port'),
-                    'tenant': tn,
-                    'vrf_dn': new_vrf_dn
+                    'tenant': tn
                 }
             )
             connection.close()
@@ -1613,8 +1609,7 @@ def update_creds(tn, update_input):
             if (
                 old_agent.get('ip') == agent[0] and
                 old_agent.get('port') == int(agent[1]) and
-                tn == agent[6] and
-                old_vrf_dn == agent[7]
+                tn == agent[6]
             ):
                 if new_agent.get('token') == agent[3]:
                     new_agent['token'] = base64.b64decode(new_agent.get('token')).decode('ascii')
@@ -1655,8 +1650,7 @@ def update_creds(tn, update_input):
                         {
                             'agent_ip': old_agent.get('ip'),
                             'port': old_agent.get('port'),
-                            'tenant': tn,
-                            'vrf_dn': old_vrf_dn
+                            'tenant': tn
                         })
                 connection.close()
 
@@ -1718,8 +1712,7 @@ def delete_creds(tn, agent_data):
                 {
                     'agent_ip': agent_data.get('ip'),
                     'port': agent_data.get('port'),
-                    'tenant': tn,
-                    'vrf_dn': vrf_dn
+                    'tenant': tn
                 }
             )
         connection.close()
