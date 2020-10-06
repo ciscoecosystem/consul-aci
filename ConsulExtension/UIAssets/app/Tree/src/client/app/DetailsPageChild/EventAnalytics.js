@@ -61,7 +61,7 @@ export default class EventAnalytics extends Component {
   render() {
     return (
       <div className="events-tab" style={{ margin: "7px" }}>
-        <Tab vertical={true} type="secondary-tabs  custom-tabs" tabs={this.state.tabs} />
+        <Tab vertical={false} type="secondary-tabs" tabs={this.state.tabs} />
       </div>
     );
   }
