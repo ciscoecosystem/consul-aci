@@ -127,10 +127,7 @@ export default class Operational extends Component {
                 json.errors[0]["message"] || "Error while fetching data"
               );
             } else {
-              // Response successful
-              // const type = Object.keys(json.data)[0];
-              // const listData = Object.keys(json.data[type])[0];
-              const response = JSON.operationalList
+              const response = JSON.parse(json.data.GetOperationalInfo.operationalList)
               console.log(response)
               if (response.status_code != "200") {
                 // Problem with backend fetching data

@@ -54,6 +54,7 @@
 
 .summary-pane-header .header-action-buttons .link {
     margin-left: 10px;
+    text-decoration: none;
 }
 
 .summary-pane-header .header-action-buttons {
