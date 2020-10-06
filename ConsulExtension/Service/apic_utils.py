@@ -222,7 +222,7 @@ class AciUtils(object):
 
         for each in AciUtils.get_ip_mac_list(item):
             data['ip'], data['is_cep'] = each
-            if data['mac'] == data['ip']:
+            if data['mac'].lower() == data['ip'].lower():
                 data['ip'] = ""
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
