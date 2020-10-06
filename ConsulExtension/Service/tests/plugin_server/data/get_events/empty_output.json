@@ -1,1 +1,5 @@
-{"status_code": "300", "message": "Error while fetching Event details.", "payload": []}
+{
+    "status_code": "300",
+    "message": "Error while fetching Event details.",
+    "payload": []
+}

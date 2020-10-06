@@ -1,1 +1,5 @@
-{"asd": {"Datacenter": "dc1"}}
+{
+    "asd": {
+        "Datacenter": "dc1"
+    }
+}

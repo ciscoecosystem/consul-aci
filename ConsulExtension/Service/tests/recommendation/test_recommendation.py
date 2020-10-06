@@ -144,9 +144,9 @@ def test_determine_recommendation_cef_fvip(cef_ip_and_fvip_data):
     source_ip_list, parsed_eps, apic_data = cef_ip_and_fvip_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
                          DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
@@ -160,9 +160,9 @@ def test_determine_recommendation_vrf(vrf_data):
     source_ip_list, parsed_eps, apic_data = vrf_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
                          DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
@@ -175,9 +175,9 @@ def test_determine_recommendation_ap(ap_data):
     source_ip_list, parsed_eps, apic_data = ap_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], 'No', 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
                          DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
@@ -194,7 +194,7 @@ def test_determine_recommendation_same_ap_count(ap_same_count_data):
     source_ip_list, parsed_eps, apic_data = ap_same_count_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], 'No', 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
                          DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
