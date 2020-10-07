@@ -482,6 +482,7 @@ export default class Agent extends React.Component {
                 }
 
                 thiss.setDetails(details, true);
+                localStorage.setItem("dashboardPollingInterval", "true");
               } else {
                 thiss.notify("Some technical glitch!");
               }
