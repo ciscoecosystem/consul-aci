@@ -824,8 +824,16 @@ export default class Agent extends React.Component {
                       lineHeight: "12px",
                     }}
                   >
-                    Note: If you have overlapping IP spaces in VRF's , please
-                    map it with this seed agent.
+                    Notes:
+                    <ul style={{width: "200%"}}>
+                      <li>
+                      If you have overlapping IP spaces in VRF's , please
+                      map it with this seed agent.
+                      </li>
+                      <li>
+                      The data on Dashboard screen would be eventually consistent in case of any configuration changes in the app.
+                      </li>
+                    </ul>
                   </div>
                   <div className="form-action-buttons">
                     <Button

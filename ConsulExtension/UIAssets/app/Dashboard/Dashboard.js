@@ -154,11 +154,11 @@ export default class Dashboard extends React.Component {
 
           if (parseInt(dashboardData.status) === 200) {
             if( JSON.parse(localStorage.getItem("dashboardPollingInterval")) && JSON.parse(dashboardData.payload.data_fetch)) {
+              this.loadDashBoardData(dashboardData.payload);
               setTimeout(()=> this.getDashboardData(), INTERVAL_API_CALL)
             }
             else {
               this.loadDashBoardData(dashboardData.payload);
-              this.setState({ loadingDashBoard: false });
               localStorage.setItem("dashboardPollingInterval", "false")
             }
           } else if (parseInt(dashboardData.status) === 300) {
@@ -168,6 +168,7 @@ export default class Dashboard extends React.Component {
             }
           }
         }
+        this.setState({ loadingDashBoard: false });
       };
       this.xhrReadDashboard.send(JSON.stringify(payload));
     } catch (e) {
