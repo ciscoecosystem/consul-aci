@@ -82,8 +82,11 @@ export default class Agent extends React.Component {
       redirectToMain: false,
       addAgentModalIsOpen: false,
       loadingText: "Loading seed agents...",
-      vrfOptions: [{ label: "None", value: "None", selected: true }],
-      isVRFLoading: true,
+      vrfOptions: [
+        ...[{ label: "None", value: "None", selected: true }],
+        ...this.props.vrfOptions.map((item) => ({ ...item })),
+      ],
+      isVRFLoading: false,
       actionItems: [
         { label: "Update", action: this.actionEvent },
         { label: "Delete", action: this.actionEvent },
@@ -140,7 +143,11 @@ export default class Agent extends React.Component {
         Address: null,
         Port: null,
       },
-      vrfOptions: [{ label: "None", value: "None", selected: true }],
+
+      vrfOptions: [
+        ...[{ label: "None", value: "None", selected: true }],
+        ...this.props.vrfOptions.map((item) => ({ ...item })),
+      ],
     });
   }
 
@@ -243,11 +250,11 @@ export default class Agent extends React.Component {
 
   handleSelectChange(selected, options, type) {
     if (type !== "VRF") {
-      if(selected[0]){
-      this.setState({
-        Protocol: selected[0].value,
-        protocolOptions: options,
-      });
+      if (selected[0]) {
+        this.setState({
+          Protocol: selected[0].value,
+          protocolOptions: options,
+        });
       }
     } else {
       this.setState({
@@ -327,7 +334,7 @@ export default class Agent extends React.Component {
       Protocol,
       isNewAgentAdded,
       Token,
-      VRF
+      VRF,
     } = this.state;
     console.log("Submit agent; detaios ", details);
     console.log("Address and port ", Address, Port);
@@ -339,7 +346,7 @@ export default class Agent extends React.Component {
         details[ind].protocol === Protocol &&
         details[ind].token === Token &&
         details[ind].vrf === VRF
-       ) {
+      ) {
         this.notify("Agent already exists.");
         return;
       }
@@ -523,60 +530,6 @@ export default class Agent extends React.Component {
     );
   }
 
-  getVRFCall() {
-    let xhrPostGetVRFCall = new XMLHttpRequest();
-    this.setState({isVRFLoading: true })
-    const payload = {
-      query: `query{GetVrf(tn: ${JSON.stringify(
-        this.state.tenantName
-      )}){response}}`,
-    };
-    try {
-      xhrPostGetVRFCall.open("POST", QUERY_URL, true);
-      xhrPostGetVRFCall.setRequestHeader("Content-type", "application/json");
-      // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
-      // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
-      xhrPostGetVRFCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
-      xhrPostGetVRFCall.setRequestHeader(
-        "APIC-challenge",
-        window.APIC_URL_TOKEN
-      );
-
-      xhrPostGetVRFCall.onreadystatechange = () => {
-        if (
-          xhrPostGetVRFCall.readyState == 4 &&
-          xhrPostGetVRFCall.status == 200
-        ) {
-          let apiResponse = JSON.parse(xhrPostGetVRFCall.responseText);
-          let getVRFResponse = JSON.parse(apiResponse.data.GetVrf.response);
-          if (parseInt(getVRFResponse.status_code) === 200) {
-            let data = getVRFResponse.payload;
-            let {vrfOptions, VRF} = this.state
-            // this.setPollingIntervalDefaultValue(data.interval)
-            let vrfItem = data.map((item) =>
-              Object.assign({}, { name: item, value: item, selected: false })
-            );
-            console.log(vrfOptions, VRF)
-            vrfItem.forEach((item,index)=> {
-              if(item.value === VRF){
-                vrfOptions.pop()
-                vrfOptions[0].selected  = false
-                vrfItem[index].selected =true
-              }
-            })
-            this.setState({
-              vrfOptions: [...vrfOptions, ...vrfItem],
-            });
-          }
-        }
-        this.setState({ isVRFLoading: false });
-      };
-      xhrPostGetVRFCall.send(JSON.stringify(payload));
-    } catch (e) {
-      console.error("Error getting agents", e);
-    }
-  }
-
   removeAgentCall(agentDetail, deleteIndex) {
     delete agentDetail.status;
     agentDetail.port = parseInt(agentDetail.port);
@@ -653,17 +606,14 @@ export default class Agent extends React.Component {
       });
     });
 
-    let {vrfOptions} = this.state
-    console.log("DEBUG", vrfOptions)
-    let vrf = agentDetail.vrf? agentDetail.vrf: "None"
-    if(agentDetail.vrf){
-      vrfOptions[0].selected = false
-      vrfOptions = [...vrfOptions, Object.assign({}, {label: vrf, value: vrf, selected: true})]
-    } else{
-      vrfOptions[0].value = vrf
-      vrfOptions[0].label = vrf
-    }
-    
+    let { vrfOptions } = this.state;
+    let vrf = agentDetail.vrf ? agentDetail.vrf : "None";
+
+    vrfOptions.forEach((item, index) => {
+      if (item.value === vrf) vrfOptions[index].selected = true;
+      else vrfOptions[index].selected = false;
+    });
+
     // open Modal box and show the same
     this.setState(
       {
@@ -675,11 +625,10 @@ export default class Agent extends React.Component {
         Address: agentDetail.ip,
         Token: agentDetail.token,
         VRF: vrf,
-        vrfOptions: vrfOptions
+        vrfOptions: vrfOptions,
       },
       function () {
         thiss.handleModal(true);
-        this.getVRFCall();
       }
     );
   }
@@ -725,13 +674,9 @@ export default class Agent extends React.Component {
         Header: "VRF",
         accessor: "vrf",
         Cell: (row) => {
-          let {vrf} = row.original
-          return (
-            <div>
-              {vrf}
-            </div>
-          )
-        }
+          let { vrf } = row.original;
+          return <div>{vrf}</div>;
+        },
       },
       {
         Header: "Status",
@@ -762,7 +707,9 @@ export default class Agent extends React.Component {
                 size="icon-small"
                 type="icon-edit"
                 style={{ marginRight: "18px", marginLeft: "11px" }}
-                onClick={() => {this.editAgent(row.index)}}
+                onClick={() => {
+                  this.editAgent(row.index);
+                }}
               ></Icon>
               <Icon
                 key={"removeagent2"}
@@ -866,7 +813,17 @@ export default class Agent extends React.Component {
                   {agentFields.map((elem) => {
                     return FormField(elem, this.state);
                   })}
-                  <div style={{color: "gre", fontSize: "12px", margin: "10px 0px", lineHeight: "12px"}}>Note: If you have overlapping IP spaces in VRF's , please map it with this seed agent.</div>
+                  <div
+                    style={{
+                      color: "gre",
+                      fontSize: "12px",
+                      margin: "10px 0px",
+                      lineHeight: "12px",
+                    }}
+                  >
+                    Note: If you have overlapping IP spaces in VRF's , please
+                    map it with this seed agent.
+                  </div>
                   <div className="form-action-buttons">
                     <Button
                       key={"addagentsave"}
@@ -909,12 +866,28 @@ export default class Agent extends React.Component {
                       size="btn--small"
                       type="btn--primary-ghost"
                       onClick={() => {
-                        this.setState({ isNewAgentAdded: true }, () => {
-                          this.handleModal(true);
-                          this.getVRFCall();
-                        });
+                        this.setState(
+                          {
+                            isNewAgentAdded: true,
+                            vrfOptions: [
+                              ...[
+                                {
+                                  label: "None",
+                                  value: "None",
+                                  selected: true,
+                                },
+                              ],
+                              ...this.props.vrfOptions.map((item) => ({
+                                ...item,
+                              })),
+                            ],
+                          },
+                          () => {
+                            this.handleModal(true);
+                          }
+                        );
                       }}
-                      style={{marginRight: "10px"}}
+                      style={{ marginRight: "10px" }}
                     >
                       {" "}
                       {"Add " + AGENTS}{" "}
