@@ -451,6 +451,7 @@ export default class Agent extends React.Component {
                 }
 
                 thiss.setDetails(details, true);
+                localStorage.setItem("dashboardPollingInterval", "true");
 
                 // connection is not true
                 if (resp.payload.status !== true && resp.message) {
@@ -570,6 +571,7 @@ export default class Agent extends React.Component {
 
             if (resp.status_code == 200) {
               details.splice(deleteIndex, 1);
+              localStorage.setItem("dashboardPollingInterval", "true");
               // thiss.setState({ details });
               thiss.setDetails(details, true);
             } else {
