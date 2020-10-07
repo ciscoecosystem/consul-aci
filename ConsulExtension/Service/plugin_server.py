@@ -942,7 +942,7 @@ def get_children_ep_info(dn, mo_type, mac_list, ip_list, ip):
 
             mcast_addr = ep_attr.get("mcastAddr")
             if mcast_addr == "not-applicable":
-                mcast_addr = "---"
+                mcast_addr = ""
 
             if mo_type == "ep":
                 if ip != "":
