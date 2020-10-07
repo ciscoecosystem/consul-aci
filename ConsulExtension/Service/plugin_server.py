@@ -2271,6 +2271,17 @@ def get_performance_dashboard(tenant):
         response['nodes'] = nodes_res
         response['service_endpoint'] = ep_res
 
+        connection = db_obj.engine.connect()
+        data_fetch_info = db_obj.select_from_table(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            {},
+            ['running']
+        )
+        connection.close()
+
+        response['data_fetch'] = data_fetch_info[0][0]
+
         return json.dumps({
             "status": "200",
             "payload": response,
