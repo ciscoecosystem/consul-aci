@@ -69,10 +69,15 @@
     display: block;
     overflow-wrap: break-word;
   }
+
+  .service-cards .property-value{
+    display: inline-flex !important;
+  }
   
   .label{
     display: -webkit-inline-box !important;
     line-height: 0.9em !important;
+    margin: 0px 4px 5px 0px !important;
   }
   
   .card .bordered{
@@ -93,7 +98,14 @@
   }
   
   .service-cards .card{
-    height: 50vh !important;
     overflow: auto !important;
+    height: 100%;
   }
   
+  .service-tags .property-list-item{
+    width: 160% !important;
+  }
+  
+  .service-tags .property-value{
+    display: inherit !important;
+  }

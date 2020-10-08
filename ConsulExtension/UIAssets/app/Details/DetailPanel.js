@@ -79,9 +79,9 @@ export default function DetailPanel(props) {
                         detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                     }
                     else if (name === "serviceTags" || name === "pod_name") {
-                        detailValue = summaryDetail[name].map(function (tags) {
+                        detailValue = summaryDetail[name].length ? summaryDetail[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
-                        })
+                        }) : ""
                     } else if (name === "interface") {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                             {summaryDetail[name].map(function (infcs) {
@@ -120,7 +120,7 @@ function PropertyItem(props) {
             <div className="property-value" title={ isString(props.propertyValue) && props.propertyValue}>
                 {props.propertyValue ? 
                     isString(props.propertyValue) ? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue 
-                    : "-"}
+                    : ""}
             </div>
         </div>
     )

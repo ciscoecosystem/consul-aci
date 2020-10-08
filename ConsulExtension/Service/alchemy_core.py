@@ -37,8 +37,16 @@ class Database:
     TENANT_TABLE_NAME = 'tenant'
     POLLING_TABLE_NAME = 'polling'
     VRF_TABLE_NAME = 'vrf'
+    DATA_FETCH_TABLE_NAME = 'data_fetch'
 
     SCHEMA_DICT = {
+        DATA_FETCH_TABLE_NAME: [
+            'running',
+            'created_ts',
+            'updated_ts',
+            'last_checked_ts'
+        ],
+
         VRF_TABLE_NAME: [
             'vrf_dn',
             'created_ts'
@@ -195,10 +203,18 @@ class Database:
         """
         metadata = MetaData()
 
+        self.data_fetch = Table(
+            self.DATA_FETCH_TABLE_NAME, metadata,
+            Column('running', Boolean),
+            Column('created_ts', DateTime),
+            Column('updated_ts', DateTime),
+            Column('last_checked_ts', DateTime)
+        )
+
         self.vrf = Table(
             self.VRF_TABLE_NAME, metadata,
             Column('vrf_dn', String, primary_key=True),
-            Column('created_ts', String)
+            Column('created_ts', DateTime)
         )
 
         self.login = Table(
@@ -454,6 +470,7 @@ class Database:
         )
 
         self.table_obj_meta.update({
+            self.DATA_FETCH_TABLE_NAME: self.data_fetch,
             self.VRF_TABLE_NAME: self.vrf,
             self.LOGIN_TABLE_NAME: self.login,
             self.MAPPING_TABLE_NAME: self.mapping,
@@ -473,6 +490,12 @@ class Database:
             self.POLLING_TABLE_NAME: self.polling
         })
         self.table_key_meta.update({
+            self.DATA_FETCH_TABLE_NAME: {
+                'running': self.data_fetch.c.running,
+                'created_ts': self.data_fetch.c.created_ts,
+                'updated_ts': self.data_fetch.c.updated_ts,
+                'last_checked_ts': self.data_fetch.c.last_checked_ts
+            },
             self.VRF_TABLE_NAME: {
                 'vrf_dn': self.vrf.c.vrf_dn,
                 'created_ts': self.vrf.c.created_ts
