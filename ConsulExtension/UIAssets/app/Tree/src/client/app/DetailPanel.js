@@ -138,11 +138,11 @@ export default function DetailPanel(props) {
                 else if (name === "serviceTags" || name === "Service Tags" || name === "ServiceTags") {
                     if (!Array.isArray(showDetails[name])) {
                         console.warn("Service Tags format invalid");
-                        detailValue = "-"
+                        detailValue = ""
                     } else {
-                        detailValue = showDetails[name].map(function (tags) {
+                        detailValue = showDetails[name].length? showDetails[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
-                        })
+                        }):""
                     }
                 } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces") {
                     if (detailValue && Array.isArray(detailValue)) {
@@ -249,7 +249,7 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value" title={isString(props.propertyValue) && props.propertyValue}>{props.propertyValue ? isString(props.propertyValue)? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : "-"}</div>
+            <div className="property-value" title={isString(props.propertyValue) && props.propertyValue}>{props.propertyValue ? isString(props.propertyValue)? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : ""}</div>
         </div>
     )
 }

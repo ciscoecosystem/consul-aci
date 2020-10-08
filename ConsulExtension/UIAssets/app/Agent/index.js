@@ -451,6 +451,7 @@ export default class Agent extends React.Component {
                 }
 
                 thiss.setDetails(details, true);
+                localStorage.setItem("dashboardPollingInterval", "true");
 
                 // connection is not true
                 if (resp.payload.status !== true && resp.message) {
@@ -481,6 +482,7 @@ export default class Agent extends React.Component {
                 }
 
                 thiss.setDetails(details, true);
+                localStorage.setItem("dashboardPollingInterval", "true");
               } else {
                 thiss.notify("Some technical glitch!");
               }
@@ -570,6 +572,7 @@ export default class Agent extends React.Component {
 
             if (resp.status_code == 200) {
               details.splice(deleteIndex, 1);
+              localStorage.setItem("dashboardPollingInterval", "true");
               // thiss.setState({ details });
               thiss.setDetails(details, true);
             } else {
@@ -821,8 +824,16 @@ export default class Agent extends React.Component {
                       lineHeight: "12px",
                     }}
                   >
-                    Note: If you have overlapping IP spaces in VRF's , please
-                    map it with this seed agent.
+                    Notes:
+                    <ul style={{width: "200%"}}>
+                      <li>
+                      If you have overlapping IP spaces in VRF's , please
+                      map it with this seed agent.
+                      </li>
+                      <li>
+                      The data on Dashboard screen would be eventually consistent in case of any configuration changes in the app.
+                      </li>
+                    </ul>
                   </div>
                   <div className="form-action-buttons">
                     <Button

@@ -77,7 +77,7 @@ function ServiceList(props) {
       <div>
         <div
           className="service-cards"
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}
         >
           {props[0].Service
             ? props.map((item, index) => {
@@ -97,9 +97,18 @@ function ServiceList(props) {
                               propertyValue={item.Service}
                             />
                             <PropertyItem
+                              propertyLabel={"Service Kind"}
+                              propertyValue={item.ServiceKind}
+                            />
+                            <PropertyItem
+                              propertyLabel={"Service Namespace"}
+                              propertyValue={item.NameSpace}
+                            />
+                            <PropertyItem
                               propertyLabel={"Service Address"}
                               propertyValue={item.Address}
                             />
+                            <div className="service-tags">
                             <PropertyItem
                               propertyLabel={"Service Tags"}
                               propertyValue={
@@ -115,14 +124,7 @@ function ServiceList(props) {
                                 ))
                               }
                             />
-                            <PropertyItem
-                              propertyLabel={"Service Kind"}
-                              propertyValue={item.ServiceKind}
-                            />
-                            <PropertyItem
-                              propertyLabel={"Service Namespace"}
-                              propertyValue={item.NameSpace}
-                            />
+                            </div>
                           </div>
                           <div>
                             <div class="col">
