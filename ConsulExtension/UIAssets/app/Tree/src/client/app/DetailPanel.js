@@ -1,5 +1,5 @@
 import React from 'react'
-import { CollapsiblePanel, Label } from "blueprint-react"
+import { CollapsiblePanel, Labe, Table } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
 import { showShortName, isString } from './utils.js';
@@ -41,8 +41,23 @@ function formateDataToChartData(data) {
 
 function nonServiceEndPointEP(data) {
 
+    const NON_SERVICE_ENPOINT_HEADER = [
+        {
+            Header: 'MAC',
+            accessor: 'mac'
+        }, {
+            Header: 'IP',
+            accessor: 'ip'
+        }
+    ]
+    console.log("DEBUG",data)
+    let row = []
+    Object.keys(data).forEach(item => {
+        row.push({"mac": item, "ip": data[item]})
+    })
+
     return Object.keys(data).length > 0 ? (<React.Fragment>
-        <table>
+        {/* <table>
             <tr>
                 <td width="30%" className="bold-font">MAC</td>
                 <td width="70%" className="bold-font">IP</td>
@@ -50,7 +65,15 @@ function nonServiceEndPointEP(data) {
             {Object.entries(data).map(elem => <tr>
                 <td title={elem[0]}>{showShortName(elem[0], MAC_LENGTH)}</td> <td title={elem[1]}>{elem[1].split(",").map((item)=>(showShortName(item, IP_LENGTH))).join(",")}</td>
             </tr>)}
-        </table>
+        </table> */}
+        <div className="mac-ip-table">
+            <Table
+            data={row}
+            columns={NON_SERVICE_ENPOINT_HEADER}
+            defaultPageSize={row.length}
+            />
+        </div>
+
     </React.Fragment>) : (<React.Fragment></React.Fragment>)
 }
 
@@ -205,7 +228,7 @@ export default function DetailPanel(props) {
     if (summaryDetail.name === "Service") {
         title = summaryDetail.attributes['Service Instance']
     } else {
-        title = summaryDetail.sub_label || summaryDetail.label || "Non-service Endpoint";
+        title = summaryDetail.sub_label || summaryDetail.label || "Non-Service Endpoints";
     }
 
     return (summaryPaneIsOpen) ? <SummaryPane

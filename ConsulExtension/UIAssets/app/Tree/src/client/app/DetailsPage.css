@@ -79,3 +79,8 @@
 .cui ul.tabs>li>a{
   padding: 5px !important
 }
+
+
+.mac-ip-table .pagination-bottom{
+  display: none !important;
+}

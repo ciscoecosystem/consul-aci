@@ -125,10 +125,10 @@ export default class App extends React.Component {
                 {
                     id: 'Agent',
                     icon: "icon-plugin", // icon-insights, icon-general-source, icon-link, icon-plugin
-                    title: 'Seed Agent',
+                    title: 'Seed Agents',
                     content: <li class="sidebar__item "> <a className="" aria-current="false" href="javascript:void(0)" onClick={() => this.handleAgent(true)}>
                         <span className="icon-plugin">
-                        </span><span className="qtr-margin-left">Seed Agent</span></a>
+                        </span><span className="qtr-margin-left">Seed Agents</span></a>
                     </li>
                 },
                 // This page and its link have been removed as intentions are not required in this release.
