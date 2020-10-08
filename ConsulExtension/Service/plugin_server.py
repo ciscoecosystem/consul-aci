@@ -955,6 +955,9 @@ def get_children_ep_info(dn, mo_type, mac_list, ip_list, ip):
                     if eachip.keys()[0] == 'fvIp':
                         ip_set.add(str(eachip.get('fvIp').get('attributes').get('addr')))
                 ip_set.add(ep_attr.get('ip'))
+                if "0.0.0.0" in ip_set:
+                    ip_set.remove("0.0.0.0")
+                    ip_set.add("N/A")
                 cep_ip = ', '.join(ip_set)
 
             ep_info_dict = {
