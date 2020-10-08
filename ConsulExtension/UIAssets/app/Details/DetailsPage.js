@@ -45,7 +45,7 @@ export default class DetailsPage extends Component {
           key: "Operational",
           content: (
             <Operational
-              domainName={data.bd}
+              domainName={"uni/tn-"+ this.props.tenantName + "/ap-" + data.ap + "/epg-" + data.epgName }
               moType={"ep"}
               macList={data.mac}
               ipList={[]}
