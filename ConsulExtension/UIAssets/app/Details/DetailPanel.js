@@ -99,7 +99,7 @@ export default function DetailPanel(props) {
 
 
     return (summaryPaneIsOpen) ? <SummaryPane
-        subTitle={"ENDPOINT"}
+        subTitle={"ENDPOINT/CONSUL"}
         title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
         openScreen={()=>props.setExpansionViewOpen()}

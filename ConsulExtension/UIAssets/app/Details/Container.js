@@ -219,7 +219,7 @@ class Container extends Component {
 
                 <DetailPanel summaryPaneIsOpen={summaryPaneIsOpen}
                     summaryDetail={summaryDetail}
-                    title={summaryDetail["endPointName"]}
+                    title={summaryDetail["endPointName"] || summaryDetail["consulNode"]}
                     setSummaryIsOpen={this.setSummaryIsOpen}
                     setExpansionViewOpen={()=>{this.setState({expansionViewOpen: true})}}
                 />
