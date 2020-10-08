@@ -71,7 +71,7 @@ function ServiceList(props){
         </div>
       ) : null}
           <div>
-        <div className="service-cards" style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+        <div className="service-cards" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
           {props? props.map((item, index) => {
             return (
               <div style={{ margin: "10px" }}>
@@ -89,14 +89,6 @@ function ServiceList(props){
                           propertyValue={item.Service}
                         />
                         <PropertyItem
-                          propertyLabel={"Service Address"}
-                          propertyValue={item.Address}
-                        />
-                        <PropertyItem
-                          propertyLabel={"Service Tags"}
-                          propertyValue={item.ServiceTags && item.ServiceTags.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}
-                        />
-                        <PropertyItem
                           propertyLabel={"Service Kind"}
                           propertyValue={item.ServiceKind}
                         />
@@ -104,6 +96,16 @@ function ServiceList(props){
                           propertyLabel={"Service Namespace"}
                           propertyValue={item.NameSpace}
                         />
+                        <PropertyItem
+                          propertyLabel={"Service Address"}
+                          propertyValue={item.Address}
+                        />
+                        <div className="service-tags">
+                        <PropertyItem
+                          propertyLabel={"Service Tags"}
+                          propertyValue={item.ServiceTags && item.ServiceTags.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}
+                        />
+                        </div>
                       </div>
                       <div>
                         <div class="col">

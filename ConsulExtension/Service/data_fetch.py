@@ -158,6 +158,28 @@ def data_fetch():
     This is done for each Datacenter one by one
     """
 
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    if len(data) == 0:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False]
+            )
+    elif data[0][0] is True:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False],
+                {'running': True}
+            )
+    connection.close()
+
     while True:
 
         try:
@@ -198,6 +220,16 @@ def data_fetch():
                 logger.info("No Agents found in the Login table, retrying after {}sec".format(CHECK_AGENT_LIST))
                 time.sleep(CHECK_AGENT_LIST)
                 continue
+
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                db_obj.insert_and_update(
+                    connection,
+                    db_obj.DATA_FETCH_TABLE_NAME,
+                    [True],
+                    {'running': False}
+                )
+            connection.close()
 
             datacenter_list = {}
             for agent in agent_list:
@@ -634,6 +666,16 @@ def data_fetch():
             POLL_INTERVAL = interval[0][0]
         else:
             POLL_INTERVAL = 2
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False],
+                {'running': True}
+            )
+        connection.close()
 
         current_time = time.time()
         time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
