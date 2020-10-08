@@ -224,7 +224,7 @@ class Container extends Component {
                     setExpansionViewOpen={()=>{this.setState({expansionViewOpen: true})}}
                 />
 
-                {this.state.expansionViewOpen?<div className="detail-expansion"><DetailPage data={summaryDetail} dataCenter={this.props.dcName} title={summaryDetail["endPointName"]} closeDetailsPage={()=>{this.setState({expansionViewOpen: false})}}/></div>:null}
+                {this.state.expansionViewOpen?<div className="detail-expansion"><DetailPage data={summaryDetail} tenantName={this.props.tenantName} dataCenter={this.props.dcName} title={summaryDetail["endPointName"]} closeDetailsPage={()=>{this.setState({expansionViewOpen: false})}}/></div>:null}
 
                 {/* <Header polling={true} text={title} applinktext={apptext} instanceName={headerInstanceName} /> */}
                 <div className="scroll" style={{ padding: "0px 14px", marginBottom: "240px" }}>

@@ -39,7 +39,7 @@ function PropertyItem(props) {
         className="property-value"
         title={typeof props.propertyValue === "string" && props.propertyValue}
       >
-        {props.propertyValue ? props.propertyValue : "-"}
+        {props.propertyValue ? props.propertyValue : ""}
       </div>
     </div>
   );
