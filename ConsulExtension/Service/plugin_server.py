@@ -1531,6 +1531,8 @@ def write_creds(tn, new_agent):
                 ])
         connection.close()
 
+        change_data_fetch_status(True)
+
         if status:
             return json.dumps({
                 'payload': new_agent,
@@ -1655,6 +1657,8 @@ def update_creds(tn, update_input):
                         })
                 connection.close()
 
+                change_data_fetch_status(True)
+
                 if status:
                     return json.dumps({
                         'payload': new_agent,
@@ -1772,6 +1776,8 @@ def delete_creds(tn, agent_data):
                         db_obj.insert_and_update(connection, db_obj.NODE_TABLE_NAME, node, {'node_id': node[0]})
             connection.close()
             logger.info('Agent {}\'s Node data deleted'.format(str(agent_addr)))
+
+            change_data_fetch_status(True)
 
             # Delete Service data wrt this agent
             connection = db_obj.engine.connect()
@@ -2271,6 +2277,17 @@ def get_performance_dashboard(tenant):
         response['nodes'] = nodes_res
         response['service_endpoint'] = ep_res
 
+        connection = db_obj.engine.connect()
+        data_fetch_info = db_obj.select_from_table(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            {},
+            ['running']
+        )
+        connection.close()
+
+        response['data_fetch'] = data_fetch_info[0][0]
+
         return json.dumps({
             "status": "200",
             "payload": response,
@@ -2391,3 +2408,27 @@ def filter_apic_data(apic_data, vrfs):
         return response
     except Exception as e:
         logger.info("Error in filter_apic_data, Error: {}".format(e))
+
+
+def change_data_fetch_status(status):
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    if len(data) == 0:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [status]
+            )
+    elif data[0][0] is not status:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [status],
+                {'running': not status}
+            )
+    connection.close()

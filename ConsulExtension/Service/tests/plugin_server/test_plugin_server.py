@@ -929,3 +929,46 @@ def test_filter_apic_data(case):
     expected_data = get_data("filter_apic_data/{}_output.json".format(case))
     response = plugin_server.filter_apic_data(input_data, vrfs)
     assert response == expected_data
+
+
+@pytest.mark.parametrize("case", ["", True, False])
+def test_change_data_fetch_status(case):
+    clear_db()
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    if case != "":
+        connection = db_obj.engine.connect()
+        db_obj.insert_and_update(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            [True]
+        )
+        connection.close()
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    connection.close()
+
+    if case == "":
+        assert data == []
+    else:
+        assert data[0][0] is True
+
+    case = case if case != "" else True
+    plugin_server.change_data_fetch_status(case)
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    connection.close()
+
+    assert data[0][0] == case
+
+    clear_db()
