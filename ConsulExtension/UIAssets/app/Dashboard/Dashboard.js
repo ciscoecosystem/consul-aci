@@ -7,6 +7,7 @@ import {
   DEV_TOKEN,
   URL_TOKEN,
   AGENTS,
+  INTERVAL_API_CALL
 } from "../../constants.js";
 import { toast } from "react-toastify";
 import "./Dashboard.css";
@@ -147,15 +148,22 @@ export default class Dashboard extends React.Component {
           this.xhrReadDashboard.status == 200
         ) {
           let checkData = JSON.parse(this.xhrReadDashboard.responseText);
-          let dashoardData = JSON.parse(
+          let dashboardData = JSON.parse(
             checkData.data.GetPerformanceDashboard.response
           );
 
-          if (parseInt(dashoardData.status) === 200) {
-            this.loadDashBoardData(dashoardData.payload);
-          } else if (parseInt(dashoardData.status) === 300) {
+          if (parseInt(dashboardData.status) === 200) {
+            if( JSON.parse(localStorage.getItem("dashboardPollingInterval")) && JSON.parse(dashboardData.payload.data_fetch)) {
+              this.loadDashBoardData(dashboardData.payload);
+              setTimeout(()=> this.getDashboardData(), INTERVAL_API_CALL)
+            }
+            else {
+              this.loadDashBoardData(dashboardData.payload);
+              localStorage.setItem("dashboardPollingInterval", "false")
+            }
+          } else if (parseInt(dashboardData.status) === 300) {
             try {
-              this.notify(dashoardData.message);
+              this.notify(dashboardData.message);
             } catch (e) {
             }
           }

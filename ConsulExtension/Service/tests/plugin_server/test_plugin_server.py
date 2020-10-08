@@ -176,8 +176,24 @@ update_creds_cases = get_data('update_creds.json')
 epg_alias_data = get_data('get_epg_alias.json')
 
 
+def dummy_get_vrf_specific_eps(tn, dc):
+    db_obj = alchemy_core.Database()
+    connection = db_obj.engine.connect()
+    eps = db_obj.select_from_table(
+        connection,
+        db_obj.EP_TABLE_NAME,
+        {'tenant': tn},
+        ['ip', 'dn', 'is_cep']
+    )
+    return eps
+
+
+def dummy_get_vrf_from_database(dc, tn):
+    return "-"
+
+
 @pytest.mark.parametrize("case", get_new_mapping_cases)
-def mtest_get_new_mapping(case):
+def test_get_new_mapping(case):
     clear_db()
     tenant = 'tn0'
     datacenter = 'dc1'
@@ -188,8 +204,13 @@ def mtest_get_new_mapping(case):
         )
     except Exception:
         assert False
-
+    ori_fun = plugin_server.get_vrf_specific_eps
+    ori_fun2 = plugin_server.get_vrf_from_database
+    plugin_server.get_vrf_specific_eps = dummy_get_vrf_specific_eps
+    plugin_server.get_vrf_from_database = dummy_get_vrf_from_database
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
+    plugin_server.get_vrf_specific_eps = ori_fun
+    plugin_server.get_vrf_from_database = ori_fun2
     original_mapping = get_data('{}.json'.format(case))
     assert new_mapping == original_mapping
     clear_db()
@@ -908,3 +929,46 @@ def test_filter_apic_data(case):
     expected_data = get_data("filter_apic_data/{}_output.json".format(case))
     response = plugin_server.filter_apic_data(input_data, vrfs)
     assert response == expected_data
+
+
+@pytest.mark.parametrize("case", ["", True, False])
+def test_change_data_fetch_status(case):
+    clear_db()
+
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    if case != "":
+        connection = db_obj.engine.connect()
+        db_obj.insert_and_update(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            [True]
+        )
+        connection.close()
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    connection.close()
+
+    if case == "":
+        assert data == []
+    else:
+        assert data[0][0] is True
+
+    case = case if case != "" else True
+    plugin_server.change_data_fetch_status(case)
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    connection.close()
+
+    assert data[0][0] == case
+
+    clear_db()

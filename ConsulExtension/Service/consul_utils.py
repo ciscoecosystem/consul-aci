@@ -387,7 +387,7 @@ class Consul(object):
                     node_check = {}
                     node_check["Name"] = check.get("Name")
                     node_check["NodeName"] = node_name
-                    node_check["ServiceName"] = "-"
+                    node_check["ServiceName"] = ""
                     node_check["CheckID"] = check.get("CheckID")
                     node_check["Type"] = check.get("Type")
                     node_check["Notes"] = check.get("Notes")
