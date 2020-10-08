@@ -66,13 +66,16 @@ button.Toastify__close-button.Toastify__close-button--error {
   all: unset;
   font-size: 1.5rem;
   line-height: 19px;
-  display: block;
-  overflow-wrap: break-word;
+}
+
+.service-cards .property-value{
+  display: inline-flex !important;
 }
 
 .label{
   display: -webkit-inline-box !important;
   line-height: 0.9em !important;
+  margin: 0px 4px 5px 0px !important;
 }
 
 .card .bordered{
@@ -93,6 +96,15 @@ button.Toastify__close-button.Toastify__close-button--error {
 }
 
 .service-cards .card{
-  height: 60vh !important;
   overflow: auto !important;
+  height: 100%;
+}
+
+
+.service-tags .property-list-item{
+  width: 200% !important;
+}
+
+.service-tags .property-value{
+  display: inherit !important;
 }
