@@ -1,5 +1,5 @@
 import React from 'react'
-import { CollapsiblePanel, Labe, Table } from "blueprint-react"
+import { CollapsiblePanel, Label, Table } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
 import { showShortName, isString } from './utils.js';
