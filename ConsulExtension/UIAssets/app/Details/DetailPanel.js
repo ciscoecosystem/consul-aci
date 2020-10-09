@@ -43,7 +43,7 @@ export default function DetailPanel(props) {
     let { summaryPaneIsOpen, summaryDetail, title } = props;
     let apicInfoOrder = [
     { name: "interface", label: "Interface" },
-    { name: "pod_name", label: "POD"},
+    { name: "pod_name", label: "ACI POD"},
     { name: "ip", label: "ip" },
     { name: "mac", label: "mac" },
     { name: "epgName", label: "epg" },
