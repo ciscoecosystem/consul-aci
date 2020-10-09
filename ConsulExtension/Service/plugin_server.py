@@ -2351,6 +2351,7 @@ def get_vrf_from_apic(tn):
                 response.append(vrf_name)
     except Exception as e:
         logger.exception("Exception occurred, Error: {}".format(e))
+    logger.info("Vrf response after parsing: {}".format(response))
     return response
 
 
@@ -2378,9 +2379,18 @@ def update_vrf_in_db(tn):
                         [each]
                     )
         connection.close()
+        logger.info("Available vrfs in db: {}".format(vrf_db))
+        vrf_to_send = vrf_apic[:]
+        for each in vrf_db:
+            tmp = each.split("/")
+            if len(tmp) == 3:
+                db_tn = tmp[1].split("-", 1)[-1]
+                db_vrf = tmp[2].split("-", 1)[-1]
+                if tn == db_tn:
+                    vrf_to_send.append(db_vrf)
         return json.dumps({
             "status_code": "200",
-            "payload": list(map(lambda x: x.split("ctx-")[-1], vrf_apic)),
+            "payload": list(map(lambda x: x.split("ctx-")[-1], vrf_to_send)),
             "message": "OK"
         })
     except Exception as e:
