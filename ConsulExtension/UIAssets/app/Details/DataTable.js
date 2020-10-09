@@ -92,7 +92,7 @@ export default class DataTable extends Component {
         }
       },
       {
-        Header: "Pod",
+        Header: "ACI Pod",
         accessor: "pod_name",
         show: true,
         Cell: row => {
