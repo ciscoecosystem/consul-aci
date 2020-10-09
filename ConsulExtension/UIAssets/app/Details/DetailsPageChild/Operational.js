@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Table, Panel } from "blueprint-react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import {
   QUERY_URL,
   getCookie,
@@ -156,7 +156,6 @@ export default class Operational extends Component {
 
   render() {
     return <div><Panel style={{ width: "100%" }} border="panel--bordered">
-    <ToastContainer></ToastContainer>
     <Table
       noDataText="No data found"
       data={this.state.rows}
