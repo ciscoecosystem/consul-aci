@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Table, Panel, Icon, Label } from "blueprint-react";
 
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { INTERVAL_API_CALL, QUERY_URL, getCookie, DEV_TOKEN, URL_TOKEN } from '../../../constants.js';
 import 'react-toastify/dist/ReactToastify.css';
 import "./styleTabs.css"
@@ -155,7 +155,6 @@ export default class CONSUL_ChecksTable extends Component {
 
         return (
             <Panel style={{ width: "100%" }} border="panel--bordered">
-                <ToastContainer></ToastContainer>
                 <Table
                     noDataText="No data found"
                     data={this.state.rows}
