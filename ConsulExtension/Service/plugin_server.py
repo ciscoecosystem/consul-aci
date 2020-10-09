@@ -760,9 +760,7 @@ def get_multi_node_check(node_list, datacenter):
             db_obj.SCHEMA_DICT[db_obj.NODECHECKS_TABLE_NAME][:9]
         ))
         connection.close()
-        print(node_ids)
         node_ids = list(map(lambda x: x[0][0] if x else "", node_ids))
-        print(node_ids)
 
         node_checks_data = list_data_formatter(node_checks_data, [1, 2])
 
