@@ -310,7 +310,7 @@ export default class App extends React.Component {
             query: 'query{GetPollingInterval{response}}'
         }
         try{
-            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, false);
+            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, true);
             xhrPostGetPollingIntervalCall.setRequestHeader("Content-type", "application/json");
             // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
             // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
