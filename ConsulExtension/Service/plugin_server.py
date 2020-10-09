@@ -2388,9 +2388,12 @@ def update_vrf_in_db(tn):
                 db_vrf = tmp[2].split("-", 1)[-1]
                 if tn == db_tn:
                     vrf_to_send.append(db_vrf)
+        logger.info("vrf to send: {}".format(vrf_to_send))
+        vrf_to_send = set(list(map(lambda x: x.split("ctx-")[-1], vrf_to_send)))
+        logger.info("vrf to send: {}".format(vrf_to_send))
         return json.dumps({
             "status_code": "200",
-            "payload": list(map(lambda x: x.split("ctx-")[-1], vrf_to_send)),
+            "payload": list(vrf_to_send),
             "message": "OK"
         })
     except Exception as e:
