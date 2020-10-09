@@ -490,15 +490,16 @@ class AciUtils(object):
         """
         try:
             url = urls.FETCH_VRF_TENANT.format(self.proto, self.apic_ip, tn)
+            logger.info("Fetching tenant: {}'s vrf's from url: {}".format(tn, url))
             response_json = self.aci_get(url)
+            logger.info("Vrf response from apic: {}".format(response_json))
             if response_json and response_json.get("imdata"):
                 data = response_json.get("imdata")
                 return data
-            return ''
         except Exception as e:
             logger.exception(
                 'Exception in VRF-Tenant API call, Error: {}'.format(str(e)))
-            return ''
+        return ''
 
     @time_it
     def apic_fetch_contract(self, dn):

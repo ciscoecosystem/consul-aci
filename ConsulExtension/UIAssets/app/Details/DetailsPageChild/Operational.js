@@ -14,12 +14,12 @@ const TABLE_OPERATIONAL = [
     accessor: "ep_name",
   },
   {
-    Header: "IP",
-    accessor: "ip",
-  },
-  {
     Header: "MAC",
     accessor: "mac",
+  },
+  {
+    Header: "IP",
+    accessor: "ip",
   },
   {
     Header: "Learning Resource",
