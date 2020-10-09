@@ -438,12 +438,16 @@ export default class App extends React.Component {
               if (parseInt(getVRFResponse.status_code) === 200) {
                 let data = getVRFResponse.payload;
                 // this.setPollingIntervalDefaultValue(data.interval)
-                let vrfItem = data.map((item) =>
+                if(data.length){
+                    let vrfItem = data.map((item) =>
                   Object.assign({}, { name: item, value: item, selected: false })
                 );
                 this.setState({
                   vrfOptions: [...vrfItem],
                 });
+                } else {
+                    setTimeout(()=> this.getVRFCall(), INTERVAL_API_CALL)
+                }
               }
             }
           };
