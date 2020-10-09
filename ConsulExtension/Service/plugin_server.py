@@ -607,13 +607,28 @@ def get_node_checks(node_name, datacenter):
     logger.info("Node Check for node: {}".format(node_name))
     try:
         response = []
+        node_checks_data = []
+
         connection = db_obj.engine.connect()
-        node_checks_data = list(db_obj.select_from_table(
+        node_id = db_obj.select_from_table(
             connection,
-            db_obj.NODECHECKS_TABLE_NAME,
-            {'node_name': node_name},
-            ["check_id", "check_name", "service_name", "type", "notes", "output", "status"]
-        ))
+            db_obj.NODE_TABLE_NAME,
+            {
+                'node_name': node_name,
+                'datacenter': datacenter
+            },
+            ['node_id']
+        )
+        if node_id:
+            node_checks_data = list(db_obj.select_from_table(
+                connection,
+                db_obj.NODECHECKS_TABLE_NAME,
+                {
+                    'node_id': node_id[0][0],
+                    'node_name': node_name
+                },
+                ["check_id", "check_name", "service_name", "type", "notes", "output", "status"]
+            ))
         connection.close()
 
         for check in node_checks_data:
@@ -721,9 +736,23 @@ def get_multi_node_check(node_list, datacenter):
     """
 
     logger.info("Node Checks for nodes: {}".format(node_list))
+    node_list = json.loads(node_list)
     response = []
     try:
+        node_ids = []
+
         connection = db_obj.engine.connect()
+        for node_name in node_list:
+            node_id = db_obj.select_from_table(
+                connection,
+                db_obj.NODE_TABLE_NAME,
+                {
+                    'node_name': node_name,
+                    'datacenter': datacenter
+                },
+                ['node_id']
+            )
+            node_ids.append(node_id)
         node_checks_data = list(db_obj.select_from_table(
             connection,
             db_obj.NODECHECKS_TABLE_NAME,
@@ -731,13 +760,18 @@ def get_multi_node_check(node_list, datacenter):
             db_obj.SCHEMA_DICT[db_obj.NODECHECKS_TABLE_NAME][:9]
         ))
         connection.close()
+        print(node_ids)
+        node_ids = list(map(lambda x: x[0][0] if x else "", node_ids))
+        print(node_ids)
 
-        node_list = json.loads(node_list)
+        node_checks_data = list_data_formatter(node_checks_data, [1, 2])
 
-        node_checks_data = list_data_formatter(node_checks_data, [2])
-
-        for node_name in node_list:
-            for check in node_checks_data.get(node_name, []):
+        for i, node_name in enumerate(node_list):
+            checks = node_checks_data.get(
+                ''.join([node_ids[i], node_name]),
+                []
+            )
+            for check in checks:
                 response.append({
                     'NodeName': node_name,
                     'Name': check[3],
