@@ -90,8 +90,7 @@ export default function DetailPanel(props) {
     { name: "VRF", label: "vrf" },
     { name: "BD", label: "bd" }]
 
-    let constractInfoOrder = [{ name: "Consumer", label: "consumer" },
-    { name: "Provider", label: "Provider" }]
+    let constractInfoOrder = ('Contracts' in summaryDetail.attributes) ? Object.keys(summaryDetail.attributes.Contracts).map(item => ({name: item, label: item})) : []
 
     let consulNodeOrder = [{ name: "Node", label: "node" },
     { name: "Node Checks", label: "Node Checks" },
@@ -144,7 +143,7 @@ export default function DetailPanel(props) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
                         }):""
                     }
-                } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces") {
+                } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces" || name === "Consumer Interface" || name === "Taboo" || name ==="Intra EPG" || name === "Consumer Interface") {
                     if (detailValue && Array.isArray(detailValue)) {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px", paddingBottom: "3px"}}>
                         {showDetails[name].map(function (infcs) {
@@ -153,7 +152,7 @@ export default function DetailPanel(props) {
                         </ul>
                     } else {
                          console.warn("Invalid format", name);
-                         detailValue = "-"
+                         detailValue = ""
                     }
                 }
 
