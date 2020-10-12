@@ -21,6 +21,7 @@
     "name":"Consul Extension for ACI",
     "permissions":[
         "admin"
+
     ],
     "permissionslevel":"read",
     "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
