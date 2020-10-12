@@ -1,0 +1,46 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "VMM-Domain": "ESX0-leaf103",
+        "CEP-Mac": "93:0f:2a:19:ea:85",
+        "node_services": [],
+        "EPG": "epg0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-3/Node-106/eth2/6"
+        ],
+        "epg_health": "24",
+        "VRF": "tn0/",
+        "fraction": 0,
+        "node_ip": "b9ad:3af9:46fe:59c8:44b8:f7cc:edea:d45e",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "Non_IPs": {},
+        "learningSource": "vmm",
+        "VM-Name": "Name.",
+        "IP": "b9ad:3af9:46fe:59c8:44b8:f7cc:edea:d45e",
+        "node_check": {
+            "passing": 1
+        },
+        "AppProfile": "ap0",
+        "node_name": "nodename0",
+        "node_id": "nodeid0",
+        "controllerName": "vcenter103"
+    }
+]

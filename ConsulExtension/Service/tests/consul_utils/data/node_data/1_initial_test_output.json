@@ -1,0 +1,32 @@
+[
+  {
+    "node_ip": "10.162.26.233",
+    "node_id": "nodeid0",
+    "node_name": "nodename0"
+  },
+  {
+    "node_ip": "192.168.224.114",
+    "node_id": "nodeid1",
+    "node_name": "nodename1"
+  },
+  {
+    "node_ip": "10.49.250.254",
+    "node_id": "nodeid7",
+    "node_name": "nodename7"
+  },
+  {
+    "node_ip": "192.168.183.181",
+    "node_id": "nodeid8",
+    "node_name": "nodename8"
+  },
+  {
+    "node_ip": "172.26.223.18",
+    "node_id": "nodeid9",
+    "node_name": "nodename9"
+  },
+  {
+    "node_ip": "192.168.110.213",
+    "node_id": "nodeid10",
+    "node_name": "nodename10"
+  }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "fvRsCEpToPathEp": {
+            "attributes": {
+                "tDn": "topology/pod-0/paths-111/pathep-[eth0/0]"
+            }
+        }
+    },
+    {
+        "fvRsHyper": {
+            "attributes": {
+                "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-hyper000/hv-host-00"
+            }
+        }
+    },
+    {
+        "fvRsToVm": {
+            "attributes": {
+                "tDn": "comp/prov-dummy/ctrlr-[DUMMY0-leaf000]-dummy/vm-vm-000"
+            }
+        }
+    }
+]

@@ -1,0 +1,9 @@
+{
+    "controller": "hyper000",
+    "hosting_servername": "1.1.1.1",
+    "interfaces": [
+        "Pod-0/Node-111/eth0/0"
+    ],
+    "vm_name": "dummy-vm-name",
+    "vmm_domain": "DUMMY0-leaf000"
+}

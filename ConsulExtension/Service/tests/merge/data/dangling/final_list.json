@@ -1,0 +1,46 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "VMM-Domain": "ESX0-leaf105",
+        "CEP-Mac": "44:6c:3d:e9:f7:c8",
+        "node_services": [],
+        "EPG": "epg0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-6/Node-104/eth1/6"
+        ],
+        "epg_health": "72",
+        "VRF": "tn0/",
+        "fraction": 0,
+        "node_ip": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "Non_IPs": {},
+        "learningSource": "vmm",
+        "VM-Name": "Indeed.",
+        "IP": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27",
+        "node_check": {
+            "passing": 1
+        },
+        "AppProfile": "ap0",
+        "node_name": "nodename0",
+        "node_id": "nodeid0",
+        "controllerName": "vcenter105"
+    }
+]

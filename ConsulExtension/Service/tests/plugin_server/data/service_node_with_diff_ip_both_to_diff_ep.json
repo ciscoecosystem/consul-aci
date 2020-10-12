@@ -1,0 +1,24 @@
+[
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-86:fd:02:2f:bc:da",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "10.225.189.27",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/vrf2",
+        "epg": "epg0",
+        "tenant": "tn0"
+    },
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-8b:7f:e9:ba:79:ee",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "172.31.3.116",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/vrf2",
+        "epg": "epg0",
+        "tenant": "tn0"
+    }
+]

@@ -1,0 +1,53 @@
+{
+    "imdata": [
+        {
+            "fvRsProv": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy1-contract"
+                }
+            }
+        },
+        {
+            "fvRsProv": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rsprov-dummy2-contract"
+                }
+            }
+        },
+        {
+            "fvRsCons": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy1-contract"
+                }
+            }
+        },
+        {
+            "fvRsCons": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy2-contract"
+                }
+            }
+        },
+        {
+            "fvRsIntraEpg": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0-contract"
+                }
+            }
+        },
+        {
+            "fvRsConsIf": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0-contract"
+                }
+            }
+        },
+        {
+            "fvRsProtBy": {
+                "attributes": {
+                    "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/rscons-dummy0-contract"
+                }
+            }
+        }
+    ]
+}

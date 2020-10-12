@@ -1,0 +1,15 @@
+[
+    {
+        "syntheticAccessPolicyInfo": {
+            "attributes": {
+                "pathEp": "topology/pod-1/paths-111/pathep-[dummy-path]",
+                "domain": "uni/vmmp-DummyHost/dom-DummyDom",
+                "accBndlGrp": "uni/dummy/dummy/accportgrp-Dummy-Group",
+                "vLanPool": "uni/dummy/dummy/from-[vlan-lan1]-to-[vlan-lan2]",
+                "accPortP": "uni/dummy/accportprof-Dummy-Profile",
+                "attEntityP": "uni/dummy/attentp-Dummy-AttEntryP",
+                "nodeP": "uni/dummy/nprof-Dummy-Switch"
+            }
+        }
+    }
+]

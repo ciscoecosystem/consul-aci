@@ -1,0 +1,19 @@
+{
+    "Consumer Interface": [
+        "dummy0"
+    ],
+    "Intra EPG": [
+        "dummy0"
+    ],
+    "Consumer": [
+        "dummy1",
+        "dummy2"
+    ],
+    "Taboo": [
+        "dummy0"
+    ],
+    "Provider": [
+        "dummy1",
+        "dummy2"
+    ]
+}

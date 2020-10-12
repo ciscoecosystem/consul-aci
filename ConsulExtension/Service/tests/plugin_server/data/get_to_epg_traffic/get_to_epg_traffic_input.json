@@ -1,0 +1,34 @@
+[
+    {
+        "vzFromEPg": {
+            "children": [
+                {
+                    "vzToEPg": {
+                        "attributes": {
+                            "epgDefDn": "uni/tn-DummyTn/brc-DummyBrc/dummy/cons-dummy",
+                            "epgDn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg"
+                        },
+                        "children": [
+                            {
+                                "vzRsRFltAtt": {
+                                    "attributes": {
+                                        "tDn": "uni/tn-common/fp-default"
+                                    },
+                                    "children": [
+                                        {
+                                            "vzCreatedBy": {
+                                                "attributes": {
+                                                    "ownerDn": "uni/tn-DummyTn/brc-DummyBrc/subj-DummySubj/rssubjFiltAtt-DummyFilt"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+]
