@@ -1,1 +1,14 @@
-[{"vzRFltE": {"attributes": {"dToPort": "unspecified", "prot": "unspecified", "sFromPort": "unspecified", "sToPort": "unspecified", "etherT": "dummy", "dFromPort": "unspecified"}}}]
+[
+    {
+        "vzRFltE": {
+            "attributes": {
+                "dToPort": "unspecified",
+                "prot": "unspecified",
+                "sFromPort": "unspecified",
+                "sToPort": "unspecified",
+                "etherT": "dummy",
+                "dFromPort": "unspecified"
+            }
+        }
+    }
+]

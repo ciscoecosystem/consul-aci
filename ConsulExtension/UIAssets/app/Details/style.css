@@ -76,9 +76,26 @@
 }
 
 .detail-container .overlay-pane {
-    top: 17vh !important;
+    top: inherit !important;
 }
 
-.cui .form-group.dropdown .dropdown__menu {
-    margin-bottom: 50px !important;
+.ReactTable .table-no-data{
+    font-weight: bold;
+}
+
+.detail-container .detail-expansion .screen-container{
+    top: inherit !important;
+    position: absolute !important;
+}
+
+.detail-container .overlay-pane{
+    box-shadow:  -1px 9px 17px 0px !important;
+}
+
+.detail-container .scrollable{
+    max-height: 76vh;
+}
+
+.detail-container .panel{
+    margin-bottom: 5%;
 }

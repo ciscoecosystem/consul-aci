@@ -1,1 +1,10 @@
-[{"actrlRuleHitAg15min": {"attributes": {"ingrPktsCum": "11", "egrPktsCum": "22"}}}]
+[
+    {
+        "actrlRuleHitAg15min": {
+            "attributes": {
+                "ingrPktsCum": "11",
+                "egrPktsCum": "22"
+            }
+        }
+    }
+]

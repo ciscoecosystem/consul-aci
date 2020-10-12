@@ -14,7 +14,7 @@ const TABLE_TOEPG = [
         Header: 'Contract Subject',
         accessor: 'contract_subj'
     }, {
-        Header: 'Filter : EtherT:Protocol:srcFromPort-srcToPort to destFromPort-destToPort',
+        Header: 'Filters',
         accessor: 'filter_list',
         Cell: row => {
             return <div>{row.value.map(item => [<span>{item}</span>, <br></br>])}</div>
@@ -54,12 +54,12 @@ const TABLE_OPERATIONAL = [
         accessor: 'ep_name'
     },
     {
-        Header: 'IP',
-        accessor: 'ip'
-    },
-    {
         Header: 'MAC',
         accessor: 'mac'
+    },
+    {
+        Header: 'IP',
+        accessor: 'ip'
     },
     {
         Header: 'Learning Resource',
@@ -89,10 +89,6 @@ const TABLE_OPERATIONAL = [
         }
     },
     {
-        Header: "Multicast Address",
-        accessor: 'mcast_addr'
-    },
-    {
         Header: 'Encap',
         accessor: 'encap'
     },
@@ -115,7 +111,7 @@ const TABLE_POLICIES = [
         accessor: 'iface_prof'
     },
     {
-        Header: 'PC/vPC/If Policy Group',
+        Header: 'PC/vPC/Interface Policy Group',
         accessor: 'pc_vpc'
     },
     {

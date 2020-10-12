@@ -12,7 +12,8 @@ dc.update({
         'token',
         'status',
         'datacenter',
-        'tenant'
+        'tenant',
+        'vrf_dn'
     ]
 })
 dc.update({
@@ -117,7 +118,10 @@ dc.update({
 
 
 def clear_db():
-    os.remove('/home/app/data/ConsulDatabase.db')
+    try:
+        os.remove('/home/app/data/ConsulDatabase.db')
+    except Exception:
+        pass
 
 
 tables = dc.keys()
@@ -125,10 +129,7 @@ tables = dc.keys()
 
 @pytest.mark.parametrize("table", tables)
 def test_insert_into_table(table):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
@@ -151,10 +152,7 @@ def test_insert_into_table(table):
 
 @pytest.mark.parametrize("table", tables)
 def test_select_from_table(table):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
@@ -176,10 +174,7 @@ def test_select_from_table(table):
 
 @pytest.mark.parametrize("table", tables)
 def test_update_in_table(table):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
@@ -210,10 +205,7 @@ def test_update_in_table(table):
 
 @pytest.mark.parametrize("table", tables)
 def test_delete_from_table(table):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
     connection = db_obj.engine.connect()
@@ -243,10 +235,7 @@ def test_delete_from_table(table):
 
 @pytest.mark.parametrize("table", tables)
 def test_insert_and_update(table):
-    try:
-        clear_db()
-    except Exception:
-        pass
+    clear_db()
     db_obj = alchemy_core.Database()
     db_obj.create_tables()
 

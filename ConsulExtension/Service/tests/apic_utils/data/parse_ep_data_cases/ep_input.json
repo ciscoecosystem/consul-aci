@@ -1,59 +1,62 @@
-[{
-    "fvCEp": {
-        "attributes": {
-            "ip": "2.2.2.2",
-            "mac": "00:00:00:00:00:AA",
-            "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-            "lcC": "dummy-vmm",
-            "encap": "dummy-lan-111",
-            "mcastAddr": "not-applicable"
-        },
-        "children": [
-            {
-                "fvIp": {
-                    "attributes": {
-                        "addr": "1.1.1.1"
+[
+    {
+        "fvCEp": {
+            "attributes": {
+                "ip": "2.2.2.2",
+                "mac": "00:00:00:00:00:AA",
+                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
+                "lcC": "dummy-vmm",
+                "encap": "dummy-lan-111",
+                "mcastAddr": "not-applicable"
+            },
+            "children": [
+                {
+                    "fvIp": {
+                        "attributes": {
+                            "addr": "1.1.1.1"
+                        }
                     }
+                },
+                {
+                    "fvRsCEpToPathEp": {}
+                },
+                {
+                    "fvRsHyper": {}
+                },
+                {
+                    "fvRsToVm": {}
                 }
+            ]
+        }
+    },
+    {
+        "fvCEp": {
+            "attributes": {
+                "ip": "2.2.2.2",
+                "mac": "00:00:00:00:00:AA",
+                "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
+                "lcC": "dummy-vmm",
+                "encap": "dummy-lan-111",
+                "mcastAddr": "not-applicable"
             },
-            {
-                "fvRsCEpToPathEp": {}
-            },
-            {
-                "fvRsHyper": {}
-            },
-            {
-                "fvRsToVm": {}
-            }
-        ]
-    }
-}, {
-    "fvCEp": {
-        "attributes": {
-            "ip": "2.2.2.2",
-            "mac": "00:00:00:00:00:AA",
-            "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg/cep-00:00:00:00:00:AA",
-            "lcC": "dummy-vmm",
-            "encap": "dummy-lan-111",
-            "mcastAddr": "not-applicable"
-        },
-        "children": [
-            {
-                "fvIp": {
-                    "attributes": {
-                        "addr": "1.1.1.1"
+            "children": [
+                {
+                    "fvIp": {
+                        "attributes": {
+                            "addr": "1.1.1.1"
+                        }
                     }
+                },
+                {
+                    "fvRsCEpToPathEp": {}
+                },
+                {
+                    "fvRsHyper": {}
+                },
+                {
+                    "fvRsToVm": {}
                 }
-            },
-            {
-                "fvRsCEpToPathEp": {}
-            },
-            {
-                "fvRsHyper": {}
-            },
-            {
-                "fvRsToVm": {}
-            }
-        ]
+            ]
+        }
     }
-}]
+]

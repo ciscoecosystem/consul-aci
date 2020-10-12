@@ -158,6 +158,28 @@ def data_fetch():
     This is done for each Datacenter one by one
     """
 
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    if len(data) == 0:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False]
+            )
+    elif data[0][0] is True:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False],
+                {'running': True}
+            )
+    connection.close()
+
     while True:
 
         try:
@@ -171,27 +193,43 @@ def data_fetch():
             connection = db_obj.engine.connect()
             agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
             connection.close()
+            agent_set = set()
             agent_list = []
             for agent in agents:
                 status = int(agent[4])
                 if status == 1:
                     decoded_token = base64.b64decode(agent[3]).decode('ascii')
-                    agent_list.append(
-                        {
-                            'ip': agent[0],
-                            'port': agent[1],
-                            'protocol': agent[2],
-                            'token': decoded_token,
-                            'datacenter': agent[5],
-                        }
-                    )
-
+                    agent_set.add((
+                        agent[0],
+                        agent[1],
+                        agent[2],
+                        decoded_token,
+                        agent[5]
+                    ))
+            for each in agent_set:
+                agent_list.append({
+                    "ip": each[0],
+                    "port": each[1],
+                    "protocol": each[2],
+                    "token": each[3],
+                    "datacenter": each[4]
+                })
             # if there is no agent list on
             # db check it every CHECK_AGENT_LIST sec
             if not agent_list:
                 logger.info("No Agents found in the Login table, retrying after {}sec".format(CHECK_AGENT_LIST))
                 time.sleep(CHECK_AGENT_LIST)
                 continue
+
+            connection = db_obj.engine.connect()
+            with connection.begin():
+                db_obj.insert_and_update(
+                    connection,
+                    db_obj.DATA_FETCH_TABLE_NAME,
+                    [True],
+                    {'running': False}
+                )
+            connection.close()
 
             datacenter_list = {}
             for agent in agent_list:
@@ -628,6 +666,16 @@ def data_fetch():
             POLL_INTERVAL = interval[0][0]
         else:
             POLL_INTERVAL = 2
+
+        connection = db_obj.engine.connect()
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False],
+                {'running': True}
+            )
+        connection.close()
 
         current_time = time.time()
         time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time

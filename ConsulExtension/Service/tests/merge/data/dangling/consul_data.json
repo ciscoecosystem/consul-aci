@@ -1,1 +1,11 @@
-[{"node_ip": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27", "node_check": {"passing": 1}, "node_id": "nodeid0", "node_services": [], "node_name": "nodename0"}]
+[
+    {
+        "node_ip": "df60:49fd:71b0:d65a:f674:56c8:1151:8a27",
+        "node_check": {
+            "passing": 1
+        },
+        "node_id": "nodeid0",
+        "node_services": [],
+        "node_name": "nodename0"
+    }
+]

@@ -363,13 +363,14 @@ export default class Tree extends React.Component {
         >
           <svg width="100%" height="100%">
             <text
-              x={windowWidth/2}
+              x={windowWidth/1.25}
               y={windowHeight}
               font-family="sans-serif"
-              font-size="20px"
+              font-size="14px"
               fill="grey"
+              font-weight="bold"
             >
-              No Endpoints Found for the given Application in the given Tenant.
+              No endpoints are found for the selected data center in this Tenant.
             </text>
           </svg>
         </div>

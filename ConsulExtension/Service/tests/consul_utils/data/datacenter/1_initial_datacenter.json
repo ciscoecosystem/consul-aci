@@ -1,1 +1,5 @@
-{"Config": {"Datacenter": "dc1"}}
+{
+    "Config": {
+        "Datacenter": "dc1"
+    }
+}

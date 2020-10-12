@@ -222,8 +222,8 @@ class AciUtils(object):
 
         for each in AciUtils.get_ip_mac_list(item):
             data['ip'], data['is_cep'] = each
-            if data['mac'] == data['ip']:
-                data['ip'] = ""
+            if data['mac'].lower() == data['ip'].lower():
+                data['ip'] = "N/A"
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -477,6 +477,29 @@ class AciUtils(object):
             logger.exception(
                 'Exception in VRF API call, Error: {}'.format(str(e)))
             return ''
+
+    @time_it
+    def apic_fetch_vrf_tenant(self, tn):
+        """Function to fetch VRF detail from tenant
+
+        Arguments:
+            tn {str} -- tenant name
+
+        Returns:
+            str -- All Vrfs data from Response of FETCH_VRF_TENANT
+        """
+        try:
+            url = urls.FETCH_VRF_TENANT.format(self.proto, self.apic_ip, tn)
+            logger.info("Fetching tenant: {}'s vrf's from url: {}".format(tn, url))
+            response_json = self.aci_get(url)
+            logger.info("Vrf response from apic: {}".format(response_json))
+            if response_json and response_json.get("imdata"):
+                data = response_json.get("imdata")
+                return data
+        except Exception as e:
+            logger.exception(
+                'Exception in VRF-Tenant API call, Error: {}'.format(str(e)))
+        return ''
 
     @time_it
     def apic_fetch_contract(self, dn):

@@ -1,5 +1,5 @@
 import React from 'react'
-import { CollapsiblePanel, Label } from "blueprint-react"
+import { CollapsiblePanel, Label, Table } from "blueprint-react"
 import SummaryPane from "./Components/SummaryPane.js";
 import PieChartAndCounter from "./commonComponent/PieChartAndCounter.js";
 import { showShortName, isString } from './utils.js';
@@ -41,8 +41,23 @@ function formateDataToChartData(data) {
 
 function nonServiceEndPointEP(data) {
 
+    const NON_SERVICE_ENPOINT_HEADER = [
+        {
+            Header: 'MAC',
+            accessor: 'mac'
+        }, {
+            Header: 'IP',
+            accessor: 'ip'
+        }
+    ]
+    console.log("DEBUG",data)
+    let row = []
+    Object.keys(data).forEach(item => {
+        row.push({"mac": item, "ip": data[item]})
+    })
+
     return Object.keys(data).length > 0 ? (<React.Fragment>
-        <table>
+        {/* <table>
             <tr>
                 <td width="30%" className="bold-font">MAC</td>
                 <td width="70%" className="bold-font">IP</td>
@@ -50,7 +65,15 @@ function nonServiceEndPointEP(data) {
             {Object.entries(data).map(elem => <tr>
                 <td title={elem[0]}>{showShortName(elem[0], MAC_LENGTH)}</td> <td title={elem[1]}>{elem[1].split(",").map((item)=>(showShortName(item, IP_LENGTH))).join(",")}</td>
             </tr>)}
-        </table>
+        </table> */}
+        <div className="mac-ip-table">
+            <Table
+            data={row}
+            columns={NON_SERVICE_ENPOINT_HEADER}
+            defaultPageSize={row.length}
+            />
+        </div>
+
     </React.Fragment>) : (<React.Fragment></React.Fragment>)
 }
 
@@ -67,8 +90,7 @@ export default function DetailPanel(props) {
     { name: "VRF", label: "vrf" },
     { name: "BD", label: "bd" }]
 
-    let constractInfoOrder = [{ name: "Consumer", label: "consumer" },
-    { name: "Provider", label: "Provider" }]
+    let constractInfoOrder = ('Contracts' in summaryDetail.attributes) ? Object.keys(summaryDetail.attributes.Contracts).map(item => ({name: item, label: item})) : []
 
     let consulNodeOrder = [{ name: "Node", label: "node" },
     { name: "Node Checks", label: "Node Checks" },
@@ -76,7 +98,10 @@ export default function DetailPanel(props) {
 
     let consulServiceOrder = [{ name: "Service", label: "Service" },
     { name: "Address", label: "Address" },
-    { name: "Service Checks", label: "Service Checks" }]
+    { name: "Service Checks", label: "Service Checks" },
+    { name: "ServiceTags", label: "Service Tags" },
+    { name: "ServiceKind", label: "Service Kind" },
+    { name: "NameSpace", label: "Service Namespace" },]
 
 
     let epInfoOrder = [{ name: "name", label: "Name" },
@@ -109,16 +134,16 @@ export default function DetailPanel(props) {
                     let { formattedData, totalCnt } = formateDataToChartData(showDetails[name])
                     detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                 }
-                else if (name === "serviceTags" || name === "Service Tags") {
+                else if (name === "serviceTags" || name === "Service Tags" || name === "ServiceTags") {
                     if (!Array.isArray(showDetails[name])) {
                         console.warn("Service Tags format invalid");
-                        detailValue = "-"
+                        detailValue = ""
                     } else {
-                        detailValue = showDetails[name].map(function (tags) {
+                        detailValue = showDetails[name].length? showDetails[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
-                        })
+                        }):""
                     }
-                } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces") {
+                } else if (name === "interface" || name === "Consumer" || name === "Provider" || name === "Interfaces" || name === "Consumer Interface" || name === "Taboo" || name ==="Intra EPG" || name === "Consumer Interface") {
                     if (detailValue && Array.isArray(detailValue)) {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px", paddingBottom: "3px"}}>
                         {showDetails[name].map(function (infcs) {
@@ -127,7 +152,7 @@ export default function DetailPanel(props) {
                         </ul>
                     } else {
                          console.warn("Invalid format", name);
-                         detailValue = "-"
+                         detailValue = ""
                     }
                 }
 
@@ -202,7 +227,7 @@ export default function DetailPanel(props) {
     if (summaryDetail.name === "Service") {
         title = summaryDetail.attributes['Service Instance']
     } else {
-        title = summaryDetail.sub_label || summaryDetail.label || "Non-service Endpoint";
+        title = summaryDetail.sub_label || summaryDetail.label || "Non-Service Endpoints";
     }
 
     return (summaryPaneIsOpen) ? <SummaryPane
@@ -223,7 +248,7 @@ function PropertyItem(props) {
     return (
         <div className="property-list-item">
             <div className="property-label">{props.propertyLabel}</div>
-            <div className="property-value" title={isString(props.propertyValue) && props.propertyValue}>{props.propertyValue ? isString(props.propertyValue)? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : "-"}</div>
+            <div className="property-value" title={isString(props.propertyValue) && props.propertyValue}>{props.propertyValue ? isString(props.propertyValue)? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue : ""}</div>
         </div>
     )
 }

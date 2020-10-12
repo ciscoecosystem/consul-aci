@@ -101,6 +101,10 @@ class GetPerformanceDashboard(graphene.ObjectType):
     response = graphene.String()
 
 
+class GetVrf(graphene.ObjectType):
+    response = graphene.String()
+
+
 class Query(graphene.ObjectType):
     """Query class which resolves all the incoming requests"""
 
@@ -181,6 +185,8 @@ class Query(graphene.ObjectType):
 
     GetPerformanceDashboard = graphene.Field(GetPerformanceDashboard,
                                              tn=graphene.String())
+
+    GetVrf = graphene.Field(GetVrf, tn=graphene.String())
 
     """All the resolve methods of class Query"""
     def resolve_GetFaults(self, info, dn):
@@ -279,6 +285,10 @@ class Query(graphene.ObjectType):
     def resolve_GetPerformanceDashboard(self, info, tn):
         GetPerformanceDashboard.response = app.get_performance_dashboard(tn)
         return GetPerformanceDashboard
+
+    def resolve_GetVrf(self, info, tn):
+        GetVrf.response = app.update_vrf_in_db(tn)
+        return GetVrf
 
 
 schema = graphene.Schema(query=Query)

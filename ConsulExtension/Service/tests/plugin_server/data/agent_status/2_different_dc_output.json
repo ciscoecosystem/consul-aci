@@ -1,1 +1,13 @@
-{"up": 1, "down": 1}
+{
+    "up": {
+        "value": 1,
+        "label": "Connected",
+        "color": "rgb(108, 192, 74)"
+    },
+    "down": {
+        "value": 1,
+        "label": "Disconnected",
+        "color": "rgb(226, 35, 26)"
+    },
+    "total": 2
+}

@@ -5,3 +5,7 @@
 .savemapping {
     align-self: center;
 }
+
+.ReactTable .table-no-data{
+    font-weight: bold;
+}
