@@ -3,7 +3,7 @@
         "graphql.json":"GraphQL Json"
     },
     "apicversion":"3.2(1l)",
-    "appid":"ConsulExtensionforACI",
+    "appid":"Consul",
     "author":"Dipika Mansukhani, Mohit Agrawal, Nipun Brahmbhatt, Devarshi Shah, Cisco, HashiCorp",
     "category":[
         "Visibility and Monitoring",
