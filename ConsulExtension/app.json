@@ -24,7 +24,7 @@
     ],
     "permissionslevel":"read",
     "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
-    "vendor":"Cisco HashiCorp",
-    "vendordomain":"CiscoHashiCorp",
+    "vendor":"Cisco",
+    "vendordomain":"Cisco",
     "version":"1.0"
 }
