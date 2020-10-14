@@ -1,4 +1,4 @@
-The Consul Extension for ACI (Beta) application provides ACI administrators L4-L7 Service Mesh visibility and an automated way to manage L2-L3 infrastructure based on L4-L7 service requirements.
+The Consul Extension for ACI application provides ACI administrators L4-L7 Service Mesh visibility and an automated way to manage L2-L3 infrastructure based on L4-L7 service requirements.
 
 This application offers enhanced Consul-to-ACI L4-L7 service visibility including dynamic service health, enabling faster mean-time-to-resolution (MTTR); and L4-L7 service mesh intention driven dynamic Network Middleware Automation.
 
@@ -29,9 +29,10 @@ Pre-requisites:
 - Consul version 1.6.3/1.6.3+ent or above
 - In-band or Out-of-band connectivity between APIC and Consul seed agent (Consul server) on TCP port 8500 and 8501.
 
-Beta release limitations:
-- Supported on Chrome web-browser only.
+1.0 release limitations:
+- Supported on Chrome, Mozilla and Safari web-browsers only.
 - Supported for on-premise APIC only.
+
 
 Before you begin:
 User guide: https://tinyurl.com/y9ztt362
