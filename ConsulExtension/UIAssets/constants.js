@@ -1,10 +1,10 @@
 /*
-* for appcenter: ConsulExtensionforACI
+* for appcenter: Consul
 */
-export const APPID = "ConsulExtensionforACI"; // this resembles App name
+export const APPID = "Consul"; // this resembles App name
 
 /*
-* for appcenter: CiscoHashiCorp
+* for appcenter: Cisco
 * for normal: Cisco
 */
 export const VENDORNAME = "Cisco";
