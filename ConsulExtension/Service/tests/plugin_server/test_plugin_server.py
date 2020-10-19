@@ -13,6 +13,8 @@ from Service import plugin_server
 from Service import alchemy_core
 from Service import consul_utils
 from Service.apic_utils import AciUtils
+from Service import custom_logger
+logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 from Service.tests.plugin_server.utils import (
     generate_dummy_new_mapping_data,
     verify_mapping,
@@ -198,6 +200,9 @@ def test_get_new_mapping(case):
     tenant = 'tn0'
     datacenter = 'dc1'
 
+    def dummy_get_apic_data(tn):
+        return get_data('get_new_mapping/{}.json'.format(case))
+
     try:
         os.system(
             'cp ./tests/plugin_server/data/{}.db /home/app/data/ConsulDatabase.db'.format(case)
@@ -206,11 +211,14 @@ def test_get_new_mapping(case):
         assert False
     ori_fun = plugin_server.get_vrf_specific_eps
     ori_fun2 = plugin_server.get_vrf_from_database
+    ori_fun3 = plugin_server.get_apic_data
     plugin_server.get_vrf_specific_eps = dummy_get_vrf_specific_eps
     plugin_server.get_vrf_from_database = dummy_get_vrf_from_database
+    plugin_server.get_apic_data = dummy_get_apic_data
     new_mapping = plugin_server.get_new_mapping(tenant, datacenter)
     plugin_server.get_vrf_specific_eps = ori_fun
     plugin_server.get_vrf_from_database = ori_fun2
+    plugin_server.get_apic_data = ori_fun3
     original_mapping = get_data('{}.json'.format(case))
     assert new_mapping == original_mapping
     clear_db()

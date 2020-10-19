@@ -154,6 +154,7 @@ class Database:
             'encap',
             'hosting_server_name',
             'is_cep',
+            'pod',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -327,6 +328,7 @@ class Database:
             Column('encap', String),
             Column('hosting_server_name', String),
             Column('is_cep', String),
+            Column('pod', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -430,6 +432,7 @@ class Database:
             Column('encap', String),
             Column('hosting_server_name', String),
             Column('is_cep', String),
+            Column('pod', String),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime),
@@ -596,6 +599,7 @@ class Database:
                 'encap': self.ep.c.encap,
                 'hosting_server_name': self.ep.c.hosting_server_name,
                 'is_cep': self.ep.c.is_cep,
+                'pod': self.ep.c.pod,
                 'created_ts': self.ep.c.created_ts,
                 'updated_ts': self.ep.c.updated_ts,
                 'last_checked_ts': self.ep.c.last_checked_ts

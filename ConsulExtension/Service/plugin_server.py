@@ -2153,7 +2153,7 @@ def get_apic_data(tenant):
         connection,
         db_obj.EP_TABLE_NAME,
         {'tenant': tenant},
-        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:12]
+        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:14]
     ))
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -2184,7 +2184,8 @@ def get_apic_data(tenant):
                 'controllerName': ep[7],
                 'hostingServerName': ep[11],
                 'learningSource': ep[8],
-                'epg_health': epg[6]
+                'epg_health': epg[6],
+                'pod': ep[13]
             })
 
     return apic_data

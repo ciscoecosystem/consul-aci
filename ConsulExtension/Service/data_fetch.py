@@ -579,6 +579,7 @@ def data_fetch():
                                 ep.get('encap'),
                                 ep.get('hosting_servername'),
                                 ep.get('is_cep'),
+                                ep.get('pod')
                             ),
                             {
                                 'mac': ep.get('mac'),
