@@ -1,6 +1,21 @@
 from Service import data_fetch
 from Service import consul_utils
 from Service import threading_util
+from Service import alchemy_core
+import pytest
+import json
+import os
+
+
+def clear_db():
+    try:
+        os.remove("/home/app/data/ConsulDatabase.db")
+    except Exception:
+        pass
+
+
+def reader(filename):
+    return json.load(open('./tests/data_fetch/data/{}'.format(filename), 'r'))
 
 
 def nodes(self):
@@ -196,3 +211,59 @@ def test_get_service_checks():
     }
     data_fetch.get_service_checks(service_checks_dict, service)
     assert expected == service_checks_dict
+
+
+@pytest.mark.parametrize("case", ["initial", True, False])
+def test_change_data_fetch_status(case):
+
+    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
+        assert table_name == expected_table_name
+        assert new_record == expected_new_record
+        assert field_arg_dict == expected_field_arg_dict
+
+    def dummy_select_from_table(self, connection, table_name):
+        ls = ["dummy"]
+        if case == "initial":
+            ls = []
+        return ls
+
+    insert_and_update = alchemy_core.Database.insert_and_update
+    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+    select_from_table = alchemy_core.Database.select_from_table
+    alchemy_core.Database.select_from_table = dummy_select_from_table
+
+    expected_table_name = alchemy_core.Database.DATA_FETCH_TABLE_NAME
+    if case != "initial":
+        expected_field_arg_dict = {
+            'running': not case
+        }
+        expected_new_record = [case]
+        data_fetch.change_data_fetch_status(case)
+
+    if case == "initial":
+        expected_field_arg_dict = {}
+        expected_new_record = [True]
+        data_fetch.change_data_fetch_status(True)
+
+    alchemy_core.Database.insert_and_update = insert_and_update
+    alchemy_core.Database.select_from_table = select_from_table
+
+
+def test_get_agents_from_db():
+
+    def dummy_select_from_table(self, connection, table_name):
+        return reader("get_agents_from_db/input.json")
+
+    expected = reader("get_agents_from_db/output.json")
+
+    select_from_table = alchemy_core.Database.select_from_table
+    alchemy_core.Database.select_from_table = dummy_select_from_table
+
+    response = data_fetch.get_agents_from_db()
+    assert expected == response
+
+    alchemy_core.Database.select_from_table = select_from_table
+
+
+def test_fetch_and_save_nodes():
+    pass
