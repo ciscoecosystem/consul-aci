@@ -328,6 +328,30 @@ def test_apic_fetch_vrf(data, dn, expected):
     assert response == get_data(expected)
 
 
+@pytest.mark.parametrize('data, tn, expected', [
+    ("data/apic_fetch_vrf_tenant_cases/vrf_input.json",
+     "tn0",
+     "data/apic_fetch_vrf_tenant_cases/vrf_output.json",),
+    ("data/apic_fetch_vrf_tenant_cases/empty_input.json",
+     "tn0",
+     "data/apic_fetch_vrf_tenant_cases/empty_output.json",)
+])
+def test_apic_fetch_vrf_tenant(data, tn, expected):
+
+    # Mock AciUtils methods
+    def dummy_aci_get(self, url):
+        return get_data(data)
+
+    AciUtils.aci_get = dummy_aci_get
+    AciUtils.proto = "http://"
+    AciUtils.apic_ip = "dummy-apic-ip"
+
+    obj = AciUtils()
+    response = obj.apic_fetch_vrf_tenant(tn)
+
+    assert response == get_data(expected)
+
+
 @pytest.mark.parametrize('data, dn, expected', [
     ("data/apic_fetch_contract_cases/all_contracts_input.json",
      "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",

@@ -1,13 +1,13 @@
 /*
-* for appcenter: ConsulExtensionforACI
+* for appcenter: Consul
 */
-export const APPID = "ConsulExtensionforACI"; // this resembles App name
+export const APPID = "Consul"; // this resembles App name
 
 /*
-* for appcenter: CiscoHashiCorp
+* for appcenter: Cisco
 * for normal: Cisco
 */
-export const VENDORNAME = "CiscoHashiCorp"; 
+export const VENDORNAME = "Cisco";
 export const PROFILE_NAME = "datacenterName";
 export const INTERVAL_API_CALL = 30000; // in milliseconds
 

@@ -40,7 +40,7 @@ def consul_tree_dict(data):
 
         # Top level node in Tree
         ap_dict = {
-            'name': 'AppProf',
+            'name': 'Application Profile',
             'type': '#581552',
             'sub_label': ap,
             'attributes': {},
@@ -156,7 +156,10 @@ def consul_tree_dict(data):
                         service_side_pane = {
                             'Service': service['service_id'],
                             'Address': service_address,
-                            'Service Checks': service['service_checks']
+                            'Service Checks': service['service_checks'],
+                            'ServiceTags': service['service_tags'],
+                            'ServiceKind': service['service_kind'],
+                            'NameSpace': service['service_namespace']
                         }
 
                         # Adding services to EP attributes

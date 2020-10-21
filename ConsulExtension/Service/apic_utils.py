@@ -33,7 +33,7 @@ def create_cert_session():
     Create user certificate and session.
     """
 
-    cert_user = 'CiscoHashiCorp_ConsulExtensionforACI'  # Name of Application, used for token generation
+    cert_user = 'Cisco_Consul'  # Name of Application, used for token generation
     # static generated upon install
     plugin_key_file = '/home/app/credentials/plugin.key'
     pol_uni = PolUni('')
@@ -88,7 +88,7 @@ class AciUtils(object):
         """
         user_cert, plugin_key = create_cert_session()
         app_token_payload = {"aaaAppToken": {
-            "attributes": {"appName": "CiscoHashiCorp_ConsulExtensionforACI"}}}
+            "attributes": {"appName": "Cisco_Consul"}}}
         data = json.dumps(app_token_payload)
         pay_load = "POST" + urls.LOGIN_URL_SUFFIX + data
         private_key = load_privatekey(FILETYPE_PEM, plugin_key)
@@ -225,8 +225,8 @@ class AciUtils(object):
 
         for each in AciUtils.get_ip_mac_list(item):
             data['ip'], data['is_cep'] = each
-            if data['mac'] == data['ip']:
-                data['ip'] = ""
+            if data['mac'].lower() == data['ip'].lower():
+                data['ip'] = "N/A"
             data.update(ep_info)
             data_list.append(copy.deepcopy(data))
         return data_list
@@ -490,6 +490,29 @@ class AciUtils(object):
             return ''
 
     @time_it
+    def apic_fetch_vrf_tenant(self, tn):
+        """Function to fetch VRF detail from tenant
+
+        Arguments:
+            tn {str} -- tenant name
+
+        Returns:
+            str -- All Vrfs data from Response of FETCH_VRF_TENANT
+        """
+        try:
+            url = urls.FETCH_VRF_TENANT.format(self.proto, self.apic_ip, tn)
+            logger.info("Fetching tenant: {}'s vrf's from url: {}".format(tn, url))
+            response_json = self.aci_get(url)
+            logger.info("Vrf response from apic: {}".format(response_json))
+            if response_json and response_json.get("imdata"):
+                data = response_json.get("imdata")
+                return data
+        except Exception as e:
+            logger.exception(
+                'Exception in VRF-Tenant API call, Error: {}'.format(str(e)))
+        return ''
+
+    @time_it
     def apic_fetch_contract(self, dn):
         """Fetch Contracts for EPG from dn
 
@@ -516,7 +539,7 @@ class AciUtils(object):
                     keys = child.keys()
                     if len(keys) > 0:
                         ct_name = child[keys[0]]['attributes']['dn'].split(
-                            "/", 4)[4].split("-")[1]
+                            "/", 4)[4].split("-", 1)[1]
                     else:
                         continue
 

@@ -40,7 +40,7 @@ var legend = [
     name: "EP",
     level: "grey",
     label: "Non-Service",
-    sub_label: "End Point",
+    sub_label: "End Points",
     type: "grey",
     trans: 3.9
   }

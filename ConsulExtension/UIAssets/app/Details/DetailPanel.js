@@ -43,6 +43,7 @@ export default function DetailPanel(props) {
     let { summaryPaneIsOpen, summaryDetail, title } = props;
     let apicInfoOrder = [
     { name: "interface", label: "Interface" },
+    { name: "pod_name", label: "ACI POD"},
     { name: "ip", label: "ip" },
     { name: "mac", label: "mac" },
     { name: "epgName", label: "epg" },
@@ -60,7 +61,7 @@ export default function DetailPanel(props) {
     let serviceInfoOrder = [{ name: "service", label: "service" },
     { name: "serviceChecks", label: "service Checks" },
     { name: "serviceInstance", label: "service Instance" },
-    { name: "port", label: "port" },
+    { name: "serviceAddress", label: "Address" },
     { name: "serviceTags", label: "service Tags" },
     { name: "serviceKind", label: "service Kind" },
     { name: "serviceNamespace", label: "Namespace" }];
@@ -77,10 +78,10 @@ export default function DetailPanel(props) {
                         let { formattedData, totalCnt } = formateDataToChartData(summaryDetail[name])
                         detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                     }
-                    else if (name === "serviceTags") {
-                        detailValue = summaryDetail[name].map(function (tags) {
+                    else if (name === "serviceTags" || name === "pod_name") {
+                        detailValue = summaryDetail[name].length ? summaryDetail[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
-                        })
+                        }) : ""
                     } else if (name === "interface") {
                         detailValue = <ul style={{ listStyleType: "none", paddingLeft: "0px" }}>
                             {summaryDetail[name].map(function (infcs) {
@@ -98,15 +99,15 @@ export default function DetailPanel(props) {
 
 
     return (summaryPaneIsOpen) ? <SummaryPane
-        subTitle={"ENDPOINT"}
+        subTitle={"ENDPOINT / CONSUL NODE"}
         title={title}
         closeSummaryPane={() => props.setSummaryIsOpen(false)}
-        openScreen={function () { console.log("Here open detail it") }}
+        openScreen={()=>props.setExpansionViewOpen()}
     >
         <div className="" style={{ marginBottom: "80%" }}>
             {CollapsePane("APIC Information", apicInfoOrder)}
             {CollapsePane("Consul Node Information", nodeInfoOrder)}
-            {CollapsePane("Consul Service Information", serviceInfoOrder)}
+            {CollapsePane("Consul Service Information", summaryDetail.service?serviceInfoOrder:[])}
         </div>
     </SummaryPane> : <div></div>
 }
@@ -119,7 +120,7 @@ function PropertyItem(props) {
             <div className="property-value" title={ isString(props.propertyValue) && props.propertyValue}>
                 {props.propertyValue ? 
                     isString(props.propertyValue) ? showShortName(props.propertyValue, VALUE_LENGTH): props.propertyValue 
-                    : "-"}
+                    : ""}
             </div>
         </div>
     )

@@ -10,6 +10,7 @@
 
 .tab__heading {
   font-size: 15px;
+  font-weight: bold !important;
 }
 
 .tab {
@@ -73,4 +74,13 @@
 .topnav span.active {
   border-bottom: 3px solid #1dc0e9;
   color: #1a768d;
+}
+
+.cui ul.tabs>li>a{
+  padding: 5px !important
+}
+
+
+.mac-ip-table .pagination-bottom{
+  display: none !important;
 }

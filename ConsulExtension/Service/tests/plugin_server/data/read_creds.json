@@ -7,7 +7,8 @@
         "",
         "True",
         "datacenter",
-        "tn0"
+        "tn0",
+        "uni/tn-tn0/ctx-vrf0"
     ],
     [
         "0.0.0.0",
@@ -16,7 +17,8 @@
         "",
         "True",
         "-",
-        "tn0"
+        "tn0",
+        "uni/tn-tn0/ctx-vrf0"
     ],
     [
         "0.0.0.0",
@@ -25,6 +27,7 @@
         "",
         "False",
         "datacenter",
-        "tn2"
+        "tn2",
+        "uni/tn-tn2/ctx-vrf0"
     ]
 ]

@@ -43,6 +43,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
         consul_data_formatter(consul_data, mapping_ips)
         mapped_consul_nodes_list = mapped_consul_nodes_formatter(consul_data)
+        mapped_consul_services_list = mapped_consul_services_formatter(consul_data)
 
         for aci in aci_data:
             if aci['EPG'] not in total_epg_count:
@@ -60,29 +61,30 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if mapped_detail:
                 logger.info('mapping: {}, aci: {}'.format(str(mapped_detail), str(aci)))
                 # Service to CEp mapping
-                for node in consul_data:
-                    new_node = {
-                        'node_id': node.get('node_id'),
-                        'node_name': node.get('node_name'),
-                        'node_ip': node.get('node_ip'),
-                        'node_check': node.get('node_check'),
-                        'node_services': []
-                    }
-                    # All the services which matches CEp and its ip is different from its nodes ip
-                    node_services = node.get('node_services', [])
-                    flagger = aci.get(aci_key) != node.get('node_ip')
-                    for service in node_services:
-                        if aci.get(aci_key) == service.get('service_ip') and flagger:
-                            new_node['node_services'].append(service)
-                    if new_node['node_services']:
-                        new_node.update(aci)
-                        merge_list.append(new_node)
-                        if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
-                            merged_eps[(aci[aci_key], aci['CEP-Mac'], aci['dn'])] = True
-                            if aci['EPG'] not in merged_epg_count:
-                                merged_epg_count[aci['EPG']] = [aci[aci_key]]
-                            else:
-                                merged_epg_count[aci['EPG']].append(aci[aci_key])
+                mapped_node_service_dict = dict()
+                for service, node in mapped_consul_services_list.get(aci.get(aci_key), []):
+                    if aci.get(aci_key) != node.get('node_ip'):
+                        node_id = node.get('node_id')
+                        if node_id not in mapped_node_service_dict:
+                            new_node = {
+                                'node_id': node.get('node_id'),
+                                'node_name': node.get('node_name'),
+                                'node_ip': node.get('node_ip'),
+                                'node_check': node.get('node_check'),
+                                'node_services': [service]
+                            }
+                            new_node.update(aci)
+                            mapped_node_service_dict[node_id] = new_node
+                        else:
+                            mapped_node_service_dict.get(node_id)['node_services'].append(service)
+                for new_node in mapped_node_service_dict.values():
+                    merge_list.append(new_node)
+                    if (aci[aci_key], aci['CEP-Mac'], aci['dn']) not in merged_eps:
+                        merged_eps[(aci[aci_key], aci['CEP-Mac'], aci['dn'])] = True
+                        if aci['EPG'] not in merged_epg_count:
+                            merged_epg_count[aci['EPG']] = [aci[aci_key]]
+                        else:
+                            merged_epg_count[aci['EPG']].append(aci[aci_key])
 
                 # node to EP mapping
                 mapped_consul_nodes = custom_copy(
@@ -205,6 +207,19 @@ def mapped_consul_nodes_formatter(consul_data):
             obj.append(node)
         else:
             dc[ip] = [node]
+    return dc
+
+
+def mapped_consul_services_formatter(consul_data):
+    dc = dict()
+    for node in consul_data:
+        for service in node.get('node_services'):
+            ip = service.get('service_ip')
+            if ip:
+                if ip in dc:
+                    dc[ip].append([service, node])
+                else:
+                    dc[ip] = [[service, node]]
     return dc
 
 

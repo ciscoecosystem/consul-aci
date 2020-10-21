@@ -68,6 +68,7 @@ export default class App extends React.Component {
         this.handlePollingIntervalPopUp = this.handlePollingIntervalPopUp.bind(this);
         this.getPollingInterval = this.getPollingInterval.bind(this);
         this.setPollingIntervalDefaultValue = this.setPollingIntervalDefaultValue.bind(this);
+        this.getVRFCall = this.getVRFCall.bind(this)
         this.state = {
             agentPopup: false,
             pollingIntervalPopup: false,
@@ -75,7 +76,6 @@ export default class App extends React.Component {
             mappingPopup: false,
             callContainer: true,
             items: [
-                { label: AGENTS , action: this.handleAgent },
                 { label: "Polling interval", action: this.handlePollingIntervalPopUp }
             ],
             pollingIntervalOptions : [
@@ -91,6 +91,7 @@ export default class App extends React.Component {
             ],
             selectedPollingInterval : 2,
             details: [],
+            vrfOptions: [],
             tenantApiCallCnt: 2, // indicates no of time "PostTenant" api could be called.
             sidebarItems: [
                 {
@@ -123,19 +124,21 @@ export default class App extends React.Component {
                 },
                 {
                     id: 'Agent',
-                    icon: "icon-analysis",
-                    title: 'Agent',
+                    icon: "icon-plugin", // icon-insights, icon-general-source, icon-link, icon-plugin
+                    title: 'Seed Agents',
                     content: <li class="sidebar__item "> <a className="" aria-current="false" href="javascript:void(0)" onClick={() => this.handleAgent(true)}>
-                        <span className="icon-analysis ">
-                        </span><span className="qtr-margin-left">Agent</span></a>
+                        <span className="icon-plugin">
+                        </span><span className="qtr-margin-left">Seed Agents</span></a>
                     </li>
                 },
-                {
-                    id: 'serviceint',
-                    icon: "icon-admin",
-                    path: this.pathname + '/serviceintention',
-                    title: 'Service Intentions'
-                },
+                // This page and its link have been removed as intentions are not required in this release.
+
+                // {
+                //     id: 'serviceint',
+                //     icon: "icon-admin",
+                //     path: this.pathname + '/serviceintention',
+                //     title: 'Service Intentions'
+                // },
             ]
         }
     }
@@ -143,6 +146,7 @@ export default class App extends React.Component {
     componentDidMount() {
         // this.setSidebar(dummyItems);
         this.postTenant();
+        this.getVRFCall();
         this.readDatacenter();
         this.intervalCall = setInterval(() => this.readDatacenter(), INTERVAL_API_CALL);
 
@@ -306,7 +310,7 @@ export default class App extends React.Component {
             query: 'query{GetPollingInterval{response}}'
         }
         try{
-            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, false);
+            xhrPostGetPollingIntervalCall.open("POST", QUERY_URL, true);
             xhrPostGetPollingIntervalCall.setRequestHeader("Content-type", "application/json");
             // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
             // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
@@ -374,7 +378,7 @@ export default class App extends React.Component {
             return;
         }
         let payload = POST_TENANT_QUERY(this.tenantName)
-        let xhrPostTenant = this.xhrCred;
+        let xhrPostTenant = new XMLHttpRequest();
         try {
             xhrPostTenant.open("POST", QUERY_URL, true);
             xhrPostTenant.setRequestHeader("Content-type", "application/json");
@@ -405,6 +409,53 @@ export default class App extends React.Component {
             console.error('Error getting agents', e);
         }
     }
+
+    getVRFCall() {
+        let xhrPostGetVRFCall = new XMLHttpRequest();
+        const payload = {
+          query: `query{GetVrf(tn: ${JSON.stringify(
+            this.tenantName
+          )}){response}}`,
+        };
+        try {
+          xhrPostGetVRFCall.open("POST", QUERY_URL, true);
+          xhrPostGetVRFCall.setRequestHeader("Content-type", "application/json");
+          // window.APIC_DEV_COOKIE = getCookie(DEV_TOKEN); // fetch for loginform
+          // window.APIC_URL_TOKEN = getCookie(URL_TOKEN); // fetch for loginform
+          xhrPostGetVRFCall.setRequestHeader("DevCookie", window.APIC_DEV_COOKIE);
+          xhrPostGetVRFCall.setRequestHeader(
+            "APIC-challenge",
+            window.APIC_URL_TOKEN
+          );
+    
+          xhrPostGetVRFCall.onreadystatechange = () => {
+            if (
+              xhrPostGetVRFCall.readyState == 4 &&
+              xhrPostGetVRFCall.status == 200
+            ) {
+              let apiResponse = JSON.parse(xhrPostGetVRFCall.responseText);
+              let getVRFResponse = JSON.parse(apiResponse.data.GetVrf.response);
+              if (parseInt(getVRFResponse.status_code) === 200) {
+                let data = getVRFResponse.payload;
+                // this.setPollingIntervalDefaultValue(data.interval)
+                if(data.length){
+                    let vrfItem = data.map((item) =>
+                  Object.assign({}, { name: item, value: item, selected: false })
+                );
+                this.setState({
+                  vrfOptions: [...vrfItem],
+                });
+                } else {
+                    setTimeout(()=> this.getVRFCall(), INTERVAL_API_CALL)
+                }
+              }
+            }
+          };
+          xhrPostGetVRFCall.send(JSON.stringify(payload));
+        } catch (e) {
+          console.error("Error getting agents", e);
+        }
+      }
 
     readDcCall() {
         let thiss = this;
@@ -474,7 +525,7 @@ export default class App extends React.Component {
                         </div>
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
-                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} />}
+                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} vrfOptions={this.state.vrfOptions} />}
                     {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details}  shouldUpdate={this.state.callContainer}/>}
                 </div >
             </Router>

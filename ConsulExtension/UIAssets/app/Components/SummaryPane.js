@@ -25,7 +25,7 @@ class SummaryPane extends React.Component {
 
               <div class="header-action-buttons">
 
-                {/* <Icon className="link toggle" size="icon-small" type="icon-jump-out" onClick={this.props.openScreen}>&nbsp;</Icon> */}
+                <Icon className="link toggle" size="icon-small" type="icon-jump-out" onClick={this.props.openScreen}>&nbsp;</Icon>
                 <Icon className="link toggle" size="icon-small" type="icon-close" onClick={this.props.closeSummaryPane}>&nbsp;</Icon>
 
               </div>

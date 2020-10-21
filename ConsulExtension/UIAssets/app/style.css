@@ -140,7 +140,7 @@ main {
     display: flex;
     flex-direction: column;
     background: #f2f2f2;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .app-container .main-content-wrapper>main .routed-content {
@@ -225,4 +225,18 @@ main {
     top: auto !important;
     width: 23% !important;
 
+}
+
+.icon-cog{
+    display: flex;
+    justify-content: center;
+}
+
+.icon-help{
+    display: flex;
+    justify-content: center;
+}
+
+.right-menu-icons .dropdown > .dropdown__menu.placement--left{
+    top: auto !important;
 }

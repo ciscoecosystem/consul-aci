@@ -16,9 +16,9 @@ import configparser
 from Service import custom_logger
 logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 
-DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1',
-               'uni/tn-tn0/ap-ap0/epg-epg2',
-               'uni/tn-tn0/ap-ap1/epg-epg1']
+DOMAIN_LIST = ['uni/tn-tn0/ap-ap0/epg-epg1/cep-e1:18:b7:f8:8d:3e',
+               'uni/tn-tn0/ap-ap0/epg-epg2/cep-36:a4:a8:20:b9:c5',
+               'uni/tn-tn0/ap-ap1/epg-epg1/cep-52:ad:66:c3:91:32']
 
 IP_LIST = []
 STATIC_IP_KEY = 'RECOMMENDATION_TEST_IP'
@@ -52,17 +52,17 @@ def pre_test_setup(request):
     # factory will only be invoked once per session -
     try:
         os_cmd = os.system(
-            'cp ./tests/recommendation/data/ConsulDatabase.db ./ConsulDatabase.db')
+            'cp ./tests/recommendation/data/ConsulDatabase.db /home/app/data/ConsulDatabase.db')
         if os_cmd != 0:
             raise FileCopyException('Unable to execute copy command')
-        print('Test DB successfully copied')
+        logger.info('Test DB successfully copied')
     except FileCopyException as e:
-        print('Exception {}'.format(e))
+        logger.info('Exception {}'.format(e))
 
     IP_LIST.append(get_conf_value('IP', STATIC_IP_KEY))
 
     def delete_db():
-        os.remove('./ConsulDatabase.db')
+        os.remove('/home/app/data/ConsulDatabase.db')
     request.addfinalizer(delete_db)
 
 
@@ -144,14 +144,14 @@ def test_determine_recommendation_cef_fvip(cef_ip_and_fvip_data):
     source_ip_list, parsed_eps, apic_data = cef_ip_and_fvip_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], False, 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], False, 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], True, 'IP'])
+                         DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
-
+    logger.info("intest: {}".format(expected_eps))
     assert len(actual_eps) == len(expected_eps)
     assert all(item in actual_eps for item in expected_eps)
 
@@ -160,11 +160,11 @@ def test_determine_recommendation_vrf(vrf_data):
     source_ip_list, parsed_eps, apic_data = vrf_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], False, 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], False, 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], True, 'IP'])
+                         DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
     assert len(actual_eps) == len(expected_eps)
@@ -175,11 +175,11 @@ def test_determine_recommendation_ap(ap_data):
     source_ip_list, parsed_eps, apic_data = ap_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], False, 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], False, 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], True, 'IP'])
+                         DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
 
@@ -194,11 +194,11 @@ def test_determine_recommendation_same_ap_count(ap_same_count_data):
     source_ip_list, parsed_eps, apic_data = ap_same_count_data
     expected_eps = []
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[0], False, 'IP'])
+                         DOMAIN_LIST[0], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[2], True, 'IP'])
+                         DOMAIN_LIST[2], 'Yes', 'IP'])
     expected_eps.append([IP_LIST[0],
-                         DOMAIN_LIST[1], True, 'IP'])
+                         DOMAIN_LIST[1], 'Yes', 'IP'])
     actual_eps = determine_recommendation(source_ip_list,
                                           parsed_eps, apic_data)
     assert len(actual_eps) == len(expected_eps)
