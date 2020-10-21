@@ -168,15 +168,15 @@ def change_data_fetch_status(status):
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [False]
+                [status]
             )
-    elif data[0][0] is True:
+    elif data[0][0] is not status:
         with connection.begin():
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [False],
-                {'running': True}
+                [status],
+                {'running': not status}
             )
     connection.close()
 
