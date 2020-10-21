@@ -152,6 +152,12 @@ def get_service_checks(service_checks_dict, service):
 
 
 def change_data_fetch_status(status):
+    """
+    Change data fetch process status in database
+
+    Arguments:
+        status    {boolean}    data fetch process status
+    """
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,
@@ -176,6 +182,12 @@ def change_data_fetch_status(status):
 
 
 def get_agents_from_db():
+    """
+    Get agents list from database
+
+    Returns:
+        agent_list    {list}   list of agents
+    """
     connection = db_obj.engine.connect()
     agents = list(db_obj.select_from_table(connection, db_obj.LOGIN_TABLE_NAME))
     connection.close()
@@ -204,6 +216,20 @@ def get_agents_from_db():
 
 
 def fetch_and_save_nodes(datacenter, agents, nodes_dict):
+    """
+    Parse consul-node data from api and save into the database
+
+    Arguments:
+        datacenter  {string}    name of datacenter
+        agents      {list}      list of agents
+        nodes_dict  {dict}      node data will be stored here
+
+    Returns:
+        (
+            consul_ip_list  {set}  set of ips of nodes
+            node_key        {set}  set of ids of nodes
+        )
+    """
     consul_ip_list = set()
     nodes_key = set()
 
@@ -240,7 +266,14 @@ def fetch_and_save_nodes(datacenter, agents, nodes_dict):
 
 
 def remove_unused_nodes(agent_addr_list, nodes_key):
-    # Remove deleted Node data.
+    """
+    Delete old data from database if agent is deleted
+
+    Arguments:
+        agent_addr_list     {list}      list of agents
+        nodes_key           {set}       set of ids of nodes
+    """
+
     connection = db_obj.engine.connect()
     node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
     connection.close()
@@ -265,6 +298,17 @@ def remove_unused_nodes(agent_addr_list, nodes_key):
 
 
 def fetch_and_save_nodechecks(nodes_dict, node_checks_dict):
+    """
+    Parse consul-nodechecks data from api and save into the database
+
+    Arguments:
+        nodes_dict          {dict}      nodes info
+        node_checks_dict    {dict}      nodechecks data will be stored here
+
+    Returns:
+        node_checks_key      {set}      set of ids of checks and nodes
+    """
+
     node_checks_key = set()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
@@ -303,6 +347,14 @@ def fetch_and_save_nodechecks(nodes_dict, node_checks_dict):
 
 
 def remove_unused_nodechecks(agent_addr_list, node_checks_key):
+    """
+    Delete old data from database if agent is deleted
+
+    Arguments:
+        agent_addr_list     {list}      list of agents
+        node_checks_key     {set}       set of ids of checks and nodes
+    """
+
     connection = db_obj.engine.connect()
     node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
     connection.close()
@@ -337,6 +389,21 @@ def remove_unused_nodechecks(agent_addr_list, node_checks_key):
 
 
 def fetch_and_save_services(datacenter, nodes_dict, services_dict):
+    """
+    Parse consul-service data from api and save into the database
+
+    Arguments:
+        datacenter      {string}    name of datacenter
+        nodes_dict      {dict}      nodes info
+        service_dict    {dict}      service data will be stored here
+
+    Returns:
+        (
+            consul_ip_list  {set}  set of ips of services
+            service_key     {set}  set of ids of services
+        )
+    """
+
     consul_ip_list = set()
     services_key = set()
 
@@ -386,6 +453,14 @@ def fetch_and_save_services(datacenter, nodes_dict, services_dict):
 
 
 def remove_unused_services(agent_addr_list, services_key):
+    """
+    Delete old data from database if agent is deleted
+
+    Arguments:
+        agent_addr_list     {list}      list of agents
+        services_key        {set}       set of ids of services
+    """
+
     connection = db_obj.engine.connect()
     service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
     connection.close()
@@ -420,6 +495,17 @@ def remove_unused_services(agent_addr_list, services_key):
 
 
 def fetch_and_save_servicechecks(services_dict, service_checks_dict):
+    """
+    Parse consul-servicechecks data from api and save into the database
+
+    Arguments:
+        services_dict          {dict}      services info
+        service_checks_dict    {dict}      servicechecks data will be stored here
+
+    Returns:
+        service_checks_key      {set}      set of ids of checks and services
+    """
+
     service_checks_key = set()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_POOL) as executor:
@@ -457,6 +543,14 @@ def fetch_and_save_servicechecks(services_dict, service_checks_dict):
 
 
 def remove_unused_servicechecks(agent_addr_list, service_checks_key):
+    """
+    Delete old data from database if agent is deleted
+
+    Arguments:
+        agent_addr_list     {list}      list of agents
+        service_checks_key  {set}       set of ids of checks and services
+    """
+
     connection = db_obj.engine.connect()
     service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
     connection.close()
@@ -491,6 +585,16 @@ def remove_unused_servicechecks(agent_addr_list, service_checks_key):
 
 
 def fetch_and_save_eps(ep_data):
+    """
+    Parse apic-ep data from api and save into the database
+
+    Arguments:
+        ep_data      {list}      list of eps
+
+    Returns:
+        ep_key        {set}  set of mac and ip of ep
+    """
+
     ep_key = set()
 
     connection = db_obj.engine.connect()
@@ -527,6 +631,14 @@ def fetch_and_save_eps(ep_data):
 
 
 def remove_unused_eps(tenant, ep_key):
+    """
+    Delete old data from database if ep data is changed
+
+    Arguments:
+        tenant     {string}      name of tenant
+        ep_key     {set}         set of mac and ip of ep
+    """
+
     connection = db_obj.engine.connect()
     ep_data = list(db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME))
     connection.close()
@@ -540,6 +652,16 @@ def remove_unused_eps(tenant, ep_key):
 
 
 def fetch_and_save_epgs(epg_data):
+    """
+    Parse apic-epg data from api and save into the database
+
+    Arguments:
+        epg_data      {list}      list of epgs
+
+    Returns:
+        epg_key        {set}  set of dn of epg
+    """
+
     epg_key = set()
 
     connection = db_obj.engine.connect()
@@ -571,6 +693,14 @@ def fetch_and_save_epgs(epg_data):
 
 
 def remove_unused_epgs(tenant, epg_key):
+    """
+    Delete old data from database if epg data is changed
+
+    Arguments:
+        tenant     {string}      name of tenant
+        epg_key     {set}         set of dn of epg
+    """
+
     connection = db_obj.engine.connect()
     epg_data = list(db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME))
     connection.close()
@@ -581,6 +711,32 @@ def remove_unused_epgs(tenant, epg_key):
             if epg[1] == tenant and epg[0] not in epg_key:
                 db_obj.delete_from_table(connection, db_obj.EPG_TABLE_NAME, {'dn': epg[0]})
     connection.close()
+
+
+def get_polling_interval():
+    """
+    Get polling interval from database if exists
+
+    Returns:
+        POLL_INTERVAL   {int}   polling interval in minutes
+    """
+    connection = db_obj.engine.connect()
+    interval = []
+    try:
+        interval = db_obj.select_from_table(
+            connection,
+            db_obj.POLLING_TABLE_NAME,
+            {'pkey': 'interval'},
+            ['interval']
+        )
+    except Exception:
+        interval = []
+    connection.close()
+    if interval:
+        POLL_INTERVAL = interval[0][0]
+    else:
+        POLL_INTERVAL = 2
+    return POLL_INTERVAL
 
 
 def data_fetch():
@@ -712,22 +868,7 @@ def data_fetch():
 
         # Fetch polling interval from polling table if it
         # does not exist, default polling interval will be set
-        connection = db_obj.engine.connect()
-        interval = []
-        try:
-            interval = db_obj.select_from_table(
-                connection,
-                db_obj.POLLING_TABLE_NAME,
-                {'pkey': 'interval'},
-                ['interval']
-            )
-        except Exception:
-            interval = []
-        connection.close()
-        if interval:
-            POLL_INTERVAL = interval[0][0]
-        else:
-            POLL_INTERVAL = 2
+        POLL_INTERVAL = get_polling_interval()
 
         change_data_fetch_status(False)
 
