@@ -1,0 +1,12 @@
+{
+    "service_id": "dummy_service_id",
+    "node_id": "dummy_node_id",
+    "service_name": "dummy_service_name",
+    "service_ip": "dummy_service_ip",
+    "service_port": "dummy_service_port",
+    "service_address": "dummy_service_address",
+    "service_tags": "dummy_service_tags",
+    "service_kind": "dummy_service_kind",
+    "service_namespace": "dummy_service_namespace",
+    "agent_addr": "dummy_agent_addr"
+}
