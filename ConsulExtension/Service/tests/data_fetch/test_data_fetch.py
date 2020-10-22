@@ -266,4 +266,50 @@ def test_get_agents_from_db():
 
 
 def test_fetch_and_save_nodes():
-    pass
+
+    def dummy_get_nodes(nodes_dict, agent):
+        nodes_dict.update(reader('fetch_and_save_nodes/nodes_dict.json'))
+
+    get_nodes = data_fetch.get_nodes
+    data_fetch.get_nodes = dummy_get_nodes
+
+    datacenter = 'dc1'
+    agents = ['dummy_agent']
+    nodes_dict = threading_util.ThreadSafeDict()
+    consul_ip_list, nodes_key = data_fetch.fetch_and_save_nodes(datacenter, agents, nodes_dict)
+
+    expected = reader('fetch_and_save_nodes/output.json')
+    assert set(expected[0]) == consul_ip_list
+    assert set(expected[1]) == nodes_key
+
+    data_fetch.get_nodes = get_nodes
+
+
+def test_remove_unused_nodes():
+    input_data = reader('remove_unused_nodes/input.json')
+
+    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
+        return input_data["select"]
+
+    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
+        assert input_data["delete"] == field_arg_dict
+
+    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
+        assert input_data["insert"][0] == new_record
+        assert input_data["insert"][1] == field_arg_dict
+
+    select_from_table = alchemy_core.Database.select_from_table
+    delete_from_table = alchemy_core.Database.delete_from_table
+    insert_and_update = alchemy_core.Database.insert_and_update
+    alchemy_core.Database.select_from_table = dummy_select_from_table
+    alchemy_core.Database.delete_from_table = dummy_delete_from_table
+    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+
+    agent_addr_list = input_data["agent_addr_list"]
+    nodes_key = set(input_data["nodes_key"])
+
+    data_fetch.remove_unused_nodes(agent_addr_list, nodes_key)
+
+    alchemy_core.Database.select_from_table = select_from_table
+    alchemy_core.Database.delete_from_table = delete_from_table
+    alchemy_core.Database.insert_and_update = insert_and_update
