@@ -1,6 +1,27 @@
-{
-    "select": [
-        [
+[
+    {
+        "input": [
+            "dummy_check_id",
+            "dummy_service_id",
+            "dummy_service_name",
+            "dummy_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1"
+            ]
+        ],
+        "output": [],
+        "agent_addr_list": [
+            "dummy_agent1",
+            "dummy_agent2"
+        ],
+        "service_checks_key": []
+    },
+    {
+        "input": [
             "dummy_check_id",
             "dummy_service_id",
             "dummy_service_name",
@@ -13,14 +34,8 @@
                 "dummy_agent1",
                 "dummy_agent2"
             ]
-        ]
-    ],
-    "delete": {
-        "check_id": "dummy_check_id",
-        "service_id": "dummy_service_id"
-    },
-    "insert": [
-        [
+        ],
+        "output": [
             "dummy_check_id",
             "dummy_service_id",
             "dummy_service_name",
@@ -33,14 +48,43 @@
                 "dummy_agent2"
             ]
         ],
-        {
-            "check_id": "dummy_check_id",
-            "service_id": "dummy_service_id"
-        }
-    ],
-    "agent_addr_list": [
-        "dummy_agent1",
-        "dummy_agent2"
-    ],
-    "service_checks_key": []
-}
+        "agent_addr_list": [
+            "dummy_agent1"
+        ],
+        "service_checks_key": []
+    },
+    {
+        "input": [
+            "dummy_check_id",
+            "dummy_service_id",
+            "dummy_service_name",
+            "dummy_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_check_id",
+            "dummy_service_id",
+            "dummy_service_name",
+            "dummy_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent3"
+        ],
+        "service_checks_key": []
+    }
+]

@@ -278,6 +278,7 @@ def remove_unused_nodes(agent_addr_list, nodes_key):
     node_data = list(db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME))
     connection.close()
 
+    node_data = map(list, node_data)
     connection = db_obj.engine.connect()
     with connection.begin():
         for node in node_data:
@@ -359,6 +360,7 @@ def remove_unused_nodechecks(agent_addr_list, node_checks_key):
     node_checks_data = list(db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME))
     connection.close()
 
+    node_checks_data = map(list, node_checks_data)
     connection = db_obj.engine.connect()
     with connection.begin():
         for node in node_checks_data:
@@ -465,6 +467,7 @@ def remove_unused_services(agent_addr_list, services_key):
     service_data = list(db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME))
     connection.close()
 
+    service_data = map(list, service_data)
     connection = db_obj.engine.connect()
     with connection.begin():
         for service in service_data:
@@ -555,6 +558,7 @@ def remove_unused_servicechecks(agent_addr_list, service_checks_key):
     service_checks_data = list(db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME))
     connection.close()
 
+    service_checks_data = map(list, service_checks_data)
     connection = db_obj.engine.connect()
     with connection.begin():
         for service in service_checks_data:

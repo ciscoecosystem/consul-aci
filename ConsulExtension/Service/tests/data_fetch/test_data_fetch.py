@@ -213,40 +213,45 @@ def test_get_service_checks():
     assert expected == service_checks_dict
 
 
-@pytest.mark.parametrize("case", ["initial", True, False])
-def test_change_data_fetch_status(case):
+def test_change_data_fetch_status():
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
-    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
-        assert table_name == expected_table_name
-        assert new_record == expected_new_record
-        assert field_arg_dict == expected_field_arg_dict
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME)
+    connection.close()
+    assert data == []
 
-    def dummy_select_from_table(self, connection, table_name):
-        ls = ["dummy"]
-        if case == "initial":
-            ls = []
-        return ls
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            [True]
+        )
+    connection.close()
 
-    insert_and_update = alchemy_core.Database.insert_and_update
-    alchemy_core.Database.insert_and_update = dummy_insert_and_update
-    select_from_table = alchemy_core.Database.select_from_table
-    alchemy_core.Database.select_from_table = dummy_select_from_table
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['running'])
+    connection.close()
+    assert data[0][0] is True
 
-    expected_table_name = alchemy_core.Database.DATA_FETCH_TABLE_NAME
-    if case != "initial":
-        expected_field_arg_dict = {
-            'running': not case
-        }
-        expected_new_record = [case]
-        data_fetch.change_data_fetch_status(case)
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            [False],
+            {'running': True}
+        )
+    connection.close()
 
-    if case == "initial":
-        expected_field_arg_dict = {}
-        expected_new_record = [True]
-        data_fetch.change_data_fetch_status(True)
-
-    alchemy_core.Database.insert_and_update = insert_and_update
-    alchemy_core.Database.select_from_table = select_from_table
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['running'])
+    connection.close()
+    assert data[0][0] is False
+    clear_db()
 
 
 def test_get_agents_from_db():
@@ -285,34 +290,35 @@ def test_fetch_and_save_nodes():
     data_fetch.get_nodes = get_nodes
 
 
-def test_remove_unused_nodes():
-    input_data = reader('remove_unused_nodes/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
-        assert input_data["insert"][0] == new_record
-        assert input_data["insert"][1] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    insert_and_update = alchemy_core.Database.insert_and_update
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
-    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+@pytest.mark.parametrize("input_data", reader('remove_unused_nodes/input.json'))
+def test_remove_unused_nodes(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     agent_addr_list = input_data["agent_addr_list"]
     nodes_key = set(input_data["nodes_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.NODE_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_nodes(agent_addr_list, nodes_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
-    alchemy_core.Database.insert_and_update = insert_and_update
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.NODE_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
 
 
 def test_fetch_and_save_services():
@@ -341,34 +347,35 @@ def test_fetch_and_save_services():
     data_fetch.get_service_info = get_service_info
 
 
-def test_remove_unused_services():
-    input_data = reader('remove_unused_services/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
-        assert input_data["insert"][0] == new_record
-        assert input_data["insert"][1] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    insert_and_update = alchemy_core.Database.insert_and_update
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
-    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+@pytest.mark.parametrize("input_data", reader('remove_unused_services/input.json'))
+def test_remove_unused_services(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     agent_addr_list = input_data["agent_addr_list"]
     services_key = set(input_data["services_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.SERVICE_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_services(agent_addr_list, services_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
-    alchemy_core.Database.insert_and_update = insert_and_update
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.SERVICE_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
 
 
 def test_fetch_and_save_nodechecks():
@@ -389,34 +396,36 @@ def test_fetch_and_save_nodechecks():
     data_fetch.get_node_checks = get_node_checks
 
 
-def test_remove_unused_nodechecks():
-    input_data = reader('remove_unused_nodechecks/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
-        assert input_data["insert"][0] == new_record
-        assert input_data["insert"][1] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    insert_and_update = alchemy_core.Database.insert_and_update
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
-    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+@pytest.mark.parametrize("input_data", reader('remove_unused_nodechecks/input.json'))
+def test_remove_unused_nodechecks(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     agent_addr_list = input_data["agent_addr_list"]
     node_checks_key = set(input_data["node_checks_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.NODECHECKS_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_nodechecks(agent_addr_list, node_checks_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
-    alchemy_core.Database.insert_and_update = insert_and_update
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.NODECHECKS_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
+
 
 def test_fetch_and_save_servicechecks():
 
@@ -436,34 +445,35 @@ def test_fetch_and_save_servicechecks():
     data_fetch.get_service_checks = get_service_checks
 
 
-def test_remove_unused_servicechecks():
-    input_data = reader('remove_unused_servicechecks/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    def dummy_insert_and_update(self, connection, table_name, new_record, field_arg_dict={}):
-        assert input_data["insert"][0] == new_record
-        assert input_data["insert"][1] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    insert_and_update = alchemy_core.Database.insert_and_update
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
-    alchemy_core.Database.insert_and_update = dummy_insert_and_update
+@pytest.mark.parametrize("input_data", reader('remove_unused_servicechecks/input.json'))
+def test_remove_unused_servicechecks(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     agent_addr_list = input_data["agent_addr_list"]
     service_checks_key = set(input_data["service_checks_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.SERVICECHECKS_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_servicechecks(agent_addr_list, service_checks_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
-    alchemy_core.Database.insert_and_update = insert_and_update
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.SERVICECHECKS_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
 
 
 def test_fetch_and_save_eps():
@@ -476,27 +486,35 @@ def test_fetch_and_save_eps():
     assert expected == ep_key
 
 
-def test_remove_unused_eps():
-    input_data = reader('remove_unused_eps/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
+@pytest.mark.parametrize("input_data", reader('remove_unused_eps/input.json'))
+def test_remove_unused_eps(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     tenant = input_data["tenant"]
     ep_key = set(input_data["ep_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.EP_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_eps(tenant, ep_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.EP_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
 
 
 def test_fetch_and_save_epgs():
@@ -509,27 +527,35 @@ def test_fetch_and_save_epgs():
     assert expected == epg_key
 
 
-def test_remove_unused_epgs():
-    input_data = reader('remove_unused_epgs/input.json')
-
-    def dummy_select_from_table(self, connection, table_name, field_arg_dict={}):
-        return input_data["select"]
-
-    def dummy_delete_from_table(self, connection, table_name, field_arg_dict={}):
-        assert input_data["delete"] == field_arg_dict
-
-    select_from_table = alchemy_core.Database.select_from_table
-    delete_from_table = alchemy_core.Database.delete_from_table
-    alchemy_core.Database.select_from_table = dummy_select_from_table
-    alchemy_core.Database.delete_from_table = dummy_delete_from_table
+@pytest.mark.parametrize("input_data", reader('remove_unused_epgs/input.json'))
+def test_remove_unused_epgs(input_data):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
 
     tenant = input_data["tenant"]
     epg_key = set(input_data["epg_key"])
 
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.EPG_TABLE_NAME,
+            input_data["input"]
+        )
+    connection.close()
+
     data_fetch.remove_unused_epgs(tenant, epg_key)
 
-    alchemy_core.Database.select_from_table = select_from_table
-    alchemy_core.Database.delete_from_table = delete_from_table
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.EPG_TABLE_NAME)
+    connection.close()
+
+    if data:
+        assert list(data[0][:-3]) == input_data["output"]
+    else:
+        assert data == input_data["output"]
+    clear_db()
 
 
 @pytest.mark.parametrize("input_data", reader('get_polling_interval/input.json'))

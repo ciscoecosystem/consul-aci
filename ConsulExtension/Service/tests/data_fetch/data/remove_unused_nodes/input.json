@@ -1,42 +1,70 @@
-{
-    "select": [
-        [
-            "nodeid1",
-            "nodename1",
-            "22.168.204.81",
-            "dc1",
+[
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
             [
-                "10.0.9.251:8123",
-                "10.0.9.251:8124"
-            ],
-            "",
-            "",
-            ""
-        ]
-    ],
-    "delete": {
-        "node_id": "nodeid1"
-    },
-    "insert": [
-        [
-            "nodeid1",
-            "nodename1",
-            "22.168.204.81",
-            "dc1",
-            [
-                "10.0.9.251:8124"
-            ],
-            "",
-            "",
-            ""
+                "dummy_agent1"
+            ]
         ],
-        {
-            "node_id": "nodeid1"
-        }
-    ],
-    "agent_addr_list": [
-        "10.0.9.251:8123",
-        "10.0.9.251:8124"
-    ],
-    "nodes_key": []
-}
+        "output": [],
+        "agent_addr_list": [
+            "dummy_agent1",
+            "dummy_agent2"
+        ],
+        "nodes_key": []
+    },
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent1"
+        ],
+        "nodes_key": []
+    },
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent3"
+        ],
+        "nodes_key": []
+    }
+]
