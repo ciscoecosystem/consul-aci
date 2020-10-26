@@ -42,6 +42,7 @@ class Database:
     SCHEMA_DICT = {
         DATA_FETCH_TABLE_NAME: [
             'running',
+            'edited',
             'created_ts',
             'updated_ts',
             'last_checked_ts'
@@ -206,6 +207,7 @@ class Database:
         self.data_fetch = Table(
             self.DATA_FETCH_TABLE_NAME, metadata,
             Column('running', Boolean),
+            Column('edited', Boolean),
             Column('created_ts', DateTime),
             Column('updated_ts', DateTime),
             Column('last_checked_ts', DateTime)
@@ -492,6 +494,7 @@ class Database:
         self.table_key_meta.update({
             self.DATA_FETCH_TABLE_NAME: {
                 'running': self.data_fetch.c.running,
+                'edited': self.data_fetch.c.edited,
                 'created_ts': self.data_fetch.c.created_ts,
                 'updated_ts': self.data_fetch.c.updated_ts,
                 'last_checked_ts': self.data_fetch.c.last_checked_ts
