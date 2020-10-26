@@ -932,7 +932,7 @@ def test_filter_apic_data(case):
 
 
 @pytest.mark.parametrize("case", ["", True, False])
-def test_change_data_fetch_status(case):
+def test_change_agent_edit_status(case):
     clear_db()
 
     db_obj = alchemy_core.Database()
@@ -943,7 +943,7 @@ def test_change_data_fetch_status(case):
         db_obj.insert_and_update(
             connection,
             db_obj.DATA_FETCH_TABLE_NAME,
-            [True]
+            [True, True]
         )
         connection.close()
 
@@ -957,10 +957,10 @@ def test_change_data_fetch_status(case):
     if case == "":
         assert data == []
     else:
-        assert data[0][0] is True
+        assert data[0][1] is True
 
     case = case if case != "" else True
-    plugin_server.change_data_fetch_status(case)
+    plugin_server.change_agent_edit_status(case)
 
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
@@ -969,6 +969,6 @@ def test_change_data_fetch_status(case):
     )
     connection.close()
 
-    assert data[0][0] == case
+    assert data[0][1] == case
 
     clear_db()
