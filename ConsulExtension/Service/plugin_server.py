@@ -2269,7 +2269,7 @@ def get_performance_dashboard(tenant):
                 mapped_ep[dc].append(map)
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(None, tenant, True))
-        ep_res = {
+        all_ep_res = {
             'service': {
                 'color': 'rgb(108, 192, 74)',
                 'value': 0,
@@ -2283,8 +2283,23 @@ def get_performance_dashboard(tenant):
             'total': ep_len
         }
 
-        ep_set = set()
+        all_ep_set = set()
         for dc in mapped_ep:
+            ep_res = {
+                'service': {
+                    'color': 'rgb(108, 192, 74)',
+                    'value': 0,
+                    'label': 'Service Endpoints'
+                },
+                'non_service': {
+                    'color': 'rgb(128,128,128)',
+                    'value': 0,
+                    'label': 'Non-Service Endpoints'
+                },
+                'total': ep_len
+            }
+
+            ep_set = set()
             service_res = {'passing': 0, 'warning': 0, 'failing': 0}
             nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
             node_ip_set = set()
@@ -2293,7 +2308,11 @@ def get_performance_dashboard(tenant):
             merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])[0]
 
             for ep in merged_data:
-                # Add service eps to ep_resp
+                # Add service eps to all_ep_resp
+                if (ep['IP'], ep['dn']) not in all_ep_set:
+                    all_ep_set.add((ep['IP'], ep['dn']))
+                    all_ep_res['service']['value'] += 1
+
                 if (ep['IP'], ep['dn']) not in ep_set:
                     ep_set.add((ep['IP'], ep['dn']))
                     ep_res['service']['value'] += 1
@@ -2311,8 +2330,10 @@ def get_performance_dashboard(tenant):
             response[dc]['agents'] = get_agent_status(tenant, dc)
             response[dc]['service'] = service_res
             response[dc]['nodes'] = nodes_res
+            ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+            response[dc]['service_endpoint'] = ep_res
 
-        ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+        all_ep_res['non_service']['value'] = ep_len - all_ep_res['service']['value']
 
         all_dc_data = dict()
         all_dc_data['agents'] = get_agent_status(tenant)
@@ -2324,9 +2345,8 @@ def get_performance_dashboard(tenant):
                 all_dc_data['service'][key] += response[dc]['service'][key]
             for key in all_dc_data['nodes']:
                 all_dc_data['nodes'][key] += response[dc]['nodes'][key]
-            response[dc]['service_endpoint'] = ep_res
 
-        all_dc_data['service_endpoint'] = ep_res
+        all_dc_data['service_endpoint'] = all_ep_res
         response['all'] = all_dc_data
 
         connection = db_obj.engine.connect()
