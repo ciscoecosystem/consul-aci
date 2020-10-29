@@ -2501,12 +2501,15 @@ def nodecheck_clickable(tenant, datacenters):
     logger.info("NodeChecks clickable for datacenters: {}".format(datacenters))
     try:
         datacenters_responses = dict()
+
+        # get details view info of all datacenter
         for datacenter in datacenters:
             response = json.loads(details_flattened(tenant, datacenter))
             if response.get('status_code') == "200":
                 payload = response.get('payload', [])
                 datacenters_responses[datacenter] = payload
 
+        # filter only mapped nodes from all data
         consul_node_ips = []
         connection = db_obj.engine.connect()
         for datacenter in datacenters:
@@ -2521,22 +2524,29 @@ def nodecheck_clickable(tenant, datacenters):
 
         consul_node_ips = set(map(lambda x: x[0], consul_node_ips[:]))
 
-        response = []
+        final_data = []
         for datacenter in datacenters:
             for each in datacenters_responses[datacenter]:
                 each['datacenter'] = datacenter
                 if each.get('ip') in consul_node_ips:
-                    response.append(each)
+                    final_data.append(each)
 
+        final_data = dictionary_data_formatter(final_data, ['ip', 'consulNode'])
+
+        # remove redundant data if any
+        response = []
+        for value in final_data.values():
+            response.append(value[0])
+        logger.info('finaal {}'.format(final_data))
         return json.dumps({
                 "payload": response,
                 "status_code": "200",
                 "message": "OK"
             })
     except Exception as e:
-        logger.exception("Could not load the ChecksClick. Error: {}".format(str(e)))
+        logger.exception("Could not load the NodeChecksClick. Error: {}".format(str(e)))
         return json.dumps({
             "payload": {},
             "status_code": "300",
-            "message": "Could not load the ChecksClick."
+            "message": "Could not load the NodeChecksClick."
         })
