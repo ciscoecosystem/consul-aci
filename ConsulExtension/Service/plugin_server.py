@@ -2500,6 +2500,7 @@ def servicecheck_clickable(tenant, datacenters):
     logger.info("ServiceChecks clickable for tenant: {}".format(tenant))
     logger.info("ServiceChecks clickable for datacenters: {}".format(datacenters))
     try:
+        # get details view data of all datacenters
         datacenters_responses = dict()
         for datacenter in datacenters:
             response = json.loads(details_flattened(tenant, datacenter))
@@ -2507,6 +2508,7 @@ def servicecheck_clickable(tenant, datacenters):
                 payload = response.get('payload', [])
                 datacenters_responses[datacenter] = payload
 
+        # add additional column of datacenter in each row
         response = []
         for datacenter in datacenters:
             for each in datacenters_responses[datacenter]:
