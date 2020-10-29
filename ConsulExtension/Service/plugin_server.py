@@ -456,7 +456,6 @@ def details_flattened(tenant, datacenter):
 
         details_list = []
         for each in merged_data:
-            # pods = set(list(map(lambda x: x.split("/")[0], each.get('Interfaces'))))
             ep = {
                 'interface': each.get('Interfaces'),
                 'endPointName': each.get('VM-Name'),
