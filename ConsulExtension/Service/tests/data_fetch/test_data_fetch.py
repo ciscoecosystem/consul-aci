@@ -223,35 +223,66 @@ def test_change_data_fetch_status():
     connection.close()
     assert data == []
 
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        db_obj.insert_and_update(
-            connection,
-            db_obj.DATA_FETCH_TABLE_NAME,
-            [True]
-        )
-    connection.close()
+    data_fetch.change_data_fetch_status(True)
 
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['running'])
     connection.close()
     assert data[0][0] is True
 
-    connection = db_obj.engine.connect()
-    with connection.begin():
-        db_obj.insert_and_update(
-            connection,
-            db_obj.DATA_FETCH_TABLE_NAME,
-            [False],
-            {'running': True}
-        )
-    connection.close()
+    data_fetch.change_data_fetch_status(False)
 
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['running'])
     connection.close()
     assert data[0][0] is False
     clear_db()
+
+
+def test_change_agent_edit_status():
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME)
+    connection.close()
+    assert data == []
+
+    data_fetch.change_agent_edit_status(True)
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['edited'])
+    connection.close()
+    assert data[0][0] is True
+
+    data_fetch.change_agent_edit_status(False)
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(connection, db_obj.DATA_FETCH_TABLE_NAME, {}, ['edited'])
+    connection.close()
+    assert data[0][0] is False
+    clear_db()
+
+
+@pytest.mark.parametrize("case", [True, False])
+def test_get_agent_edit_status(case):
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        db_obj.insert_and_update(
+            connection,
+            db_obj.DATA_FETCH_TABLE_NAME,
+            [True, case]
+        )
+    connection.close()
+
+    status = data_fetch.get_agent_edit_status()
+
+    assert status == case
 
 
 def test_get_agents_from_db():
