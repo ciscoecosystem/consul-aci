@@ -2497,8 +2497,7 @@ def nodecheck_clickable(tenant, datacenters):
     }
     """
     datacenters = json.loads(datacenters)
-    logger.info("NodeChecks clickable for tenant: {}".format(tenant))
-    logger.info("NodeChecks clickable for datacenters: {}".format(datacenters))
+    logger.info("NodeChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
     try:
         datacenters_responses = dict()
 
@@ -2519,7 +2518,6 @@ def nodecheck_clickable(tenant, datacenters):
                 {'datacenter': datacenter},
                 ['node_ip']
             )
-            print(consul_node_ips)
         connection.close()
 
         consul_node_ips = set(map(lambda x: x[0], consul_node_ips[:]))
@@ -2537,7 +2535,7 @@ def nodecheck_clickable(tenant, datacenters):
         response = []
         for value in final_data.values():
             response.append(value[0])
-        logger.info('finaal {}'.format(final_data))
+        logger.info('Final response for NodeChecksClick: {}'.format(response))
         return json.dumps({
                 "payload": response,
                 "status_code": "200",
