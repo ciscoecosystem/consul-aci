@@ -2484,8 +2484,8 @@ def change_data_fetch_status(status):
 
 
 @time_it
-def check_clickable(tenant, datacenters):
-    """Get correlated data of all datacenters
+def nodecheck_clickable(tenant, datacenters):
+    """Get correlated data of nodechecks for all datacenters
 
     :tenant: {string} tenant for APIC data
     :datacenters: {string} list of datacenters for Consul data
@@ -2497,8 +2497,8 @@ def check_clickable(tenant, datacenters):
     }
     """
     datacenters = json.loads(datacenters)
-    logger.info("Checks clickable for tenant: {}".format(tenant))
-    logger.info("Checks clickable for datacenters: {}".format(datacenters))
+    logger.info("NodeChecks clickable for tenant: {}".format(tenant))
+    logger.info("NodeChecks clickable for datacenters: {}".format(datacenters))
     try:
         datacenters_responses = dict()
         for datacenter in datacenters:
@@ -2507,11 +2507,26 @@ def check_clickable(tenant, datacenters):
                 payload = response.get('payload', [])
                 datacenters_responses[datacenter] = payload
 
+        consul_node_ips = []
+        connection = db_obj.engine.connect()
+        for datacenter in datacenters:
+            consul_node_ips += db_obj.select_from_table(
+                connection,
+                db_obj.NODE_TABLE_NAME,
+                {'datacenter': datacenter},
+                ['node_ip']
+            )
+            print(consul_node_ips)
+        connection.close()
+
+        consul_node_ips = set(map(lambda x: x[0], consul_node_ips[:]))
+
         response = []
         for datacenter in datacenters:
             for each in datacenters_responses[datacenter]:
                 each['datacenter'] = datacenter
-                response.append(each)
+                if each.get('ip') in consul_node_ips:
+                    response.append(each)
 
         return json.dumps({
                 "payload": response,
