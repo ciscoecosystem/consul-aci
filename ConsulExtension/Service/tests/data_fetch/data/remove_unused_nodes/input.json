@@ -1,0 +1,70 @@
+[
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1"
+            ]
+        ],
+        "output": [],
+        "agent_addr_list": [
+            "dummy_agent1",
+            "dummy_agent2"
+        ],
+        "nodes_key": []
+    },
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent1"
+        ],
+        "nodes_key": []
+    },
+    {
+        "input": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_node_ip",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent3"
+        ],
+        "nodes_key": []
+    }
+]

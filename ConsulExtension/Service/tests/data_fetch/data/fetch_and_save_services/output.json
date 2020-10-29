@@ -1,0 +1,11 @@
+[
+    [
+        "dummy_service_ip"
+    ],
+    [
+        [
+            "dummy_service_id",
+            "dummy_node_id"
+        ]
+    ]
+]
