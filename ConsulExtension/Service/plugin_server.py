@@ -2497,8 +2497,7 @@ def servicecheck_clickable(tenant, datacenters):
     }
     """
     datacenters = json.loads(datacenters)
-    logger.info("ServiceChecks clickable for tenant: {}".format(tenant))
-    logger.info("ServiceChecks clickable for datacenters: {}".format(datacenters))
+    logger.info("ServiceChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
     try:
         # get details view data of all datacenters
         datacenters_responses = dict()
