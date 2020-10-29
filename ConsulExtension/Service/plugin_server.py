@@ -2498,6 +2498,7 @@ def non_service_endpoints(tenant, datacenters):
     datacenters = json.loads(datacenters)
     logger.info("Non-service endpoints for tenant: {}, datacenters: {}".format(tenant, datacenters))
     try:
+        # get merged and non-merged data of all datacenters
         all_merged_data = []
         all_non_merged_data = []
         for datacenter in datacenters:
@@ -2512,6 +2513,7 @@ def non_service_endpoints(tenant, datacenters):
         all_merged_data = dictionary_data_formatter(all_merged_data, ['IP', 'dn'])
         all_non_merged_data = dictionary_data_formatter(all_non_merged_data, ['IP', 'dn'])
 
+        # filter non-merged data if not mapped with any datacenter
         final_non_merged_data = []
         for key, value in all_non_merged_data.iteritems():
             if key not in all_merged_data:
