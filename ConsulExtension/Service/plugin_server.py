@@ -452,7 +452,7 @@ def details_flattened(tenant, datacenter):
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
-        merged_data, non_merged_data, = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
 
         details_list = []
         for each in merged_data:
@@ -498,7 +498,6 @@ def details_flattened(tenant, datacenter):
 
         return json.dumps({
             "payload": details_list,
-            "non_merged_eps": non_merged_data,
             "status_code": "200",
             "message": "OK"
         })
@@ -2481,3 +2480,52 @@ def change_data_fetch_status(status):
                 {'running': not status}
             )
     connection.close()
+
+
+@time_it
+def non_service_endpoints(tenant, datacenters):
+    """Get non merged eps as non-service endpoints
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("Non-service endpoints for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        all_merged_data = []
+        all_non_merged_data = []
+        for datacenter in datacenters:
+            aci_consul_mappings = get_new_mapping(tenant, datacenter)
+
+            apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
+            consul_data = get_consul_data(datacenter)
+            merged_data, non_merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+            all_merged_data += merged_data
+            all_non_merged_data += non_merged_data
+
+        all_merged_data = dictionary_data_formatter(all_merged_data, ['IP', 'dn'])
+        all_non_merged_data = dictionary_data_formatter(all_non_merged_data, ['IP', 'dn'])
+
+        final_non_merged_data = []
+        for key, value in all_non_merged_data.iteritems():
+            if key not in all_merged_data:
+                final_non_merged_data.append(value[0])
+
+        return json.dumps({
+            "payload": final_non_merged_data,
+            "status_code": "200",
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Could not load the Non-service endpoints. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the Non-service endpoints."
+        })
