@@ -1,0 +1,37 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-83:68:c6:2e:bf:a1",
+        "learningSource": "vmm",
+        "VM-Name": "Seat.",
+        "IP": "192.168.99.156",
+        "VMM-Domain": "ESX0-leaf104",
+        "CEP-Mac": "83:68:c6:2e:bf:a1",
+        "EPG": "epg0",
+        "AppProfile": "ap0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-2/Node-100/eth6/6"
+        ],
+        "epg_health": "58",
+        "VRF": "tn0/vrf1",
+        "controllerName": "vcenter104"
+    }
+]

@@ -885,8 +885,6 @@ def data_fetch():
                     logger.info("NO EP in tenant {} mapped to any consul nodes or services.".format(tenant))
                     continue
 
-                epg_key = set()
-
                 ep_key = fetch_and_save_eps(ep_data)
                 remove_unused_eps(tenant, ep_key)
 

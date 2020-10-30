@@ -456,7 +456,6 @@ def details_flattened(tenant, datacenter):
 
         details_list = []
         for each in merged_data:
-            pods = set(list(map(lambda x: x.split("/")[0], each.get('Interfaces'))))
             ep = {
                 'interface': each.get('Interfaces'),
                 'endPointName': each.get('VM-Name'),
@@ -472,7 +471,7 @@ def details_flattened(tenant, datacenter):
                 'epgHealth': int(each.get('epg_health')),
                 'consulNode': each.get('node_name'),
                 'nodeChecks': each.get('node_check'),
-                'pod_name': list(pods)
+                'pod_name': each.get('pod')
             }
 
             services = change_key(each.get('node_services'))
@@ -2153,7 +2152,7 @@ def get_apic_data(tenant):
         connection,
         db_obj.EP_TABLE_NAME,
         {'tenant': tenant},
-        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:12]
+        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:14]
     ))
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -2184,7 +2183,8 @@ def get_apic_data(tenant):
                 'controllerName': ep[7],
                 'hostingServerName': ep[11],
                 'learningSource': ep[8],
-                'epg_health': epg[6]
+                'epg_health': epg[6],
+                'pod': ep[13]
             })
 
     return apic_data
