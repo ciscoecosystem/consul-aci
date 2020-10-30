@@ -1,0 +1,95 @@
+[
+    {
+        "input": [
+            "dummy_check_id",
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_check_name",
+            "dummy_service_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1"
+            ]
+        ],
+        "output": [],
+        "agent_addr_list": [
+            "dummy_agent1",
+            "dummy_agent2"
+        ],
+        "node_checks_key": []
+    },
+    {
+        "input": [
+            "dummy_check_id",
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_check_name",
+            "dummy_service_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_check_id",
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_check_name",
+            "dummy_service_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent1"
+        ],
+        "node_checks_key": []
+    },
+    {
+        "input": [
+            "dummy_check_id",
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_check_name",
+            "dummy_service_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_check_id",
+            "dummy_node_id",
+            "dummy_node_name",
+            "dummy_check_name",
+            "dummy_service_name",
+            "dummy_type",
+            "dummy_notes",
+            "dummy_output",
+            "dummy_status",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent3"
+        ],
+        "node_checks_key": []
+    }
+]
