@@ -2573,10 +2573,10 @@ def nodecheck_clickable(tenant, datacenters):
             response.append(value[0])
         logger.info('Final response for NodeChecksClick: {}'.format(response))
         return json.dumps({
-                "payload": response,
-                "status_code": "200",
-                "message": "OK"
-            })
+            "payload": response,
+            "status_code": "200",
+            "message": "OK"
+        })
     except Exception as e:
         logger.exception("Could not load the NodeChecksClick. Error: {}".format(str(e)))
         return json.dumps({
@@ -2618,10 +2618,10 @@ def servicecheck_clickable(tenant, datacenters):
                 response.append(each)
 
         return json.dumps({
-                "payload": response,
-                "status_code": "200",
-                "message": "OK"
-            })
+            "payload": response,
+            "status_code": "200",
+            "message": "OK"
+        })
     except Exception as e:
         logger.exception("Could not load the ServiceChecksClick. Error: {}".format(str(e)))
         return json.dumps({

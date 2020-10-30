@@ -192,12 +192,12 @@ class Query(graphene.ObjectType):
                                       datacenter=graphene.String())
 
     ServiceChecksClick = graphene.Field(ServiceChecksClick,
-                                 tn=graphene.String(),
-                                 datacenters=graphene.String())
+                                        tn=graphene.String(),
+                                        datacenters=graphene.String())
 
     NodeChecksClick = graphene.Field(NodeChecksClick,
-                                 tn=graphene.String(),
-                                 datacenters=graphene.String())
+                                     tn=graphene.String(),
+                                     datacenters=graphene.String())
 
     GetDatacenters = graphene.Field(GetDatacenters, tn=graphene.String())
 
