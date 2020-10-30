@@ -327,7 +327,7 @@ class Query(graphene.ObjectType):
     def resolve_NodeChecksClick(self, info, tn, datacenters):
         """Resolved NodeChecksClick query"""
         NodeChecksClick.response = app.nodecheck_clickable(tn, datacenters)
-        return ServiceChecksClick
+        return NodeChecksClick
 
     def resolve_GetDatacenters(self, info, tn):
         """Resolved GetDatacenters query"""
