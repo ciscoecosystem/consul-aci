@@ -320,11 +320,11 @@ class Query(graphene.ObjectType):
         return DetailsFlattened
 
     def resolve_ServiceChecksClick(self, info, tn, datacenters):
-        ServiceChecksClick.details = app.servicecheck_clickable(tn, datacenters)
+        ServiceChecksClick.response = app.servicecheck_clickable(tn, datacenters)
         return ServiceChecksClick
 
     def resolve_NodeChecksClick(self, info, tn, datacenters):
-        NodeChecksClick.details = app.nodecheck_clickable(tn, datacenters)
+        NodeChecksClick.response = app.nodecheck_clickable(tn, datacenters)
         return NodeChecksClick
 
     def resolve_GetDatacenters(self, info, tn):
