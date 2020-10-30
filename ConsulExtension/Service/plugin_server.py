@@ -446,7 +446,7 @@ def details_flattened(tenant, datacenter):
     }
     """
 
-    logger.info("Details view for tenant: {}".format(tenant))
+    logger.info("Details view for tenant: {}, datacenter: {}".format(tenant, datacenter))
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
@@ -2518,3 +2518,70 @@ def change_agent_edit_status(edited):
                 {'running': data[0][0]}
             )
     connection.close()
+
+
+@time_it
+def nodecheck_clickable(tenant, datacenters):
+    """Get correlated data of nodechecks for all datacenters
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("NodeChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        datacenters_responses = dict()
+
+        # get details view info of all datacenter
+        for datacenter in datacenters:
+            response = json.loads(details_flattened(tenant, datacenter))
+            if response.get('status_code') == "200":
+                payload = response.get('payload', [])
+                datacenters_responses[datacenter] = payload
+
+        # filter only mapped nodes from all data
+        consul_node_ips = []
+        connection = db_obj.engine.connect()
+        for datacenter in datacenters:
+            consul_node_ips += db_obj.select_from_table(
+                connection,
+                db_obj.NODE_TABLE_NAME,
+                {'datacenter': datacenter},
+                ['node_ip']
+            )
+        connection.close()
+
+        consul_node_ips = set(map(lambda x: x[0], consul_node_ips[:]))
+
+        final_data = []
+        for datacenter in datacenters:
+            for each in datacenters_responses[datacenter]:
+                each['datacenter'] = datacenter
+                if each.get('ip') in consul_node_ips:
+                    final_data.append(each)
+
+        final_data = dictionary_data_formatter(final_data, ['ip', 'consulNode'])
+
+        # remove redundant data if any
+        response = []
+        for value in final_data.values():
+            response.append(value[0])
+        logger.info('Final response for NodeChecksClick: {}'.format(response))
+        return json.dumps({
+                "payload": response,
+                "status_code": "200",
+                "message": "OK"
+            })
+    except Exception as e:
+        logger.exception("Could not load the NodeChecksClick. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the NodeChecksClick."
+        })

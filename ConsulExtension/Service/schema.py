@@ -89,6 +89,10 @@ class DetailsFlattened(graphene.ObjectType):
     details = graphene.String()
 
 
+class NodeChecksClick(graphene.ObjectType):
+    details = graphene.String()
+
+
 class GetDatacenters(graphene.ObjectType):
     datacenters = graphene.String()
 
@@ -178,6 +182,10 @@ class Query(graphene.ObjectType):
     DetailsFlattened = graphene.Field(DetailsFlattened,
                                       tn=graphene.String(),
                                       datacenter=graphene.String())
+
+    NodeChecksClick = graphene.Field(NodeChecksClick,
+                                 tn=graphene.String(),
+                                 datacenters=graphene.String())
 
     GetDatacenters = graphene.Field(GetDatacenters, tn=graphene.String())
 
@@ -273,6 +281,10 @@ class Query(graphene.ObjectType):
     def resolve_DetailsFlattened(self, info, tn, datacenter):
         DetailsFlattened.details = app.details_flattened(tn, datacenter)
         return DetailsFlattened
+
+    def resolve_NodeChecksClick(self, info, tn, datacenters):
+        NodeChecksClick.details = app.nodecheck_clickable(tn, datacenters)
+        return NodeChecksClick
 
     def resolve_GetDatacenters(self, info, tn):
         GetDatacenters.datacenters = app.get_datacenters(tn)
