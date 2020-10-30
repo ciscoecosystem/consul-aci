@@ -2398,7 +2398,10 @@ def get_performance_dashboard(tenant):
                 all_dc_data['nodes'][key] += response[dc]['nodes'][key]
 
         all_dc_data['service_endpoint'] = all_ep_res
-        response['all'] = all_dc_data
+        final_response = {
+            'overview': all_dc_data,
+            'all': response
+        }
 
         connection = db_obj.engine.connect()
         data_fetch_info = db_obj.select_from_table(
@@ -2413,7 +2416,7 @@ def get_performance_dashboard(tenant):
             "status": "200",
             "payload": {
                 'data_fetch': data_fetch_info[0][0],
-                'data': response
+                'data': final_response
             },
             "message": "OK"
         })

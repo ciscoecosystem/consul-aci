@@ -90,11 +90,11 @@ class DetailsFlattened(graphene.ObjectType):
 
 
 class ServiceChecksClick(graphene.ObjectType):
-    details = graphene.String()
+    response = graphene.String()
 
 
 class NodeChecksClick(graphene.ObjectType):
-    details = graphene.String()
+    response = graphene.String()
 
 
 class GetDatacenters(graphene.ObjectType):
@@ -321,13 +321,13 @@ class Query(graphene.ObjectType):
 
     def resolve_ServiceChecksClick(self, info, tn, datacenters):
         """Resolved ServiceChecksClick query"""
-        ServiceChecksClick.details = app.servicecheck_clickable(tn, datacenters)
+        ServiceChecksClick.response = app.servicecheck_clickable(tn, datacenters)
         return ServiceChecksClick
 
     def resolve_NodeChecksClick(self, info, tn, datacenters):
         """Resolved NodeChecksClick query"""
-        NodeChecksClick.details = app.nodecheck_clickable(tn, datacenters)
-        return NodeChecksClick
+        NodeChecksClick.response = app.nodecheck_clickable(tn, datacenters)
+        return ServiceChecksClick
 
     def resolve_GetDatacenters(self, info, tn):
         """Resolved GetDatacenters query"""
