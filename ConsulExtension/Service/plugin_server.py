@@ -115,6 +115,18 @@ def get_polling_interval():
 
 
 def get_vrf_specific_eps(tenant, datacenter=None):
+    """Get ep data for specified tenant and datacenter
+
+    Args:
+        tenant {string}: name of tenant
+
+    Optional Args:
+        datacenter {string/None}: name of datacenter
+
+    Returns:
+        {list}: list of ep data for tenant and datacenter if specified
+    """
+
     connection = db_obj.engine.connect()
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -2432,6 +2444,19 @@ def get_epg_alias(dn):
 
 
 def get_vrf_from_database(datacenter, tn, dashboard=False):
+    """Get vrf from the database
+
+    Args:
+        datacenter {string}: name of datacenter
+        tn         {string}: name of tenant
+
+    Optional Args:
+        dashboard {boolean}: true if not to consider datacenter
+
+    Returns:
+        {list}: list of vrfs
+    """
+
     connection = db_obj.engine.connect()
     search_param = {'tenant': tn}
     if not dashboard:
@@ -2521,6 +2546,16 @@ def format_vrf(vrf):
 
 
 def filter_apic_data(apic_data, vrfs):
+    """Filter apic data for specific vrf/vrfs
+
+    Args:
+        apic_data {list}: list of apic data
+        vrfs {list}: list of vrfs or "-" for all vrf
+
+    Returns:
+        {list}: list of filtered apic data by vrf
+    """
+
     if "-" == vrfs:
         return apic_data
 
@@ -2536,6 +2571,11 @@ def filter_apic_data(apic_data, vrfs):
 
 
 def change_agent_edit_status(edited):
+    """To change status of agent edited
+
+    Args:
+        edited {boolean}: true if agent added/updated/deleted
+    """
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,

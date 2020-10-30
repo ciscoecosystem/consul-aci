@@ -320,10 +320,12 @@ class Query(graphene.ObjectType):
         return DetailsFlattened
 
     def resolve_ServiceChecksClick(self, info, tn, datacenters):
+        """Resolved ServiceChecksClick query"""
         ServiceChecksClick.details = app.servicecheck_clickable(tn, datacenters)
         return ServiceChecksClick
 
     def resolve_NodeChecksClick(self, info, tn, datacenters):
+        """Resolved NodeChecksClick query"""
         NodeChecksClick.details = app.nodecheck_clickable(tn, datacenters)
         return NodeChecksClick
 
@@ -343,10 +345,12 @@ class Query(graphene.ObjectType):
         return GetPerformanceDashboard
 
     def resolve_GetVrf(self, info, tn):
+        """Resolved GetVrf query"""
         GetVrf.response = app.update_vrf_in_db(tn)
         return GetVrf
 
     def resolve_NonServiceEndpoints(self, info, tn, datacenters):
+        """Resolved NonServiceEndpoints query"""
         NonServiceEndpoints.response = app.non_service_endpoints(tn, datacenters)
         return NonServiceEndpoints
 
