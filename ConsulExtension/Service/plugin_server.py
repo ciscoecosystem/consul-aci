@@ -2269,7 +2269,7 @@ def get_performance_dashboard(tenant):
                 mapped_ep[dc].append(map)
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(None, tenant, True))
-        ep_res = {
+        all_ep_res = {
             'service': {
                 'color': 'rgb(108, 192, 74)',
                 'value': 0,
@@ -2282,17 +2282,37 @@ def get_performance_dashboard(tenant):
             },
             'total': ep_len
         }
-        service_res = {'passing': 0, 'warning': 0, 'failing': 0}
-        nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-        ep_set = set()
-        node_ip_set = set()
-        service_addr_set = set()
+
+        all_ep_set = set()
         for dc in mapped_ep:
+            ep_res = {
+                'service': {
+                    'color': 'rgb(108, 192, 74)',
+                    'value': 0,
+                    'label': 'Service Endpoints'
+                },
+                'non_service': {
+                    'color': 'rgb(128,128,128)',
+                    'value': 0,
+                    'label': 'Non-Service Endpoints'
+                },
+                'total': ep_len
+            }
+
+            ep_set = set()
+            service_res = {'passing': 0, 'warning': 0, 'failing': 0}
+            nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
+            node_ip_set = set()
+            service_addr_set = set()
             consul_data = get_consul_data(dc)
             merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])[0]
 
             for ep in merged_data:
-                # Add service eps to ep_resp
+                # Add service eps to all_ep_resp
+                if (ep['IP'], ep['dn']) not in all_ep_set:
+                    all_ep_set.add((ep['IP'], ep['dn']))
+                    all_ep_res['service']['value'] += 1
+
                 if (ep['IP'], ep['dn']) not in ep_set:
                     ep_set.add((ep['IP'], ep['dn']))
                     ep_res['service']['value'] += 1
@@ -2306,12 +2326,28 @@ def get_performance_dashboard(tenant):
                         service_addr_set.add(service['service_address'])
                         add_check(service['service_checks'], service_res)
 
-        ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+            response[dc] = dict()
+            response[dc]['agents'] = get_agent_status(tenant, dc)
+            response[dc]['service'] = service_res
+            response[dc]['nodes'] = nodes_res
+            ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+            response[dc]['service_endpoint'] = ep_res
 
-        response['agents'] = get_agent_status(tenant)
-        response['service'] = service_res
-        response['nodes'] = nodes_res
-        response['service_endpoint'] = ep_res
+        all_ep_res['non_service']['value'] = ep_len - all_ep_res['service']['value']
+
+        all_dc_data = dict()
+        all_dc_data['agents'] = get_agent_status(tenant)
+        all_dc_data['service'] = {'passing': 0, 'warning': 0, 'failing': 0}
+        all_dc_data['nodes'] = {'passing': 0, 'warning': 0, 'failing': 0}
+
+        for dc in response:
+            for key in all_dc_data['service']:
+                all_dc_data['service'][key] += response[dc]['service'][key]
+            for key in all_dc_data['nodes']:
+                all_dc_data['nodes'][key] += response[dc]['nodes'][key]
+
+        all_dc_data['service_endpoint'] = all_ep_res
+        response['all'] = all_dc_data
 
         connection = db_obj.engine.connect()
         data_fetch_info = db_obj.select_from_table(
@@ -2322,11 +2358,12 @@ def get_performance_dashboard(tenant):
         )
         connection.close()
 
-        response['data_fetch'] = data_fetch_info[0][0]
-
         return json.dumps({
             "status": "200",
-            "payload": response,
+            "payload": {
+                'data_fetch': data_fetch_info[0][0],
+                'data': response
+            },
             "message": "OK"
         })
     except Exception as e:
