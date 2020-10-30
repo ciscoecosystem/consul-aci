@@ -215,6 +215,9 @@ class AciUtils(object):
         data['mac'] = ep_attr.get("mac")
         data['encap'] = ep_attr.get("encap")
         data['multi_cast_addr'] = ep_attr.get("mcastAddr")
+        data['pod'] = ""
+        if ep_attr.get("vmmSrc") in ("k8s", "openshift"):
+            data['pod'] = ep_attr.get("contName")
         if data['multi_cast_addr'] == "not-applicable":
             data['multi_cast_addr'] = "---"
         ep_child_attr = item.get('fvCEp').get('children')
