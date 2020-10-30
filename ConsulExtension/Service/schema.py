@@ -90,11 +90,11 @@ class DetailsFlattened(graphene.ObjectType):
 
 
 class ServiceChecksClick(graphene.ObjectType):
-    details = graphene.String()
+    response = graphene.String()
 
 
 class NodeChecksClick(graphene.ObjectType):
-    details = graphene.String()
+    response = graphene.String()
 
 
 class GetDatacenters(graphene.ObjectType):
