@@ -1,0 +1,20 @@
+{
+    "nodeid1": {
+        "agent_consul_obj": "<consul_utils.Consul object at 0x04074710>",
+        "agent_addr": [
+            "10.0.9.251:8123"
+        ],
+        "node_id": "nodeid1",
+        "node_ip": "10.67.126.121",
+        "node_name": "nodename1"
+    },
+    "nodeid2": {
+        "agent_consul_obj": "<consul_utils.Consul object at 0x04074710>",
+        "agent_addr": [
+            "10.0.9.251:8123"
+        ],
+        "node_id": "nodeid2",
+        "node_ip": "22.168.204.81",
+        "node_name": "nodename2"
+    }
+}

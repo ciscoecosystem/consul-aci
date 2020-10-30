@@ -1,0 +1,13 @@
+[
+    {
+        "dn": "dummy_dn",
+        "tenant": "dummy_tenant",
+        "epg": "dummy_epg",
+        "bd": "dummy_bd",
+        "contracts": "dummy_contracts",
+        "vrf": "dummy_vrf",
+        "epg_health": "dummy_epg_health",
+        "app_profile": "dummy_app_profile",
+        "epg_alias": "dummy_epg_alias"
+    }
+]

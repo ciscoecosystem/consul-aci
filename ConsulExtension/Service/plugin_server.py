@@ -456,7 +456,6 @@ def details_flattened(tenant, datacenter):
 
         details_list = []
         for each in merged_data:
-            pods = set(list(map(lambda x: x.split("/")[0], each.get('Interfaces'))))
             ep = {
                 'interface': each.get('Interfaces'),
                 'endPointName': each.get('VM-Name'),
@@ -472,7 +471,7 @@ def details_flattened(tenant, datacenter):
                 'epgHealth': int(each.get('epg_health')),
                 'consulNode': each.get('node_name'),
                 'nodeChecks': each.get('node_check'),
-                'pod_name': list(pods)
+                'pod_name': each.get('pod')
             }
 
             services = change_key(each.get('node_services'))
@@ -1567,7 +1566,7 @@ def write_creds(tn, new_agent):
                 ])
         connection.close()
 
-        change_data_fetch_status(True)
+        change_agent_edit_status(True)
 
         if status:
             return json.dumps({
@@ -1693,7 +1692,7 @@ def update_creds(tn, update_input):
                         })
                 connection.close()
 
-                change_data_fetch_status(True)
+                change_agent_edit_status(True)
 
                 if status:
                     return json.dumps({
@@ -1813,7 +1812,7 @@ def delete_creds(tn, agent_data):
             connection.close()
             logger.info('Agent {}\'s Node data deleted'.format(str(agent_addr)))
 
-            change_data_fetch_status(True)
+            change_agent_edit_status(True)
 
             # Delete Service data wrt this agent
             connection = db_obj.engine.connect()
@@ -2153,7 +2152,7 @@ def get_apic_data(tenant):
         connection,
         db_obj.EP_TABLE_NAME,
         {'tenant': tenant},
-        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:12]
+        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:14]
     ))
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -2184,7 +2183,8 @@ def get_apic_data(tenant):
                 'controllerName': ep[7],
                 'hostingServerName': ep[11],
                 'learningSource': ep[8],
-                'epg_health': epg[6]
+                'epg_health': epg[6],
+                'pod': ep[13]
             })
 
     return apic_data
@@ -2496,7 +2496,7 @@ def filter_apic_data(apic_data, vrfs):
         logger.info("Error in filter_apic_data, Error: {}".format(e))
 
 
-def change_data_fetch_status(status):
+def change_agent_edit_status(edited):
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,
@@ -2507,14 +2507,14 @@ def change_data_fetch_status(status):
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status]
+                [False, edited]
             )
-    elif data[0][0] is not status:
+    else:
         with connection.begin():
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status],
-                {'running': not status}
+                [data[0][0], edited],
+                {'running': data[0][0]}
             )
     connection.close()
