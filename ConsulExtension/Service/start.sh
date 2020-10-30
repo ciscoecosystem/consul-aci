@@ -9,6 +9,9 @@ pip install gunicorn-19.9.0-py2.py3-none-any.whl >> /home/app/log/app.log 2>> /h
 pip install futures-2.2.0-py2.py3-none-any.whl >> /home/app/log/app.log 2>> /home/app/log/app.log
 pip install configparser-4.0.2-py2.py3-none-any.whl >> /home/app/log/app.log 2>> /home/app/log/app.log
 
+# migration script if database schema has been changed
+python /home/app/src/Service/migration.py
+
 # Starting the data fetch process
 python /home/app/src/Service/data_fetch.py >> /home/app/log/app.log 2>> /home/app/log/app.log &
 
