@@ -113,6 +113,10 @@ class GetVrf(graphene.ObjectType):
     response = graphene.String()
 
 
+class NonServiceEndpoints(graphene.ObjectType):
+    response = graphene.String()
+
+
 class Query(graphene.ObjectType):
     """Query class which resolves all the incoming requests"""
 
@@ -203,6 +207,10 @@ class Query(graphene.ObjectType):
                                              tn=graphene.String())
 
     GetVrf = graphene.Field(GetVrf, tn=graphene.String())
+
+    NonServiceEndpoints = graphene.Field(NonServiceEndpoints,
+                                         tn=graphene.String(),
+                                         datacenters=graphene.String())
 
     """All the resolve methods of class Query"""
     def resolve_GetFaults(self, info, dn):
@@ -313,6 +321,10 @@ class Query(graphene.ObjectType):
     def resolve_GetVrf(self, info, tn):
         GetVrf.response = app.update_vrf_in_db(tn)
         return GetVrf
+
+    def resolve_NonServiceEndpoints(self, info, tn, datacenters):
+        NonServiceEndpoints.response = app.non_service_endpoints(tn, datacenters)
+        return NonServiceEndpoints
 
 
 schema = graphene.Schema(query=Query)

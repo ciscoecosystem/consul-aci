@@ -18,6 +18,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         total_epg_count = {}
         merged_epg_count = {}
         non_merged_ep_dict = {}
+        non_merged_ep_dict_detail = {}
 
         logger.debug("ACI Data: {}".format(str(aci_data)))
         logger.debug("Mapping Data: {}".format(str(aci_consul_mappings)))
@@ -98,14 +99,18 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             else:
                 if aci_dn not in non_merged_ep_dict:
                     non_merged_ep_dict[aci_dn] = {aci['CEP-Mac']: str(aci['IP'])}
+                    non_merged_ep_dict_detail[aci_dn] = {aci['CEP-Mac']: [aci]}
 
                 if aci['CEP-Mac'] in non_merged_ep_dict[aci_dn] \
                         and aci.get('IP') \
                         and aci['IP'] != non_merged_ep_dict[aci_dn][aci['CEP-Mac']]:
                     multipleips = non_merged_ep_dict[aci_dn][aci['CEP-Mac']] + ", " + str(aci['IP'])
                     non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: multipleips})
+                    multiple_aci = non_merged_ep_dict_detail[aci_dn][aci['CEP-Mac']].append(aci)
+                    non_merged_ep_dict_detail[aci_dn].update({aci['CEP-Mac']: multiple_aci})
                 else:
                     non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict_detail[aci_dn].update({aci['CEP-Mac']: [aci]})
 
         final_non_merged = {}
         if non_merged_ep_dict:
@@ -141,7 +146,13 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if 'node_services_copy' in each:
                 del each['node_services_copy']
 
-        return final_list, final_non_merged  # updated_merged_list#,total_epg_count # TBD for returning values
+        final_non_merged_details = []
+        for key in non_merged_ep_dict_detail:
+            for _, value in non_merged_ep_dict_detail[key].iteritems():
+                if value:
+                    final_non_merged_details += value
+
+        return final_list, final_non_merged_details  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
         logger.exception("Error in merge_aci_data : {}".format(str(e)))
         return []
