@@ -2585,3 +2585,48 @@ def nodecheck_clickable(tenant, datacenters):
             "status_code": "300",
             "message": "Could not load the NodeChecksClick."
         })
+
+
+@time_it
+def servicecheck_clickable(tenant, datacenters):
+    """Get correlated data of servicechecks for all datacenters
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("ServiceChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        # get details view data of all datacenters
+        datacenters_responses = dict()
+        for datacenter in datacenters:
+            response = json.loads(details_flattened(tenant, datacenter))
+            if response.get('status_code') == "200":
+                payload = response.get('payload', [])
+                datacenters_responses[datacenter] = payload
+
+        # add additional column of datacenter in each row
+        response = []
+        for datacenter in datacenters:
+            for each in datacenters_responses[datacenter]:
+                each['datacenter'] = datacenter
+                response.append(each)
+
+        return json.dumps({
+                "payload": response,
+                "status_code": "200",
+                "message": "OK"
+            })
+    except Exception as e:
+        logger.exception("Could not load the ServiceChecksClick. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the ServiceChecksClick."
+        })

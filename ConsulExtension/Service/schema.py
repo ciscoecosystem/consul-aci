@@ -89,6 +89,10 @@ class DetailsFlattened(graphene.ObjectType):
     details = graphene.String()
 
 
+class ServiceChecksClick(graphene.ObjectType):
+    details = graphene.String()
+
+
 class NodeChecksClick(graphene.ObjectType):
     details = graphene.String()
 
@@ -182,6 +186,10 @@ class Query(graphene.ObjectType):
     DetailsFlattened = graphene.Field(DetailsFlattened,
                                       tn=graphene.String(),
                                       datacenter=graphene.String())
+
+    ServiceChecksClick = graphene.Field(ServiceChecksClick,
+                                 tn=graphene.String(),
+                                 datacenters=graphene.String())
 
     NodeChecksClick = graphene.Field(NodeChecksClick,
                                  tn=graphene.String(),
@@ -281,6 +289,10 @@ class Query(graphene.ObjectType):
     def resolve_DetailsFlattened(self, info, tn, datacenter):
         DetailsFlattened.details = app.details_flattened(tn, datacenter)
         return DetailsFlattened
+
+    def resolve_ServiceChecksClick(self, info, tn, datacenters):
+        ServiceChecksClick.details = app.servicecheck_clickable(tn, datacenters)
+        return ServiceChecksClick
 
     def resolve_NodeChecksClick(self, info, tn, datacenters):
         NodeChecksClick.details = app.nodecheck_clickable(tn, datacenters)
