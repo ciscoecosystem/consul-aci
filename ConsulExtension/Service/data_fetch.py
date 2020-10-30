@@ -653,7 +653,8 @@ def fetch_and_save_eps(ep_data):
                     ep.get('multi_cast_addr'),
                     ep.get('encap'),
                     ep.get('hosting_servername'),
-                    ep.get('is_cep')
+                    ep.get('is_cep'),
+                    ep.get('pod')
                 ),
                 {
                     'mac': ep.get('mac'),
