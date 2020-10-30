@@ -1,0 +1,72 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-8b:7f:e9:ba:79:ee",
+        "learningSource": "vmm",
+        "VM-Name": "Current.",
+        "IP": "172.31.3.116",
+        "VMM-Domain": "ESX0-leaf103",
+        "CEP-Mac": "8b:7f:e9:ba:79:ee",
+        "EPG": "epg0",
+        "AppProfile": "ap0",
+        "hostingServerName": "hypername1",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-5/Node-102/eth6/6"
+        ],
+        "epg_health": "22",
+        "VRF": "tn0/vrf2",
+        "controllerName": "vcenter103"
+    },
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-86:fd:02:2f:bc:da",
+        "learningSource": "vmm",
+        "VM-Name": "Result.",
+        "IP": "10.225.189.27",
+        "VMM-Domain": "ESX0-leaf100",
+        "CEP-Mac": "86:fd:02:2f:bc:da",
+        "EPG": "epg0",
+        "AppProfile": "ap0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-2/Node-100/eth6/6"
+        ],
+        "epg_health": "22",
+        "VRF": "tn0/vrf2",
+        "controllerName": "vcenter100"
+    }
+]
