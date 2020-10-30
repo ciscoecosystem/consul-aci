@@ -7,7 +7,16 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 @time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
-    Merge ACI data with Consul Data fetched from API directly
+    Function for merging data of ACI and consul based on mappings
+
+    Arguments:
+        tenant              {string} -->    name of tenant
+        aci_data            {list}   -->    list of dict of aci data
+        consul_data         {list}   -->    list of dict of consul data
+        aci_consul_mappings {list}   -->    list of dict of aci consul mappings
+
+    Returns:
+        {tuple{list, list}} --> final merged list of eps, non-merged eps info
     """
 
     logger.info('Merging objects')
@@ -159,6 +168,9 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
 
 
 def custom_copy(obj):
+    """
+    Function for deepcopy object having datatypes list, dict, tuple, string, int, float
+    """
     if isinstance(obj, (list,)):
         new_ls = []
         for each in obj:
@@ -181,6 +193,9 @@ def custom_copy(obj):
 
 
 def aci_consul_mappings_formatter(data):
+    """
+    Function to create dict from list of aci_consul_mappings based on dn and ip
+    """
     dc = dict()
     for each in data:
         dn = each.get('dn')
@@ -192,6 +207,9 @@ def aci_consul_mappings_formatter(data):
 
 
 def mapped_consul_nodes_formatter(consul_data):
+    """
+    Function to create dict from consul_data based on node_ip
+    """
     dc = dict()
     for node in consul_data:
         ip = node.get('node_ip')
@@ -217,6 +235,9 @@ def mapped_consul_services_formatter(consul_data):
 
 
 def consul_data_formatter(consul_data, mapping_ips):
+    """
+    Function to formate consul data based on mapped ips
+    """
     for node in consul_data:
         services = []
         rem = []
@@ -239,5 +260,6 @@ def consul_data_formatter(consul_data, mapping_ips):
 
 
 def get_formatted_dn(dn):
+    """ Function to get dn without cep-mac """
     tmp = "/".join(dn.split("/", 4)[:4])
     return tmp

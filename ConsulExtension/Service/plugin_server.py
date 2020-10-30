@@ -72,6 +72,12 @@ def set_polling_interval(interval):
 
 
 def get_polling_interval():
+    """Get polling interval method
+
+    Returns:
+        dict: returns dictinary with
+              payload having polling interval data
+    """
 
     try:
         logger.info("GetPollingInterval called")
@@ -2017,6 +2023,15 @@ def post_tenant(tn):
 
 
 def list_data_formatter(data, key_index):
+    """Create dictionary for hash key from key index from data
+
+    Args:
+        data {list{dict}}: any data having list of dict
+        key_index {list}: list of key index
+
+    Returns:
+        {dict}: dict of formated data
+    """
     dc = dict()
     for each in data:
         key = ''.join([each[i] for i in key_index])
@@ -2028,6 +2043,15 @@ def list_data_formatter(data, key_index):
 
 
 def dictionary_data_formatter(data, key_names):
+    """Create dictionary for hash key from key names from data
+
+    Args:
+        data {list{dict}}: any data having list of dict
+        key_names {list}: list of key names
+
+    Returns:
+        {dict}: dict of formated data
+    """
     dc = dict()
     for each in data:
         key = ''.join([each.get(i, '') for i in key_names])
@@ -2040,6 +2064,14 @@ def dictionary_data_formatter(data, key_names):
 
 @time_it
 def get_consul_data(datacenter):
+    """Get consul data
+
+    Args:
+        datacenter {string}: datacenter name
+
+    Returns:
+        {list}: extract datacenter data from db and format it
+    """
     consul_data = []
     services = []
 
@@ -2144,6 +2176,14 @@ def get_consul_data(datacenter):
 
 @time_it
 def get_apic_data(tenant):
+    """get apic data
+
+    Args:
+        tenant {string}: tenant name
+
+    Returns:
+        {list}: extract tenant data from db and format it
+    """
     apic_data = []
 
     connection = db_obj.engine.connect()
