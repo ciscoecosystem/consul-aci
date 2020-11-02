@@ -7,7 +7,16 @@ logger = custom_logger.CustomLogger.get_logger("/home/app/log/app.log")
 @time_it
 def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
     """
-    Merge ACI data with Consul Data fetched from API directly
+    Function for merging data of ACI and consul based on mappings
+
+    Arguments:
+        tenant              {string} -->    name of tenant
+        aci_data            {list}   -->    list of dict of aci data
+        consul_data         {list}   -->    list of dict of consul data
+        aci_consul_mappings {list}   -->    list of dict of aci consul mappings
+
+    Returns:
+        {tuple{list, list}} --> final merged list of eps, non-merged eps info
     """
 
     logger.info('Merging objects')
@@ -18,6 +27,7 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
         total_epg_count = {}
         merged_epg_count = {}
         non_merged_ep_dict = {}
+        non_merged_ep_dict_detail = {}
 
         logger.debug("ACI Data: {}".format(str(aci_data)))
         logger.debug("Mapping Data: {}".format(str(aci_consul_mappings)))
@@ -98,14 +108,18 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             else:
                 if aci_dn not in non_merged_ep_dict:
                     non_merged_ep_dict[aci_dn] = {aci['CEP-Mac']: str(aci['IP'])}
+                    non_merged_ep_dict_detail[aci_dn] = {aci['CEP-Mac']: [aci]}
 
                 if aci['CEP-Mac'] in non_merged_ep_dict[aci_dn] \
                         and aci.get('IP') \
                         and aci['IP'] != non_merged_ep_dict[aci_dn][aci['CEP-Mac']]:
                     multipleips = non_merged_ep_dict[aci_dn][aci['CEP-Mac']] + ", " + str(aci['IP'])
                     non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: multipleips})
+                    multiple_aci = non_merged_ep_dict_detail[aci_dn][aci['CEP-Mac']].append(aci)
+                    non_merged_ep_dict_detail[aci_dn].update({aci['CEP-Mac']: multiple_aci})
                 else:
                     non_merged_ep_dict[aci_dn].update({aci['CEP-Mac']: str(aci['IP'])})
+                    non_merged_ep_dict_detail[aci_dn].update({aci['CEP-Mac']: [aci]})
 
         final_non_merged = {}
         if non_merged_ep_dict:
@@ -141,13 +155,22 @@ def merge_aci_consul(tenant, aci_data, consul_data, aci_consul_mappings):
             if 'node_services_copy' in each:
                 del each['node_services_copy']
 
-        return final_list, final_non_merged  # updated_merged_list#,total_epg_count # TBD for returning values
+        final_non_merged_details = []
+        for key in non_merged_ep_dict_detail:
+            for _, value in non_merged_ep_dict_detail[key].iteritems():
+                if value:
+                    final_non_merged_details += value
+
+        return final_list, final_non_merged_details  # updated_merged_list#,total_epg_count # TBD for returning values
     except Exception as e:
         logger.exception("Error in merge_aci_data : {}".format(str(e)))
         return []
 
 
 def custom_copy(obj):
+    """
+    Function for deepcopy object having datatypes list, dict, tuple, string, int, float
+    """
     if isinstance(obj, (list,)):
         new_ls = []
         for each in obj:
@@ -170,6 +193,9 @@ def custom_copy(obj):
 
 
 def aci_consul_mappings_formatter(data):
+    """
+    Function to create dict from list of aci_consul_mappings based on dn and ip
+    """
     dc = dict()
     for each in data:
         dn = each.get('dn')
@@ -181,6 +207,9 @@ def aci_consul_mappings_formatter(data):
 
 
 def mapped_consul_nodes_formatter(consul_data):
+    """
+    Function to create dict from consul_data based on node_ip
+    """
     dc = dict()
     for node in consul_data:
         ip = node.get('node_ip')
@@ -206,6 +235,9 @@ def mapped_consul_services_formatter(consul_data):
 
 
 def consul_data_formatter(consul_data, mapping_ips):
+    """
+    Function to formate consul data based on mapped ips
+    """
     for node in consul_data:
         services = []
         rem = []
@@ -228,5 +260,6 @@ def consul_data_formatter(consul_data, mapping_ips):
 
 
 def get_formatted_dn(dn):
+    """ Function to get dn without cep-mac """
     tmp = "/".join(dn.split("/", 4)[:4])
     return tmp

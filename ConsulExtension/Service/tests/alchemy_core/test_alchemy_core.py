@@ -94,7 +94,8 @@ dc.update({
         'multicast_address',
         'encap',
         'hosting_server_name',
-        'is_cep'
+        'is_cep',
+        'pod'
     ]
 })
 dc.update({

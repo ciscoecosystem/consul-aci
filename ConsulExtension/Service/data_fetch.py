@@ -168,17 +168,61 @@ def change_data_fetch_status(status):
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status]
+                [status, False]
             )
     elif data[0][0] is not status:
         with connection.begin():
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status],
+                [status, data[0][1]],
                 {'running': not status}
             )
     connection.close()
+
+
+def change_agent_edit_status(edited):
+    """To change status of agent edited
+
+    Args:
+        edited {boolean}: true if agent added/updated/deleted
+    """
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    if len(data) == 0:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [False, edited]
+            )
+    else:
+        with connection.begin():
+            db_obj.insert_and_update(
+                connection,
+                db_obj.DATA_FETCH_TABLE_NAME,
+                [data[0][0], edited],
+                {'running': data[0][0]}
+            )
+    connection.close()
+
+
+def get_agent_edit_status():
+    """To get status of agent edited
+
+    Returns:
+        {boolean} status of agent details modification
+    """
+
+    connection = db_obj.engine.connect()
+    data = db_obj.select_from_table(
+        connection,
+        db_obj.DATA_FETCH_TABLE_NAME
+    )
+    return data[0][1]
 
 
 def get_agents_from_db():
@@ -620,7 +664,8 @@ def fetch_and_save_eps(ep_data):
                     ep.get('multi_cast_addr'),
                     ep.get('encap'),
                     ep.get('hosting_servername'),
-                    ep.get('is_cep')
+                    ep.get('is_cep'),
+                    ep.get('pod')
                 ),
                 {
                     'mac': ep.get('mac'),
@@ -852,8 +897,6 @@ def data_fetch():
                     logger.info("NO EP in tenant {} mapped to any consul nodes or services.".format(tenant))
                     continue
 
-                epg_key = set()
-
                 ep_key = fetch_and_save_eps(ep_data)
                 remove_unused_eps(tenant, ep_key)
 
@@ -877,11 +920,20 @@ def data_fetch():
 
         change_data_fetch_status(False)
 
+        # sleep data-fetch and check for agent modification on interval
+        # discard sleep if agent added/updated/deleted
         current_time = time.time()
-        time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
-        if time_to_sleep > 0:
-            logger.info("Data fetch thread sleeping for interval: {}".format(time_to_sleep))
-            time.sleep(time_to_sleep)
+        total_time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
+        if total_time_to_sleep > 0:
+            logger.info("Data fetch thread sleeping for interval: {}".format(total_time_to_sleep))
+            for _ in range(0, int(total_time_to_sleep), 1):
+                agent_edited = get_agent_edit_status()
+                if agent_edited:
+                    change_agent_edit_status(False)
+                    logger.info("Data fetch sleep interrupted")
+                    break
+                else:
+                    time.sleep(1)
 
 
 if __name__ == "__main__":

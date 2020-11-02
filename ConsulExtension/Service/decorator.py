@@ -23,7 +23,14 @@ def time_it(method):
 
 
 def exception_handler(method):
+    """Handle exception
+
+    Args:
+        method {func}: function on which wrapper added
+    """
     def wrapper(*args):
+        """Wrapper method
+        """
         try:
             method(*args)
         except Exception as e:
@@ -33,7 +40,14 @@ def exception_handler(method):
 
 # Decorators used in alchemy
 def alchemy_commit_session(method):
+    """Commmit alchemy data into db
+
+    Args:
+        method (func): function on which wrapper added
+    """
     def wrapper(*args):
+        """Wrapper method
+        """
         try:
             method(*args)
         except Exception as e:
@@ -44,7 +58,17 @@ def alchemy_commit_session(method):
 
 
 def alchemy_read(method):
+    """Read alchemy from db
+
+    Args:
+        method (func): function on which wrapper added
+    """
     def wrapper(*args):
+        """Wrapper method
+
+        Returns:
+            {func/list}: if no exception then method else empty list
+        """
         try:
             return method(*args)
         except Exception as e:
