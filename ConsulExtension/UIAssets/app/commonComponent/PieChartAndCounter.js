@@ -56,11 +56,13 @@ export default function PieChartAndCounter(props) {
             {data.slice(1).map(function (elem, key) {
                 let label = (elem.label === "failing") ? "Critical" : elem.label;
                 return (<div class="info-container  zero-values NORMAL">
+                    <div onClick={props.clickable?()=>{props.onClick(label.toLowerCase())}:null} style={props.clickable?{display: "flex", cursor: "pointer"}:{display: "flex"}}>
                     <div class="info-title">
                         <span class="info-bullet NORMAL" style={{ backgroundColor: `${elem.color}` }}></span>
                         <span class="info-label NORMAL"> {FormatToLabel(label)} </span>
                     </div>
-                    <div class="info-count">({elem.value})</div>
+                     <div class="info-count">({elem.value})</div>
+                </div>
                 </div>)
             })
             }

@@ -92,11 +92,11 @@ export default class DataTable extends Component {
         }
       },
       {
-        Header: "ACI Pod",
+        Header: "Pod",
         accessor: "pod_name",
         show: true,
         Cell: row => {
-          return <div>{row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}</div>
+          return <div>{row.value}</div>
         }
       },
       {

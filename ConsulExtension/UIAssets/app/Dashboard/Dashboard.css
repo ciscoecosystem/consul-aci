@@ -85,4 +85,8 @@
     font-size: 15px;
 }
 
+.dashboard-pop .ReactTable .rt-tbody{
+    overflow: hidden;
+}
+
 
