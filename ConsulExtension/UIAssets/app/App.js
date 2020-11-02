@@ -69,6 +69,7 @@ export default class App extends React.Component {
         this.getPollingInterval = this.getPollingInterval.bind(this);
         this.setPollingIntervalDefaultValue = this.setPollingIntervalDefaultValue.bind(this);
         this.getVRFCall = this.getVRFCall.bind(this)
+        this.setDefaultFilter = this.setDefaultFilter.bind(this)
         this.state = {
             agentPopup: false,
             pollingIntervalPopup: false,
@@ -92,6 +93,7 @@ export default class App extends React.Component {
             selectedPollingInterval : 2,
             details: [],
             vrfOptions: [],
+            agentDefaultFilter: [],
             tenantApiCallCnt: 2, // indicates no of time "PostTenant" api could be called.
             sidebarItems: [
                 {
@@ -277,6 +279,11 @@ export default class App extends React.Component {
 
     handleAgent(agentPopup = true) {
         this.setState({ agentPopup })
+        if(!agentPopup) this.setState({agentDefaultFilter: []})
+    }
+
+    setDefaultFilter(agentDefaultFilter){
+        this.setState({agentDefaultFilter})
     }
 
     handleMapping(mappingPopup = true, mappingDcname=undefined) {
@@ -525,8 +532,8 @@ export default class App extends React.Component {
                         </div>
                     </Modal>
                     {this.state.mappingPopup && <Mapping handleMapping={this.handleMapping} mappingDcname={this.state.mappingDcname} tenantName={this.tenantName} />}
-                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} vrfOptions={this.state.vrfOptions} />}
-                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details}  shouldUpdate={this.state.callContainer}/>}
+                    {this.state.agentPopup && <Agent updateDetails={this.readDatacenter} handleAgent={this.handleAgent} tenantName={this.tenantName} vrfOptions={this.state.vrfOptions} defaultFilters={this.state.agentDefaultFilter} />}
+                    {this.state.agentPopup || this.state.mappingPopup?null: <Container tenantName={this.tenantName} items={this.state.items} sidebarItems={this.state.sidebarItems} detailsItem={this.state.details}  shouldUpdate={this.state.callContainer} handleAgent={this.handleAgent} setDefaultFilter={this.setDefaultFilter}/>}
                 </div >
             </Router>
         );
