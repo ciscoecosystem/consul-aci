@@ -182,6 +182,11 @@ def change_data_fetch_status(status):
 
 
 def change_agent_edit_status(edited):
+    """To change status of agent edited
+
+    Args:
+        edited {boolean}: true if agent added/updated/deleted
+    """
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,
@@ -206,6 +211,12 @@ def change_agent_edit_status(edited):
 
 
 def get_agent_edit_status():
+    """To get status of agent edited
+
+    Returns:
+        {boolean} status of agent details modification
+    """
+
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,
@@ -653,7 +664,8 @@ def fetch_and_save_eps(ep_data):
                     ep.get('multi_cast_addr'),
                     ep.get('encap'),
                     ep.get('hosting_servername'),
-                    ep.get('is_cep')
+                    ep.get('is_cep'),
+                    ep.get('pod')
                 ),
                 {
                     'mac': ep.get('mac'),
@@ -908,6 +920,8 @@ def data_fetch():
 
         change_data_fetch_status(False)
 
+        # sleep data-fetch and check for agent modification on interval
+        # discard sleep if agent added/updated/deleted
         current_time = time.time()
         total_time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
         if total_time_to_sleep > 0:

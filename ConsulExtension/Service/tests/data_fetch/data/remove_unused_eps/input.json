@@ -13,7 +13,8 @@
             "dummy_multicast_address",
             "dummy_encap",
             "dummy_hosting_server_name",
-            "dummy_is_cep"
+            "dummy_is_cep",
+            "dummy_pod"
         ],
         "output": [],
         "tenant": "dummy_tenant",
@@ -33,7 +34,8 @@
             "dummy_multicast_address",
             "dummy_encap",
             "dummy_hosting_server_name",
-            "dummy_is_cep"
+            "dummy_is_cep",
+            "dummy_pod"
         ],
         "output": [
             "dummy_mac",
@@ -48,7 +50,8 @@
             "dummy_multicast_address",
             "dummy_encap",
             "dummy_hosting_server_name",
-            "dummy_is_cep"
+            "dummy_is_cep",
+            "dummy_pod"
         ],
         "tenant": "dummy_tenant2",
         "ep_key": []
