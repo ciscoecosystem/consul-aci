@@ -13,6 +13,7 @@ export default class DashboardPopUp extends Component {
     }
     this.getData = this.getData.bind(this);
     this.setData = this.setData.bind(this);
+    this.configureData = this.configureData.bind(this);
   }
 
   componentDidMount() {
@@ -55,7 +56,7 @@ export default class DashboardPopUp extends Component {
       })
     }
 
-      this.setState({ data: data})
+      this.setState({ data: [...data]})
   }
 
   getData() {
@@ -111,6 +112,18 @@ export default class DashboardPopUp extends Component {
     }
   }
 
+  configureData(data){
+    return data.map(rows => {
+      let new_rows = {...rows}
+      Object.keys(rows).forEach(item => {
+        if(typeof rows[item] === "string"){
+          new_rows[item] = rows[item] || "N/A"
+        }
+      })
+      return new_rows
+    })
+  }
+
 
   render() {
     return (
@@ -141,7 +154,7 @@ export default class DashboardPopUp extends Component {
                       loadingText={this.state.loadingText}
                       className="-striped -highlight"
                       noDataText={this.props.noDataText}
-                      data={this.state.data}
+                      data={this.configureData(this.state.data)}
                       columns={this.props.columns}
                       defaultFilters={this.props.defaultFilters || []}
                     />

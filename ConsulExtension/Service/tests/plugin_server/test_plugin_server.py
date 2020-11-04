@@ -980,3 +980,64 @@ def test_change_agent_edit_status(case):
     assert data[0][1] == case
 
     clear_db()
+
+
+def apic_consul_data_checker(response, expected):
+    flag = True
+    for each in response:
+        if each not in expected:
+            flag = False
+            break
+    return flag
+
+
+def test_get_consul_data():
+    input_data = get_data('get_consul_data/input.json')
+    output_data = get_data('get_consul_data/output.json')
+
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        for key, value in input_data["data"].iteritems():
+            for each in value:
+                db_obj.insert_and_update(
+                    connection,
+                    key,
+                    each
+                )
+    connection.close()
+
+    datacenter = input_data["datacenter"]
+    response = plugin_server.get_consul_data(datacenter)
+
+    clear_db()
+    assert apic_consul_data_checker(response, output_data)
+
+
+def test_get_apic_data():
+    input_data = get_data('get_apic_data/input.json')
+    output_data = get_data('get_apic_data/output.json')
+
+    clear_db()
+    db_obj = alchemy_core.Database()
+    db_obj.create_tables()
+
+    connection = db_obj.engine.connect()
+    with connection.begin():
+        for key, value in input_data["data"].iteritems():
+            for each in value:
+                db_obj.insert_and_update(
+                    connection,
+                    key,
+                    each
+                )
+    connection.close()
+
+    tenant = input_data["tenant"]
+    response = plugin_server.get_apic_data(tenant)
+
+    clear_db()
+    assert apic_consul_data_checker(response, output_data)

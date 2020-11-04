@@ -25,6 +25,9 @@ const BILLION = 1000000000;
 const MILLION = 1000000000;
 const THOUSAND = 1000;
 
+const AGENT_ORDER = ["up", "down"];
+const ENDPOINT_ORDER = ["service", "non_service"];
+
 export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -33,6 +36,8 @@ export default class Dashboard extends React.Component {
       isDisplayPopUp: false,
       dashboardPopUp: {},
       datacenters: [],
+      overviewData: {},
+      allData: {},
     };
 
     this.xhrReadDashboard = new XMLHttpRequest();
@@ -50,22 +55,13 @@ export default class Dashboard extends React.Component {
   }
 
   loadDashBoardData(dashboard_data) {
-    let data = dashboard_data.data.overview;
+    let overviewData = dashboard_data.data.overview;
+    let allData = dashboard_data.data.all;
     let datacenters = Object.keys(dashboard_data.data.all);
-    console.log(datacenters);
-    let agents = {
-      ...data.agents,
-      order: ["up", "down"],
-    };
-    let endpoints = {
-      ...data.service_endpoint,
-      order: ["service", "non_service"],
-    };
+
     this.setState({
-      agents,
-      endpoints,
-      services: data.service,
-      nodes: data.nodes,
+      overviewData: overviewData,
+      allData: allData,
       datacenters: datacenters,
     });
   }
@@ -126,23 +122,29 @@ export default class Dashboard extends React.Component {
     };
   }
 
-  formateData(data) {
+  formateData(data, who) {
     let formateData = [];
-    data.order.forEach((item) => {
+    let order = who === "agents" ? AGENT_ORDER : ENDPOINT_ORDER;
+
+    order.forEach((item) => {
       formateData.push(data[item]);
     });
     return formateData;
   }
 
-  configurePop(type, label) {
+  configurePop(type, label, datacenter) {
     let dashboardPopUp = {};
-    let datacenter_list = JSON.stringify(
-      JSON.stringify(this.state.datacenters)
-    );
+    let datacenter_list = [];
+    if (datacenter === "overview") {
+      datacenter_list = JSON.stringify(JSON.stringify(this.state.datacenters));
+      
+    } else {
+      datacenter_list = JSON.stringify(JSON.stringify([datacenter]));
+    }
     datacenter_list = datacenter_list.substring(1, datacenter_list.length - 1);
 
     if (type === "service") {
-      dashboardPopUp.title = "Services Checks";
+      dashboardPopUp.title = "Service Checks";
       dashboardPopUp.query =
         'query{ServiceChecksClick(tn:"' +
         this.props.tenantName +
@@ -160,7 +162,7 @@ export default class Dashboard extends React.Component {
       ];
       dashboardPopUp.columns = SERVICE_HEADER;
     } else if (type === "node") {
-      dashboardPopUp.title = "Nodes Checks";
+      dashboardPopUp.title = "Node Checks";
       dashboardPopUp.query =
         'query{NodeChecksClick(tn:"' +
         this.props.tenantName +
@@ -265,6 +267,8 @@ export default class Dashboard extends React.Component {
   }
 
   render() {
+    let { overviewData, allData } = this.state;
+
     return (
       <React.Fragment>
         {this.state.isDisplayPopUp ? (
@@ -276,9 +280,7 @@ export default class Dashboard extends React.Component {
             defaultFilters={this.state.dashboardPopUp.defaultFilters}
             closePopUp={() => this.setState({ isDisplayPopUp: false })}
           />
-        ) : 
-          null
-        }
+        ) : null}
         <div style={{ margin: "10px" }}>
           <h4>Dashboard</h4>
         </div>
@@ -291,18 +293,18 @@ export default class Dashboard extends React.Component {
             <Loader></Loader>
           ) : (
             <div class="row">
-              {this.state.agents ? (
+              {overviewData.agents ? (
                 <div class="col">
                   <div class="row">{AGENTS}</div>
                   <div class="row">
                     <PieChartAndCounter
-                      data={this.formateData(this.state.agents)}
-                      totalCount={this.state.agents.total}
+                      data={this.formateData(overviewData.agents, "agents")}
+                      totalCount={overviewData.agents.total}
                       clickable={true}
                       onClick={(label) => {
                         console.log(label);
-                        let status = "false";
-                        if (label === "connected") status = "true";
+                        let status = "Disconnected";
+                        if (label === "connected") status = "Connected";
                         this.props.setDefaultFilter([
                           {
                             category: "status",
@@ -318,58 +320,61 @@ export default class Dashboard extends React.Component {
                 </div>
               ) : null}
 
-              {this.state.services ? (
+              {overviewData.service ? (
                 <div class="col">
                   <div class="row">Service checks</div>
                   <div class="row">
                     <PieChartAndCounter
                       data={
-                        this.formateDataToChartData(this.state.services)
+                        this.formateDataToChartData(overviewData.service)
                           .formattedData
                       }
                       totalCount={
-                        this.formateDataToChartData(this.state.services)
+                        this.formateDataToChartData(overviewData.service)
                           .totalCnt
                       }
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("service", label);
+                        this.configurePop("service", label, "overview");
                       }}
                     />
                   </div>
                 </div>
               ) : null}
 
-              {this.state.nodes ? (
+              {overviewData.nodes ? (
                 <div class="col">
                   <div class="row">Node checks</div>
                   <div class="row">
                     <PieChartAndCounter
                       data={
-                        this.formateDataToChartData(this.state.nodes)
+                        this.formateDataToChartData(overviewData.nodes)
                           .formattedData
                       }
                       totalCount={
-                        this.formateDataToChartData(this.state.nodes).totalCnt
+                        this.formateDataToChartData(overviewData.nodes).totalCnt
                       }
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("node", label);
+                        this.configurePop("node", label, "overview");
                       }}
                     />
                   </div>
                 </div>
               ) : null}
-              {this.state.endpoints ? (
+              {overviewData.service_endpoint ? (
                 <div class="col">
                   <div class="row">Endpoints</div>
                   <div class="row">
                     <PieChartAndCounter
-                      data={this.formateData(this.state.endpoints)}
-                      totalCount={this.state.endpoints.total}
+                      data={this.formateData(
+                        overviewData.service_endpoint,
+                        "endpoints"
+                      )}
+                      totalCount={overviewData.service_endpoint.total}
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("endpoint", label);
+                        this.configurePop("endpoint", label, "overview");
                       }}
                     />
                   </div>
@@ -378,6 +383,84 @@ export default class Dashboard extends React.Component {
             </div>
           )}
         </div>
+        {Object.keys(allData).reverse().map((item) => (
+          <div className="overview">
+            {/* <ExamplesHeader title="Charts"/> */}
+            <div className="header-text">
+              <b>
+                {item ? item : "N/A"}-
+                {allData[item].agents.up.value ? "Connected" : "Disconnected" + " ("+ allData[item].agents.down.value +")"}
+              </b>
+            </div>
+            {this.state.loadingDashBoard ? (
+              <Loader></Loader>
+            ) : (
+              <div class="row">
+                {allData[item].service ? (
+                  <div class="col">
+                    <div class="row">Service checks</div>
+                    <div class="row">
+                      <PieChartAndCounter
+                        data={
+                          this.formateDataToChartData(allData[item].service)
+                            .formattedData
+                        }
+                        totalCount={
+                          this.formateDataToChartData(allData[item].service)
+                            .totalCnt
+                        }
+                        clickable={true}
+                        onClick={(label) => {
+                          this.configurePop("service", label, item);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
+                {allData[item].nodes ? (
+                  <div class="col">
+                    <div class="row">Node checks</div>
+                    <div class="row">
+                      <PieChartAndCounter
+                        data={
+                          this.formateDataToChartData(allData[item].nodes)
+                            .formattedData
+                        }
+                        totalCount={
+                          this.formateDataToChartData(allData[item].nodes)
+                            .totalCnt
+                        }
+                        clickable={true}
+                        onClick={(label) => {
+                          this.configurePop("node", label, item);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                {allData[item].service_endpoint ? (
+                  <div class="col">
+                    <div class="row">Endpoints</div>
+                    <div class="row">
+                      <PieChartAndCounter
+                        data={this.formateData(
+                          allData[item].service_endpoint,
+                          "endpoints"
+                        )}
+                        totalCount={allData[item].service_endpoint.total}
+                        clickable={true}
+                        onClick={(label) => {
+                          this.configurePop("endpoint", label, item);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        ))}
       </React.Fragment>
     );
   }
