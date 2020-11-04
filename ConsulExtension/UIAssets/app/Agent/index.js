@@ -3,7 +3,6 @@ import { Redirect } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Screen,
-  Table,
   Button,
   Input,
   Select,
@@ -74,6 +73,7 @@ export default class Agent extends React.Component {
     this.removeAgentCall = this.removeAgentCall.bind(this);
     this.editAgent = this.editAgent.bind(this);
     this.refreshField = this.refreshField.bind(this);
+    this.configureData = this.configureData.bind(this);
     // this.FormField = this.FormField.bind(this);
     console.log("Agent index props", props);
     this.state = {
@@ -153,7 +153,7 @@ export default class Agent extends React.Component {
   }
 
   setDetails(details, isReloaded = false) {
-    this.setState({ details });
+    this.setState({ details: [...details] });
     isReloaded && this.props.updateDetails();
   }
 
@@ -637,6 +637,18 @@ export default class Agent extends React.Component {
     );
   }
 
+  configureData(data){
+
+    return data.map(item => {
+      let ip = item.ip+":"+item.port
+      let status = item.status?"Connected":"Disconnected"
+      let vrf = item.vrf?item.vrf:""
+      console.log({...item, ip, status, vrf })
+      return {...item, ip, status }
+    })
+
+  }
+
   render() {
     let thiss = this;
     console.log("Render ", this.state);
@@ -657,43 +669,72 @@ export default class Agent extends React.Component {
       {
         Header: "Protocol",
         accessor: "protocol",
+        Cell: (row) => {
+          return (
+              <span>
+              {row.value}
+              </span>
+          );
+        },
       },
       {
         Header: "Address",
         accessor: "ip",
         Cell: (row) => {
-          let { ip, port } = row.original;
           return (
-            <div>
-              {ip}:{port}
-            </div>
+              <span>
+              {row.value}
+              </span>
           );
         },
+        // Cell: (row) => {
+        //   let { ip, port } = row.original;
+        //   return (
+        //     <div>
+        //       {ip}:{port}
+        //     </div>
+        //   );
+        // },
       },
       {
         Header: "Datacenter",
         accessor: "datacenter",
+        Cell: (row) => {
+          return (
+              <div>
+              {row.value}
+              </div>
+          );
+        },
       },
       {
         Header: "VRF",
         accessor: "vrf",
         Cell: (row) => {
-          let { vrf } = row.original;
-          return <div>{vrf}</div>;
+          return (
+              <div>
+              {row.value}
+              </div>
+          );
         },
+        // Cell: (row) => {
+        //   let { vrf } = row.original;
+        //   return <div>{vrf}</div>;
+        // },
       },
       {
         Header: "Status",
         accessor: "status",
+        filterType: "text",
         Cell: (row) => {
           let { status } = row.original;
           return (
             <div>
               <span
-                className={`health-bullet ${status ? "healthy" : "dead"}`}
+                className={`health-bullet ${status === "Connected" ? "healthy" : "dead"}`}
               ></span>
               <span className="health-status">
-                {status ? "Connected" : "Disconnected"}
+                {status}
               </span>
             </div>
           );
@@ -899,7 +940,7 @@ export default class Agent extends React.Component {
                           }
                         );
                       }}
-                      style={{ marginRight: "10px" }}
+                      style={{ marginRight: "10px", display: "flex", alignItems: "center" }}
                     >
                       {" "}
                       {"Add " + AGENTS}{" "}
@@ -916,25 +957,14 @@ export default class Agent extends React.Component {
                   </div>
                 </div>
                 <div className="panel-body ">
-                  {/* <Table
-                    key={"agentTable"}
-                    loading={this.state.readAgentLoading}
-                    loadingText={this.state.loadingText}
-                    className="-striped -highlight"
-                    noDataText="No Agent Found."
-                    // data={dummylist}
-                    data={this.state.details}
-                    columns={tableColumns}
-                  /> */}
                   <FilterableTable
-                                    // ref={this.myRef}
+                    // ref={this.myRef}
                     loading={this.state.readAgentLoading}
                     loadingText={this.state.loadingText}
                     className="-striped -highlight"
                     noDataText="No Agent Found."
-                    data={this.state.details}
+                    data={this.configureData(this.state.details)}
                     columns={tableColumns}
-                    onFilterChange={()=>{console.log("FILTER CHANGE")}}
                     defaultFilters={this.props.defaultFilters || []}
                     />
                 </div>

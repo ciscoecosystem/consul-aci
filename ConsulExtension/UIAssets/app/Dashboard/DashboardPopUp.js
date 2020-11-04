@@ -55,7 +55,7 @@ export default class DashboardPopUp extends Component {
       })
     }
 
-      this.setState({ data: data})
+      this.setState({ data: [...data]})
   }
 
   getData() {
