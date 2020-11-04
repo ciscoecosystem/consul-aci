@@ -135,15 +135,16 @@ export default class Dashboard extends React.Component {
   configurePop(type, label, datacenter) {
     let dashboardPopUp = {};
     let datacenter_list = [];
-    if (datacenter) {
-      datacenter_list = JSON.stringify(JSON.stringify([datacenter]));
-    } else {
+    if (datacenter === "overview") {
       datacenter_list = JSON.stringify(JSON.stringify(this.state.datacenters));
+      
+    } else {
+      datacenter_list = JSON.stringify(JSON.stringify([datacenter]));
     }
     datacenter_list = datacenter_list.substring(1, datacenter_list.length - 1);
 
     if (type === "service") {
-      dashboardPopUp.title = "Services Checks";
+      dashboardPopUp.title = "Service Checks";
       dashboardPopUp.query =
         'query{ServiceChecksClick(tn:"' +
         this.props.tenantName +
@@ -161,7 +162,7 @@ export default class Dashboard extends React.Component {
       ];
       dashboardPopUp.columns = SERVICE_HEADER;
     } else if (type === "node") {
-      dashboardPopUp.title = "Nodes Checks";
+      dashboardPopUp.title = "Node Checks";
       dashboardPopUp.query =
         'query{NodeChecksClick(tn:"' +
         this.props.tenantName +
@@ -334,7 +335,7 @@ export default class Dashboard extends React.Component {
                       }
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("service", label);
+                        this.configurePop("service", label, "overview");
                       }}
                     />
                   </div>
@@ -355,7 +356,7 @@ export default class Dashboard extends React.Component {
                       }
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("node", label);
+                        this.configurePop("node", label, "overview");
                       }}
                     />
                   </div>
@@ -373,7 +374,7 @@ export default class Dashboard extends React.Component {
                       totalCount={overviewData.service_endpoint.total}
                       clickable={true}
                       onClick={(label) => {
-                        this.configurePop("endpoint", label);
+                        this.configurePop("endpoint", label, "overview");
                       }}
                     />
                   </div>
@@ -382,18 +383,14 @@ export default class Dashboard extends React.Component {
             </div>
           )}
         </div>
-        {Object.keys(allData).map((item) => (
+        {Object.keys(allData).reverse().map((item) => (
           <div className="overview">
             {/* <ExamplesHeader title="Charts"/> */}
             <div className="header-text">
-              <div style={{display: "flex", alignItems: "center"}}>
-                <div style={{paddingTop: "2px", marginRight: "2px"}}>{item}</div>
-                <span
-                  className={`health-bullet ${
-                    allData[item].agents.up.value ? "healthy" : "dead"
-                  }`}
-                ></span>
-              </div>
+              <b>
+                {item ? item : "N/A"}-
+                {allData[item].agents.up.value ? "Connected" : "Disconnected" + " ("+ allData[item].agents.down.value +")"}
+              </b>
             </div>
             {this.state.loadingDashBoard ? (
               <Loader></Loader>

@@ -642,9 +642,9 @@ export default class Agent extends React.Component {
     return data.map(item => {
       let ip = item.ip+":"+item.port
       let status = item.status?"Connected":"Disconnected"
-      let vrf = item.vrf?item.vrf:""
-      console.log({...item, ip, status, vrf })
-      return {...item, ip, status }
+      let vrf = item.vrf?item.vrf:"N/A"
+      let datacenter = item.datacenter?item.datacenter:"N/A"
+      return {...item, ip, status, datacenter, vrf }
     })
 
   }
@@ -702,7 +702,7 @@ export default class Agent extends React.Component {
         Cell: (row) => {
           return (
               <div>
-              {row.value}
+              {row.value !== "N/A"? row.value : ""}
               </div>
           );
         },
@@ -713,7 +713,7 @@ export default class Agent extends React.Component {
         Cell: (row) => {
           return (
               <div>
-              {row.value}
+              {row.value !== "N/A"? row.value : ""}
               </div>
           );
         },
@@ -940,7 +940,7 @@ export default class Agent extends React.Component {
                           }
                         );
                       }}
-                      style={{ marginRight: "10px", display: "flex", alignItems: "center" }}
+                      style={{ marginRight: "10px" }}
                     >
                       {" "}
                       {"Add " + AGENTS}{" "}

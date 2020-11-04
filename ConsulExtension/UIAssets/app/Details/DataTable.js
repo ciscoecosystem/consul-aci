@@ -11,13 +11,18 @@ export default class DataTable extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.configureData = this.configureData.bind(this)
     const SERVICE_TABLE_HEADER = [
       {
         Header: "Service",
         accessor: "service",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -25,7 +30,11 @@ export default class DataTable extends Component {
         accessor: "serviceInstance",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -33,7 +42,11 @@ export default class DataTable extends Component {
         accessor: "port",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -41,7 +54,11 @@ export default class DataTable extends Component {
         accessor: "serviceKind",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -76,7 +93,11 @@ export default class DataTable extends Component {
         accessor: "serviceNamespace",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       }
     ]
@@ -88,7 +109,11 @@ export default class DataTable extends Component {
         accessor: "endPointName",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -104,7 +129,11 @@ export default class DataTable extends Component {
         accessor: "ip",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -112,7 +141,11 @@ export default class DataTable extends Component {
         accessor: "ap",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -120,7 +153,11 @@ export default class DataTable extends Component {
         accessor: "epgName",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -145,7 +182,11 @@ export default class DataTable extends Component {
         accessor: "consulNode",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
         }
       },
       {
@@ -200,16 +241,28 @@ export default class DataTable extends Component {
     this.setState({ row: newprops.data })
   }
 
+  configureData(data){
+    return data.map(rows => {
+      let new_rows = {...rows}
+      Object.keys(rows).forEach(item => {
+        if(typeof rows[item] === "string"){
+          new_rows[item] = rows[item] || "N/A"
+        }
+      })
+      return new_rows
+    })
+  }
+
   render() {
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
-
+        {console.log(this.state.row)}
         <FilterableTable loading={this.state.loading}
           ref={this.myRef}
           className="-striped -highlight"
           noDataText="No endpoints are found for the selected data center in this Tenant."
-          data={this.state.row}
+          data={this.configureData(this.state.row)}
           columns={this.state.columns}
           getTrProps={(state, rowInfo) => {
               if (rowInfo && rowInfo.row) {
