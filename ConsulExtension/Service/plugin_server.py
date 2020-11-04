@@ -2241,7 +2241,7 @@ def get_apic_data(tenant):
     return apic_data
 
 
-def get_agent_status(tn, datacenter=""):
+def get_agent_status(tn, datacenter=None):
     """Function to get overview agent
 
     Returns:
@@ -2269,7 +2269,7 @@ def get_agent_status(tn, datacenter=""):
         logger.info('Agents List Empty.')
         return agents_res
     for agent in agents:
-        if datacenter:
+        if datacenter is not None:
             if datacenter == agent[5] and agent[4] == '1':
                 agents_res['up']['value'] += 1
             elif datacenter == agent[5] and agent[4] == '0':
