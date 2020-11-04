@@ -1,0 +1,40 @@
+[
+    {
+        "node_check": {
+            "passing": 1,
+            "warning": 1,
+            "failing": 1
+        },
+        "node_id": "dummy_node_id",
+        "node_services": [
+            {
+                "service_checks": {
+                    "passing": 1,
+                    "warning": 1,
+                    "failing": 1
+                },
+                "node_id": "dummy_node_id",
+                "service_port": "dummy_service_port",
+                "service_name": "dummy_service_name",
+                "service_namespace": "dummy_namespace",
+                "service_id": "dummy_service_id",
+                "service_address": "dummy_service_address",
+                "service_ip": "dummy_service_ip",
+                "service_kind": "dummy_service_kind",
+                "service_tags": [
+                    "dummy_tag1",
+                    "dummy_tag2"
+                ]
+            }
+        ],
+        "node_ip": "dummy_node_ip",
+        "node_name": "dummy_node_name"
+    },
+    {
+        "node_check": {},
+        "node_id": "dummy_node_id2",
+        "node_services": [],
+        "node_ip": "dummy_node_ip2",
+        "node_name": "dummy_node_name2"
+    }
+]

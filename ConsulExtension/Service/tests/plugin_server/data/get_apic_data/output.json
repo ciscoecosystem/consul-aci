@@ -1,0 +1,38 @@
+[
+    {
+        "BD": "dummy_bd",
+        "dn": "uni/tn-dummy_tn/ap-dummy_ap/epg-dummy_epg/cep-dummy_cep",
+        "learningSource": "dummy_learning_source",
+        "VM-Name": "dummy_vm_name",
+        "AppProfile": "dummy_app_profile",
+        "hostingServerName": "dummy_hosting_server_name",
+        "Contracts": "dummy_contracts",
+        "IP": "dummy_ip",
+        "Interfaces": "dummy_interfaces",
+        "epg_health": "dummy_epg_health",
+        "VMM-Domain": "dummy_vmm_domain",
+        "CEP-Mac": "dummy_mac",
+        "controllerName": "dummy_controller_name",
+        "EPG": "dummy_epg",
+        "pod": "dummy_pod",
+        "VRF": "dummy_vrf"
+    },
+    {
+        "BD": "dummy_bd",
+        "dn": "uni/tn-dummy_tn/ap-dummy_ap/epg-dummy_epg/cep-dummy_cep2",
+        "learningSource": "dummy_learning_source2",
+        "VM-Name": "dummy_vm_name2",
+        "AppProfile": "dummy_app_profile",
+        "hostingServerName": "dummy_hosting_server_name2",
+        "Contracts": "dummy_contracts",
+        "IP": "dummy_ip2",
+        "Interfaces": "dummy_interfaces2",
+        "epg_health": "dummy_epg_health",
+        "VMM-Domain": "dummy_vmm_domain2",
+        "CEP-Mac": "dummy_mac2",
+        "controllerName": "dummy_controller_name2",
+        "EPG": "dummy_epg",
+        "pod": "dummy_pod2",
+        "VRF": "dummy_vrf"
+    }
+]
