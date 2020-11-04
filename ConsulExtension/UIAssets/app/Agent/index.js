@@ -10,6 +10,7 @@ import {
   Icon,
   IconButton,
   Spinner,
+  FilterableTable
 } from "blueprint-react";
 import { isIP } from "validator";
 import isValidDomain from "is-valid-domain";
@@ -915,7 +916,7 @@ export default class Agent extends React.Component {
                   </div>
                 </div>
                 <div className="panel-body ">
-                  <Table
+                  {/* <Table
                     key={"agentTable"}
                     loading={this.state.readAgentLoading}
                     loadingText={this.state.loadingText}
@@ -924,7 +925,18 @@ export default class Agent extends React.Component {
                     // data={dummylist}
                     data={this.state.details}
                     columns={tableColumns}
-                  />
+                  /> */}
+                  <FilterableTable
+                                    // ref={this.myRef}
+                    loading={this.state.readAgentLoading}
+                    loadingText={this.state.loadingText}
+                    className="-striped -highlight"
+                    noDataText="No Agent Found."
+                    data={this.state.details}
+                    columns={tableColumns}
+                    onFilterChange={()=>{console.log("FILTER CHANGE")}}
+                    defaultFilters={this.props.defaultFilters || []}
+                    />
                 </div>
               </div>
             </div>

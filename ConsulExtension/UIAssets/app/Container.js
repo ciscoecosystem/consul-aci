@@ -101,7 +101,7 @@ export default class Container extends React.Component {
 
                                 <Route exact path={[this.pathname + "/", this.pathname + "/index.html"]} component={() => {
                                     return <div style={{ height: "100%", overflow: "auto" }}>
-                                        <Dashboard tenantName={this.props.tenantName}/>
+                                        <Dashboard tenantName={this.props.tenantName} handleAgent={this.props.handleAgent} setDefaultFilter={this.props.setDefaultFilter}/>
                                     </div>
                                 }} />
                                 {/* This page and its link have been removed as intentions are not required in this release.
