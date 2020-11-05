@@ -1558,7 +1558,7 @@ def write_creds(tn, new_agent):
         )
         status, message = consul_obj.check_connection()
 
-        datacenter = '-'
+        datacenter = ''
         if status:
             datacenter = consul_obj.datacenter()
 
@@ -1974,7 +1974,7 @@ def get_datacenters(tn):
                     status = False
 
                 # if the status is False, do not update it
-                if datacenter != '-' and dc_list.get(datacenter, True):
+                if dc_list.get(datacenter, True):
                     dc_list[datacenter] = status
 
             for dc, status in dc_list.items():
