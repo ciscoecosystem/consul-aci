@@ -7,6 +7,18 @@ const warningColor = "#f49141";
 
 const SERVICE_HEADER = [
   {
+    Header: "Data Center",
+    accessor: "datacenter",
+    filterType: "text",
+    Cell: (row) => {
+      return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
+    },
+  },
+  {
     Header: "IP",
     accessor: "ip",
     filterType: "text",
@@ -109,6 +121,7 @@ const SERVICE_HEADER = [
     accessor: "serviceChecks",
     filterable: false,
     width: 150,
+    sortable: false,
     Cell: (row) => {
       return (
         <span>
@@ -149,6 +162,9 @@ const SERVICE_HEADER = [
       );
     },
   },
+];
+
+const NODE_COLUMNS = [
   {
     Header: "Data Center",
     accessor: "datacenter",
@@ -161,9 +177,6 @@ const SERVICE_HEADER = [
       );
     },
   },
-];
-
-const NODE_COLUMNS = [
   {
     Header: "IP",
     accessor: "ip",
@@ -207,6 +220,7 @@ const NODE_COLUMNS = [
     accessor: "nodeChecks",
     filterable: false,
     width: 150,
+    sortable: false,
     Cell: (row) => {
       return (
         <span>
@@ -243,18 +257,6 @@ const NODE_COLUMNS = [
               &nbsp;{row.value.failing}{" "}
             </span>
           )}
-        </span>
-      );
-    },
-  },
-  {
-    Header: "Data Center",
-    accessor: "datacenter",
-    filterType: "text",
-    Cell: (row) => {
-      return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
         </span>
       );
     },
@@ -321,6 +323,18 @@ const NON_SERVICE_ENDPOINT_COLUMNS = [
 ];
 
 const SERVICE_ENDPOINT_COLUMNS = [
+  {
+    Header: "Data Center",
+    accessor: "datacenter",
+    filterType: "text",
+    Cell: (row) => {
+      return (
+        <span title={row.value !== "N/A" ? row.value : ""}>
+          {row.value !== "N/A" ? row.value : ""}
+        </span>
+      );
+    },
+  },
   {
     Header: "Endpoint",
     accessor: "endPointName",
@@ -438,6 +452,7 @@ const SERVICE_ENDPOINT_COLUMNS = [
     accessor: "nodeChecks",
     filterable: false,
     width: 150,
+    sortable: false,
     Cell: (row) => {
       return (
         <span>
@@ -553,6 +568,7 @@ const SERVICE_ENDPOINT_COLUMNS = [
     accessor: "serviceChecks",
     filterable: false,
     width: 150,
+    sortable: false,
     Cell: (row) => {
       return (
         <span>
@@ -596,18 +612,6 @@ const SERVICE_ENDPOINT_COLUMNS = [
   {
     Header: "Namespace",
     accessor: "serviceNamespace",
-    filterType: "text",
-    Cell: (row) => {
-      return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
-        </span>
-      );
-    },
-  },
-  {
-    Header: "Data Center",
-    accessor: "datacenter",
     filterType: "text",
     Cell: (row) => {
       return (

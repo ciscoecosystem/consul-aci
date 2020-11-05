@@ -80,6 +80,7 @@ export default class DataTable extends Component {
         accessor: "serviceChecks",
         filterable: false,
         width: 150,
+        sortable: false,
         Cell: row => {
           return (<span>
             {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
@@ -212,6 +213,7 @@ export default class DataTable extends Component {
         accessor: "nodeChecks",
         filterable: false,
         width: 150,
+        sortable: false,
         Cell: row => {
           return (<span>
             {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
