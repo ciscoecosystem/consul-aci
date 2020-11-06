@@ -17,8 +17,8 @@
     },
     "iconfile":"hashicorp-consul.png",
     "insertionURL":"fv:infoTenant:center",
-    "metaversion":"1.0",
-    "name":"Consul Extension for ACI",
+    "metaversion":"1.1",
+    "name":"Consul",
     "permissions":[
         "admin"
     ],
@@ -26,5 +26,5 @@
     "shortdescr":"This application enables L4-L7 Service Visibility, Service Mesh based Network Middleware Automation, between HashiCorp Consul and Cisco ACI",
     "vendor":"Cisco",
     "vendordomain":"Cisco",
-    "version":"1.0"
+    "version":"1.1"
 }
