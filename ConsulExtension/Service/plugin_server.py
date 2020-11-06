@@ -2336,6 +2336,7 @@ def get_performance_dashboard(tenant):
 
         all_ep_set = set()
         for dc in mapped_ep:
+            dc_ep_len = len(get_vrf_specific_eps(tenant, dc))
             ep_res = {
                 'service': {
                     'color': 'rgb(108, 192, 74)',
@@ -2347,7 +2348,7 @@ def get_performance_dashboard(tenant):
                     'value': 0,
                     'label': 'Non-Service Endpoints'
                 },
-                'total': ep_len
+                'total': dc_ep_len
             }
 
             ep_set = set()
@@ -2381,7 +2382,7 @@ def get_performance_dashboard(tenant):
             response[dc]['agents'] = get_agent_status(tenant, dc)
             response[dc]['service'] = service_res
             response[dc]['nodes'] = nodes_res
-            ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+            ep_res['non_service']['value'] = dc_ep_len - ep_res['service']['value']
             response[dc]['service_endpoint'] = ep_res
 
         all_ep_res['non_service']['value'] = ep_len - all_ep_res['service']['value']
@@ -2732,22 +2733,23 @@ def non_service_endpoints(tenant, datacenters):
     try:
         # get merged and non-merged data of all datacenters
         all_merged_data = []
-        all_non_merged_data = []
+        all_apic_data = []
+
         for datacenter in datacenters:
             aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
             apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
             consul_data = get_consul_data(datacenter)
-            merged_data, non_merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
+            all_apic_data += apic_data
             all_merged_data += merged_data
-            all_non_merged_data += non_merged_data
 
         all_merged_data = dictionary_data_formatter(all_merged_data, ['IP', 'dn'])
-        all_non_merged_data = dictionary_data_formatter(all_non_merged_data, ['IP', 'dn'])
+        all_apic_data = dictionary_data_formatter(apic_data, ['IP', 'dn'])
 
         # filter non-merged data if not mapped with any datacenter
         final_non_merged_data = []
-        for key, value in all_non_merged_data.iteritems():
+        for key, value in all_apic_data.iteritems():
             if key not in all_merged_data:
                 final_non_merged_data.append(value[0])
 
