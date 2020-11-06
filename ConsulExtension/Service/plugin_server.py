@@ -429,7 +429,7 @@ def tree(tenant, datacenter):
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
@@ -470,7 +470,7 @@ def details_flattened(tenant, datacenter):
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
@@ -2357,7 +2357,7 @@ def get_performance_dashboard(tenant):
             node_ip_set = set()
             service_addr_set = set()
             consul_data = get_consul_data(dc)
-            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])[0]
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])
 
             for ep in merged_data:
                 # Add service eps to all_ep_resp
@@ -2740,7 +2740,7 @@ def non_service_endpoints(tenant, datacenters):
 
             apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
             consul_data = get_consul_data(datacenter)
-            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
             all_apic_data += apic_data
             all_merged_data += merged_data
 
