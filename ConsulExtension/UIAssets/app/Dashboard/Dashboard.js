@@ -388,7 +388,7 @@ export default class Dashboard extends React.Component {
             {/* <ExamplesHeader title="Charts"/> */}
             <div className="header-text">
               <b>
-                {item ? item : "N/A"}-
+                {item ? item+"-" : ""}
                 {allData[item].agents.up.value ? "Connected" : "Disconnected" + " ("+ allData[item].agents.down.value +")"}
               </b>
             </div>
