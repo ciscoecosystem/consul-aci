@@ -99,6 +99,7 @@ function nonServiceEndPointEP(data) {
                       className="rt-td"
                       role="gridcell"
                       style={{flex: "100 0 auto", width: "100px"}}
+                      title={item.mac}
                     >
                       {item.mac}
                     </div>
@@ -106,6 +107,7 @@ function nonServiceEndPointEP(data) {
                       className="rt-td"
                       role="gridcell"
                       style={{flex: "100 0 auto", width: "100px"}}
+                      title={item.ip}
                     >
                       {item.ip}
                     </div>
