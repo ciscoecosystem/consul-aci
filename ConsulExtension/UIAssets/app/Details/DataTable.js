@@ -11,7 +11,6 @@ export default class DataTable extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
-    this.configureData = this.configureData.bind(this)
     const SERVICE_TABLE_HEADER = [
       {
         Header: "Service",
@@ -19,8 +18,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -31,8 +30,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -43,8 +42,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -55,8 +54,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -95,8 +94,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -111,8 +110,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -131,8 +130,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -143,8 +142,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -155,8 +154,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -165,7 +164,7 @@ export default class DataTable extends Component {
         Header: "EPG Health",
         accessor: "epgHealth",
         filterType: 'number',
-        sortMethod: (a, b) => Number(a)-Number(b),// sorting numerically
+        sortMethod: (a, b) => Number(a)-Number(b),// sorting numericallyx
         Cell: row => {
 
           let epgcolor = "#56b72a";
@@ -184,8 +183,8 @@ export default class DataTable extends Component {
         filterType: "text",
         Cell: row => {
           return (
-        <span title={row.value !== "N/A" ? row.value : ""}>
-          {row.value !== "N/A" ? row.value : ""}
+        <span title={row.value}>
+          {row.value}
         </span>
       );
         }
@@ -243,18 +242,6 @@ export default class DataTable extends Component {
     this.setState({ row: newprops.data })
   }
 
-  configureData(data){
-    return data.map(rows => {
-      let new_rows = {...rows}
-      Object.keys(rows).forEach(item => {
-        if(typeof rows[item] === "string"){
-          new_rows[item] = rows[item] || "N/A"
-        }
-      })
-      return new_rows
-    })
-  }
-
   render() {
     return (
       <div>
@@ -264,7 +251,7 @@ export default class DataTable extends Component {
           ref={this.myRef}
           className="-striped -highlight"
           noDataText="No endpoints are found for the selected data center in this Tenant."
-          data={this.configureData(this.state.row)}
+          data={this.state.row}
           columns={this.state.columns}
           getTrProps={(state, rowInfo) => {
               if (rowInfo && rowInfo.row) {
