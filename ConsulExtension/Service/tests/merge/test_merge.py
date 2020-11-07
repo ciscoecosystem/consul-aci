@@ -102,7 +102,7 @@ def test_merge_aci_consul(case):
         aci_consul_mappings
     )
     original_response = gen_keys_ls(original_response)
-    generated_response = gen_keys_ls(generated_response[0])
+    generated_response = gen_keys_ls(generated_response)
     assert get_final_output(original_response, generated_response)
 
 

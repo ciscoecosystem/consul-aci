@@ -43,7 +43,7 @@ export default function DetailPanel(props) {
     let { summaryPaneIsOpen, summaryDetail, title } = props;
     let apicInfoOrder = [
     { name: "interface", label: "Interface" },
-    { name: "pod_name", label: "ACI POD"},
+    { name: "pod_name", label: "POD"},
     { name: "ip", label: "ip" },
     { name: "mac", label: "mac" },
     { name: "epgName", label: "epg" },
@@ -78,7 +78,7 @@ export default function DetailPanel(props) {
                         let { formattedData, totalCnt } = formateDataToChartData(summaryDetail[name])
                         detailValue = <PieChartAndCounter data={formattedData} totalCount={totalCnt} />
                     }
-                    else if (name === "serviceTags" || name === "pod_name") {
+                    else if (name === "serviceTags") {
                         detailValue = summaryDetail[name].length ? summaryDetail[name].map(function (tags) {
                             return <Label theme={"MEDIUM_GRAYY"} size={"MEDIUM"} border={false}>{tags}</Label>
                         }) : ""

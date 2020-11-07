@@ -72,6 +72,12 @@ def set_polling_interval(interval):
 
 
 def get_polling_interval():
+    """Get polling interval method
+
+    Returns:
+        dict: returns dictinary with
+              payload having polling interval data
+    """
 
     try:
         logger.info("GetPollingInterval called")
@@ -109,6 +115,18 @@ def get_polling_interval():
 
 
 def get_vrf_specific_eps(tenant, datacenter=None):
+    """Get ep data for specified tenant and datacenter
+
+    Args:
+        tenant {string}: name of tenant
+
+    Optional Args:
+        datacenter {string/None}: name of datacenter
+
+    Returns:
+        {list}: list of ep data for tenant and datacenter if specified
+    """
+
     connection = db_obj.engine.connect()
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -411,7 +429,7 @@ def tree(tenant, datacenter):
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
-        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)[0]
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         logger.debug("ACI Consul mapped data: {}".format(merged_data))
 
@@ -446,17 +464,16 @@ def details_flattened(tenant, datacenter):
     }
     """
 
-    logger.info("Details view for tenant: {}".format(tenant))
+    logger.info("Details view for tenant: {}, datacenter: {}".format(tenant, datacenter))
     try:
         aci_consul_mappings = get_new_mapping(tenant, datacenter)
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
         consul_data = get_consul_data(datacenter)
-        merged_data, non_merged_data, = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+        merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
 
         details_list = []
         for each in merged_data:
-            pods = set(list(map(lambda x: x.split("/")[0], each.get('Interfaces'))))
             ep = {
                 'interface': each.get('Interfaces'),
                 'endPointName': each.get('VM-Name'),
@@ -472,7 +489,7 @@ def details_flattened(tenant, datacenter):
                 'epgHealth': int(each.get('epg_health')),
                 'consulNode': each.get('node_name'),
                 'nodeChecks': each.get('node_check'),
-                'pod_name': list(pods)
+                'pod_name': each.get('pod')
             }
 
             services = change_key(each.get('node_services'))
@@ -498,7 +515,6 @@ def details_flattened(tenant, datacenter):
 
         return json.dumps({
             "payload": details_list,
-            "non_merged_eps": non_merged_data,
             "status_code": "200",
             "message": "OK"
         })
@@ -1542,7 +1558,7 @@ def write_creds(tn, new_agent):
         )
         status, message = consul_obj.check_connection()
 
-        datacenter = '-'
+        datacenter = ''
         if status:
             datacenter = consul_obj.datacenter()
 
@@ -1567,7 +1583,7 @@ def write_creds(tn, new_agent):
                 ])
         connection.close()
 
-        change_data_fetch_status(True)
+        change_agent_edit_status(True)
 
         if status:
             return json.dumps({
@@ -1693,7 +1709,7 @@ def update_creds(tn, update_input):
                         })
                 connection.close()
 
-                change_data_fetch_status(True)
+                change_agent_edit_status(True)
 
                 if status:
                     return json.dumps({
@@ -1813,7 +1829,7 @@ def delete_creds(tn, agent_data):
             connection.close()
             logger.info('Agent {}\'s Node data deleted'.format(str(agent_addr)))
 
-            change_data_fetch_status(True)
+            change_agent_edit_status(True)
 
             # Delete Service data wrt this agent
             connection = db_obj.engine.connect()
@@ -1958,7 +1974,7 @@ def get_datacenters(tn):
                     status = False
 
                 # if the status is False, do not update it
-                if datacenter != '-' and dc_list.get(datacenter, True):
+                if dc_list.get(datacenter, True):
                     dc_list[datacenter] = status
 
             for dc, status in dc_list.items():
@@ -2019,6 +2035,15 @@ def post_tenant(tn):
 
 
 def list_data_formatter(data, key_index):
+    """Create dictionary for hash key from key index from data
+
+    Args:
+        data {list{dict}}: any data having list of dict
+        key_index {list}: list of key index
+
+    Returns:
+        {dict}: dict of formated data
+    """
     dc = dict()
     for each in data:
         key = ''.join([each[i] for i in key_index])
@@ -2030,6 +2055,15 @@ def list_data_formatter(data, key_index):
 
 
 def dictionary_data_formatter(data, key_names):
+    """Create dictionary for hash key from key names from data
+
+    Args:
+        data {list{dict}}: any data having list of dict
+        key_names {list}: list of key names
+
+    Returns:
+        {dict}: dict of formated data
+    """
     dc = dict()
     for each in data:
         key = ''.join([each.get(i, '') for i in key_names])
@@ -2042,6 +2076,14 @@ def dictionary_data_formatter(data, key_names):
 
 @time_it
 def get_consul_data(datacenter):
+    """Get consul data
+
+    Args:
+        datacenter {string}: datacenter name
+
+    Returns:
+        {list}: extract datacenter data from db and format it
+    """
     consul_data = []
     services = []
 
@@ -2146,6 +2188,14 @@ def get_consul_data(datacenter):
 
 @time_it
 def get_apic_data(tenant):
+    """get apic data
+
+    Args:
+        tenant {string}: tenant name
+
+    Returns:
+        {list}: extract tenant data from db and format it
+    """
     apic_data = []
 
     connection = db_obj.engine.connect()
@@ -2153,7 +2203,7 @@ def get_apic_data(tenant):
         connection,
         db_obj.EP_TABLE_NAME,
         {'tenant': tenant},
-        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:12]
+        db_obj.SCHEMA_DICT[db_obj.EP_TABLE_NAME][:14]
     ))
     epg_data = list(db_obj.select_from_table(
         connection,
@@ -2184,13 +2234,14 @@ def get_apic_data(tenant):
                 'controllerName': ep[7],
                 'hostingServerName': ep[11],
                 'learningSource': ep[8],
-                'epg_health': epg[6]
+                'epg_health': epg[6],
+                'pod': ep[13]
             })
 
     return apic_data
 
 
-def get_agent_status(tn, datacenter=""):
+def get_agent_status(tn, datacenter=None):
     """Function to get overview agent
 
     Returns:
@@ -2218,7 +2269,7 @@ def get_agent_status(tn, datacenter=""):
         logger.info('Agents List Empty.')
         return agents_res
     for agent in agents:
-        if datacenter:
+        if datacenter is not None:
             if datacenter == agent[5] and agent[4] == '1':
                 agents_res['up']['value'] += 1
             elif datacenter == agent[5] and agent[4] == '0':
@@ -2269,7 +2320,7 @@ def get_performance_dashboard(tenant):
                 mapped_ep[dc].append(map)
 
         apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(None, tenant, True))
-        ep_res = {
+        all_ep_res = {
             'service': {
                 'color': 'rgb(108, 192, 74)',
                 'value': 0,
@@ -2282,17 +2333,38 @@ def get_performance_dashboard(tenant):
             },
             'total': ep_len
         }
-        service_res = {'passing': 0, 'warning': 0, 'failing': 0}
-        nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
-        ep_set = set()
-        node_ip_set = set()
-        service_addr_set = set()
+
+        all_ep_set = set()
         for dc in mapped_ep:
+            dc_ep_len = len(get_vrf_specific_eps(tenant, dc))
+            ep_res = {
+                'service': {
+                    'color': 'rgb(108, 192, 74)',
+                    'value': 0,
+                    'label': 'Service Endpoints'
+                },
+                'non_service': {
+                    'color': 'rgb(128,128,128)',
+                    'value': 0,
+                    'label': 'Non-Service Endpoints'
+                },
+                'total': dc_ep_len
+            }
+
+            ep_set = set()
+            service_res = {'passing': 0, 'warning': 0, 'failing': 0}
+            nodes_res = {'passing': 0, 'warning': 0, 'failing': 0}
+            node_ip_set = set()
+            service_addr_set = set()
             consul_data = get_consul_data(dc)
-            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])[0]
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, mapped_ep[dc])
 
             for ep in merged_data:
-                # Add service eps to ep_resp
+                # Add service eps to all_ep_resp
+                if (ep['IP'], ep['dn']) not in all_ep_set:
+                    all_ep_set.add((ep['IP'], ep['dn']))
+                    all_ep_res['service']['value'] += 1
+
                 if (ep['IP'], ep['dn']) not in ep_set:
                     ep_set.add((ep['IP'], ep['dn']))
                     ep_res['service']['value'] += 1
@@ -2306,12 +2378,31 @@ def get_performance_dashboard(tenant):
                         service_addr_set.add(service['service_address'])
                         add_check(service['service_checks'], service_res)
 
-        ep_res['non_service']['value'] = ep_len - ep_res['service']['value']
+            response[dc] = dict()
+            response[dc]['agents'] = get_agent_status(tenant, dc)
+            response[dc]['service'] = service_res
+            response[dc]['nodes'] = nodes_res
+            ep_res['non_service']['value'] = dc_ep_len - ep_res['service']['value']
+            response[dc]['service_endpoint'] = ep_res
 
-        response['agents'] = get_agent_status(tenant)
-        response['service'] = service_res
-        response['nodes'] = nodes_res
-        response['service_endpoint'] = ep_res
+        all_ep_res['non_service']['value'] = ep_len - all_ep_res['service']['value']
+
+        all_dc_data = dict()
+        all_dc_data['agents'] = get_agent_status(tenant)
+        all_dc_data['service'] = {'passing': 0, 'warning': 0, 'failing': 0}
+        all_dc_data['nodes'] = {'passing': 0, 'warning': 0, 'failing': 0}
+
+        for dc in response:
+            for key in all_dc_data['service']:
+                all_dc_data['service'][key] += response[dc]['service'][key]
+            for key in all_dc_data['nodes']:
+                all_dc_data['nodes'][key] += response[dc]['nodes'][key]
+
+        all_dc_data['service_endpoint'] = all_ep_res
+        final_response = {
+            'overview': all_dc_data,
+            'all': response
+        }
 
         connection = db_obj.engine.connect()
         data_fetch_info = db_obj.select_from_table(
@@ -2322,11 +2413,12 @@ def get_performance_dashboard(tenant):
         )
         connection.close()
 
-        response['data_fetch'] = data_fetch_info[0][0]
-
         return json.dumps({
             "status": "200",
-            "payload": response,
+            "payload": {
+                'data_fetch': data_fetch_info[0][0],
+                'data': final_response
+            },
             "message": "OK"
         })
     except Exception as e:
@@ -2356,6 +2448,19 @@ def get_epg_alias(dn):
 
 
 def get_vrf_from_database(datacenter, tn, dashboard=False):
+    """Get vrf from the database
+
+    Args:
+        datacenter {string}: name of datacenter
+        tn         {string}: name of tenant
+
+    Optional Args:
+        dashboard {boolean}: true if not to consider datacenter
+
+    Returns:
+        {list}: list of vrfs
+    """
+
     connection = db_obj.engine.connect()
     search_param = {'tenant': tn}
     if not dashboard:
@@ -2445,6 +2550,16 @@ def format_vrf(vrf):
 
 
 def filter_apic_data(apic_data, vrfs):
+    """Filter apic data for specific vrf/vrfs
+
+    Args:
+        apic_data {list}: list of apic data
+        vrfs {list}: list of vrfs or "-" for all vrf
+
+    Returns:
+        {list}: list of filtered apic data by vrf
+    """
+
     if "-" == vrfs:
         return apic_data
 
@@ -2459,7 +2574,12 @@ def filter_apic_data(apic_data, vrfs):
         logger.info("Error in filter_apic_data, Error: {}".format(e))
 
 
-def change_data_fetch_status(status):
+def change_agent_edit_status(edited):
+    """To change status of agent edited
+
+    Args:
+        edited {boolean}: true if agent added/updated/deleted
+    """
     connection = db_obj.engine.connect()
     data = db_obj.select_from_table(
         connection,
@@ -2470,14 +2590,178 @@ def change_data_fetch_status(status):
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status]
+                [False, edited]
             )
-    elif data[0][0] is not status:
+    else:
         with connection.begin():
             db_obj.insert_and_update(
                 connection,
                 db_obj.DATA_FETCH_TABLE_NAME,
-                [status],
-                {'running': not status}
+                [data[0][0], edited],
+                {'running': data[0][0]}
             )
     connection.close()
+
+
+@time_it
+def nodecheck_clickable(tenant, datacenters):
+    """Get correlated data of nodechecks for all datacenters
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("NodeChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        datacenters_responses = dict()
+
+        # get details view info of all datacenter
+        for datacenter in datacenters:
+            response = json.loads(details_flattened(tenant, datacenter))
+            if response.get('status_code') == "200":
+                payload = response.get('payload', [])
+                datacenters_responses[datacenter] = payload
+
+        # filter only mapped nodes from all data
+        consul_node_ips = []
+        connection = db_obj.engine.connect()
+        for datacenter in datacenters:
+            consul_node_ips += db_obj.select_from_table(
+                connection,
+                db_obj.NODE_TABLE_NAME,
+                {'datacenter': datacenter},
+                ['node_ip']
+            )
+        connection.close()
+
+        consul_node_ips = set(map(lambda x: x[0], consul_node_ips[:]))
+
+        final_data = []
+        for datacenter in datacenters:
+            for each in datacenters_responses[datacenter]:
+                each['datacenter'] = datacenter
+                if each.get('ip') in consul_node_ips:
+                    final_data.append(each)
+
+        final_data = dictionary_data_formatter(final_data, ['ip', 'consulNode'])
+
+        # remove redundant data if any
+        response = []
+        for value in final_data.values():
+            response.append(value[0])
+        logger.info('Final response for NodeChecksClick: {}'.format(response))
+        return json.dumps({
+            "payload": response,
+            "status_code": "200",
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Could not load the NodeChecksClick. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the NodeChecksClick."
+        })
+
+
+@time_it
+def servicecheck_clickable(tenant, datacenters):
+    """Get correlated data of servicechecks for all datacenters
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("ServiceChecks clickable for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        # get details view data of all datacenters
+        datacenters_responses = dict()
+        for datacenter in datacenters:
+            response = json.loads(details_flattened(tenant, datacenter))
+            if response.get('status_code') == "200":
+                payload = response.get('payload', [])
+                datacenters_responses[datacenter] = payload
+
+        # add additional column of datacenter in each row
+        response = []
+        for datacenter in datacenters:
+            for each in datacenters_responses[datacenter]:
+                each['datacenter'] = datacenter
+                response.append(each)
+
+        return json.dumps({
+            "payload": response,
+            "status_code": "200",
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Could not load the ServiceChecksClick. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the ServiceChecksClick."
+        })
+
+
+@time_it
+def non_service_endpoints(tenant, datacenters):
+    """Get non merged eps as non-service endpoints
+
+    :tenant: {string} tenant for APIC data
+    :datacenters: {string} list of datacenters for Consul data
+
+    return: {
+        payload: list of dict/{}
+        status_code: string: 200/300
+        message: string
+    }
+    """
+    datacenters = json.loads(datacenters)
+    logger.info("Non-service endpoints for tenant: {}, datacenters: {}".format(tenant, datacenters))
+    try:
+        # get merged and non-merged data of all datacenters
+        all_merged_data = []
+        all_apic_data = []
+
+        for datacenter in datacenters:
+            aci_consul_mappings = get_new_mapping(tenant, datacenter)
+
+            apic_data = filter_apic_data(get_apic_data(tenant), get_vrf_from_database(datacenter, tenant))
+            consul_data = get_consul_data(datacenter)
+            merged_data = merge.merge_aci_consul(tenant, apic_data, consul_data, aci_consul_mappings)
+            all_apic_data += apic_data
+            all_merged_data += merged_data
+
+        all_merged_data = dictionary_data_formatter(all_merged_data, ['IP', 'dn'])
+        all_apic_data = dictionary_data_formatter(apic_data, ['IP', 'dn'])
+
+        # filter non-merged data if not mapped with any datacenter
+        final_non_merged_data = []
+        for key, value in all_apic_data.iteritems():
+            if key not in all_merged_data:
+                final_non_merged_data.append(value[0])
+
+        return json.dumps({
+            "payload": final_non_merged_data,
+            "status_code": "200",
+            "message": "OK"
+        })
+    except Exception as e:
+        logger.exception("Could not load the Non-service endpoints. Error: {}".format(str(e)))
+        return json.dumps({
+            "payload": {},
+            "status_code": "300",
+            "message": "Could not load the Non-service endpoints."
+        })

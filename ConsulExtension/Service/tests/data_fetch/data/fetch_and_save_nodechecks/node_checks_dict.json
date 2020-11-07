@@ -1,0 +1,14 @@
+{
+    "node": {
+        "CheckID": "dummy_CheckID",
+        "node_id": "dummy_node_id",
+        "node_name": "dummy_node_name",
+        "Name": "dummy_Name",
+        "ServiceName": "dummy_ServiceName",
+        "Type": "dummy_Type",
+        "Notes": "dummy_Notes",
+        "Output": "dummy_Output",
+        "Status": "dummy_Status",
+        "agent_addr": "dummy_agent_addr"
+    }
+}

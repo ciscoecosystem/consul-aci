@@ -1,0 +1,17 @@
+[
+    {
+        "mac": "dummy_mac",
+        "ip": "dummy_ip",
+        "tenant": "dummy_tenant",
+        "dn": "dummy_dn",
+        "vm_name": "dummy_vm_name",
+        "interfaces": "dummy_interfaces",
+        "vmm_domain": "dummy_vmm_domain",
+        "controller": "dummy_controller",
+        "learning_src": "dummy_learning_src",
+        "multi_cast_addr": "dummy_multi_cast_addr",
+        "encap": "dummy_encap",
+        "hosting_servername": "dummy_hosting_servername",
+        "is_cep": "dummy_is_cep"
+    }
+]

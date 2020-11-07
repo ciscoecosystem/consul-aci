@@ -17,7 +17,11 @@ export default class DataTable extends Component {
         accessor: "service",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -25,7 +29,11 @@ export default class DataTable extends Component {
         accessor: "serviceInstance",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -33,7 +41,11 @@ export default class DataTable extends Component {
         accessor: "port",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -41,7 +53,11 @@ export default class DataTable extends Component {
         accessor: "serviceKind",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -63,6 +79,7 @@ export default class DataTable extends Component {
         accessor: "serviceChecks",
         filterable: false,
         width: 150,
+        sortable: false,
         Cell: row => {
           return (<span>
             {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
@@ -76,7 +93,11 @@ export default class DataTable extends Component {
         accessor: "serviceNamespace",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       }
     ]
@@ -88,15 +109,19 @@ export default class DataTable extends Component {
         accessor: "endPointName",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
-        Header: "ACI Pod",
+        Header: "Pod",
         accessor: "pod_name",
         show: true,
         Cell: row => {
-          return <div>{row.value.map(tagData => <Label theme={"MEDIUM_GRAYY"} size={"SMALL"} border={false}>{tagData}</Label>)}</div>
+          return <div>{row.value}</div>
         }
       },
       {
@@ -104,7 +129,11 @@ export default class DataTable extends Component {
         accessor: "ip",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -112,7 +141,11 @@ export default class DataTable extends Component {
         accessor: "ap",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -120,14 +153,18 @@ export default class DataTable extends Component {
         accessor: "epgName",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
         Header: "EPG Health",
         accessor: "epgHealth",
         filterType: 'number',
-        sortMethod: (a, b) => Number(a)-Number(b),// sorting numerically
+        sortMethod: (a, b) => Number(a)-Number(b),// sorting numericallyx
         Cell: row => {
 
           let epgcolor = "#56b72a";
@@ -145,7 +182,11 @@ export default class DataTable extends Component {
         accessor: "consulNode",
         filterType: "text",
         Cell: row => {
-          return <span title={row.value}>{row.value}</span>
+          return (
+        <span title={row.value}>
+          {row.value}
+        </span>
+      );
         }
       },
       {
@@ -171,6 +212,7 @@ export default class DataTable extends Component {
         accessor: "nodeChecks",
         filterable: false,
         width: 150,
+        sortable: false,
         Cell: row => {
           return (<span>
             {(row.value.passing !== undefined) && (<span title="passing"> <Icon size="icon-small" type=" icon-check-square" style={{ color: successColor }}></Icon>&nbsp;{row.value.passing}&nbsp;&nbsp;</span>)}
@@ -204,7 +246,7 @@ export default class DataTable extends Component {
     return (
       <div>
         <ToolBar onReload={() => this.props.onReload(true)} />
-
+        {console.log(this.state.row)}
         <FilterableTable loading={this.state.loading}
           ref={this.myRef}
           className="-striped -highlight"

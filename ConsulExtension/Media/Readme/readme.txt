@@ -29,7 +29,7 @@ Pre-requisites:
 - Consul version 1.6.3/1.6.3+ent or above
 - In-band or Out-of-band connectivity between APIC and Consul seed agent (Consul server) on TCP port 8500 and 8501.
 
-1.0 release limitations:
+1.1 release limitations:
 - Supported on Chrome, Mozilla and Safari web-browsers only.
 - Supported for on-premise APIC only.
 
