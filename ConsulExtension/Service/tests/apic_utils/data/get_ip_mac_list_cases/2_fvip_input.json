@@ -1,0 +1,33 @@
+{
+    "fvCEp": {
+        "attributes": {
+            "ip": "0.0.0.0",
+            "mac": "00:00:00:00:00:AA"
+        },
+        "children": [
+            {
+                "fvIp": {
+                    "attributes": {
+                        "addr": "1.1.1.1"
+                    }
+                }
+            },
+            {
+                "fvIp": {
+                    "attributes": {
+                        "addr": "2.2.2.2"
+                    }
+                }
+            },
+            {
+                "fvRsCEpToPathEp": {}
+            },
+            {
+                "fvRsHyper": {}
+            },
+            {
+                "fvRsToVm": {}
+            }
+        ]
+    }
+}

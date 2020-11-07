@@ -1,0 +1,33 @@
+[
+    "empty_agents",
+    [
+        "0.0.0.0",
+        "1234",
+        "http",
+        "",
+        "True",
+        "datacenter",
+        "tn0",
+        "uni/tn-tn0/ctx-vrf0"
+    ],
+    [
+        "0.0.0.0",
+        "1234",
+        "http",
+        "",
+        "True",
+        "-",
+        "tn0",
+        "uni/tn-tn0/ctx-vrf0"
+    ],
+    [
+        "0.0.0.0",
+        "1234",
+        "http",
+        "",
+        "False",
+        "datacenter",
+        "tn2",
+        "uni/tn-tn2/ctx-vrf0"
+    ]
+]

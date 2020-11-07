@@ -1,0 +1,9 @@
+{
+    "fvAEPg": {
+        "attributes": {
+            "dn": "uni/tn-DummyTn/ap-DummyAp/epg-DummyEpg",
+            "name": "DummyEpg",
+            "nameAlias": "DummyAliasName"
+        }
+    }
+}

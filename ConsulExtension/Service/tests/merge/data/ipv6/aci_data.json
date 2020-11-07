@@ -1,0 +1,37 @@
+[
+    {
+        "BD": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "learningSource": "vmm",
+        "VM-Name": "She.",
+        "IP": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
+        "VMM-Domain": "ESX0-leaf106",
+        "CEP-Mac": "a6:62:cc:f7:4c:87",
+        "EPG": "epg0",
+        "AppProfile": "ap0",
+        "hostingServerName": "hypername0",
+        "Contracts": {
+            "IntraEpg": [
+                "dummy"
+            ],
+            "Provider": [
+                "dummy"
+            ],
+            "Consumer": [
+                "dummy"
+            ],
+            "Taboo": [
+                "dummy"
+            ],
+            "Consumer Interface": [
+                "dummy"
+            ]
+        },
+        "Interfaces": [
+            "Pod-0/Node-103/eth4/6"
+        ],
+        "epg_health": "8",
+        "VRF": "tn0/",
+        "controllerName": "vcenter106"
+    }
+]

@@ -1,0 +1,101 @@
+.detail-container .sub-header {
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    font-size: 22px;
+    white-space: pre;
+    padding-top: 7px;
+    position: relative;
+    margin-bottom: 0.8em;
+}
+
+.detail-container .app-name {
+    color: #58585b;
+    padding: 0.3em;
+    padding-left: 0.8em;
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
+    padding-right: 4em;
+}
+
+.detail-container .dropdown-setting {
+    padding: 3px;
+    padding-right: 10px;
+}
+
+.detail-container .ReactTable .rt-noData {
+    color: black;
+    font-size: 16px;
+}
+
+.detail-container .toolbar {
+    background-color: rgb(223, 223, 223);
+    padding: 0.5em;
+    text-align: right;
+}
+
+.detail-container .clearfix {
+    overflow: visible;
+}
+
+.detail-container .floar {
+    float: right;
+}
+
+.detail-container .floal {
+    float: left;
+}
+
+.detail-container .button-logout {
+    border-radius: 20px;
+    margin-top: 0.2em;
+    margin-right: 0.5em;
+    color: #f0f0f0;
+    border: none;
+    padding: 7px 30px;
+    cursor: pointer;
+}
+
+.detail-container .instancetext {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    background-color: transparent;
+    margin-right: 0.3em;
+    padding-top: 9px;
+    display: inline-block
+}
+
+.detail-container {
+    height: 80vh;
+    margin: 10px 0px;
+    overflow-y: scroll;
+    overflow-x: unset;
+}
+
+.detail-container .ReactTable .rt-tbody {
+    overflow: hidden;
+}
+
+.detail-container .overlay-pane {
+    top: inherit !important;
+}
+
+.ReactTable .table-no-data{
+    font-weight: bold;
+}
+
+.detail-container .detail-expansion .screen-container{
+    top: inherit !important;
+    position: absolute !important;
+}
+
+.detail-container .overlay-pane{
+    box-shadow:  -1px 9px 17px 0px !important;
+}
+
+.detail-container .scrollable{
+    max-height: 76vh;
+}
+
+.detail-container .panel{
+    margin-bottom: 5%;
+}

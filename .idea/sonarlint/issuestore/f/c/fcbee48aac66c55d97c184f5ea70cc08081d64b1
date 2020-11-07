@@ -1,0 +1,7 @@
+
+^python:S1192E"FDefine a constant instead of duplicating this literal '{}#{}' 4 times.(πΦλε
+qpython:S3776a"TRefactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.(Ώÿ½κύÿÿÿÿ
+python:S1871"cEither merge this branch with the identical one on line "148" or change one of the implementations.(‰γοϊÿÿÿÿ
+python:S1871"cEither merge this branch with the identical one on line "151" or change one of the implementations.(ύπΑώÿÿÿÿ
+python:S1871¤"cEither merge this branch with the identical one on line "148" or change one of the implementations.(‰γοϊÿÿÿÿ
+python:S1871§"cEither merge this branch with the identical one on line "151" or change one of the implementations.(ύπΑώÿÿÿÿ

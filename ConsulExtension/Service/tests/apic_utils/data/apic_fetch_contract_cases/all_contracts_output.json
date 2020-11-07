@@ -1,0 +1,7 @@
+{
+    "Consumer": ["dummy1-contract", "dummy2-contract"],
+    "Intra EPG": ["dummy0-contract"],
+    "Provider": ["dummy1-contract", "dummy2-contract"],
+    "Consumer Interface": ["dummy0-contract"],
+    "Taboo": ["dummy0-contract"]
+}

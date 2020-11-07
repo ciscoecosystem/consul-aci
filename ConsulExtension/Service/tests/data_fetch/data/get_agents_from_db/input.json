@@ -1,0 +1,34 @@
+[
+    [
+        "ip",
+        "port",
+        "protocol",
+        "",
+        "0",
+        "datacenter"
+    ],
+    [
+        "ip",
+        "port",
+        "protocol",
+        "",
+        "1",
+        "datacenter"
+    ],
+    [
+        "ip",
+        "port",
+        "protocol",
+        "",
+        "1",
+        "datacenter"
+    ],
+    [
+        "ip2",
+        "port2",
+        "protocol2",
+        "",
+        "1",
+        "datacenter2"
+    ]
+]

@@ -1,0 +1,13 @@
+[
+    {
+        "dn": "uni/tn-tn0/ap-ap0/epg-epg0/cep-c5:cb:c9:6c:ed:b8",
+        "bd": "uni/tn-tn0/ap-ap0/epg-epg0",
+        "ip": "172.29.83.198",
+        "enabled": true,
+        "ap": "ap0",
+        "recommended": true,
+        "vrf": "tn0/uni/tn-tn0/ap-ap0/epg-epg0",
+        "epg": "epg0",
+        "tenant": "tn0"
+    }
+]

@@ -1,0 +1,100 @@
+[
+    {
+        "input": [
+            "dummy_service_id",
+            "dummy_node_id",
+            "dummy_service_name",
+            "dummy_service_ip",
+            "dummy_service_port",
+            "dummy_service_address",
+            "dummy_service_tags",
+            "dummy_service_kind",
+            "dummy_namespace",
+            "dummy_datacenter",
+            [
+                "dummy_agent1"
+            ]
+        ],
+        "output": [],
+        "agent_addr_list": [
+            "dummy_agent1",
+            "dummy_agent2"
+        ],
+        "services_key": []
+    },
+    {
+        "input": [
+            "dummy_service_id",
+            "dummy_node_id",
+            "dummy_service_name",
+            "dummy_service_ip",
+            "dummy_service_port",
+            "dummy_service_address",
+            "dummy_service_tags",
+            "dummy_service_kind",
+            "dummy_namespace",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_service_id",
+            "dummy_node_id",
+            "dummy_service_name",
+            "dummy_service_ip",
+            "dummy_service_port",
+            "dummy_service_address",
+            "dummy_service_tags",
+            "dummy_service_kind",
+            "dummy_namespace",
+            "dummy_datacenter",
+            [
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent1"
+        ],
+        "services_key": []
+    },
+    {
+        "input": [
+            "dummy_service_id",
+            "dummy_node_id",
+            "dummy_service_name",
+            "dummy_service_ip",
+            "dummy_service_port",
+            "dummy_service_address",
+            "dummy_service_tags",
+            "dummy_service_kind",
+            "dummy_namespace",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "output": [
+            "dummy_service_id",
+            "dummy_node_id",
+            "dummy_service_name",
+            "dummy_service_ip",
+            "dummy_service_port",
+            "dummy_service_address",
+            "dummy_service_tags",
+            "dummy_service_kind",
+            "dummy_namespace",
+            "dummy_datacenter",
+            [
+                "dummy_agent1",
+                "dummy_agent2"
+            ]
+        ],
+        "agent_addr_list": [
+            "dummy_agent3"
+        ],
+        "services_key": []
+    }
+]

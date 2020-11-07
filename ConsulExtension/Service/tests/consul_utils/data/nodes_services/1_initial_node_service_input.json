@@ -1,0 +1,91 @@
+{
+  "Node": {
+    "Node": "nodename18"
+  },
+  "Services": [
+    {
+      "Status": "warning",
+      "Name": "name16",
+      "Service": "servicename16",
+      "Notes": "notes16",
+      "Namespace": "namespace16",
+      "Port": "1071",
+      "ServiceTags": [
+        "global",
+        "cache"
+      ],
+      "ServiceName": "servicename16",
+      "ServiceID": "serviceid16",
+      "Address": "172.21.5.192",
+      "ServiceKind": "servicekind16",
+      "Output": "output16",
+      "Type": "tll",
+      "ID": "serviceid16"
+    },
+    {
+      "Status": "passing",
+      "Name": "name25",
+      "Service": "servicename25",
+      "Notes": "notes25",
+      "Namespace": "namespace25",
+      "Port": "1072",
+      "ServiceTags": [
+        "global",
+        "cache"
+      ],
+      "ServiceName": "servicename25",
+      "ServiceID": "serviceid25",
+      "Address": "172.28.148.48",
+      "ServiceKind": "servicekind25",
+      "Output": "output25",
+      "Type": "tll",
+      "ID": "serviceid25"
+    },
+    {
+      "Status": "warning",
+      "Name": "name0",
+      "Service": "servicename0",
+      "Notes": "notes0",
+      "Namespace": "namespace0",
+      "Port": "1073",
+      "ServiceTags": [
+        "global",
+        "cache"
+      ],
+      "ServiceName": "servicename0",
+      "ServiceID": "serviceid0",
+      "Address": "",
+      "ServiceKind": "servicekind0",
+      "Output": "output0",
+      "Type": "tll",
+      "ID": "serviceid0"
+    },
+    {
+      "Status": "passing",
+      "Name": "name9",
+      "Service": "servicename9",
+      "Notes": "notes9",
+      "Namespace": "namespace9",
+      "Port": "1074",
+      "ServiceTags": [
+        "global",
+        "cache"
+      ],
+      "ServiceName": "servicename9",
+      "ServiceID": "serviceid9",
+      "Address": "172.21.5.192",
+      "ServiceKind": "servicekind9",
+      "Output": "output9",
+      "Type": "tll",
+      "ID": "serviceid9"
+    }
+  ],
+  "TaggedAddresses": {
+    "wan_ipv4": "172.21.5.192",
+    "wan": "172.21.5.192",
+    "lan": "172.21.5.192",
+    "lan_ipv4": "172.21.5.192"
+  },
+  "ID": "nodeid18",
+  "Address": "172.21.5.192"
+}

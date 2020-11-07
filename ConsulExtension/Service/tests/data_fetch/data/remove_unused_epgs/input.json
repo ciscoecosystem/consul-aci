@@ -1,0 +1,44 @@
+[
+    {
+        "input": [
+            "dummy_dn",
+            "dummy_tenant",
+            "dummy_epg",
+            "dummy_bd",
+            "dummy_contracts",
+            "dummy_vrf",
+            "dummy_epg_health",
+            "dummy_app_profile",
+            "dummy_epg_alias"
+        ],
+        "output": [],
+        "tenant": "dummy_tenant",
+        "epg_key": []
+    },
+    {
+        "input": [
+            "dummy_dn",
+            "dummy_tenant",
+            "dummy_epg",
+            "dummy_bd",
+            "dummy_contracts",
+            "dummy_vrf",
+            "dummy_epg_health",
+            "dummy_app_profile",
+            "dummy_epg_alias"
+        ],
+        "output": [
+            "dummy_dn",
+            "dummy_tenant",
+            "dummy_epg",
+            "dummy_bd",
+            "dummy_contracts",
+            "dummy_vrf",
+            "dummy_epg_health",
+            "dummy_app_profile",
+            "dummy_epg_alias"
+        ],
+        "tenant": "dummy_tenant2",
+        "epg_key": []
+    }
+]

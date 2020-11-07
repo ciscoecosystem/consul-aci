@@ -1,0 +1,19 @@
+{
+    "status_code": "200",
+    "message": "",
+    "payload": [
+        {
+            "alias": "DummyAlias",
+            "filter_list": [
+                "flt1",
+                "flt1"
+            ],
+            "type": "Consumer",
+            "contract_type": "",
+            "ingr_pkts": "1",
+            "contract_subj": "DummyTn/DummyBrc/DummySubj",
+            "egr_pkts": "1",
+            "to_epg": "DummyTn/DummyAp/DummyEpg"
+        }
+    ]
+}

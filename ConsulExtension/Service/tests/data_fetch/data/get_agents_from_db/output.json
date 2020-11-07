@@ -1,0 +1,16 @@
+[
+    {
+        "ip": "ip2",
+        "port": "port2",
+        "protocol": "protocol2",
+        "token": "",
+        "datacenter": "datacenter2"
+    },
+    {
+        "ip": "ip",
+        "port": "port",
+        "protocol": "protocol",
+        "token": "",
+        "datacenter": "datacenter"
+    }
+]

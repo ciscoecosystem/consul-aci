@@ -1,0 +1,29 @@
+[
+    {
+        "node_ip": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
+        "node_check": {
+            "warning": 1
+        },
+        "node_id": "nodeid0",
+        "node_services": [
+            {
+                "service_checks": {
+                    "warning": 1
+                },
+                "node_id": "nodeid0",
+                "service_port": "9000",
+                "service_name": "servicename0",
+                "service_namespace": "namespace0",
+                "service_id": "serviceid0",
+                "service_address": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b:9000",
+                "service_ip": "6c40:b7d1:3209:8f20:f0fa:8ae1:1c72:979b",
+                "service_kind": "servicekind0",
+                "service_tags": [
+                    "cache",
+                    "global"
+                ]
+            }
+        ],
+        "node_name": "nodename0"
+    }
+]

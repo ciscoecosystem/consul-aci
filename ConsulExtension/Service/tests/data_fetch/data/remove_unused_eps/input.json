@@ -1,0 +1,59 @@
+[
+    {
+        "input": [
+            "dummy_mac",
+            "dummy_ip",
+            "dummy_tenant",
+            "dummy_dn",
+            "dummy_vm_name",
+            "dummy_interfaces",
+            "dummy_vmm_domain",
+            "dummy_controller_name",
+            "dummy_learning_source",
+            "dummy_multicast_address",
+            "dummy_encap",
+            "dummy_hosting_server_name",
+            "dummy_is_cep",
+            "dummy_pod"
+        ],
+        "output": [],
+        "tenant": "dummy_tenant",
+        "ep_key": []
+    },
+    {
+        "input": [
+            "dummy_mac",
+            "dummy_ip",
+            "dummy_tenant",
+            "dummy_dn",
+            "dummy_vm_name",
+            "dummy_interfaces",
+            "dummy_vmm_domain",
+            "dummy_controller_name",
+            "dummy_learning_source",
+            "dummy_multicast_address",
+            "dummy_encap",
+            "dummy_hosting_server_name",
+            "dummy_is_cep",
+            "dummy_pod"
+        ],
+        "output": [
+            "dummy_mac",
+            "dummy_ip",
+            "dummy_tenant",
+            "dummy_dn",
+            "dummy_vm_name",
+            "dummy_interfaces",
+            "dummy_vmm_domain",
+            "dummy_controller_name",
+            "dummy_learning_source",
+            "dummy_multicast_address",
+            "dummy_encap",
+            "dummy_hosting_server_name",
+            "dummy_is_cep",
+            "dummy_pod"
+        ],
+        "tenant": "dummy_tenant2",
+        "ep_key": []
+    }
+]

@@ -1,0 +1,155 @@
+[
+    [
+        "agent list empty",
+        [
+            "tn0",
+            {
+                "oldData": {
+                    "protocol": "http",
+                    "port": "1234",
+                    "ip": "0.0.0.0",
+                    "token": null,
+                    "vrf": "vrf0"
+                },
+                "newData": {
+                    "protocol": "http",
+                    "port": "1235",
+                    "ip": "0.0.0.0",
+                    "token": null,
+                    "vrf": "vrf0"
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "1",
+                "-",
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
+            ]
+        ]
+    ],
+    [
+        "agent already exists",
+        [
+            "tn0",
+            {
+                "oldData": {
+                    "protocol": "http",
+                    "port": 1234,
+                    "ip": "0.0.0.1",
+                    "token": "1",
+                    "vrf": "vrf0"
+                },
+                "newData": {
+                    "protocol": "http",
+                    "port": 1234,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "vrf0"
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "1",
+                "-",
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
+            ]
+        ]
+    ],
+    [
+        "connected",
+        [
+            "tn0",
+            {
+                "oldData": {
+                    "protocol": "http",
+                    "port": 1234,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "vrf0"
+                },
+                "newData": {
+                    "protocol": "http",
+                    "port": 1235,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "vrf0"
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "1",
+                "-",
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
+            ]
+        ]
+    ],
+    [
+        "disconnected",
+        [
+            "tn0",
+            {
+                "oldData": {
+                    "protocol": "http",
+                    "port": 1234,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "vrf0"
+                },
+                "newData": {
+                    "protocol": "http",
+                    "port": 1236,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "vrf0"
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "1",
+                "-",
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
+            ]
+        ]
+    ],
+    [
+        "exception",
+        [
+            "tn0",
+            {
+                "newData": {
+                    "protocol": "http",
+                    "port": 1235,
+                    "ip": "0.0.0.0",
+                    "token": "",
+                    "vrf": "uni/tn-tn0/ctx-vrf0"
+                }
+            },
+            [
+                "0.0.0.0",
+                "1234",
+                "http",
+                "",
+                "1",
+                "-",
+                "tn0",
+                "uni/tn-tn0/ctx-vrf0"
+            ]
+        ]
+    ]
+]
