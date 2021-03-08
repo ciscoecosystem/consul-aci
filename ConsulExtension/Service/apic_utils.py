@@ -159,6 +159,7 @@ class AciUtils(object):
             list -- list of parsed EP data
         """
         try:
+            # Dec-15 First logger for Data URL and tenant
             url = urls.FETCH_EP_DATA_URL.format(self.epg_url, str(tenant))
             response_json = self.aci_get(url)
             if response_json and response_json.get("imdata"):
@@ -283,9 +284,12 @@ class AciUtils(object):
         tdn = str(ep_child['fvRsToVm']['attributes']['tDn'])
         vm_url = self.proto + self.apic_ip + '/api/mo/' + tdn + '.json'
         vm_response = self.aci_get(vm_url)
-        vm_response = vm_response.get('imdata')[0]
-        vm_name = vm_response['compVm']['attributes']['name']
-        if not vm_name:
+        if int(str(vm_response.get('totalCount'))) > 0:
+            vm_response = vm_response.get('imdata')[0]
+            vm_name = vm_response['compVm']['attributes']['name']
+            if not vm_name:
+                vm_name = '---'
+        else:
             vm_name = '---'
         return (vmm_dom, vm_name)
 
