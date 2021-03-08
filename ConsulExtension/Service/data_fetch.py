@@ -913,27 +913,29 @@ def data_fetch():
 
         except Exception as e:
             logger.info("Error in data fetch: {}".format(str(e)))
+        try:
+            # Fetch polling interval from polling table if it
+            # does not exist, default polling interval will be set
+            POLL_INTERVAL = get_polling_interval()
 
-        # Fetch polling interval from polling table if it
-        # does not exist, default polling interval will be set
-        POLL_INTERVAL = get_polling_interval()
+            change_data_fetch_status(False)
 
-        change_data_fetch_status(False)
-
-        # sleep data-fetch and check for agent modification on interval
-        # discard sleep if agent added/updated/deleted
-        current_time = time.time()
-        total_time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
-        if total_time_to_sleep > 0:
-            logger.info("Data fetch thread sleeping for interval: {}".format(total_time_to_sleep))
-            for _ in range(0, int(total_time_to_sleep), 1):
-                agent_edited = get_agent_edit_status()
-                if agent_edited:
-                    change_agent_edit_status(False)
-                    logger.info("Data fetch sleep interrupted")
-                    break
-                else:
-                    time.sleep(1)
+            # sleep data-fetch and check for agent modification on interval
+            # discard sleep if agent added/updated/deleted
+            current_time = time.time()
+            total_time_to_sleep = (start_time + POLL_INTERVAL * 60) - current_time
+            if total_time_to_sleep > 0:
+                logger.info("Data fetch thread sleeping for interval: {}".format(total_time_to_sleep))
+                for _ in range(0, int(total_time_to_sleep), 1):
+                    agent_edited = get_agent_edit_status()
+                    if agent_edited:
+                        change_agent_edit_status(False)
+                        logger.info("Data fetch sleep interrupted")
+                        break
+                    else:
+                        time.sleep(1)
+        except Exception as e:
+            logger.info("Error in sleep interval setting: {} ".format(str(e)))
 
 
 if __name__ == "__main__":

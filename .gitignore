@@ -1,2 +1,4 @@
 ConsulExtension/Service/__pycache__/*
 ConsulExtension/UIAssets/app/Tree/node_modules/*
+.idea/*
+.idea/workspace.xml
